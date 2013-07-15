@@ -1,5 +1,8 @@
 import copy
 
+def itemize(initial, incoming, final, outgoing_list):
+    return ([s.value for s in initial], (incoming.action, incoming.description()[0]),
+            [s.value for s in final], [(o.action, o.description()[0]) for o in outgoing_list])
 
 def develop(state_machine, states, runs=[]):
     """Returns the list of possible runs
@@ -10,10 +13,10 @@ def develop(state_machine, states, runs=[]):
             local_states = copy.deepcopy(states)
 
             incoming_exchange = transition.generic_incoming(local_states)
-            transition.process(local_states, incoming_exchange)
+            outgoing_exchange_list = transition.process(local_states, incoming_exchange)
             
-            if ([s.value for s in states], (transition.incoming.code, incoming_exchange.description()[0]), [s.value for s in local_states]) not in local_runs:
-                local_runs.append(([s.value for s in states], (transition.incoming.code, incoming_exchange.description()[0]), [s.value for s in local_states]))
+            if itemize(states, incoming_exchange, local_states, outgoing_exchange_list) not in local_runs:
+                local_runs.append(itemize(states, incoming_exchange, local_states, outgoing_exchange_list))
                 #runs.append(([s.value for s in states], transition.incoming.code, [s.value for s in local_states]))
                 runs = develop(state_machine, local_states, local_runs)
     return runs

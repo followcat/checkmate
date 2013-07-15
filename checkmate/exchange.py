@@ -10,6 +10,8 @@ def new_exchange_interface(name, parents, param):
 
 class Exchange(object):
     """"""
+    _default_description = (None, None, None)
+    _description = {}
     def __init__(self, action, *args, **kwargs):
         self.action = action
         self.args = args
@@ -22,5 +24,5 @@ class Exchange(object):
     def description(self):
         if self.action in self._description.keys():
             return self._description[self.action]
-        return (None,None,None)
+        return self._default_description
 
