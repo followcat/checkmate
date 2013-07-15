@@ -18,6 +18,8 @@ class TestData(checkmate.application.Application):
             >>> a.start()
             >>> c.states[0].value
             u'True'
+            >>> c.states[0].description() # doctest: +ELLIPSIS
+            (u'S-STATE-01', ...
             >>> i = sample_app.exchanges.AP(R=1)
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
@@ -31,6 +33,8 @@ class TestData(checkmate.application.Application):
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[0].value
             u'False'
+            >>> c.states[0].description() # doctest: +ELLIPSIS
+            (u'S-STATE-02', ...
             >>> checkmate.component.execute(c, i)
             >>> c.states[0].value
             u'False'
