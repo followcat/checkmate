@@ -78,6 +78,8 @@ class Transition(object):
     def is_matching_initial(self, state_list):
         """
         """
+        if len(self.initial) == 0:
+            return True
         for _k in self.initial:
             _interface = _k.interface
             for _s in state_list:
