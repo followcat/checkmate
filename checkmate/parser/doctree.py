@@ -162,13 +162,16 @@ def partition_identification(sections, _module=None):
         table = _filter_table(partition)
         body = _filter_body(table)
         values = []
+        long_desc = {}
         for row in _filter_row(body):
             content = _filter_paragraph(row)
+            id = _filter_text(content[0])
             code = _filter_text(content[1])
             val = _filter_text(content[2])
             com = _filter_text(content[3])
             if checkmate._utils.method_basename(code) is None:
                 values.append(code)
+            long_desc[checkmate._utils.internal_code(code)] = (id, val, com)
 
         method = get_method_section(section)
         standard_methods = {}
@@ -182,7 +185,7 @@ def partition_identification(sections, _module=None):
                 standard_methods[code] = getattr(checkmate.state, code)
 
         if _module is not None:
-            standard_methods.update({'_valid_values': values})
+            standard_methods.update({'_valid_values': values, '_description': long_desc})
             setattr(_module, classname, _module.declare(classname, standard_methods))
             setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
             zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])

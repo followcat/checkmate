@@ -1,6 +1,12 @@
 import sys
 
 
+def internal_code(value):
+    output = method_basename(value)
+    if output == None:
+        return value
+    return output
+
 def method_basename(signature):
     """
     """

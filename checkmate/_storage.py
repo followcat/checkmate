@@ -2,10 +2,8 @@ import checkmate._utils
 
 
 class InternalStorage(object):
-    def __init__(self, code, interface, function, arguments, id=None, comment=u'', kw_arguments={}):
-        self.id = id
+    def __init__(self, code, interface, function, arguments, kw_arguments={}):
         self.code = code
-        self.comment = comment
         self.function = function
         self.arguments = arguments
         self.kw_arguments = kw_arguments

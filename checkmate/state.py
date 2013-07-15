@@ -73,6 +73,11 @@ class State(object):
         else:
             return (self.value == other.value)
 
+    def description(self):
+        if self.value in self._description.keys():
+            return self._description[self.value]
+        return (None,None,None)
+
 def declare(name, param):
     return type(name, (State,), param)
 

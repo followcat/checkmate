@@ -19,3 +19,8 @@ class Exchange(object):
     def __eq__(self, other):
         return self.action == other.action
 
+    def description(self):
+        if self.action in self._description.keys():
+            return self._description[self.action]
+        return (None,None,None)
+

@@ -20,7 +20,7 @@ Value partitions
 +===============+========+==========================+==========================+
 | S-STATE-01    | True   | True valid value         | State true value         |
 +---------------+--------+--------------------------+--------------------------+
-| S-STATE-02    | False  | True valid value         | State false value        |
+| S-STATE-02    | False  | False valid value        | State false value        |
 +---------------+--------+--------------------------+--------------------------+
 
 

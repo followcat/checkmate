@@ -12,8 +12,8 @@ def develop(state_machine, states, runs=[]):
             incoming_exchange = transition.generic_incoming(local_states)
             transition.process(local_states, incoming_exchange)
             
-            if ([s.value for s in states], transition.incoming.code, [s.value for s in local_states]) not in local_runs:
-                local_runs.append(([s.value for s in states], transition.incoming.code, [s.value for s in local_states]))
+            if ([s.value for s in states], (transition.incoming.code, incoming_exchange.description()[0]), [s.value for s in local_states]) not in local_runs:
+                local_runs.append(([s.value for s in states], (transition.incoming.code, incoming_exchange.description()[0]), [s.value for s in local_states]))
                 #runs.append(([s.value for s in states], transition.incoming.code, [s.value for s in local_states]))
                 runs = develop(state_machine, local_states, local_runs)
     return runs
