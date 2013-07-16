@@ -1,4 +1,3 @@
-import checkmate.run
 import checkmate.exchange
 import checkmate.parser.doctree
 
@@ -34,8 +33,8 @@ class Application(object):
 
         for name in self.components.keys():
             runs[name] = []
-            for found_run in checkmate.state_machine.develop(self.components[name].state_machine, self.components[name].states):
-                runs[name].append(checkmate.run.Run(found_run))
+            for found_run in self.components[name].state_machine.develop(self.components[name].states):
+                runs[name].append(found_run)
 
         for stub_name in stubs:
             for stub_run in runs[stub_name]:
