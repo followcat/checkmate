@@ -1,3 +1,4 @@
+import re
 import sys
 
 
@@ -6,6 +7,9 @@ def internal_code(value):
     if output == None:
         return value
     return output
+
+def is_method(name):
+    return (re.compile('\(.*\)').search(name) is not None)
 
 def method_unbound(signature):
     """"""

@@ -1,4 +1,3 @@
-import re
 import functools
 
 import docutils.core
@@ -15,9 +14,6 @@ import checkmate._utils
 
 def _to_interface(_classname):
     return 'I'+_classname
-
-def _is_method(name):
-    return (re.compile('\(.*\)').search(name) is not None)
 
 def _filter_list_section(section):
     return [s for s in section.traverse(include_self=False) if type(s) == docutils.nodes.section]
@@ -190,7 +186,7 @@ def partition_identification(sections, _module=None):
             setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
             zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
             for value in values:
-                if _is_method(value):
+                if checkmate._utils.is_method(value):
                     interface = getattr(_module, _to_interface(classname))
                     cls = checkmate._utils.get_class_implementing(interface)
                     setattr(_module, checkmate._utils.method_basename(value), functools.partial(cls, checkmate._utils.method_basename(value)))
@@ -273,7 +269,7 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                 interface = getattr(state_module, _to_interface(array_items[i][0]))
                 cls = checkmate._utils.get_class_implementing(interface)
                 initial_state.append((interface, array_items[i][1]))
-                if _is_method(array_items[i][1]):
+                if checkmate._utils.is_method(array_items[i][1]):
                     cls = checkmate._utils.get_class_implementing(interface)
                     setattr(state_module, checkmate._utils.method_basename(array_items[i][1]), functools.partial(cls, checkmate._utils.method_basename(array_items[i][1])))
         for i in range(2, len(array_items[0])):
