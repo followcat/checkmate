@@ -7,6 +7,11 @@ def internal_code(value):
         return value
     return output
 
+def method_unbound(signature):
+    """"""
+    return ('(' in signature and
+            '.' in signature[:signature.index('(')])
+
 def method_basename(signature):
     """
     """

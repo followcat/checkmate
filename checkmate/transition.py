@@ -30,25 +30,24 @@ class Transition(object):
                 _o = checkmate._utils.get_class_implementing(_interface)
                 _arguments, _kw_arguments = checkmate._utils.method_arguments(_name)
 
-                if item in 'initial':
-                    self.initial.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
-                                                _o, _arguments, kw_arguments=_kw_arguments))
-                elif item == 'final':
-                    if checkmate._utils.method_basename(_name) is None:
-                        function = _o
-                        for input in self.initial:
-                            if input.code == _name:
-                                _arguments = input.arguments
-                                _function = input.function
-                        self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
-                                                _function, _arguments, kw_arguments=_kw_arguments))
-                    else:
-                        self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
-                                                getattr(_o, checkmate._utils.method_basename(_name)), _arguments, kw_arguments=_kw_arguments))
+                if item in ['initial', 'final']:
+                    getattr(self, item).append(checkmate._storage.store_state(_interface, _name))
+                #elif item == 'final':
+                #    self.final.append(checkmate._storage.store_state(_interface, _name))
+                    #if checkmate._utils.method_basename(_name) is None:
+                    #    self.final.append(checkmate._storage.store_state(_interface, _name))
+#                        function = _o
+#                        for input in self.initial:
+#                            if input.code == _name:
+#                                _arguments = input.arguments
+#                                _function = input.function
+#                        self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
+#                                                _function, _arguments, kw_arguments=_kw_arguments))
+                    #else:
+                    #    self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
+                    #                            getattr(_o, checkmate._utils.method_basename(_name)), _arguments, kw_arguments=_kw_arguments))
                 elif item == 'incoming':
-                    self.incoming = checkmate._storage.ExchangeStorage(checkmate._utils.internal_code(_name), _interface,
-                                                getattr(checkmate._utils.get_module_defining(_interface), checkmate._utils.method_basename(_name)),
-                                                _arguments, kw_arguments=_kw_arguments)
+                    self.incoming = checkmate._storage.store_exchange(_interface, _name)
                 elif item == 'outgoing':
                     #_list_args = []
                     #for _arg in _arguments:
@@ -58,10 +57,7 @@ class Transition(object):
                     #        _f = initial_state.function
                     #        if _f.__name__.rstrip('0') == _arg:
                     #            _list_args.append(_i_interface)
-                    self.outgoing.append(checkmate._storage.ExchangeStorage(checkmate._utils.internal_code(_name), _interface,
-                                                getattr(checkmate._utils.get_module_defining(_interface), checkmate._utils.method_basename(_name)),
-                                                _arguments, kw_arguments=_kw_arguments))
-                #_attribute.append((_interface, getattr(_o, checkmate._utils.method_basename(_name)), _arguments))
+                    self.outgoing.append(checkmate._storage.store_exchange(_interface, _name))
 
 
     def is_matching_incoming(self, exchange):

@@ -16,6 +16,9 @@ class TestData(checkmate.application.Application):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']   
             >>> a.start()
+            >>> a.test_plan(['C1']) # doctest: +ELLIPSIS
+            ((('C2', []), ('C1', [u'True', []])), ('C2', [(u'AC', u'X-ACTION-01')]), (('C2', []), ('C1', [u'False', []])), ('C1', [(u'RE', u'X-REACTION-01')]))
+            ((('C2', []), ('C1', [u'True', ['R']])), ...
             >>> c.states[0].value
             u'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
@@ -46,6 +49,7 @@ class TestData(checkmate.application.Application):
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value
             []
+
         """
         exchange_module = sample_app.exchanges
         path = os.path.dirname(exchange_module.__file__)
