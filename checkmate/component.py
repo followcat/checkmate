@@ -9,8 +9,9 @@ import checkmate._utils
 
 
 class Component(object):
-    def __init__(self, matrix='', state_module=None, exchange_module=None):
+    def __init__(self, name, matrix='', state_module=None, exchange_module=None):
         self.states = []
+        self.name = name
         try:
             partitions_output = checkmate.parser.doctree.load_partitions(matrix, state_module)
             transitions_output = checkmate.parser.doctree.load_transitions(matrix, state_module=state_module,

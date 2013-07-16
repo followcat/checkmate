@@ -1,5 +1,6 @@
 import copy
 
+
 def itemize(initial, incoming, final, outgoing_list):
     return ([s.value for s in initial], (incoming.action, incoming.description()[0]),
             [s.value for s in final], [(o.action, o.description()[0]) for o in outgoing_list])

@@ -14,7 +14,7 @@ class TestData(checkmate.application.Application):
             >>> import checkmate.component
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> c = a.component_list[0]   
+            >>> c = a.components['C1']   
             >>> a.start()
             >>> c.states[0].value
             u'True'
@@ -55,8 +55,8 @@ class TestData(checkmate.application.Application):
         _file.close()
         super(TestData, self).__init__(matrix, exchange_module)
 
-        self.component_list = [sample_app.component_1.component.Component_1,
-                               sample_app.component_2.component.Component_2]
-        for component in self.component_list:
-            self.component_list[self.component_list.index(component)] = component()
+        self.components = {'C1': sample_app.component_1.component.Component_1,
+                           'C2': sample_app.component_2.component.Component_2}
+        for name in self.components.keys():
+            self.components[name] = self.components[name](name)
 

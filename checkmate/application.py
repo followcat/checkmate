@@ -1,3 +1,4 @@
+import checkmate.run
 import checkmate.exchange
 import checkmate.parser.doctree
 
@@ -7,7 +8,7 @@ class Application(object):
         """
         """
         self.exchanges = []
-        self.component_list = []
+        self.components = {}
         global checkmate
         output = checkmate.parser.doctree.load_partitions(matrix, exchange_module)
         setattr(self, 'exchanges', output['exchanges'])
@@ -15,9 +16,30 @@ class Application(object):
     def start(self):
         """
         """
-        for component in self.component_list:
+        for component in self.components.values():
             component.start()
         
 
-        
+    def test_plan(self, system_under_test):
+        """"""
+        self.system_under_test = system_under_test
 
+        runs = {}
+        stubs = self.components.keys()
+        for name in system_under_test:
+            if name not in self.components.keys():
+                self.system_under_test.pop(self.system_under_test.index(name))
+            else:
+                stubs.pop(stubs.index(name))
+
+        for name in self.components.keys():
+            runs[name] = []
+            for found_run in checkmate.state_machine.develop(self.components[name].state_machine, self.components[name].states):
+                runs[name].append(checkmate.run.Run(found_run))
+
+        for stub_name in stubs:
+            for stub_run in runs[stub_name]:
+                for sut_name in system_under_test:
+                    for sut_run in runs[sut_name]:
+                        if sut_run.incoming in stub_run.outgoing:
+                            print (((stub_name, stub_run.final), (sut_name, sut_run.initial)), (stub_name, stub_run.outgoing), ((stub_name, stub_run.final), (sut_name, sut_run.final)), (sut_name, sut_run.outgoing))
