@@ -287,11 +287,12 @@ def transition_identification(sections, state_module=None, exchange_module=None)
         for i in range(2, len(array_items[0])):
             input = []
             for j in range(0, initial_state_id[0]):
-                interface = getattr(exchange_module, _to_interface(array_items[j][0]))
-                input.append((interface, array_items[j][i]))
-                if exchange_module is not None:
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
+                if array_items[j][i] != 'x':
+                    interface = getattr(exchange_module, _to_interface(array_items[j][0]))
+                    input.append((interface, array_items[j][i]))
+                    if exchange_module is not None:
+                        cls = checkmate._utils.get_class_implementing(interface)
+                        setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
@@ -304,11 +305,12 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                 #    setattr(state_module, checkmate._utils.method_basename(array_items[j][i]), Decorator(cls, getattr(state_module, checkmate._utils.method_basename(array_items[j][i]))))
             output = []
             for j in range(initial_state_id[-1]+1, row_count):
-                interface = getattr(exchange_module, _to_interface(array_items[j][0]))
-                output.append((interface, array_items[j][i]))
-                if exchange_module is not None:
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
+                if array_items[j][i] != 'x':
+                    interface = getattr(exchange_module, _to_interface(array_items[j][0]))
+                    output.append((interface, array_items[j][i]))
+                    if exchange_module is not None:
+                        cls = checkmate._utils.get_class_implementing(interface)
+                        setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
             t = checkmate.transition.Transition(initial=initial_state, incoming=input, final=final, outgoing=output)
             component_transition.append(t)
     return component_transition
