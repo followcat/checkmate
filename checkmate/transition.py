@@ -123,13 +123,11 @@ class Transition(object):
         return resolved_arguments
 
     def generic_incoming(self, states):
-        arguments = self.resolve_arguments('incoming', self.incoming, states)
-        return self.incoming.factory(kwargs=arguments)
-        #try:
-        #    arguments = self.resolve_arguments('incoming', self.incoming, states)
-        #    return self.incoming.factory(kwargs=arguments)
-        #except AttributeError:
-        #    return checkmate.exchange.Exchange(None)
+        try:
+            arguments = self.resolve_arguments('incoming', self.incoming, states)
+            return self.incoming.factory(kwargs=arguments)
+        except AttributeError:
+            return checkmate.exchange.Exchange(None)
             
     def process(self, states, _incoming):
         def member_wrapper(cls, obj, args):
