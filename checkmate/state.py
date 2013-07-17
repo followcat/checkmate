@@ -49,8 +49,6 @@ class State(object):
             self._queue = True
         if self._queue == True:
             # intended to be a 'None' string
-            if value == 'None':
-                value = []
             if type(value) == list:
                 self.value = list(value)
             else:
