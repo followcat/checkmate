@@ -10,18 +10,22 @@ def toggle(self):
         self.value = self._valid_values[(len(self._valid_values)-1) - (self._valid_values.index(self.value))]
 
 def append(self, *args):
-    try:
-        value = args[0]
-    except:
-        value = None
     if self.value is None:
         self.value = []
     elif (len(self.value) == 1 and self.value[0] == None):
         self.value = []
     elif type(self.value) != list:
         self.value = list([self.value])
-    if value not in self.value:
-        self.value.append(value)
+
+    try:
+        value = args[0]
+        if (((type(value) == str or type(value) == unicode) and value == 'None') or
+             value is None):
+            return
+        if value not in self.value:
+            self.value.append(value)
+    except:
+        pass
 
 def pop(self, *args):
     try:
@@ -32,11 +36,50 @@ def pop(self, *args):
         self.value = list([self.value])
     try:
         if value is None:
-            return self.value.pop(-1)
+            return self.value.pop(0)
         else:
             return self.value.pop(self.value.index(value))
     except:
         return None
+
+def flush(self, *args):
+    try:
+        value = args[0]
+    except:
+        self.value = []
+        return
+    if type(self.value) != list:
+        self.value = list([self.value])
+    count = self.value.count(value)
+    for i in range(0, count):
+        self.value.remove(value)
+
+def up(self, *args):
+    try:
+        value = args[0]
+    except:
+        value = None
+    if type(self.value) != list:
+        self.value = list([self.value])
+    try:
+        index = self.value.index(value)
+        return self.value.insert(index-1, self.value.pop(index))
+    except:
+        pass
+
+def down(self, *args):
+    try:
+        value = args[0]
+    except:
+        value = None
+    if type(self.value) != list:
+        self.value = list([self.value])
+    try:
+        index = self.value.index(value)
+        return self.value.insert(index, self.value.pop(index))
+    except:
+        pass
+
 
 class State(object):
     """"""
