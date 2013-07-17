@@ -97,9 +97,9 @@ class Transition(object):
             if type in ['final', 'incoming']:
                 for item in self.initial:
                     if arg == item.code:
-                        for state in states:
-                            if item.providedBy(_state):
-                                found = state.value
+                        for _state in states:
+                            if item.interface.providedBy(_state):
+                                found = _state.value
                                 break
                     if found is not None:
                         break
@@ -112,8 +112,8 @@ class Transition(object):
                     for item in self.final:
                         if arg == item.code:
                             for _state in states:
-                                if self.final.providedBy(_state):
-                                    found = state.value
+                                if self.final.interface.providedBy(_state):
+                                    found = _state.value
                                     break
                         if found is not None:
                             break
@@ -123,11 +123,13 @@ class Transition(object):
         return resolved_arguments
 
     def generic_incoming(self, states):
-        try:
-            arguments = self.resolve_arguments('incoming', self.incoming, states)
-            return self.incoming.factory(kwargs=arguments)
-        except AttributeError:
-            return checkmate.exchange.Exchange(None)
+        arguments = self.resolve_arguments('incoming', self.incoming, states)
+        return self.incoming.factory(kwargs=arguments)
+        #try:
+        #    arguments = self.resolve_arguments('incoming', self.incoming, states)
+        #    return self.incoming.factory(kwargs=arguments)
+        #except AttributeError:
+        #    return checkmate.exchange.Exchange(None)
             
     def process(self, states, _incoming):
         def member_wrapper(cls, obj, args):
