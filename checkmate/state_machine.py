@@ -21,7 +21,11 @@ class StateMachine(object):
                 local_runs = copy.deepcopy(runs)
                 local_states = copy.deepcopy(states)
 
-                incoming_exchange = transition.generic_incoming(local_states)
+                try:
+                    incoming_exchange = transition.generic_incoming(local_states)
+                except AttributeError:
+                    # Some transition have no incoming
+                    incoming_exchange = checkmate.exchange.Exchange(None)
                 outgoing_exchange_list = transition.process(local_states, incoming_exchange)
             
                 this_run = checkmate.run.Run(itemize(states, incoming_exchange, local_states, outgoing_exchange_list))

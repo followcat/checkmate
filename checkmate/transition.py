@@ -112,7 +112,7 @@ class Transition(object):
                     for item in self.final:
                         if arg == item.code:
                             for _state in states:
-                                if self.final.interface.providedBy(_state):
+                                if item.interface.providedBy(_state):
                                     found = _state.value
                                     break
                         if found is not None:
@@ -122,13 +122,16 @@ class Transition(object):
             resolved_arguments[arg] = found
         return resolved_arguments
 
+
     def generic_incoming(self, states):
-        try:
-            arguments = self.resolve_arguments('incoming', self.incoming, states)
-            return self.incoming.factory(kwargs=arguments)
-        except AttributeError:
-            return checkmate.exchange.Exchange(None)
+        """ Generate a generic incoming for the provided state
+
+        In case the transition has no incoming, raise AttributeError exception.
+        """
+        arguments = self.resolve_arguments('incoming', self.incoming, states)
+        return self.incoming.factory(kwargs=arguments)
             
+
     def process(self, states, _incoming):
         def member_wrapper(cls, obj, args):
             return cls(obj, *args)
