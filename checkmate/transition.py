@@ -98,7 +98,7 @@ class Transition(object):
                 for item in self.initial:
                     if arg == item.code:
                         for state in states:
-                            if self.initial.providedBy(_state):
+                            if item.providedBy(_state):
                                 found = state.value
                                 break
                     if found is not None:
