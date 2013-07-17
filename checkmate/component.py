@@ -38,14 +38,8 @@ class Component(object):
 
             
     def start(self):
-        for state in self.state_machine.states:
-            try:
-                if hasattr(state, 'append'):
-                    self.states.append(state([]))
-                else:
-                    self.states.append(state(state._valid_values[0]))
-            except IndexError:
-                self.states.append(state())
+        for interface, state in self.state_machine.states:
+            self.states.append(state[0].factory())
 
     
 def execute(_component, _exchange):

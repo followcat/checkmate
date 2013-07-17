@@ -22,7 +22,8 @@ class Exchange(object):
         return self.action == other.action
 
     def description(self):
-        if self.action in self._description.keys():
-            return self._description[self.action]
-        return self._default_description
+        for key in self._description.keys():
+            if self == self._description[key][0].factory():
+                return self._description[key][-1]
+        return (None,None,None)
 

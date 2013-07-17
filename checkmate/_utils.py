@@ -22,21 +22,40 @@ def method_basename(signature):
     if '(' in signature:
         return signature[:signature.index('(')].split(u'.')[-1]
 
+def valid_value_argument(signature):
+    if '(' in signature:
+        if (signature.index('(') != signature.index(')')-1 and
+            ',' not in signature[signature.index('(')+1:signature.index(')')]):
+            argument = signature[signature.index('(')+1:signature.index(')')]
+            if argument_value(argument):
+                return argument
+    return None
+
+def method_value_arguments(signature):
+    """ All arguments are value """
+    _args = []
+    if '(' in signature:
+        if (signature.index('(') != signature.index(')')-1):
+            for argument in signature[signature.index('(')+1:signature.index(')')].split(','):
+                _args.append(argument)
+    return (_args, {})
+
 def method_arguments(signature):
     _args = []
     _kw_args = {}
     if '(' in signature:
         if (signature.index('(') != signature.index(')')-1):
             for argument in signature[signature.index('(')+1:signature.index(')')].split(','):
-                if "'" in argument or '"' in argument:
-                    _args.append(argument)
-                elif argument.isdigit():
-                    _args.append(argument)
-                elif argument in ['True', 'False']:
+                if argument_value(argument):
                     _args.append(argument)
                 else:
                     _kw_args[argument] = None
     return (_args, _kw_args)
+
+def argument_value(argument):
+    return ("'" in argument or '"' in argument or
+        argument.isdigit() or
+        argument in ['True', 'False'])
 
 def get_module_defining(interface):
     module_name = interface.__module__

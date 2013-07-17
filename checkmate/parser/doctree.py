@@ -98,7 +98,7 @@ def get_transition_section(section):
 #def DecFunction(**a):
 #    """"""
 #
-def partition_identification(sections, _module=None):
+def partition_identification(sections, partition_type, _module=None):
     """
         >>> import docutils.core
         >>> matrix=\"\"\"
@@ -143,7 +143,7 @@ def partition_identification(sections, _module=None):
         >>> for section in _filter_section(dt):
         ...     if is_state_section(section):
         ...         state_sections = _filter_list_section(section)
-        >>> partition_identification(state_sections)
+        >>> partition_identification(state_sections, 'state')
         {u'State': {u'FALSE': (u'True valid value', u'State false value'), u'TRUE': (u'True valid value', u'State true value')}}
     """
     _clean_children(sections)
@@ -157,17 +157,19 @@ def partition_identification(sections, _module=None):
         partition = get_partition_section(section)
         table = _filter_table(partition)
         body = _filter_body(table)
-        values = []
-        long_desc = {}
+        codes = []
+        full_description = {}
         for row in _filter_row(body):
             content = _filter_paragraph(row)
             id = _filter_text(content[0])
             code = _filter_text(content[1])
             val = _filter_text(content[2])
             com = _filter_text(content[3])
-            if checkmate._utils.method_basename(code) is None:
-                values.append(code)
-            long_desc[checkmate._utils.internal_code(code)] = (id, val, com)
+            codes.append(code)
+            if partition_type == 'states':
+                full_description[code] = (id, val, com)
+            elif partition_type == 'exchanges':
+                full_description[code] = (id, val, com)
 
         method = get_method_section(section)
         standard_methods = {}
@@ -181,16 +183,26 @@ def partition_identification(sections, _module=None):
                 standard_methods[code] = getattr(checkmate.state, code)
 
         if _module is not None:
-            standard_methods.update({'_valid_values': values, '_description': long_desc})
+            standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None], '_description': full_description})
             setattr(_module, classname, _module.declare(classname, standard_methods))
             setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
             zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
-            for value in values:
-                if checkmate._utils.is_method(value):
-                    interface = getattr(_module, _to_interface(classname))
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    setattr(_module, checkmate._utils.method_basename(value), functools.partial(cls, checkmate._utils.method_basename(value)))
-            partitions.append(getattr(_module, classname))
+            interface = getattr(_module, _to_interface(classname))
+            cls = checkmate._utils.get_class_implementing(interface)
+            partition_storage = []
+            for code in codes:
+                if checkmate._utils.is_method(code):
+                    setattr(_module, checkmate._utils.method_basename(code), functools.partial(cls, checkmate._utils.method_basename(code)))
+                if partition_type == 'states':
+                    storage = checkmate._storage.store_state_value(interface, code)
+                    partition_storage.append(storage)
+                    full_description[code] = (storage, full_description[code])
+                elif partition_type == 'exchanges':
+                    storage = checkmate._storage.store_exchange(interface, code)
+                    full_description[code] = (storage, full_description[code])
+                    partition_storage.append(storage)
+            setattr(cls, '_description', full_description)
+            partitions.append((interface, partition_storage))
     return partitions
 
 def transition_identification(sections, state_module=None, exchange_module=None):
@@ -315,8 +327,8 @@ def load_partitions(content, _module=None):
         elif is_exchange_section(section):
             exchange_sections = _filter_list_section(section)
 
-    component_state = partition_identification(state_sections, _module)
-    component_exchange = partition_identification(exchange_sections, _module)
+    component_state = partition_identification(state_sections, 'states', _module)
+    component_exchange = partition_identification(exchange_sections, 'exchanges', _module)
     return {'states': component_state, 'exchanges': component_exchange}
     
 

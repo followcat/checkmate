@@ -48,9 +48,12 @@ class State(object):
         if hasattr(self, 'append'):
             self._queue = True
         if self._queue == True:
-            try:
+            # intended to be a 'None' string
+            if value == 'None':
+                value = []
+            if type(value) == list:
                 self.value = list(value)
-            except TypeError:
+            else:
                 self.value = [value]
         else:
             self.value = value
@@ -74,8 +77,9 @@ class State(object):
             return (self.value == other.value)
 
     def description(self):
-        if self.value in self._description.keys():
-            return self._description[self.value]
+        for key in self._description.keys():
+            if self == self._description[key][0].factory():
+                return self._description[key][-1]
         return (None,None,None)
 
 def declare(name, param):

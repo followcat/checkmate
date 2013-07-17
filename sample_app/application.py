@@ -17,8 +17,8 @@ class TestData(checkmate.application.Application):
             >>> c = a.components['C1']   
             >>> a.start()
             >>> a.test_plan(['C1']) # doctest: +ELLIPSIS
-            ((('C2', []), ('C1', [u'True', []])), ('C2', [(u'AC', u'X-ACTION-01')]), (('C2', []), ('C1', [u'False', []])), ('C1', [(u'RE', u'X-REACTION-01')]))
-            ((('C2', []), ('C1', [u'True', ['R']])), ...
+            ((('C2', []), ('C1', [(u'True', u'S-STATE-01'), ([], u'S-ANOST-01')])), ('C2', [(u'AC', u'X-ACTION-01')]), (('C2', []), ('C1', [(u'False', u'S-STATE-02'), ([], u'S-ANOST-01')])), ('C1', [(u'RE', u'X-REACTION-01')]))
+            ((('C2', []), ('C1', [(u'True', u'S-STATE-01'), (['R'], u'S-ANOST-02')])), ...
             >>> c.states[0].value
             u'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS

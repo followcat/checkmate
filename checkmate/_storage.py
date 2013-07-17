@@ -17,6 +17,12 @@ def store_state(interface, name):
         return checkmate._storage.StateStorage(checkmate._utils.internal_code(name), interface,
                     _o, _arguments, kw_arguments=_kw_arguments)
 
+def store_state_value(interface, name):
+    _o = checkmate._utils.get_class_implementing(interface)
+    _arguments, _kw_arguments = checkmate._utils.method_value_arguments(name)
+    return checkmate._storage.StateStorage(checkmate._utils.internal_code(name), interface,
+                    _o, _arguments, kw_arguments=_kw_arguments)
+
 class InternalStorage(object):
     def __init__(self, code, interface, function, arguments, kw_arguments={}):
         self.code = code
