@@ -2,6 +2,12 @@ import re
 import sys
 
 
+ARGUMENT = re.compile('\((.*)\)')
+
+
+def _arguments(signature):
+    return ARGUMENT.search(signature).group(1)
+
 def internal_code(value):
     output = method_basename(value)
     if output == None:
@@ -9,43 +15,47 @@ def internal_code(value):
     return output
 
 def is_method(name):
-    return (re.compile('\(.*\)').search(name) is not None)
+    return (ARGUMENT.search(name) is not None)
 
 def method_unbound(signature):
     """"""
-    return ('(' in signature and
+    return (is_method(signature) and
             '.' in signature[:signature.index('(')])
 
 def method_basename(signature):
     """
     """
-    if '(' in signature:
+    if is_method(signature):
         return signature[:signature.index('(')].split(u'.')[-1]
 
 def valid_value_argument(signature):
-    if '(' in signature:
-        if (signature.index('(') != signature.index(')')-1 and
-            ',' not in signature[signature.index('(')+1:signature.index(')')]):
-            argument = signature[signature.index('(')+1:signature.index(')')]
-            if argument_value(argument):
-                return argument
+    """ All input signatures have value as argument (from state partitions)
+
+        >>> valid_value_argument(u'M0(MANUAL)')
+        u'MANUAL'
+    """
+    if is_method(signature):
+        if (len(_arguments(signature)) != 0 and
+            ',' not in _arguments(signature)):
+            argument = _arguments(signature)
+            return argument
     return None
 
 def method_value_arguments(signature):
     """ All arguments are value """
     _args = []
-    if '(' in signature:
-        if (signature.index('(') != signature.index(')')-1):
-            for argument in signature[signature.index('(')+1:signature.index(')')].split(','):
+    if is_method(signature):
+        if len(_arguments(signature)) != 0:
+            for argument in _arguments(signature).split(','):
                 _args.append(argument)
     return (_args, {})
 
 def method_arguments(signature):
     _args = []
     _kw_args = {}
-    if '(' in signature:
-        if (signature.index('(') != signature.index(')')-1):
-            for argument in signature[signature.index('(')+1:signature.index(')')].split(','):
+    if is_method(signature):
+        if len(_arguments(signature)) != 0:
+            for argument in _arguments(signature).split(','):
                 if argument_value(argument):
                     _args.append(argument)
                 else:
@@ -53,6 +63,8 @@ def method_arguments(signature):
     return (_args, _kw_args)
 
 def argument_value(argument):
+    """
+    """
     return ("'" in argument or '"' in argument or
         argument.isdigit() or
         argument in ['True', 'False'])
