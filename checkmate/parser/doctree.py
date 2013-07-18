@@ -192,7 +192,7 @@ def partition_identification(sections, partition_type, _module=None):
             partition_storage = []
             for code in codes:
                 if checkmate._utils.is_method(code):
-                    setattr(_module, checkmate._utils.method_basename(code), functools.partial(cls, checkmate._utils.method_basename(code)))
+                    setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
                 if partition_type == 'states':
                     storage = checkmate._storage.store_state_value(interface, code)
                     partition_storage.append(storage)
@@ -283,7 +283,7 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                 initial_state.append((interface, array_items[i][1]))
                 if checkmate._utils.is_method(array_items[i][1]):
                     cls = checkmate._utils.get_class_implementing(interface)
-                    setattr(state_module, checkmate._utils.method_basename(array_items[i][1]), functools.partial(cls, checkmate._utils.method_basename(array_items[i][1])))
+                    setattr(state_module, checkmate._utils.internal_code(array_items[i][1]), functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
         for i in range(2, len(array_items[0])):
             input = []
             for j in range(0, initial_state_id[0]):
@@ -292,7 +292,7 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                     input.append((interface, array_items[j][i]))
                     if exchange_module is not None:
                         cls = checkmate._utils.get_class_implementing(interface)
-                        setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
+                        setattr(exchange_module, checkmate._utils.internal_code(array_items[j][i]), functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
@@ -301,8 +301,8 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                 final.append((interface, array_items[j][i]))
                 #if state_module is not None:
                 #    cls = checkmate._utils.get_class_implementing(interface)
-                #    setattr(state_module, checkmate._utils.method_basename(array_items[j][i]), DecFunction)
-                #    setattr(state_module, checkmate._utils.method_basename(array_items[j][i]), Decorator(cls, getattr(state_module, checkmate._utils.method_basename(array_items[j][i]))))
+                #    setattr(state_module, checkmate._utils.internal_code(array_items[j][i]), DecFunction)
+                #    setattr(state_module, checkmate._utils.internal_code(array_items[j][i]), Decorator(cls, getattr(state_module, checkmate._utils.internal_code(array_items[j][i]))))
             output = []
             for j in range(initial_state_id[-1]+1, row_count):
                 if array_items[j][i] != 'x':
@@ -310,7 +310,7 @@ def transition_identification(sections, state_module=None, exchange_module=None)
                     output.append((interface, array_items[j][i]))
                     if exchange_module is not None:
                         cls = checkmate._utils.get_class_implementing(interface)
-                        setattr(exchange_module, checkmate._utils.method_basename(array_items[j][i]), functools.partial(cls, checkmate._utils.method_basename(array_items[j][i])))
+                        setattr(exchange_module, checkmate._utils.internal_code(array_items[j][i]), functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
             t = checkmate.transition.Transition(initial=initial_state, incoming=input, final=final, outgoing=output)
             component_transition.append(t)
     return component_transition

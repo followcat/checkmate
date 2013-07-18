@@ -14,9 +14,15 @@ def _leading_name(signature):
 def _arguments(signature):
     return ARGUMENT.search(signature).group(2)
 
+def _method_basename(signature):
+    """
+    """
+    if is_method(signature):
+        return _leading_name(signature).split(u'.')[-1]
+
 
 def internal_code(value):
-    output = method_basename(value)
+    output = _method_basename(value)
     if output == None:
         return value
     return output
@@ -28,12 +34,6 @@ def method_unbound(signature):
     """"""
     return (is_method(signature) and
             '.' in _leading_name(signature))
-
-def method_basename(signature):
-    """
-    """
-    if is_method(signature):
-        return _leading_name(signature).split(u'.')[-1]
 
 def valid_value_argument(signature):
     """ All input signatures have value as argument (from state partitions)

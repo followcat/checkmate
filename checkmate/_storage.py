@@ -4,7 +4,7 @@ import checkmate._utils
 def store_exchange(interface, name):
     _arguments, _kw_arguments = checkmate._utils.method_arguments(name)
     return checkmate._storage.ExchangeStorage(checkmate._utils.internal_code(name), interface,
-                getattr(checkmate._utils.get_module_defining(interface), checkmate._utils.method_basename(name)),
+                getattr(checkmate._utils.get_module_defining(interface), checkmate._utils.internal_code(name)),
                 _arguments, kw_arguments=_kw_arguments)
 
 def store_state(interface, name):
@@ -12,7 +12,7 @@ def store_state(interface, name):
     _arguments, _kw_arguments = checkmate._utils.method_arguments(name)
     if checkmate._utils.method_unbound(name):
         return checkmate._storage.StateStorage(checkmate._utils.internal_code(name), interface,
-                                getattr(_o, checkmate._utils.method_basename(name)), _arguments, kw_arguments=_kw_arguments)
+                                getattr(_o, checkmate._utils.internal_code(name)), _arguments, kw_arguments=_kw_arguments)
     else:
         return checkmate._storage.StateStorage(checkmate._utils.internal_code(name), interface,
                     _o, _arguments, kw_arguments=_kw_arguments)
