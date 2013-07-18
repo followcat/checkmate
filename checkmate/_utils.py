@@ -18,7 +18,7 @@ def _method_basename(signature):
     """
     """
     if is_method(signature):
-        return _leading_name(signature).split(u'.')[-1]
+        return _leading_name(signature).split('.')[-1]
 
 
 def internal_code(value):
@@ -38,7 +38,7 @@ def method_unbound(signature):
 def valid_value_argument(signature):
     """ All input signatures have value as argument (from state partitions)
 
-        >>> valid_value_argument(u'M0(MANUAL)')
+        >>> valid_value_argument('M0(MANUAL)')
         u'MANUAL'
     """
     if is_method(signature):
@@ -100,7 +100,8 @@ def get_class_implementing(interface):
     import inspect
 
     module = get_module_defining(interface)
-    for _o in module.__dict__.values():
+    for _o in list(module.__dict__.values()):
         if inspect.isclass(_o):
             if interface.implementedBy(_o):
                 return _o
+

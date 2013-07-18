@@ -18,7 +18,7 @@ class Transition(object):
         self.outgoing = []
         for item in ['initial', 'incoming', 'final', 'outgoing']:
             _attribute = getattr(self, item)
-            if argc.has_key(item) == False:
+            if (item in argc) == False:
                 continue
             for _interface, _name in argc[item]:
                 _o = checkmate._utils.get_class_implementing(_interface)
@@ -61,9 +61,9 @@ class Transition(object):
         resolved_arguments = {}
         entry = getattr(self, type)
         if type == 'incoming':
-            arguments = entry.kw_arguments.keys()
+            arguments = list(entry.kw_arguments.keys())
         else:
-            arguments = entry[entry.index(data)].kw_arguments.keys()
+            arguments = list(entry[entry.index(data)].kw_arguments.keys())
         for arg in arguments:
             found = None
             if type in ['final', 'incoming']:
@@ -77,7 +77,7 @@ class Transition(object):
                         break
             if found is None:
                 if type in ['final', 'outgoing']:
-                    if arg in self.incoming.kw_arguments.keys():
+                    if arg in list(self.incoming.kw_arguments.keys()):
                         found = getattr(incoming, arg)
             if found is None:
                 if type in ['outgoing']:
@@ -119,7 +119,7 @@ class Transition(object):
                             _final.factory(args=[_state])
                         else:
                             resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
-                            member_wrapper(_final.function, _state, resolved_arguments.values())
+                            member_wrapper(_final.function, _state, list(resolved_arguments.values()))
         _outgoing_list = []
 
         for outgoing_exchange in self.outgoing:

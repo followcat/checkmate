@@ -48,7 +48,7 @@ def _clean_children(sections):
                 sections.pop(sections.index(b))
 
 def _filter_text(paragraph):
-    return unicode(paragraph.traverse()[1])
+    return str(paragraph.traverse()[1])
 
 def is_state_section(section):
     return 'state-identification' in section.get('ids')

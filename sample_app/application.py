@@ -17,12 +17,12 @@ class TestData(checkmate.application.Application):
             >>> c = a.components['C1']   
             >>> a.start()
             >>> a.test_plan(['C1']) # doctest: +ELLIPSIS
-            ((('C2', []), ('C1', [(u'True', u'S-STATE-01'), ([], u'S-ANOST-01')])), ('C2', [(u'AC', u'X-ACTION-01')]), (('C2', []), ('C1', [(u'False', u'S-STATE-02'), ([], u'S-ANOST-01')])), ('C1', [(u'RE', u'X-REACTION-01')]))
-            ((('C2', []), ('C1', [(u'True', u'S-STATE-01'), (['R'], u'S-ANOST-02')])), ...
+            ((('C2', []), ('C1', [('True', 'S-STATE-01'), ([], 'S-ANOST-01')])), ('C2', [('AC', 'X-ACTION-01')]), (('C2', []), ('C1', [('False', 'S-STATE-02'), ([], 'S-ANOST-01')])), ('C1', [('RE', 'X-REACTION-01')]))
+            ((('C2', []), ('C1', [('True', 'S-STATE-01'), (['R'], 'S-ANOST-02')])), ...
             >>> c.states[0].value
-            u'True'
+            'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
-            (u'S-STATE-01', ...
+            ('S-STATE-01', ...
             >>> i = sample_app.exchanges.AP(R=1)
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
@@ -35,12 +35,12 @@ class TestData(checkmate.application.Application):
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[0].value
-            u'False'
+            'False'
             >>> c.states[0].description() # doctest: +ELLIPSIS
-            (u'S-STATE-02', ...
+            ('S-STATE-02', ...
             >>> checkmate.component.execute(c, i)
             >>> c.states[0].value
-            u'False'
+            'False'
             >>> i = sample_app.exchanges.PP()
             >>> t = c.state_machine.transitions[2]
             >>> t.is_matching_incoming(i)
@@ -61,6 +61,6 @@ class TestData(checkmate.application.Application):
 
         self.components = {'C1': sample_app.component_1.component.Component_1,
                            'C2': sample_app.component_2.component.Component_2}
-        for name in self.components.keys():
+        for name in list(self.components.keys()):
             self.components[name] = self.components[name](name)
 

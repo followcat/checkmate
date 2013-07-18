@@ -19,7 +19,7 @@ def append(self, *args):
 
     try:
         value = args[0]
-        if (((type(value) == str or type(value) == unicode) and value == 'None') or
+        if ((type(value) == str and value == 'None') or
              value is None):
             return
         if value not in self.value:
@@ -92,7 +92,7 @@ class State(object):
             self._queue = True
         if self._queue == True:
             # intended to be a 'None' string
-            if ((type(value) == str or type(value) == unicode) and value == 'None'):
+            if (type(value) == str and value == 'None'):
                 value = []
             if type(value) == list:
                 self.value = list(value)
@@ -101,7 +101,7 @@ class State(object):
         else:
             self.value = value
         self.args = args
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             setattr(self, key, kwargs[key])
 
     def __eq__(self, other):
@@ -120,7 +120,7 @@ class State(object):
             return (self.value == other.value)
 
     def description(self):
-        for key in self._description.keys():
+        for key in list(self._description.keys()):
             if self == self._description[key][0].factory():
                 return self._description[key][-1]
         return (None,None,None)

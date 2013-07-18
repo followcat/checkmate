@@ -15,14 +15,14 @@ class Exchange(object):
     def __init__(self, action, *args, **kwargs):
         self.action = action
         self.args = args
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             setattr(self, key, kwargs[key])
 
     def __eq__(self, other):
         return self.action == other.action
 
     def description(self):
-        for key in self._description.keys():
+        for key in list(self._description.keys()):
             if self == self._description[key][0].factory():
                 return self._description[key][-1]
         return (None,None,None)
