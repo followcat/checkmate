@@ -2,7 +2,7 @@ import re
 import sys
 
 
-ARGUMENT = re.compile('(.*)\((.*)\)')
+ARGUMENT = re.compile('(.*?)\((.*)\)')
 
 
 def _has_argument(name):
