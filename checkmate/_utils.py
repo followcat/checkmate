@@ -2,11 +2,18 @@ import re
 import sys
 
 
-ARGUMENT = re.compile('\((.*)\)')
+ARGUMENT = re.compile('(.*)\((.*)\)')
 
+
+def _has_argument(name):
+    return (ARGUMENT.search(name) is not None)
+
+def _leading_name(signature):
+    return ARGUMENT.search(signature).group(1)
 
 def _arguments(signature):
-    return ARGUMENT.search(signature).group(1)
+    return ARGUMENT.search(signature).group(2)
+
 
 def internal_code(value):
     output = method_basename(value)
@@ -15,18 +22,18 @@ def internal_code(value):
     return output
 
 def is_method(name):
-    return (ARGUMENT.search(name) is not None)
+    return _has_argument(name)
 
 def method_unbound(signature):
     """"""
     return (is_method(signature) and
-            '.' in signature[:signature.index('(')])
+            '.' in _leading_name(signature))
 
 def method_basename(signature):
     """
     """
     if is_method(signature):
-        return signature[:signature.index('(')].split(u'.')[-1]
+        return _leading_name(signature).split(u'.')[-1]
 
 def valid_value_argument(signature):
     """ All input signatures have value as argument (from state partitions)
@@ -59,7 +66,10 @@ def method_arguments(signature):
                 if argument_value(argument):
                     _args.append(argument)
                 else:
-                    _kw_args[argument] = None
+                    if _has_argument(argument):
+                        _kw_args[_leading_name(argument)] = _arguments(argument)
+                    else:
+                        _kw_args[argument] = None
     return (_args, _kw_args)
 
 def argument_value(argument):
