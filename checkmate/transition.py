@@ -10,12 +10,6 @@ import checkmate._storage
 
 class Transition(object):
     """Driving a change of state inside a state machine
-
-        >>> import checkmate.test.data_state
-        >>> import checkmate.test.data_exchange
-        >>> t = Transition(incoming=[(checkmate.test.data_exchange.IAbsControlAction, 'TM()')])
-        >>> t.incoming[0].function
-        <unbound method AbsControlAction.TM>
     """
     def __init__(self, **argc):
         self.initial = []
@@ -32,31 +26,9 @@ class Transition(object):
 
                 if item in ['initial', 'final']:
                     getattr(self, item).append(checkmate._storage.store_state(_interface, _name))
-                #elif item == 'final':
-                #    self.final.append(checkmate._storage.store_state(_interface, _name))
-                    #if checkmate._utils.method_basename(_name) is None:
-                    #    self.final.append(checkmate._storage.store_state(_interface, _name))
-#                        function = _o
-#                        for input in self.initial:
-#                            if input.code == _name:
-#                                _arguments = input.arguments
-#                                _function = input.function
-#                        self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
-#                                                _function, _arguments, kw_arguments=_kw_arguments))
-                    #else:
-                    #    self.final.append(checkmate._storage.StateStorage(checkmate._utils.internal_code(_name), _interface,
-                    #                            getattr(_o, checkmate._utils.method_basename(_name)), _arguments, kw_arguments=_kw_arguments))
                 elif item == 'incoming':
                     self.incoming = checkmate._storage.store_exchange(_interface, _name)
                 elif item == 'outgoing':
-                    #_list_args = []
-                    #for _arg in _arguments:
-                    #    _arg = _arg.lstrip()
-                    #    for initial_state in self.initial:
-                    #        _i_interface = initial_state.interface
-                    #        _f = initial_state.function
-                    #        if _f.__name__.rstrip('0') == _arg:
-                    #            _list_args.append(_i_interface)
                     self.outgoing.append(checkmate._storage.store_exchange(_interface, _name))
 
 
