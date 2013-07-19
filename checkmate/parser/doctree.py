@@ -1,4 +1,5 @@
 import functools
+import collections
 
 import docutils.core
 import docutils.nodes
@@ -158,7 +159,7 @@ def partition_identification(sections, partition_type, _module=None):
         table = _filter_table(partition)
         body = _filter_body(table)
         codes = []
-        full_description = {}
+        full_description = collections.OrderedDict()
         for row in _filter_row(body):
             content = _filter_paragraph(row)
             id = _filter_text(content[0])
