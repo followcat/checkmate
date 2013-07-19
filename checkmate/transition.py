@@ -78,7 +78,8 @@ class Transition(object):
             if found is None:
                 if type in ['final', 'outgoing']:
                     if arg in list(self.incoming.kw_arguments.keys()):
-                        found = getattr(incoming, arg)
+                        if hasattr(incoming, arg):
+                            found = getattr(incoming, arg)
             if found is None:
                 if type in ['outgoing']:
                     for item in self.final:
