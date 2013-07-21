@@ -75,11 +75,11 @@ class Transition(object):
                                 break
                     if found is not None:
                         break
-            if found is None:
+            if (found is None and self.incoming is not None):
                 if type in ['final', 'outgoing']:
                     if arg in list(self.incoming.kw_arguments.keys()):
-                        if hasattr(incoming, arg):
-                            found = getattr(incoming, arg)
+                        if arg in iter(incoming.parameters):
+                            found = incoming.parameters[arg]
             if found is None:
                 if type in ['outgoing']:
                     for item in self.final:
@@ -90,9 +90,8 @@ class Transition(object):
                                     break
                         if found is not None:
                             break
-            if found is None:
-                found = arg
-            resolved_arguments[arg] = found
+            if found is not None:
+                resolved_arguments[arg] = found
         return resolved_arguments
 
 
@@ -106,8 +105,8 @@ class Transition(object):
             
 
     def process(self, states, _incoming):
-        def member_wrapper(cls, obj, args):
-            return cls(obj, *args)
+        def member_wrapper(cls, obj, args=[], kwargs={}):
+            return cls(obj, *args, **kwargs)
 
         for _state in states:
             for _interface in zope.interface.providedBy(_state):
@@ -120,7 +119,7 @@ class Transition(object):
                             _final.factory(args=[_state])
                         else:
                             resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
-                            member_wrapper(_final.function, _state, list(resolved_arguments.values()))
+                            member_wrapper(_final.function, _state, kwargs=resolved_arguments)
         _outgoing_list = []
 
         for outgoing_exchange in self.outgoing:

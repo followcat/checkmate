@@ -1,7 +1,7 @@
 import zope.interface.interface
 
 
-def toggle(self):
+def toggle(self, *args, **kwargs):
     """Change the value of the state
 
     Should only be used on State with 2 values
@@ -9,7 +9,9 @@ def toggle(self):
     if self.value is not None:
         self.value = self._valid_values[(len(self._valid_values)-1) - (self._valid_values.index(self.value))]
 
-def append(self, *args):
+def append(self, *args, **kwargs):
+    """
+    """
     if self.value is None:
         self.value = []
     elif (len(self.value) == 1 and self.value[0] == None):
@@ -18,16 +20,24 @@ def append(self, *args):
         self.value = list([self.value])
 
     try:
-        value = args[0]
-        if ((type(value) == str and value == 'None') or
-             value is None):
-            return
-        if value not in self.value:
-            self.value.append(value)
+        if len(kwargs) == 0:
+            if len(args) == 0:
+                return
+            value = args[0]
+            if ((type(value) == str and value == 'None') or
+                value is None):
+                return
+            if value not in self.value:
+                self.value.append(value)
+        else:
+            for key, value in list(kwargs.items()):
+                if {key: value} not in self.value:
+                    self.value.append({key: value})
+                    setattr(self, key, value)
     except:
         pass
 
-def pop(self, *args):
+def pop(self, *args, **kwargs):
     try:
         value = args[0]
     except:
@@ -35,14 +45,18 @@ def pop(self, *args):
     if type(self.value) != list:
         self.value = list([self.value])
     try:
-        if value is None:
-            return self.value.pop(0)
+        if len(kwargs) == 0:
+            if value is None:
+                return self.value.pop(0)
+            else:
+                return self.value.pop(self.value.index(value))
         else:
-            return self.value.pop(self.value.index(value))
+            for value in list(kwargs.items()):
+                return self.value.pop(self.value.index({value[0]: value[1]}))
     except:
         return None
 
-def flush(self, *args):
+def flush(self, *args, **kwargs):
     try:
         value = args[0]
     except:
@@ -54,7 +68,7 @@ def flush(self, *args):
     for i in range(0, count):
         self.value.remove(value)
 
-def up(self, *args):
+def up(self, *args, **kwargs):
     try:
         value = args[0]
     except:
@@ -67,7 +81,7 @@ def up(self, *args):
     except:
         pass
 
-def down(self, *args):
+def down(self, *args, **kwargs):
     try:
         value = args[0]
     except:

@@ -1,3 +1,5 @@
+import collections
+
 import zope.interface.interface
 
 
@@ -13,13 +15,28 @@ class Exchange(object):
     _default_description = (None, None, None)
     _description = {}
     def __init__(self, action, *args, **kwargs):
+        self.parameters = collections.OrderedDict()
         self.action = action
-        self.args = args
-        for key in list(kwargs.keys()):
-            setattr(self, key, kwargs[key])
+        for argument in args:
+            if argument.isalpha():
+                self.parameters[argument] = None
+        self.parameters.update(kwargs)
 
     def __eq__(self, other):
-        return self.action == other.action
+        if self.action == other.action:
+            if (len(self.parameters) == 0 or len(other.parameters) == 0):
+                return True
+            elif (len(self.parameters) == len(other.parameters)):
+                for key in iter(self.parameters):
+                    if key not in iter(other.parameters):
+                        return False
+                    elif self.parameters[key] == other.parameters[key]:
+                        return True
+                    elif (self.parameters[key] is not None and
+                        other.parameters[key] is not None):
+                        return False
+                return True
+        return False
 
     def description(self):
         for key in list(self._description.keys()):
