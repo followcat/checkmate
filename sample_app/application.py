@@ -17,8 +17,6 @@ class TestData(checkmate.application.Application):
             >>> c = a.components['C1']   
             >>> a.start()
             >>> a.test_plan(['C1']) # doctest: +ELLIPSIS
-            ((('C2', []), ('C1', [('True', 'S-STATE-01'), ([], 'S-ANOST-01')])), ('C2', [('AC', 'X-ACTION-01')]), (('C2', []), ('C1', [('False', 'S-STATE-02'), ([], 'S-ANOST-01')])), ('C1', [('RE', 'X-REACTION-01')]))
-            ((('C2', []), ('C1', [('True', 'S-STATE-01'), (['R'], 'S-ANOST-02')])), ...
             >>> c.states[0].value
             'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
@@ -27,7 +25,7 @@ class TestData(checkmate.application.Application):
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value
-            [1]
+            [{'R': 1}]
             >>> i = sample_app.exchanges.AC()
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming(i)
