@@ -1,5 +1,7 @@
 import collections
 
+import checkmate.parser.doctree
+
 
 class Procedure(object):
     """"""
@@ -78,5 +80,6 @@ class Procedure(object):
                                 'Test partition': test_partitions}
 
         buffer['Procedure identification'] = procedure
-        return buffer
+        dt = checkmate.parser.doctree.get_document(buffer)
+        return dt
 

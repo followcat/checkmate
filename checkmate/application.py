@@ -1,6 +1,7 @@
 import checkmate.exchange
 import checkmate.procedure
 import checkmate.parser.dtvisitor
+import checkmate.parser.rst_writer
 
 
 def define_procedure(index, stub_name, stub_run, sut_name, sut_run):
@@ -76,8 +77,9 @@ class Application(object):
 
     def itp(self, filename):
         buffer = ""
-        for proc in self.procedure_list:
-            buffer += proc.tsv()
         f = open(filename, 'w')
-        f.write(buffer)
+        wt = checkmate.parser.rst_writer.Writer()
+        for proc in self.procedure_list:
+            dt = proc.doctree()
+            wt.write(dt, f)
         f.close()
