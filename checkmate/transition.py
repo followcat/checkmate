@@ -34,6 +34,14 @@ class Transition(object):
 
     def is_matching_incoming(self, exchange):
         """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C1']
+            >>> i = c.state_machine.transitions[0].incoming.factory()
+            >>> c.state_machine.transitions[0].is_matching_incoming(i)
+            True
+            >>> c.state_machine.transitions[3].is_matching_incoming(i)
+            False
         """
         if self.incoming is not None:
             _interface = self.incoming.interface
@@ -45,6 +53,14 @@ class Transition(object):
 
     def is_matching_initial(self, state_list):
         """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C1']
+            >>> c.start()
+            >>> c.state_machine.transitions[0].is_matching_initial(c.states)
+            True
+            >>> c.state_machine.transitions[3].is_matching_initial(c.states)
+            False
         """
         if len(self.initial) == 0:
             return True
@@ -58,6 +74,19 @@ class Transition(object):
         return False
 
     def resolve_arguments(self, type, data, states, incoming=None):
+        """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C1']
+            >>> c.start()
+            >>> t = c.state_machine.transitions[1]
+            >>> i = t.incoming.factory()
+            >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
+            {}
+            >>> i = t.incoming.factory(kwargs={'R': 1})
+            >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
+            {'R': 1}
+        """
         resolved_arguments = {}
         entry = getattr(self, type)
         if type == 'incoming':
@@ -105,6 +134,15 @@ class Transition(object):
             
 
     def process(self, states, _incoming):
+        """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C1']
+            >>> c.start()
+            >>> i = c.state_machine.transitions[0].incoming.factory()
+            >>> c.state_machine.transitions[0].process(c.states, i) # doctest: +ELLIPSIS
+            [<sample_app.exchanges.Reaction object at ...
+        """
         def member_wrapper(cls, obj, args=[], kwargs={}):
             return cls(obj, *args, **kwargs)
 

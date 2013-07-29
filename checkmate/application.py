@@ -46,6 +46,17 @@ class Application(object):
         for component in list(self.components.values()):
             component.start()
         
+    def sender(self, exchange):
+        for exchange_interface in zope.interface.providedBy(exchange):
+            found = False
+            for transition in self.state_machine.transitions:
+                if exchange_interface in [o.interface for o in transition.outgoing]:
+                    found = True
+                    break
+            if found == False:
+                return False
+        return True
+
 
     def test_plan(self, system_under_test):
         """"""
