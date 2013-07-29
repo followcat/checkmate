@@ -90,6 +90,8 @@ def get_table(table):
             column += 1
     if len(text_length)>0:
         _tgroup = docutils.nodes.tgroup(cols=len(text_length))
+    else:
+        return None
     for col_width in text_length:
         _colspec = docutils.nodes.colspec(colwidth=col_width)
         _tgroup.append(_colspec)
