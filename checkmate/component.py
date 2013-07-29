@@ -13,11 +13,10 @@ class Component(object):
         self.states = []
         self.name = name
         try:
-            partitions_output = checkmate.parser.doctree.load_partitions(matrix, state_module)
-            transitions_output = checkmate.parser.doctree.load_transitions(matrix, state_module=state_module,
+            visitor_output = checkmate.parser.doctree.call_visitor(matrix, state_module=state_module,
                                                                 exchange_module=exchange_module)
-            self.state_machine = checkmate.state_machine.StateMachine(partitions_output['states'],
-                                                                      transitions_output['state_machine'])
+            self.state_machine = checkmate.state_machine.StateMachine(visitor_output['states'],
+                                                                      visitor_output['transitions'])
         except:
             self.state_machine = checkmate.state_machine.StateMachine()
 

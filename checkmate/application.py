@@ -36,7 +36,7 @@ class Application(object):
         self.components = {}
         self.procedure_list = []
         global checkmate
-        output = checkmate.parser.doctree.load_partitions(matrix, exchange_module)
+        output = checkmate.parser.doctree.call_visitor(matrix, exchange_module=exchange_module)
         setattr(self, 'exchanges', output['exchanges'])
 
     def start(self):
