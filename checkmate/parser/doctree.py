@@ -140,12 +140,11 @@ def get_document(source):
     >>> import collections
     >>> a = collections.OrderedDict([('Procedure identification', collections.OrderedDict([('Procedure', collections.OrderedDict([('Implementation', ([], [['path', '/home/vcr/Projects/Checkmate/test_procedures.py'], ['class', 'TestProcedure'], ['Setup procedure', 'TestSetup'], ['Teardown procedure', 'TestTeardown']])), ('Initial state', ['this is a text paragraph', 'this is another text paragraph', ([], [['Any of the states', 'Q0()'], ['Any of the states', 'M0(AUTO)'], ['Any of the states', 'R0(0)']])]), ('Final state', ([], [['Any of the states', 'Q0()'], ['Any of the states', 'M0(MANUAL)'], ['Any of the states', 'R0(0)']])), ('Test partition', (['Info exchange', 'Origin', 'Destination', 'Comment'], [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]))]))]))])
     >>> doctree = get_document(a)
-    >>> import visitor
     >>> f2 = open('test.rst', 'w')
     >>> import docutils.core
     >>> dt = doctree 
-    >>> import visitor
-    >>> wt = visitor.Writer()
+    >>> import checkmate.parser.rst_writer
+    >>> wt = checkmate.parser.rst_writer.Writer()
     >>> wt.write(document=dt, destination=f2)
     1965
     >>> f2.close()
