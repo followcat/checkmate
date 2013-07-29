@@ -1,7 +1,6 @@
 import os.path
 
 import checkmate.application
-import checkmate.parser.doctree
 
 import sample_app.exchanges
 import sample_app.component_1.component

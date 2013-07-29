@@ -3,7 +3,7 @@ import os
 import zope.interface
 
 import checkmate.state_machine
-import checkmate.parser.doctree
+import checkmate.parser.dtvisitor
 
 import checkmate._utils
 
@@ -13,7 +13,7 @@ class Component(object):
         self.states = []
         self.name = name
         try:
-            visitor_output = checkmate.parser.doctree.call_visitor(matrix, state_module=state_module,
+            visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, state_module=state_module,
                                                                 exchange_module=exchange_module)
             self.state_machine = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
