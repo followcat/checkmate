@@ -74,10 +74,10 @@ class Procedure(object):
         test_partitions = (['Info exchange', 'Origin', 'Destination', 'Comment'], self.exchanges)
 
         procedure = collections.OrderedDict()
-        procedure[self.name] = {'Implementation': implementation,
-                                'Initial state': initial_state,
-                                'Final state': final_state,
-                                'Test partition': test_partitions}
+        procedure[self.name] = collections.OrderedDict([('Implementation', implementation),
+                                ('Initial state', initial_state),
+                                ('Final state', final_state),
+                                ('Test partition', test_partitions)])
 
         buffer['Procedure identification'] = procedure
         dt = checkmate.parser.doctree.get_document(buffer)
