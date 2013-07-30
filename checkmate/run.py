@@ -15,6 +15,19 @@ def itemize(initial, incoming, final, outgoing):
 class Run(object):
     """"""
     def __init__(self, initial, incoming, final, outgoing):
+        """
+            >>> import copy
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c1 = a.components['C1']
+            >>> c1.start()
+            >>> initial_state = copy.deepcopy(c1.states)
+            >>> i = c1.state_machine.transitions[1].incoming.factory()
+            >>> o = c1.state_machine.transitions[1].process(c1.states, i)
+            >>> r = Run(initial_state, i, c1.states, o)
+            >>> r.final
+            [([{'R': None}], 'S-ANOST-02')]
+        """
         # following lines cost 20sec in doctest
         #self.initial = initial
         #self.incoming = incoming

@@ -81,10 +81,10 @@ class Transition(object):
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
             >>> i = t.incoming.factory()
-            >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
-            {}
+            >>> t.resolve_arguments('final', t.final[0], c.states, i)
+            {'R': None}
             >>> i = t.incoming.factory(kwargs={'R': 1})
-            >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
+            >>> t.resolve_arguments('final', t.final[0], c.states, i)
             {'R': 1}
         """
         resolved_arguments = {}
@@ -94,33 +94,36 @@ class Transition(object):
         else:
             arguments = list(entry[entry.index(data)].kw_arguments.keys())
         for arg in arguments:
-            found = None
+            found = False
             if type in ['final', 'incoming']:
                 for item in self.initial:
                     if arg == item.code:
                         for _state in states:
                             if item.interface.providedBy(_state):
-                                found = _state.value
+                                resolved_value = _state.value
+                                found = True
                                 break
-                    if found is not None:
+                    if found:
                         break
-            if (found is None and self.incoming is not None):
+            if (not found and self.incoming is not None):
                 if type in ['final', 'outgoing']:
                     if arg in list(self.incoming.kw_arguments.keys()):
                         if arg in iter(incoming.parameters):
-                            found = incoming.parameters[arg]
-            if found is None:
+                            resolved_value = incoming.parameters[arg]
+                            found = True
+            if not found:
                 if type in ['outgoing']:
                     for item in self.final:
                         if arg == item.code:
                             for _state in states:
                                 if item.interface.providedBy(_state):
-                                    found = _state.value
+                                    resolved_value = _state.value
+                                    found = True
                                     break
-                        if found is not None:
+                        if found:
                             break
-            if found is not None:
-                resolved_arguments[arg] = found
+            if found:
+                resolved_arguments[arg] = resolved_value
         return resolved_arguments
 
 
@@ -142,6 +145,14 @@ class Transition(object):
             >>> i = c.state_machine.transitions[0].incoming.factory()
             >>> c.state_machine.transitions[0].process(c.states, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
+            >>> i = c.state_machine.transitions[1].incoming.factory()
+            >>> o = c.state_machine.transitions[1].process(c.states, i)
+            >>> c.states[1].value
+            [{'R': None}]
+            >>> i = c.state_machine.transitions[1].incoming.factory(kwargs={'R': 1})
+            >>> o = c.state_machine.transitions[1].process(c.states, i)
+            >>> c.states[1].value
+            [{'R': None}, {'R': 1}]
         """
         def member_wrapper(cls, obj, args=[], kwargs={}):
             return cls(obj, *args, **kwargs)
