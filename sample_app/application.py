@@ -3,11 +3,11 @@ import os.path
 import checkmate.application
 
 import sample_app.exchanges
-import sample_app.component_1.component
-import sample_app.component_2.component
 
 
-class TestData(checkmate.application.Application):
+class TestData(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
+    exchange_module = sample_app.exchanges
+
     def __init__(self):
         """
             >>> import checkmate.component
@@ -48,16 +48,15 @@ class TestData(checkmate.application.Application):
             []
 
         """
-        exchange_module = sample_app.exchanges
-        path = os.path.dirname(exchange_module.__file__)
-        filename = 'exchanges.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
-        super(TestData, self).__init__(matrix, exchange_module)
+        super(TestData, self).__init__()
+
+        #can only be loaded after application exchanges.rst is parsed by metaclass
+        import sample_app.component_1.component
+        import sample_app.component_2.component
 
         self.components = {'C1': sample_app.component_1.component.Component_1,
-                           'C2': sample_app.component_2.component.Component_2}
+                           'C2': sample_app.component_2.component.Component_2,
+                           'C3': sample_app.component_2.component.Component_2}
         for name in list(self.components.keys()):
             self.components[name] = self.components[name](name)
 

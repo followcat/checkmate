@@ -1,3 +1,5 @@
+import os
+
 import checkmate.exchange
 import checkmate.procedure
 import checkmate.parser.dtvisitor
@@ -29,16 +31,30 @@ def define_procedure(index, stub_name, stub_run, sut_name, sut_run):
     return checkmate.procedure.Procedure(name, path, _class, history=history, initial_state=initial_state, final_state=final_state, exchanges=exchanges)
 
 
+class ApplicationMeta(type):
+    def __new__(cls, name, bases, namespace, **kwds):
+        exchange_module = namespace['exchange_module']
+
+        path = os.path.dirname(exchange_module.__file__)
+        filename = 'exchanges.rst'
+        _file = open(os.sep.join([path, filename]), 'r')
+        matrix = _file.read()
+        _file.close()
+        try:
+            global checkmate
+            output = checkmate.parser.dtvisitor.call_visitor(matrix, exchange_module=exchange_module)
+            namespace['exchanges'] = output['exchanges']
+        finally:
+            result = type.__new__(cls, name, bases, dict(namespace))
+            return result
+
+
 class Application(object):
-    def __init__(self, matrix, exchange_module=None):
+    def __init__(self):
         """
         """
-        self.exchanges = []
         self.components = {}
         self.procedure_list = []
-        global checkmate
-        output = checkmate.parser.dtvisitor.call_visitor(matrix, exchange_module=exchange_module)
-        setattr(self, 'exchanges', output['exchanges'])
 
     def start(self):
         """

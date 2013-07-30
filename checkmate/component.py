@@ -8,17 +8,34 @@ import checkmate.parser.dtvisitor
 import checkmate._utils
 
 
-class Component(object):
-    def __init__(self, name, matrix='', state_module=None, exchange_module=None):
-        self.states = []
-        self.name = name
+class ComponentMeta(type):
+    def __new__(cls, name, bases, namespace, **kwds):
+        state_module = namespace['state_module']
+        exchange_module = namespace['exchange_module']
+
+        path = os.path.dirname(state_module.__file__)
+        filename = 'state_machine.rst'
+        _file = open(os.sep.join([path, filename]), 'r')
+        matrix = _file.read()
+        _file.close()
         try:
+            import checkmate.state_machine
+            import checkmate.parser.dtvisitor
             visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, state_module=state_module,
                                                                 exchange_module=exchange_module)
-            self.state_machine = checkmate.state_machine.StateMachine(visitor_output['states'],
+            namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
         except:
-            self.state_machine = checkmate.state_machine.StateMachine()
+            namespace['state_machine'] = checkmate.state_machine.StateMachine()
+        finally:
+            result = type.__new__(cls, name, bases, dict(namespace))
+            return result
+
+
+class Component(object):
+    def __init__(self, name):
+        self.states = []
+        self.name = name
 
     def get_transition_by_input(self, exchange):
         """
