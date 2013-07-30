@@ -15,6 +15,15 @@ class Exchange(object):
     _default_description = (None, None, None)
     _description = {}
     def __init__(self, action, *args, **kwargs):
+        """
+            >>> e = Exchange('CA', 'AUTO')
+            >>> e.action
+            'CA'
+            >>> e.parameters['AUTO']
+            >>> e = Exchange('CA', R=1)
+            >>> e.parameters['R']
+            1
+        """
         self.parameters = collections.OrderedDict()
         self.action = action
         for argument in args:
@@ -23,6 +32,18 @@ class Exchange(object):
         self.parameters.update(kwargs)
 
     def __eq__(self, other):
+        """
+            >>> Exchange('CA') == Exchange('TM')
+            False
+            >>> Exchange('CA') == Exchange('CA', R=2)
+            True
+            >>> Exchange('CA', R=1) == Exchange('CA', R=None)
+            True
+            >>> Exchange('CA', R=1) == Exchange('CA', R=2)
+            False
+            >>> Exchange('CA', R=1) == Exchange('CA', R0=1)
+            False
+        """
         if self.action == other.action:
             if (len(self.parameters) == 0 or len(other.parameters) == 0):
                 return True
