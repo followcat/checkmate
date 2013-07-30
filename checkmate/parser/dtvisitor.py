@@ -33,7 +33,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
     """this visitor is visit table in restructure text
 
         >>> import sample_app.exchanges
-        >>> input_file = '/home/vcr/Projects/CheckMate/local_copy/sample_app/exchanges.rst'
+        >>> import os
+        >>> input_file = os.getenv("checkmate_home") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -42,8 +43,13 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> wt = Writer(dt, exchange_module=sample_app.exchanges)
         >>> wt.translate() 
         >>> wt.visitor._state_partitions
-        >>> wt.visitor._exchange_partitions
+        []
+        >>> wt.visitor._exchange_partitions # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.exchanges.IAction>, [<checkmate._storage.ExchangeStorage object at ...
+        >>> len(wt.visitor._exchange_partitions)
+        2
         >>> wt.visitor._transitions
+        []
     """
 
     def __init__(self, document, state_module=None, exchange_module=None):
@@ -260,20 +266,26 @@ def call_visitor(content, state_module=None, exchange_module=None):
     """
 
         >>> import sample_app.exchanges
-        >>> input_file = '/home/vcr/Projects/CheckMate/local_copy/sample_app/exchanges.rst'
+        >>> import os
+        >>> input_file = os.getenv("checkmate_home") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
         >>> output = call_visitor(c, exchange_module=sample_app.exchanges)
-        >>> output['exchanges']
-
+        >>> output['exchanges'] # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.exchanges.IAction>, [<checkmate._storage.ExchangeStorage object at ...
+        >>> len(output['exchanges'])
+        2
         >>> import sample_app.component_1.states
-        >>> input_file = '/home/vcr/Projects/CheckMate/local_copy/sample_app/component_1/state_machine.rst'
+        >>> input_file = '/home/jeff/vcr/vcr/repos/sample_app/component_1/state_machine.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
         >>> output = call_visitor(c, state_module=sample_app.component_1.states, exchange_module=sample_app.exchanges)
-        >>> output['states']
+        >>> output['states'] # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.component_1.states.IState>, [<checkmate._storage.StateStorage object at ...
+        >>> len(output['states'])
+        2
     """
     dt = docutils.core.publish_doctree(source=content)
     wt = Writer(dt, state_module, exchange_module)
@@ -283,7 +295,7 @@ def call_visitor(content, state_module=None, exchange_module=None):
             'transitions': wt.visitor._transitions}
     
 def main():
-    input_file = '/home/vcr/Projects/CheckMate/local_copy/sample_app/exchanges.rst'
+    input_file = '/home/jeff/vcr/vcr/repos/sample_app/exchanges.rst'
     f1 = open(input_file)
     content = f1.read()
     f1.close()

@@ -20,15 +20,17 @@ class Writer(docutils.writers.Writer):
 class TableNodeVisitor(docutils.nodes.GenericNodeVisitor):
     """this visitor is visit table in restructure text
 
-        >>> f1 = file('/home/jeff/exchanges.rst','r')
+        >>> import os
+        >>> f1 = open(os.getenv("checkmate_home") + '/sample_app/exchanges.rst')
         >>> c = f1.read()
         >>> f1.close()
-        >>> f2 = file('exchanges_gen.rst', 'w')
+        >>> f2 = open('/tmp/exchanges_gen.rst', 'w')
         >>> import docutils.core
         >>> dt = docutils.core.publish_doctree(source=c)
-        >>> import visitor
-        >>> wt = visitor.Writer()
-        >>> wt.write(document=dt, destination=f2)
+        >>> import checkmate.parser.rst_writer 
+        >>> wt = checkmate.parser.rst_writer.Writer()
+        >>> wt.write(document=dt, destination=f2) # doctest: +ELLIPSIS
+        1...
         >>> f2.close()
     """
 
@@ -174,7 +176,7 @@ class VisitorOptionParser(optparse.OptionParser):
         self.add_option('-o', '--with-output-file', dest='output_file',
                         metavar='FILE', 
                         help="output rst filename")
-        usage = 'you can use "python visitor.py input_file output_file" to process directly'
+        usage = 'you can use "python rst_writer.py input_file output_file" to process directly'
         self.set_usage(usage)
 
 def open_file(filename):
@@ -214,7 +216,6 @@ def call_visitor():
     wt = Writer()
     wt.write(document=dt, destination=f2)
     f2.close()
-    print('written\n')
     
 def main():
     call_visitor()
