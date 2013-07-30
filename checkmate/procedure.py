@@ -69,7 +69,11 @@ class Procedure(object):
         implementation[-1].append(['class', self._class])
         implementation[-1].append(['Setup procedure', self.setup_procedure])
         implementation[-1].append(['Teardown procedure', self.teardown_procedure])
+        if len(self.initial_state) == 0:
+            self.initial_state = ['']
         initial_state = ([], [['Any of the states', s] for s in self.initial_state])
+        if len(self.final_state) == 0:
+            self.final_state = ['']
         final_state = ([], [['Any of the states', s] for s in self.final_state])
         test_partitions = (['Info exchange', 'Origin', 'Destination', 'Comment'], self.exchanges)
 
