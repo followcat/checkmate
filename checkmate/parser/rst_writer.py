@@ -21,7 +21,7 @@ class TableNodeVisitor(docutils.nodes.GenericNodeVisitor):
     """this visitor is visit table in restructure text
 
         >>> import os
-        >>> f1 = open(os.getenv("checkmate_home") + '/sample_app/exchanges.rst')
+        >>> f1 = open(os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst')
         >>> c = f1.read()
         >>> f1.close()
         >>> f2 = open('/tmp/exchanges_gen.rst', 'w')

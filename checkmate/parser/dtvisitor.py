@@ -34,7 +34,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
 
         >>> import sample_app.exchanges
         >>> import os
-        >>> input_file = os.getenv("checkmate_home") + '/sample_app/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -267,7 +267,7 @@ def call_visitor(content, state_module=None, exchange_module=None):
 
         >>> import sample_app.exchanges
         >>> import os
-        >>> input_file = os.getenv("checkmate_home") + '/sample_app/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
