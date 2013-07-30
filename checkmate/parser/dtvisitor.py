@@ -277,7 +277,7 @@ def call_visitor(content, state_module=None, exchange_module=None):
         >>> len(output['exchanges'])
         2
         >>> import sample_app.component_1.states
-        >>> input_file = '/home/jeff/vcr/vcr/repos/sample_app/component_1/state_machine.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/component_1/state_machine.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -295,7 +295,7 @@ def call_visitor(content, state_module=None, exchange_module=None):
             'transitions': wt.visitor._transitions}
     
 def main():
-    input_file = '/home/jeff/vcr/vcr/repos/sample_app/exchanges.rst'
+    input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
     f1 = open(input_file)
     content = f1.read()
     f1.close()
