@@ -24,7 +24,7 @@ class Exchange(object):
             >>> e.parameters['R']
             1
         """
-        self.parameters = collections.OrderedDict()
+        self.parameters = {}
         self.action = action
         for argument in args:
             if argument.isalpha():
