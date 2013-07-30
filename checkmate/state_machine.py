@@ -10,6 +10,18 @@ class StateMachine(object):
 
     def develop(self, states, runs=[]):
         """Returns the list of possible runs
+
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C1']
+            >>> c.start()
+            >>> r = c.state_machine.develop(c.states)
+            >>> len(r)
+            6
+            >>> (r[0].initial, r[0].incoming, r[0].final)
+            ([('True', 'S-STATE-01')], ('AC', 'X-ACTION-01'), [('False', 'S-STATE-02')])
+            >>> (r[1].initial, r[1].incoming, r[1].final)
+            ([([], 'S-ANOST-01')], ('AP', 'X-ACTION-02'), [([{'R': None}], 'S-ANOST-02')])
         """
         for transition in self.transitions:
             if transition.is_matching_initial(states):
