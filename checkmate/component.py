@@ -22,11 +22,12 @@ class Component(object):
 
     def get_transition_by_input(self, exchange):
         """
-        >>> import checkmate.test.data_exchange
-        >>> import checkmate.test.data_component
-        >>> a = checkmate.test.data_component.Abs()
-        >>> r_tm = checkmate.test.data_exchange.AbsControlAction('TM()')
-        >>> a.get_transition_by_input(r_tm) == a.transitions[0]
+        >>> import checkmate.test_data
+        >>> a = checkmate.test_data.App()
+        >>> c = a.components['C1']
+        >>> c.start()
+        >>> r_tm = c.state_machine.transitions[0].incoming.factory()
+        >>> c.get_transition_by_input(r_tm) == c.state_machine.transitions[0]
         True
         """
         for _t in self.state_machine.transitions:
