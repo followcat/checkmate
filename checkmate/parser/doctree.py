@@ -29,38 +29,33 @@ def get_section(source):
 
 def fill_section(value, _section):
     if type(value) == str:
-        _text = value
         #ADD paragraph
         _paragraph = docutils.nodes.paragraph()
-        _paragraph.extend([docutils.nodes.Text(_text)])
+        _paragraph.extend([docutils.nodes.Text(value)])
         _section.append(_paragraph)
-    elif type(value) == tuple:
-        _table = value
+    elif type(value) == tuple and len(value) == 2 and len(value[1]) > 0:
+        _table = get_table(value)
         #ADD table
-        _section.append(get_table(_table))
-    elif type(value) == list:
-        _list = value
+        if _table != None:
+            _section.append(_table)
+    elif type(value) == list and len(value) > 0:
         #ADD list
-        _section.extend(get_list(_list))
+        _section.extend(get_list(value))
     elif type(value) == collections.OrderedDict or type(value) == dict:
         _section.extend(get_section(value))
 
 
 def get_list(_list):
-    if type(_list) != list or len(_list) < 1:
-        return None
     _return_list = []
     for item in _list:
         if type(item) == str:
             _return_list.append(get_text(item))
-        elif type(item) == tuple:
+        elif type(item) == tuple and len(item) == 2 and len(item[1]) > 0:
             _return_list.append(get_table(item))
     return _return_list
 
 
 def get_text(text):
-    if type(text) != str:
-        return None
     _paragraph = docutils.nodes.paragraph()
     _paragraph.extend([docutils.nodes.Text(text)])
     return _paragraph
@@ -69,10 +64,6 @@ def get_text(text):
 def get_table(table):
     """
     """
-    if type(table) != tuple or len(table) != 2:
-        return None
-    if type(table[0]) != list:
-        return None
     _table = docutils.nodes.table()
     header = table[0]
     body = table[1]
@@ -140,15 +131,15 @@ def get_table(table):
 def get_document(source):
     """
     >>> import collections
-    >>> a = collections.OrderedDict([('Procedure identification', collections.OrderedDict([('Procedure', collections.OrderedDict([('Implementation', ([], [['path', '/home/vcr/Projects/Checkmate/test_procedures.py'], ['class', 'TestProcedure'], ['Setup procedure', 'TestSetup'], ['Teardown procedure', 'TestTeardown']])), ('Initial state', ['this is a text paragraph', 'this is another text paragraph', ([], [['Any of the states', 'Q0()'], ['Any of the states', 'M0(AUTO)'], ['Any of the states', 'R0(0)']])]), ('Final state', ([], [['Any of the states', 'Q0()'], ['Any of the states', 'M0(MANUAL)'], ['Any of the states', 'R0(0)']])), ('Test partition', (['Info exchange', 'Origin', 'Destination', 'Comment'], [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]))]))]))])
+    >>> a = collections.OrderedDict([('Procedure identification', collections.OrderedDict([('Procedure', collections.OrderedDict([('Implementation', ([], [['path', '/home/vcr/Projects/Checkmate/test_procedures.py'], ['class', 'TestProcedure'], ['Setup procedure', 'TestSetup'], ['Teardown procedure', 'TestTeardown']])), ('Initial state', ['this is a text paragraph', 'this is another text paragraph', ([], [])]), ('Final state', ([], [['Any of the states', 'Q0()'], ['Any of the states', 'M0(MANUAL)'], ['Any of the states', 'R0(0)']])), ('Test partition', (['Info exchange', 'Origin', 'Destination', 'Comment'], [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]))]))]))])
     >>> doctree = get_document(a)
     >>> f2 = open('test.rst', 'w')
     >>> import docutils.core
     >>> dt = doctree 
     >>> import checkmate.parser.rst_writer
     >>> wt = checkmate.parser.rst_writer.Writer()
-    >>> wt.write(document=dt, destination=f2)
-    1965
+    >>> wt.write(document=dt, destination=f2) # doctest: +ELLIPSIS
+    1...
     >>> f2.close()
 
 
@@ -180,5 +171,7 @@ def get_document(source):
                 _doctree.append(_section)
             else:
                 _entry_section.append(_section)
-    _entry_section.extend(get_section(source))
+    _inter_section = get_section(source)
+    if _inter_section != None:
+        _entry_section.extend(_inter_section)
     return _doctree
