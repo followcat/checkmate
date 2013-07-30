@@ -16,6 +16,7 @@ class Run(object):
     """"""
     def __init__(self, initial, incoming, final, outgoing):
         """
+
             >>> import copy
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
