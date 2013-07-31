@@ -124,8 +124,7 @@ class Transition(object):
                         if found:
                             break
             if found:
-                if (resolved_value is not None):
-                    resolved_arguments[arg] = resolved_value
+                resolved_arguments[arg] = resolved_value
         return resolved_arguments
 
 
