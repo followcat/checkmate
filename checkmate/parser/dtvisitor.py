@@ -307,14 +307,14 @@ def call_visitor(content, state_module=None, data_structure_module=None, exchang
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> output = call_visitor(c, state_module=sample_app.component_1.states, exchange_module=sample_app.exchanges)
+        >>> output = call_visitor(c, state_module=sample_app.component_1.states, data_structure_module=sample_app.data_structure, exchange_module=sample_app.exchanges)
         >>> output['states'] # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.component_1.states.IState>, [<checkmate._storage.StateStorage object at ...
         >>> len(output['states'])
         2
     """
     dt = docutils.core.publish_doctree(source=content)
-    wt = Writer(dt, state_module, data_structure_module=data_structure_module, exchange_module=exchange_module)
+    wt = Writer(dt, state_module, data_structure_module, exchange_module=exchange_module)
     wt.translate()
     return {'states': wt.visitor._state_partitions,
             'data_structure': wt.visitor._data_structure_partitions,
