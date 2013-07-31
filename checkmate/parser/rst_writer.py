@@ -29,7 +29,8 @@ class TableNodeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> dt = docutils.core.publish_doctree(source=c)
         >>> import checkmate.parser.rst_writer 
         >>> wt = checkmate.parser.rst_writer.Writer()
-        >>> wt.write(document=dt, destination=f2) # doctest: +SKIP
+        >>> wt.write(document=dt, destination=f2) # doctest: +ELLIPSIS
+        1...
         >>> f2.close()
     """
 

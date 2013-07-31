@@ -1,16 +1,6 @@
 import checkmate._utils
 
 
-def store_data_structure(interface, name):
-    _o = checkmate._utils.get_class_implementing(interface)
-    _arguments, _kw_arguments = checkmate._utils.method_arguments(name)
-    if checkmate._utils.method_unbound(name):
-        return checkmate._storage.DataStructureStorage(checkmate._utils.internal_code(name), interface,
-                                getattr(_o, checkmate._utils.internal_code(name)), _arguments, kw_arguments=_kw_arguments)
-    else:
-        return checkmate._storage.DataStructureStorage(checkmate._utils.internal_code(name), interface,
-                    _o, _arguments, kw_arguments=_kw_arguments)
-
 def store_exchange(interface, name):
     _arguments, _kw_arguments = checkmate._utils.method_arguments(name)
     return checkmate._storage.ExchangeStorage(checkmate._utils.internal_code(name), interface,
@@ -50,9 +40,6 @@ class InternalStorage(object):
         if len(kwargs) == 0:
             kwargs = self.kw_arguments
         return wrapper(self.function, args, kwargs)
-
-class DataStructureStorage(InternalStorage):
-    """Support local storage of data structure information in transition"""
 
 class StateStorage(InternalStorage):
     """Support local storage of state information in transition"""

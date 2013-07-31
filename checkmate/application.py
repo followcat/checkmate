@@ -1,6 +1,5 @@
 import os
 
-import checkmate.data_structure
 import checkmate.exchange
 import checkmate.procedure
 import checkmate.parser.dtvisitor
@@ -34,7 +33,6 @@ def define_procedure(index, stub_name, stub_run, sut_name, sut_run):
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        data_structure_module = namespace['data_structure_module']
         exchange_module = namespace['exchange_module']
 
         path = os.path.dirname(exchange_module.__file__)
@@ -44,7 +42,7 @@ class ApplicationMeta(type):
         _file.close()
         try:
             global checkmate
-            output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
+            output = checkmate.parser.dtvisitor.call_visitor(matrix, exchange_module=exchange_module)
             namespace['exchanges'] = output['exchanges']
         finally:
             result = type.__new__(cls, name, bases, dict(namespace))
