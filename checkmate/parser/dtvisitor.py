@@ -17,15 +17,16 @@ def _to_interface(_classname):
 
 class Writer(docutils.writers.Writer):
   
-    def __init__(self, document, state_module=None, exchange_module=None):
+    def __init__(self, document, state_module=None, data_structure_module=None, exchange_module=None):
         docutils.writers.Writer.__init__(self)
         self.translator_class = DocTreeVisitor
         self.document = document
         self.state_module = state_module
+        self.data_structure_module = data_structure_module
         self.exchange_module = exchange_module
   
     def translate(self):
-        self.visitor = visitor = self.translator_class(self.document, self.state_module, self.exchange_module)
+        self.visitor = visitor = self.translator_class(self.document, self.state_module, self.data_structure_module, self.exchange_module)
         self.document.walkabout(visitor)
         #self.output = ''.join(visitor.output)
 
@@ -33,6 +34,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
     """this visitor is visit table in restructure text
 
         >>> import sample_app.exchanges
+        >>> import sample_app.data_structure
         >>> import os
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
@@ -40,10 +42,12 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> f1.close()
         >>> import docutils.core
         >>> dt = docutils.core.publish_doctree(source=c)
-        >>> wt = Writer(dt, exchange_module=sample_app.exchanges)
+        >>> wt = Writer(dt, data_structure_module=sample_app.data_structure, exchange_module=sample_app.exchanges)
         >>> wt.translate() 
         >>> wt.visitor._state_partitions
         []
+        >>> wt.visitor._data_structure_partitions # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.data_structure.IAttribute>, [<checkmate._storage.DataStructureStorage object at ...
         >>> wt.visitor._exchange_partitions # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.exchanges.IAction>, [<checkmate._storage.ExchangeStorage object at ...
         >>> len(wt.visitor._exchange_partitions)
@@ -52,10 +56,11 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         []
     """
 
-    def __init__(self, document, state_module=None, exchange_module=None):
+    def __init__(self, document, state_module=None, data_structure_module=None, exchange_module=None):
         docutils.nodes.NodeVisitor.__init__(self, document)
         self.document = document
         self.state_module = state_module
+        self.data_structure_module = data_structure_module
         self.exchange_module = exchange_module
 
     def default_visit(self, node):
@@ -66,6 +71,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
 
     def visit_document(self, node):
         self._state_partitions = []
+        self._data_structure_partitions = []
         self._exchange_partitions = []
         self._transitions = []
         self.inside_system_message = False
@@ -92,6 +98,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
             #hardcode the module 
             if self._high_level_flag == [1, 0, 0]:
                 self._state_partitions.append(self.get_partitions('states', self.state_module))
+            elif self._high_level_flag == [0, 1, 1]:
+                self._data_structure_partitions.append(self.get_partitions('data_structure', self.data_structure_module))
             elif self._high_level_flag == [0, 1, 0]:
                 self._exchange_partitions.append(self.get_partitions('exchanges', self.exchange_module))
             elif self._high_level_flag == [0, 0, 1]:
@@ -118,8 +126,10 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
             self._high_level_flag = [0, 1, 0]
         elif title == 'State machine': 
             self._high_level_flag = [0, 0, 1]
+        elif title == 'Data structure':
+            self._high_level_flag = [0, 1, 1]
         #flag the low section
-        if title == 'Definition and accessibility':
+        if title == 'Definition and accessibility' or title == 'Definition':
             self._low_level_flag = [1, 0, 0]
         elif  title == 'Value partitions':
             self._low_level_flag = [0, 1, 0]
@@ -167,6 +177,13 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
             self.full_description[code] = (id, val, com)
         elif self._high_level_flag == [0, 0, 1] and self._low_level_flag == [0, 0, 1]:
             self.array_items.append(content)
+        elif self._high_level_flag == [0, 1, 1] and self._low_level_flag == [0, 1, 0]:
+            id = content[0]
+            code = content[1]
+            val = content[2]
+            com = content[3]
+            self.codes.append(code)
+            self.full_description[code] = (id, val, com)
 
     def depart_row(self, node):
         pass
@@ -210,6 +227,10 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 storage = checkmate._storage.store_state_value(interface, code)
                 partition_storage.append(storage)
                 full_description[code] = (storage, full_description[code])
+            elif partition_type == 'data_structure':
+                storage = checkmate._storage.store_data_structure(interface, code)
+                full_description[code] = (storage, full_description[code])
+                partition_storage.append(storage)
             elif partition_type == 'exchanges':
                 storage = checkmate._storage.store_exchange(interface, code)
                 full_description[code] = (storage, full_description[code])
@@ -262,16 +283,21 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         return component_transition
 
 
-def call_visitor(content, state_module=None, exchange_module=None):
+def call_visitor(content, state_module=None, data_structure_module=None, exchange_module=None):
     """
 
         >>> import sample_app.exchanges
+        >>> import sample_app.data_structure
         >>> import os
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> output = call_visitor(c, exchange_module=sample_app.exchanges)
+        >>> output = call_visitor(c, data_structure_module=sample_app.data_structure, exchange_module=sample_app.exchanges)
+        >>> output['data_structure'] # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.data_structure.IAttribute>, [<checkmate._storage.DataStructureStorage object at ...
+        >>> len(output['data_structure'])
+        2
         >>> output['exchanges'] # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.exchanges.IAction>, [<checkmate._storage.ExchangeStorage object at ...
         >>> len(output['exchanges'])
@@ -281,16 +307,17 @@ def call_visitor(content, state_module=None, exchange_module=None):
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> output = call_visitor(c, state_module=sample_app.component_1.states, exchange_module=sample_app.exchanges)
+        >>> output = call_visitor(c, state_module=sample_app.component_1.states, data_structure_module=sample_app.data_structure, exchange_module=sample_app.exchanges)
         >>> output['states'] # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.component_1.states.IState>, [<checkmate._storage.StateStorage object at ...
         >>> len(output['states'])
         2
     """
     dt = docutils.core.publish_doctree(source=content)
-    wt = Writer(dt, state_module, exchange_module)
+    wt = Writer(dt, state_module, data_structure_module, exchange_module=exchange_module)
     wt.translate()
     return {'states': wt.visitor._state_partitions,
+            'data_structure': wt.visitor._data_structure_partitions,
             'exchanges': wt.visitor._exchange_partitions,
             'transitions': wt.visitor._transitions}
     

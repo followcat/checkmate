@@ -11,6 +11,7 @@ import checkmate._utils
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         state_module = namespace['state_module']
+        data_structure_module = namespace['data_structure_module']
         exchange_module = namespace['exchange_module']
 
         path = os.path.dirname(state_module.__file__)
@@ -22,6 +23,7 @@ class ComponentMeta(type):
             import checkmate.state_machine
             import checkmate.parser.dtvisitor
             visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, state_module=state_module,
+                                                                data_structure_module=data_structure_module,
                                                                 exchange_module=exchange_module)
             namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
