@@ -95,6 +95,7 @@ class Transition(object):
             arguments = list(entry[entry.index(data)].kw_arguments.keys())
         for arg in arguments:
             found = False
+            resolved_value = None
             if type in ['final', 'incoming']:
                 for item in self.initial:
                     if arg == item.code:
@@ -105,7 +106,7 @@ class Transition(object):
                                 break
                     if found:
                         break
-            if (not found and self.incoming is not None):
+            if ((not found) and self.incoming is not None):
                 if type in ['final', 'outgoing']:
                     if arg in list(self.incoming.kw_arguments.keys()):
                         if arg in iter(incoming.parameters):
@@ -123,7 +124,8 @@ class Transition(object):
                         if found:
                             break
             if found:
-                resolved_arguments[arg] = resolved_value
+                if (resolved_value is not None):
+                    resolved_arguments[arg] = resolved_value
         return resolved_arguments
 
 
