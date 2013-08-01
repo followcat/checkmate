@@ -5,8 +5,6 @@ import zope.interface
 import checkmate.state_machine
 import checkmate.parser.dtvisitor
 
-import checkmate._utils
-
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
