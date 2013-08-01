@@ -126,8 +126,11 @@ def method_arguments(signature):
     """
         >>> method_arguments('M0(True)')
         (['True'], {})
-        >>> method_arguments('func(R, P=HIGH)')
-        ([], {'R': None, 'P': 'HIGH'})
+        >>> l,d = method_arguments('func(R, P=HIGH)')
+        >>> len (l)
+        0
+        >>> d['P']
+        'HIGH'
     """
     _args = []
     _kw_args = {}
