@@ -297,7 +297,7 @@ def call_visitor(content, state_module=None, data_structure_module=None, exchang
         >>> output['data_structure'] # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.data_structure.IAttribute>, [<checkmate._storage.DataStructureStorage object at ...
         >>> len(output['data_structure'])
-        2
+        3
         >>> output['exchanges'] # doctest: +ELLIPSIS
         [(<InterfaceClass sample_app.exchanges.IAction>, [<checkmate._storage.ExchangeStorage object at ...
         >>> len(output['exchanges'])
