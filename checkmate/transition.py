@@ -1,9 +1,4 @@
-import sys
-
 import zope.interface
-
-import checkmate.state
-import checkmate._utils
 
 import checkmate._storage
 
@@ -21,9 +16,6 @@ class Transition(object):
             if (item in argc) == False:
                 continue
             for _interface, _name in argc[item]:
-                _o = checkmate._utils.get_class_implementing(_interface)
-                _arguments, _kw_arguments = checkmate._utils.method_arguments(_name)
-
                 if item in ['initial', 'final']:
                     getattr(self, item).append(checkmate._storage.store_state(_interface, _name))
                 elif item == 'incoming':
