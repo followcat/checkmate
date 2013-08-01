@@ -38,12 +38,15 @@ def _kw_arguments(signature):
         []
         >>> _kw_arguments('f(a=b)')
         [('a', 'b')]
+        >>> _kw_arguments('RQ(R(HIGH))')
+        [('R', 'HIGH')]
     """
     output = []
     body = ast.parse(signature).body[0]
     try:
         for a in body.value.keywords:
             output.append((a.arg, a.value.id))
+        output.append((body.value.args[0].func.id, body.value.args[0].args[0].id))
     finally:
         return output
 
@@ -131,6 +134,8 @@ def method_arguments(signature):
         0
         >>> d['P']
         'HIGH'
+        >>> method_arguments('RQ(R(HIGH))')
+        ([], {'R': 'HIGH'})
     """
     _args = []
     _kw_args = {}
