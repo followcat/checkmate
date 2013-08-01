@@ -45,6 +45,7 @@ class ApplicationMeta(type):
         try:
             global checkmate
             output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
+            namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
             result = type.__new__(cls, name, bases, dict(namespace))
