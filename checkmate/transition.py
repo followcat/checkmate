@@ -154,11 +154,8 @@ class Transition(object):
                         continue
                     _final_interface = _final.interface
                     if _final_interface == _interface:
-                        if len(_final.kw_arguments) == 0:
-                            _final.factory(args=[_state])
-                        else:
-                            resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
-                            member_wrapper(_final.function, _state, kwargs=resolved_arguments)
+                        resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
+                        _final.factory(args=[_state], kwargs=resolved_arguments)
         _outgoing_list = []
 
         for outgoing_exchange in self.outgoing:
