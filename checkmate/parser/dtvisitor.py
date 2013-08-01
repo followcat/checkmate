@@ -212,6 +212,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
              
     def get_partitions(self, partition_type, _module=None):
         classname = self._classname
+        if checkmate._utils.is_method(classname):
+            classname = checkmate._utils._method_basename(self._classname)
         full_description = self.full_description
         self.standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in self.codes if checkmate._utils.valid_value_argument(_v) is not None], '_description': full_description})
         setattr(_module, classname, _module.declare(classname, self.standard_methods))
