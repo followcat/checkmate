@@ -48,7 +48,7 @@ Action request
 ***************
 Definition
 ^^^^^^^^^^^
-ActionRequest
+ActionRequest(P=ActionPriority, A=Attribute)
 
 
 
@@ -59,7 +59,7 @@ Action
 *******
 Definition and accessibility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Action
+Action(R=ActionRequest)
 
 Value partitions
 ^^^^^^^^^^^^^^^^^
