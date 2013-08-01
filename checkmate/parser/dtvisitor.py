@@ -206,12 +206,12 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         paragraph = node.astext()
         if self._low_level_flag == [1, 0, 0]:
             texts = paragraph.split('\n')
-            for text in texts:
-                if not ' ' in text and not '_' in text:
-                    self._classname = str(text)
+            self._classname = str(texts[0])
              
     def get_partitions(self, partition_type, _module=None):
         classname = self._classname
+        if checkmate._utils.is_method(classname):
+            classname = checkmate._utils._leading_name(classname)
         full_description = self.full_description
         self.standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in self.codes if checkmate._utils.valid_value_argument(_v) is not None], '_description': full_description})
         setattr(_module, classname, _module.declare(classname, self.standard_methods))
