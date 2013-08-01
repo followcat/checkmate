@@ -12,26 +12,54 @@ def _leading_name(signature):
     return ARGUMENT.search(signature).group(1)
 
 def _arguments(signature):
+    """
+        >>> _arguments('func(a)')
+        'a'
+        >>> _arguments('f()')
+        ''
+    """
     return ARGUMENT.search(signature).group(2)
 
 def _method_basename(signature):
     """
+        >>> _method_basename('func(arg=value)')
+        'func'
+        >>> _method_basename('self.func()')
+        'func'
     """
     if is_method(signature):
         return _leading_name(signature).split('.')[-1]
 
 
 def internal_code(value):
+    """
+        >>> internal_code('func(args)')
+        'func'
+        >>> signature = 'item'
+        >>> internal_code(signature)
+        'item'
+    """
     output = _method_basename(value)
     if output == None:
         return value
     return output
 
 def is_method(name):
+    """
+        >>> is_method('item')
+        False
+        >>> is_method('M0("AUTO")')
+        True
+    """
     return _has_argument(name)
 
 def method_unbound(signature):
-    """"""
+    """
+        >>> method_unbound('func(args)')
+        False
+        >>> method_unbound('Q0.append(R)')
+        True
+    """
     return (is_method(signature) and
             '.' in _leading_name(signature))
 
@@ -39,7 +67,7 @@ def valid_value_argument(signature):
     """ All input signatures have value as argument (from state partitions)
 
         >>> valid_value_argument('M0(MANUAL)')
-        u'MANUAL'
+        'MANUAL'
     """
     if is_method(signature):
         if (len(_arguments(signature)) != 0 and
@@ -49,7 +77,11 @@ def valid_value_argument(signature):
     return None
 
 def method_value_arguments(signature):
-    """ All arguments are value """
+    """ All arguments are value
+
+        >>> method_value_arguments('func(AUTO, HIGH)')
+        (['AUTO', ' HIGH'], {})
+    """
     _args = []
     if is_method(signature):
         if len(_arguments(signature)) != 0:
@@ -58,6 +90,10 @@ def method_value_arguments(signature):
     return (_args, {})
 
 def method_arguments(signature):
+    """
+        >>> method_arguments('M0(True)')
+        (['True'], {})
+    """
     _args = []
     _kw_args = {}
     if is_method(signature):
