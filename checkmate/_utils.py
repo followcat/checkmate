@@ -64,7 +64,7 @@ def method_arguments(signature):
         if len(_arguments(signature)) != 0:
             for argument in _arguments(signature).split(','):
                 if argument_value(argument):
-                    _args.append(argument)
+                    _args.append(argument.rstrip('\'"'). lstrip('\'"'))
                 else:
                     if _has_argument(argument):
                         _kw_args[_leading_name(argument)] = _arguments(argument)

@@ -18,9 +18,9 @@ Value partitions
 +---------------+-----------+--------------------------+--------------------------+
 | Partition     | State     | Valid value              | Comment                  |
 +===============+===========+==========================+==========================+
-| D-ATTR-01     | AT1       | AT1 valid value          | AT1 attribute value      |
+| D-ATTR-01     | A0('AT1') | AT1 valid value          | AT1 attribute value      |
 +---------------+-----------+--------------------------+--------------------------+
-| D-ATTR-02     | AT2       | AT2 valid value          | AT1 attribute value      |
+| D-ATTR-02     | A0('AT2') | AT2 valid value          | AT1 attribute value      |
 +---------------+-----------+--------------------------+--------------------------+
 
 
@@ -37,9 +37,9 @@ Value partitions
 +---------------+-----------+--------------------------+--------------------------+
 | Partition     | State     | Valid value              | Comment                  |
 +===============+===========+==========================+==========================+
-| D-PRIO-01     | NORM      | NORM valid value         | NORM priority value      |
+| D-PRIO-01     | P0('NORM')| NORM valid value         | NORM priority value      |
 +---------------+-----------+--------------------------+--------------------------+
-| D-PRIO-02     | HIGH      | HIGH valid value         | HIGH priority value      |
+| D-PRIO-02     | P0('HIGH')| HIGH valid value         | HIGH priority value      |
 +---------------+-----------+--------------------------+--------------------------+
 
 
