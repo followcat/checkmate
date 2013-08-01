@@ -98,31 +98,28 @@ class Transition(object):
             resolved_value = None
             if type in ['final', 'incoming']:
                 for item in self.initial:
-                    if arg == item.code:
-                        for _state in states:
-                            if item.interface.providedBy(_state):
-                                resolved_value = _state.value
-                                found = True
-                                break
-                    if found:
+                    try:
+                        resolved_value = item.resolve(arg, states)
+                        found = True
                         break
+                    except AttributeError:
+                        continue
             if ((not found) and self.incoming is not None):
                 if type in ['final', 'outgoing']:
-                    if arg in list(self.incoming.kw_arguments.keys()):
-                        if arg in iter(incoming.parameters):
-                            resolved_value = incoming.parameters[arg]
-                            found = True
+                    try:
+                        resolved_value = self.incoming.resolve(arg, incoming)
+                        found = True
+                    except AttributeError:
+                        pass
             if not found:
                 if type in ['outgoing']:
                     for item in self.final:
-                        if arg == item.code:
-                            for _state in states:
-                                if item.interface.providedBy(_state):
-                                    resolved_value = _state.value
-                                    found = True
-                                    break
-                        if found:
+                        try:
+                            resolved_value = item.resolve(arg, states)
+                            found = True
                             break
+                        except AttributeError:
+                            continue
             if found:
                 resolved_arguments[arg] = resolved_value
         return resolved_arguments

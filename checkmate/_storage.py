@@ -57,6 +57,19 @@ class DataStructureStorage(InternalStorage):
 class StateStorage(InternalStorage):
     """Support local storage of state information in transition"""
 
+    def resolve(self, arg, states):
+        if arg == self.code:
+            for _state in states:
+                if self.interface.providedBy(_state):
+                    return _state.value
+        raise AttributeError
+
 class ExchangeStorage(InternalStorage):
     """Support local storage of exchange information in transition"""
+
+    def resolve(self, arg, exchange):
+        if arg in list(self.kw_arguments.keys()):
+            if arg in iter(exchange.parameters):
+                return exchange.parameters[arg]
+        raise AttributeError
 
