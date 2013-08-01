@@ -5,8 +5,8 @@ import sys
 def _has_argument(signature):
     body = ast.parse(signature).body[0]
     try:
-        return (len(body.value.keywords) > 0 or
-                len(body.value.args) > 0)
+        return (len(body.value.keywords) >= 0 or
+                len(body.value.args) >= 0)
     except AttributeError:
         return False
 
@@ -20,9 +20,9 @@ def _leading_name(signature):
 def _arguments(signature):
     """
         >>> _arguments('func(a)')
-        'a'
+        ['a']
         >>> _arguments('f()')
-        ''
+        []
     """
     output = []
     body = ast.parse(signature).body[0]
@@ -79,6 +79,10 @@ def is_method(name):
     """
         >>> is_method('item')
         False
+        >>> is_method('M0()')
+        True
+        >>> is_method('Q(R=NORM)')
+        True
         >>> is_method('M0("AUTO")')
         True
     """
