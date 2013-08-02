@@ -2,10 +2,10 @@ import checkmate._utils
 
 
 def store_data_structure(interface, name):
-    _arguments, _kw_arguments = checkmate._utils.method_arguments(name)
+    _o = checkmate._utils.get_class_implementing(interface)
+    _arguments, _kw_arguments = checkmate._utils.method_value_arguments(name)
     return checkmate._storage.DataStructureStorage(checkmate._utils.internal_code(name), interface,
-                getattr(checkmate._utils.get_module_defining(interface), checkmate._utils.internal_code(name)),
-                _arguments, kw_arguments=_kw_arguments)
+                    _o, _arguments, kw_arguments=_kw_arguments)
 
 def store_exchange(interface, name):
     _arguments, _kw_arguments = checkmate._utils.method_arguments(name)

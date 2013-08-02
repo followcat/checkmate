@@ -221,8 +221,6 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         cls = checkmate._utils.get_class_implementing(interface)
         partition_storage = []
         for code in self.codes:
-            if checkmate._utils.is_method(code):
-                setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
             if partition_type == 'states':
                 storage = checkmate._storage.store_state_value(interface, code)
                 partition_storage.append(storage)
@@ -232,6 +230,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 full_description[code] = (storage, full_description[code])
                 partition_storage.append(storage)
             elif partition_type == 'exchanges':
+                if checkmate._utils.is_method(code):
+                    setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
                 storage = checkmate._storage.store_exchange(interface, code)
                 full_description[code] = (storage, full_description[code])
                 partition_storage.append(storage)

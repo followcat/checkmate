@@ -13,12 +13,19 @@ def _leading_name(signature):
 
 def _arguments(signature):
     """
+        >>> _arguments("func('a')")
+        'a'
         >>> _arguments('func(a)')
         'a'
         >>> _arguments('f()')
         ''
     """
-    return ARGUMENT.search(signature).group(2)
+    args = ARGUMENT.search(signature).group(2).split(',')
+    return_str = []
+    if args is not None and len(args) != 0:
+        for arg in args:
+            return_str.append(arg.rstrip('\'"'). lstrip('\'"'))
+    return ','.join(return_str)
 
 def _method_basename(signature):
     """
@@ -100,7 +107,7 @@ def method_arguments(signature):
         if len(_arguments(signature)) != 0:
             for argument in _arguments(signature).split(','):
                 if argument_value(argument):
-                    _args.append(argument.rstrip('\'"'). lstrip('\'"'))
+                    _args.append(argument.rstrip('\'"').lstrip('\'"'))
                 else:
                     if _has_argument(argument):
                         _kw_args[_leading_name(argument)] = _arguments(argument)
