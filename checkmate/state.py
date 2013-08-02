@@ -101,7 +101,14 @@ class State(object):
     _queue = False
 
     def __init__(self, value=None, *args, **kwargs):
-        """State object supports value=None for state matching"""
+        """State object supports value=None for state matching
+
+            >>> setattr(State, 'append', append)
+            >>> s = State()
+            >>> s._queue
+            True
+            >>> delattr(State, 'append')
+        """
         if hasattr(self, 'append'):
             self._queue = True
         if self._queue == True:
@@ -119,6 +126,30 @@ class State(object):
             setattr(self, key, kwargs[key])
 
     def __eq__(self, other):
+        """
+            >>> setattr(State, 'append', append)
+            >>> setattr(State, 'pop', pop)
+            >>> s1 = State(); s2 = State('R')
+            >>> s1 == s2
+            True
+            >>> s1.append('Q')
+            >>> s1 == s2
+            False
+            >>> q = s1.pop(); s1.append('R')
+            >>> s1 == s2
+            True
+            >>> s1.append('Q')
+            >>> s1 == s2
+            False
+            >>> r = s1.pop(); q = s1.pop(); s1.append(R=None)
+            >>> s1 == s2
+            False
+            >>> r = s2.pop(); s1.append(R=1)
+            >>> s1 == s2
+            False
+            >>> delattr(State, 'append')
+            >>> delattr(State, 'pop')
+        """
         if self._queue == True:
             if len(self.value) == 0:
                 return (len(other.value) == 0 or other.value[0] == None)
