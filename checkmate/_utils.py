@@ -1,31 +1,69 @@
-import re
+import ast
 import sys
 
 
-ARGUMENT = re.compile('(.*?)\((.*)\)')
-
-
-def _has_argument(name):
-    return (ARGUMENT.search(name) is not None)
+def _has_argument(signature):
+    body = ast.parse(signature).body[0]
+    try:
+        return (len(body.value.keywords) >= 0 or
+                len(body.value.args) >= 0)
+    except AttributeError:
+        return False
 
 def _leading_name(signature):
-    return ARGUMENT.search(signature).group(1)
+    body = ast.parse(signature).body[0]
+    try:
+        return body.value.func.attr
+    except AttributeError:
+        return body.value.func.id
 
 def _arguments(signature):
     """
-        >>> _arguments("func('a')")
-        'a'
         >>> _arguments('func(a)')
-        'a'
+        ['a']
+        >>> _arguments("func('a')")
+        ['a']
         >>> _arguments('f()')
-        ''
+        []
     """
-    args = ARGUMENT.search(signature).group(2).split(',')
-    return_str = []
-    if args is not None and len(args) != 0:
-        for arg in args:
-            return_str.append(arg.rstrip('\'"'). lstrip('\'"'))
-    return ','.join(return_str)
+    output = []
+    body = ast.parse(signature).body[0]
+    try:
+        for a in body.value.args:
+            if type(a) == ast.Name:
+                output.append(a.id)
+            elif type(a) == ast.Str:
+                output.append(a.s)
+    finally:
+        return output
+
+def _kw_arguments(signature):
+    """
+        >>> _kw_arguments('func(a)')
+        []
+        >>> _kw_arguments("func('a')")
+        []
+        >>> _kw_arguments('f(a=b)')
+        [('a', 'b')]
+        >>> _kw_arguments('RQ(R(HIGH))')
+        [('R', 'HIGH')]
+        >>> _kw_arguments("RQ(R('HIGH'))")
+        [('R', 'HIGH')]
+    """
+    output = []
+    body = ast.parse(signature).body[0]
+    try:
+        for a in body.value.keywords:
+            if type(a.value) == ast.Name:
+                output.append((a.arg, a.value.id))
+            elif type(a.value) == ast.Str:
+                output.append((a.arg, a.value.s))
+        if type(body.value.args[0].args[0]) == ast.Name:
+            output.append((body.value.args[0].func.id, body.value.args[0].args[0].id))
+        elif type(body.value.args[0].args[0]) == ast.Str:
+            output.append((body.value.args[0].func.id, body.value.args[0].args[0].s))
+    finally:
+        return output
 
 def _method_basename(signature):
     """
@@ -34,8 +72,11 @@ def _method_basename(signature):
         >>> _method_basename('self.func()')
         'func'
     """
-    if is_method(signature):
-        return _leading_name(signature).split('.')[-1]
+    body = ast.parse(signature).body[0]
+    try:
+        return body.value.func.attr
+    except AttributeError:
+        return body.value.func.id
 
 
 def internal_code(value):
@@ -46,15 +87,20 @@ def internal_code(value):
         >>> internal_code(signature)
         'item'
     """
-    output = _method_basename(value)
-    if output == None:
+    try:
+        output = _method_basename(value)
+        return output
+    except:
         return value
-    return output
 
 def is_method(name):
     """
         >>> is_method('item')
         False
+        >>> is_method('M0()')
+        True
+        >>> is_method('Q(R=NORM)')
+        True
         >>> is_method('M0("AUTO")')
         True
     """
@@ -68,31 +114,33 @@ def method_unbound(signature):
         True
     """
     return (is_method(signature) and
-            '.' in _leading_name(signature))
+            '.' in signature)
 
 def valid_value_argument(signature):
     """ All input signatures have value as argument (from state partitions)
 
         >>> valid_value_argument('M0(MANUAL)')
         'MANUAL'
+        >>> valid_value_argument("A0('AT1')")
+        'AT1'
     """
     if is_method(signature):
-        if (len(_arguments(signature)) != 0 and
-            ',' not in _arguments(signature)):
-            argument = _arguments(signature)
-            return argument
+        if (len(_arguments(signature)) == 1):
+            return _arguments(signature)[0]
     return None
 
 def method_value_arguments(signature):
     """ All arguments are value
 
         >>> method_value_arguments('func(AUTO, HIGH)')
-        (['AUTO', ' HIGH'], {})
+        (['AUTO', 'HIGH'], {})
+        >>> method_value_arguments("A0('AT1')")
+        (['AT1'], {})
     """
     _args = []
     if is_method(signature):
         if len(_arguments(signature)) != 0:
-            for argument in _arguments(signature).split(','):
+            for argument in _arguments(signature):
                 _args.append(argument)
     return (_args, {})
 
@@ -100,27 +148,37 @@ def method_arguments(signature):
     """
         >>> method_arguments('M0(True)')
         (['True'], {})
+        >>> method_arguments("A0('AT1')")
+        (['AT1'], {})
+        >>> method_arguments('Q(None)')
+        (['None'], {})
+        >>> l,d = method_arguments('func(R, P=HIGH)')
+        >>> len (l)
+        0
+        >>> d['P']
+        'HIGH'
+        >>> method_arguments('RQ(R(HIGH))')
+        ([], {'R': 'HIGH'})
+        >>> method_arguments("RQ(R('HIGH'))")
+        ([], {'R': 'HIGH'})
     """
     _args = []
     _kw_args = {}
     if is_method(signature):
-        if len(_arguments(signature)) != 0:
-            for argument in _arguments(signature).split(','):
-                if argument_value(argument):
-                    _args.append(argument.rstrip('\'"').lstrip('\'"'))
-                else:
-                    if _has_argument(argument):
-                        _kw_args[_leading_name(argument)] = _arguments(argument)
-                    else:
-                        _kw_args[argument] = None
+        for argument in _arguments(signature):
+            if argument_value(argument):
+                _args.append(argument)
+            else:
+                _kw_args[argument] = None
+        for item in _kw_arguments(signature):
+            _kw_args[item[0]] = item[1]
     return (_args, _kw_args)
 
 def argument_value(argument):
     """
     """
-    return ("'" in argument or '"' in argument or
-        argument.isdigit() or
-        argument in ['True', 'False'])
+    return (argument.isdigit() or
+        argument in ['True', 'False', 'AT1', 'AT2', 'NORM', 'HIGH', 'None'])
 
 def get_module_defining(interface):
     module_name = interface.__module__
