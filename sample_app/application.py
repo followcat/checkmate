@@ -21,6 +21,9 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-01', ...
+            >>> ds = sample_app.data_structure.Attribute('AT2') 
+            >>> ds.description() # doctest: +ELLIPSIS
+            ('D-ATTR-02', ...
             >>> i = sample_app.exchanges.AP(R=1)
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

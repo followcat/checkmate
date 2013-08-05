@@ -69,9 +69,9 @@ Value partitions
 +===============+=========+================+===================+
 | X-ACTION-01   | AC()    | Action action  | Comment AC action |
 +---------------+---------+----------------+-------------------+
-| X-ACTION-02   | AP()    | Append action  | Comment AP action |
+| X-ACTION-02   | AP(R)   | Append action  | Comment AP action |
 +---------------+---------+----------------+-------------------+
-| X-ACTION-03   | PP()    | Pop action     | Comment PP action |
+| X-ACTION-03   | PP(R)   | Pop action     | Comment PP action |
 +---------------+---------+----------------+-------------------+
 
 

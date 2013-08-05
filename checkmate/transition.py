@@ -1,9 +1,4 @@
-import sys
-
 import zope.interface
-
-import checkmate.state
-import checkmate._utils
 
 import checkmate._storage
 
@@ -21,9 +16,6 @@ class Transition(object):
             if (item in argc) == False:
                 continue
             for _interface, _name in argc[item]:
-                _o = checkmate._utils.get_class_implementing(_interface)
-                _arguments, _kw_arguments = checkmate._utils.method_arguments(_name)
-
                 if item in ['initial', 'final']:
                     getattr(self, item).append(checkmate._storage.store_state(_interface, _name))
                 elif item == 'incoming':
@@ -162,11 +154,8 @@ class Transition(object):
                         continue
                     _final_interface = _final.interface
                     if _final_interface == _interface:
-                        if len(_final.kw_arguments) == 0:
-                            _final.factory(args=[_state])
-                        else:
-                            resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
-                            member_wrapper(_final.function, _state, kwargs=resolved_arguments)
+                        resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
+                        _final.factory(args=[_state], kwargs=resolved_arguments)
         _outgoing_list = []
 
         for outgoing_exchange in self.outgoing:
