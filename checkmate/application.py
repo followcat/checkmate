@@ -46,7 +46,7 @@ class ApplicationMeta(type):
         try:
             global checkmate
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module)
-            output = checkmate.parser.dtvisitor.call_visitor_declarator(matrix, declarator)
+            output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
             #output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']

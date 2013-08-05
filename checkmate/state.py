@@ -165,10 +165,10 @@ class State(object):
             return (self.value == other.value)
 
     def description(self):
-        for key in list(self._description.keys()):
-            if self == self._description[key][0].factory():
-                return self._description[key][-1]
-        return (None,None,None)
+        try:
+            return (self.partition_storage.get_description(self))
+        except AttributeError:
+            return (None,None,None)
 
 def declare(name, param):
     return type(name, (State,), param)

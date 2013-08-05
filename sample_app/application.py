@@ -11,8 +11,8 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
 
     def __init__(self):
         """
-            >>> import checkmate.component
             >>> import sample_app.application
+            >>> import checkmate.component
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']   
             >>> a.start()

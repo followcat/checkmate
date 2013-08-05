@@ -4,6 +4,7 @@ import zope.interface
 
 import checkmate.state_machine
 import checkmate.parser.dtvisitor
+import checkmate.partition_declarator
 
 
 class ComponentMeta(type):
@@ -18,11 +19,8 @@ class ComponentMeta(type):
         matrix = _file.read()
         _file.close()
         try:
-            import checkmate.state_machine
-            import checkmate.parser.dtvisitor
-            visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, state_module=state_module,
-                                                                data_structure_module=data_structure_module,
-                                                                exchange_module=exchange_module)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module)
+            visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
             namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
         except:
@@ -56,7 +54,7 @@ class Component(object):
             
     def start(self):
         for interface, state in self.state_machine.states:
-            self.states.append(state[0].factory())
+            self.states.append(state.storage[0].factory())
 
     
 def execute(_component, _exchange):

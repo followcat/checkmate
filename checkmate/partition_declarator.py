@@ -4,6 +4,7 @@ import zope.interface
 
 import checkmate._utils
 import checkmate._storage
+import checkmate.transition
 
 
 def _to_interface(_classname):
@@ -23,8 +24,7 @@ class Declarator(object):
         self.basic_modules['states'] = [data_module]
         self.basic_modules['exchanges'] = [data_module, state_module]
 
-    def new_partition(self, partition_type, signature, codes, full_description):
-        standard_methods = {}
+    def new_partition(self, partition_type, signature, standard_methods, codes, full_description):
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
             for class_attr in checkmate._utils.method_arguments(signature)[0]:
@@ -63,4 +63,50 @@ class Declarator(object):
 
         # Return storage for compatibility only
         return (interface, partition_storage)
+
+    def new_transition(self, array_items):
+        component_transition = []
+        initial_state = []
+        initial_state_id = []
+        row_count = len(array_items)
+        for i in range(row_count):
+            if array_items[i][1] != 'x':
+                initial_state_id.append(i)
+                if array_items[i][0] == 'x':
+                    continue
+                interface = getattr(self.module['states'], _to_interface(array_items[i][0]))
+                cls = checkmate._utils.get_class_implementing(interface)
+                initial_state.append((interface, array_items[i][1]))
+                if checkmate._utils.is_method(array_items[i][1]):
+                    cls = checkmate._utils.get_class_implementing(interface)
+                    setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
+                            functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
+        for i in range(2, len(array_items[0])):
+            input = []
+            for j in range(0, initial_state_id[0]):
+                if array_items[j][i] != 'x':
+                    interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
+                    input.append((interface, array_items[j][i]))
+                    if self.module['exchanges'] is not None:
+                        cls = checkmate._utils.get_class_implementing(interface)
+                        setattr(self.module['exchanges'], checkmate._utils.internal_code(array_items[j][i]),
+                                functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
+            final = []
+            for j in range(initial_state_id[0], initial_state_id[-1]+1):
+                if array_items[j][0] == 'x':
+                    continue
+                interface = getattr(self.module['states'], _to_interface(array_items[j][0]))
+                final.append((interface, array_items[j][i]))
+            output = []
+            for j in range(initial_state_id[-1]+1, row_count):
+                if array_items[j][i] != 'x':
+                    interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
+                    output.append((interface, array_items[j][i]))
+                    if self.module['exchanges'] is not None:
+                        cls = checkmate._utils.get_class_implementing(interface)
+                        setattr(self.module['exchanges'], checkmate._utils.internal_code(array_items[j][i]),
+                                functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
+            t = checkmate.transition.Transition(initial=initial_state, incoming=input, final=final, outgoing=output)
+            component_transition.append(t)
+        return component_transition
 

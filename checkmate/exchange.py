@@ -12,8 +12,6 @@ def new_exchange_interface(name, parents, param):
 
 class Exchange(object):
     """"""
-    _default_description = (None, None, None)
-    _description = {}
     def __init__(self, action, *args, **kwargs):
         """
             >>> e = Exchange('CA', 'AUTO')
