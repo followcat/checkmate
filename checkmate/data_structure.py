@@ -12,8 +12,6 @@ def new_data_structure_interface(name, parents, param):
 
 class DataStructure(object):
     """"""
-    _default_description = (None, None, None)
-    _description = {}
     def __init__(self, state, *args, **kwargs):
         """
             >>> ds = DataStructure('AT1')
@@ -43,8 +41,8 @@ class DataStructure(object):
 
 
     def description(self):
-        for key in list(self._description.keys()):
-            if self == self._description[key][0].factory():
-                return self._description[key][-1]
-        return (None,None,None)
+        try:
+            return (self.partition_storage.get_description(self))
+        except AttributeError:
+            return (None,None,None)
 

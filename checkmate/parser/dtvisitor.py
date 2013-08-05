@@ -30,6 +30,17 @@ class Writer(docutils.writers.Writer):
         self.document.walkabout(visitor)
         #self.output = ''.join(visitor.output)
 
+class Writer_declarator(Writer):
+    def __init__(self, document, declarator):
+        super(Writer_declarator, self).__init__(document)
+        self.translator_class = DocTreeVisitor_declarator
+        self.declarator = declarator
+
+    def translate(self):
+        visitor = self.translator_class(self.document, self.declarator)
+        self.document.walkabout(visitor)
+
+
 class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
     """this visitor is visit table in restructure text
 
@@ -283,6 +294,18 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         return component_transition
 
 
+class DocTreeVisitor_declarator(DocTreeVisitor):
+    def __init__(self, document, declarator):
+        super(DocTreeVisitor_declarator, self).__init__(document,
+                                                        declarator.module['states'],
+                                                        declarator.module['data_structure'],
+                                                        declarator.module['exchanges'])
+        self.declarator = declarator
+
+    def get_partitions(self, partition_type, _module=None):
+        (interface, partition_storage) =  self.declarator.new_partition( partition_type, self._classname, self.codes, self.full_description)
+        return (interface, partition_storage)
+
 def call_visitor(content, state_module=None, data_structure_module=None, exchange_module=None):
     """
 
@@ -315,6 +338,15 @@ def call_visitor(content, state_module=None, data_structure_module=None, exchang
     """
     dt = docutils.core.publish_doctree(source=content)
     wt = Writer(dt, state_module, data_structure_module, exchange_module=exchange_module)
+    wt.translate()
+    return {'states': wt.visitor._state_partitions,
+            'data_structure': wt.visitor._data_structure_partitions,
+            'exchanges': wt.visitor._exchange_partitions,
+            'transitions': wt.visitor._transitions}
+    
+def call_visitor_declarator(content, declarator):
+    dt = docutils.core.publish_doctree(source=content)
+    wt = Writer_declarator(dt, declarator)
     wt.translate()
     return {'states': wt.visitor._state_partitions,
             'data_structure': wt.visitor._data_structure_partitions,

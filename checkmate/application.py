@@ -5,6 +5,7 @@ import checkmate.exchange
 import checkmate.procedure
 import checkmate.parser.dtvisitor
 import checkmate.parser.rst_writer
+import checkmate.partition_declarator
 
 
 def define_procedure(index, stub_name, stub_run, sut_name, sut_run):
@@ -44,7 +45,9 @@ class ApplicationMeta(type):
         _file.close()
         try:
             global checkmate
-            output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module)
+            output = checkmate.parser.dtvisitor.call_visitor_declarator(matrix, declarator)
+            #output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
