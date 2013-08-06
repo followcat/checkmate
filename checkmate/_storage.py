@@ -5,11 +5,29 @@ def store_data_structure(interface, name, description=None):
     return checkmate._storage.DataStructureStorage(interface, name, description)
 
 def store_exchange(interface, name, description=None):
+    """
+        >>> import checkmate.test_data
+        >>> import sample_app.exchanges
+        >>> a = checkmate.test_data.App()
+        >>> store_ex = store_exchange(sample_app.exchanges.IAction, 'AP(R)')
+        >>> ex = store_ex.factory({'R': 'HIGH'})
+        >>> (ex.action, ex.R) # doctest: +ELLIPSIS
+        ('AP', <checkmate._storage.DataStructureStorage object at ...
+    """
     code = checkmate._utils.internal_code(name)
     return checkmate._storage.ExchangeStorage(interface, name, description,
                 getattr(checkmate._utils.get_module_defining(interface), code))
 
 def store_state(interface, name, description=None):
+    """
+        >>> import checkmate.test_data
+        >>> import sample_app.component_1.states
+        >>> a = checkmate.test_data.App()
+        >>> store_st = store_state(sample_app.component_1.states.IAnotherState, 'Q0()')
+        >>> state = store_st.factory()
+        >>> state.value
+        [None]
+    """
     if checkmate._utils.method_unbound(name):
         code = checkmate._utils.internal_code(name)
         return checkmate._storage.StateStorage(interface, name, description,
@@ -58,6 +76,12 @@ class InternalStorage(object):
         (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
 
     def factory(self, args=[], kwargs={}):
+        """
+            >>> 'Q0.append(R)'
+            'Q0.append(R)'
+            >>> 'R(P=HIGH)'
+            'R(P=HIGH)'
+        """
         def wrapper(func, param, kwparam):
             return func(*param, **kwparam)
 
@@ -78,6 +102,20 @@ class StateStorage(InternalStorage):
             (self.arguments, self.kw_arguments) = (arguments, kw_arguments)
 
     def resolve(self, arg, states):
+        """
+            >>> import checkmate.test_data
+            >>> import sample_app.component_1.states
+            >>> a = checkmate.test_data.App()
+            >>> store_st = StateStorage(sample_app.component_1.states.IAnotherState, 'Q0(R)', None)
+            >>> state = store_st.factory()
+            >>> state.append(R=1)
+            >>> store_st.resolve('R', [state])
+            Traceback (most recent call last):
+            ...
+            AttributeError
+            >>> store_st.resolve('Q0', [state])
+            [{'R': 1}]
+        """
         if arg == self.code:
             for _state in states:
                 if self.interface.providedBy(_state):
@@ -88,6 +126,14 @@ class ExchangeStorage(InternalStorage):
     """Support local storage of exchange information in transition"""
 
     def resolve(self, arg, exchange):
+        """
+            >>> import checkmate.test_data
+            >>> import sample_app.exchanges
+            >>> a = checkmate.test_data.App()
+            >>> store_ex = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None)
+            >>> ex = store_ex.factory({'R': 'HIGH'})
+            >>> store_ex.resolve('R', ex)
+        """
         if arg in list(self.kw_arguments.keys()):
             if arg in iter(exchange.parameters):
                 return exchange.parameters[arg]
