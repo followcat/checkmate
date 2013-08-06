@@ -12,13 +12,19 @@ def new_data_structure_interface(name, parents, param):
 
 class DataStructure(object):
     """"""
-    def __init__(self, state, *args, **kwargs):
+    def __init__(self, state=None, *args, **kwargs):
         """
             >>> ds = DataStructure('AT1')
             >>> ds.state
             'AT1'
         """
         self.state = state 
+        if state is None:
+            try:
+                self.state = self._valid_values[0]
+            except:
+                pass
+            
         self.args = args
         for key in list(kwargs.keys()):
             setattr(self, key, kwargs[key])
