@@ -2,6 +2,17 @@ import checkmate._utils
 
 
 def store_data_structure(interface, name, description=None):
+    """
+        >>> import checkmate.test_data
+        >>> import sample_app.exchanges
+        >>> a = checkmate.test_data.App()
+        >>> store = store_data_structure(sample_app.data_structure.IAttribute, "AT('AT1')")
+        >>> attr = store.factory()
+        >>> attr.state
+        'AT1'
+        >>> store = store_data_structure(sample_app.data_structure.IAttribute, 'AT')
+        >>> attr = store.factory()
+    """
     return checkmate._storage.DataStructureStorage(interface, name, description)
 
 def store_exchange(interface, name, description=None):
@@ -39,6 +50,7 @@ def store_state_value(interface, name, description=None):
     (arguments, kw_arguments) = checkmate._utils.method_value_arguments(name)
     return checkmate._storage.StateStorage(interface, name, description, arguments=arguments, kw_arguments=kw_arguments)
 
+
 class PartitionStorage(object):
     def __init__(self, type, interface, codes, full_description):
         """ Build the list of InternalStorage
@@ -62,6 +74,7 @@ class PartitionStorage(object):
             if item == stored_item.factory():
                 return stored_item.description
         return (None,None,None)
+
 
 class InternalStorage(object):
     def __init__(self, interface, name, description, function=None):
@@ -130,8 +143,10 @@ class ExchangeStorage(InternalStorage):
             >>> import checkmate.test_data
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
-            >>> store_ex = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None)
-            >>> ex = store_ex.factory({'R': 'HIGH'})
+            >>> store_ex = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
+            >>> ex = store_ex.factory()
+            >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
+            ('AP', {'R': None}, <checkmate._storage.DataStructureStorage object at ...
             >>> store_ex.resolve('R', ex)
         """
         if arg in list(self.kw_arguments.keys()):
