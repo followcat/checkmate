@@ -161,6 +161,8 @@ def method_arguments(signature):
         ([], {'R': 'HIGH'})
         >>> method_arguments("RQ(R('HIGH'))")
         ([], {'R': 'HIGH'})
+        >>> method_arguments('ActionRequest(P=ActionPriority, A=Attribute)')
+        ([], {'P': 'ActionPriority', 'A': 'Attribute'})
     """
     _args = []
     _kw_args = {}

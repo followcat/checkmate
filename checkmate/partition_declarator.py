@@ -25,12 +25,35 @@ class Declarator(object):
         self.basic_modules['exchanges'] = [data_module, state_module]
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description):
+        """
+        >>> import sample_app.data_structure
+        >>> import sample_app.exchanges
+        >>> import checkmate.state
+        >>> import collections
+        >>> import checkmate.partition_declarator
+        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, sample_app.exchanges)
+        >>> par = de.new_partition('data_structure', "ActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par  # doctest: +ELLIPSIS
+        (<InterfaceClass sample_app.data_structure.IActionPriority>, <checkmate._storage.PartitionStorage object at ...
+        >>> par[1].get_description(sample_app.data_structure.ActionPriority('NORM'))
+        ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
+        >>> sp = de.new_partition('states', "State", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"], full_description=collections.OrderedDict([("M0(True)",('S-STATE-01', 'True valid value', 'State true value'))]))
+        >>> sp # doctest: +ELLIPSIS
+        (<InterfaceClass checkmate.state.IState>, <checkmate._storage.PartitionStorage object at ...
+        >>> ep = de.new_partition('exchanges', 'Action(P=ActionPriority)', standard_methods = {}, codes=['AP(P)'], full_description=collections.OrderedDict([('AP(P)',('X-ACTION-02 ', 'Append action', 'Comment AP action'))])) 
+        >>> ep # doctest: +ELLIPSIS
+        (<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
+        >>> hasattr(ep[-1].storage[0].factory(), 'P')
+        True
+        >>> sample_app.data_structure.IActionPriority.providedBy(getattr(ep[-1].storage[0].factory(), 'P').factory())
+        True
+        """
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
             for class_attr in checkmate._utils.method_arguments(signature)[0]:
                 for _module in self.basic_modules[partition_type]:
                     try:
-                        interface = getattr(_module, _to_interface(class_kwattr))
+                        interface = getattr(_module, _to_interface(class_attr))
                         standard_methods.update({class_attr: checkmate._storage.store_data_structure(interface, class_attr)})
                         break
                     except AttributeError:
