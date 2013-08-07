@@ -1,5 +1,7 @@
 import zope.interface.interface
 
+import checkmate.partition
+
 
 def toggle(self, *args, **kwargs):
     """Change the value of the state
@@ -95,7 +97,7 @@ def down(self, *args, **kwargs):
         pass
 
 
-class State(object):
+class State(checkmate.partition.Partition):
     """"""
     _valid_values = [False, True]
     _queue = False
@@ -109,21 +111,7 @@ class State(object):
             True
             >>> delattr(State, 'append')
         """
-        if hasattr(self, 'append'):
-            self._queue = True
-        if self._queue == True:
-            # intended to be a 'None' string
-            if (type(value) == str and value == 'None'):
-                value = []
-            if type(value) == list:
-                self.value = list(value)
-            else:
-                self.value = [value]
-        else:
-            self.value = value
-        self.args = args
-        for key in list(kwargs.keys()):
-            setattr(self, key, kwargs[key])
+        super(State, self).__init__(value, args, kwargs)
 
     def __eq__(self, other):
         """
@@ -150,25 +138,7 @@ class State(object):
             >>> delattr(State, 'append')
             >>> delattr(State, 'pop')
         """
-        if self._queue == True:
-            if len(self.value) == 0:
-                return (len(other.value) == 0 or other.value[0] == None)
-            elif len(other.value) == 0:
-                return (len(self.value) == 0 or self.value[0] == None)
-            elif self.value[0] == None or other.value[0] == None:
-                return True
-            else:
-                return (self.value == other.value)
-        if self.value == None or other.value == None:
-            return True
-        else:
-            return (self.value == other.value)
-
-    def description(self):
-        try:
-            return (self.partition_storage.get_description(self))
-        except AttributeError:
-            return (None,None,None)
+        return super(State, self).__eq__(other)
 
 def declare(name, param):
     return type(name, (State,), param)

@@ -8,7 +8,7 @@ def store_data_structure(interface, name, description=None):
         >>> a = checkmate.test_data.App()
         >>> store = store_data_structure(sample_app.data_structure.IAttribute, "AT('AT1')")
         >>> attr = store.factory()
-        >>> attr.state
+        >>> attr.value
         'AT1'
         >>> store = store_data_structure(sample_app.data_structure.IAttribute, 'AT')
         >>> attr = store.factory()

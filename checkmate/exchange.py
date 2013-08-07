@@ -2,6 +2,8 @@ import collections
 
 import zope.interface.interface
 
+import checkmate.partition
+
 
 def new_exchange(name, parents, param):
     return type(name, parents, param)
@@ -10,7 +12,7 @@ def new_exchange_interface(name, parents, param):
     return zope.interface.interface.InterfaceClass(name, parents, param)
 
 
-class Exchange(object):
+class Exchange(checkmate.partition.Partition):
     """"""
     def __init__(self, action, *args, **kwargs):
         """
@@ -56,10 +58,4 @@ class Exchange(object):
                         return False
                 return True
         return False
-
-    def description(self):
-        try:
-            return (self.partition_storage.get_description(self))
-        except AttributeError:
-            return (None,None,None)
 
