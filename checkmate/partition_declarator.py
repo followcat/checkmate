@@ -32,21 +32,24 @@ class Declarator(object):
         >>> import collections
         >>> import checkmate.partition_declarator
         >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, sample_app.exchanges)
-        >>> par = de.new_partition('data_structure', "ActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.IActionPriority>, <checkmate._storage.PartitionStorage object at ...
-        >>> par[1].get_description(sample_app.data_structure.ActionPriority('NORM'))
+        (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
+        >>> par[1].get_description(sample_app.data_structure.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> sp = de.new_partition('states', "State", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"], full_description=collections.OrderedDict([("M0(True)",('S-STATE-01', 'True valid value', 'State true value'))]))
+        >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"], full_description=collections.OrderedDict([("M0(True)",('S-STATE-01', 'True valid value', 'State true value'))]))
         >>> sp # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.state.IState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ep = de.new_partition('exchanges', 'Action(P=ActionPriority)', standard_methods = {}, codes=['AP(P)'], full_description=collections.OrderedDict([('AP(P)',('X-ACTION-02 ', 'Append action', 'Comment AP action'))])) 
-        >>> ep # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
-        >>> hasattr(ep[-1].storage[0].factory(), 'P')
+        (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.PartitionStorage object at ...
+        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[], full_description=collections.OrderedDict())
+        >>> ar # doctest: +ELLIPSIS
+        (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
+        >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
-        >>> sample_app.data_structure.IActionPriority.providedBy(getattr(ep[-1].storage[0].factory(), 'P').factory())
+        >>> sample_app.data_structure.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P').factory())
         True
+        >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'], full_description=collections.OrderedDict([('AP(R)',('X-ACTION-02', 'action 2', 'Comment action 2'))]))
+        >>> ac # doctest: +ELLIPSIS
+        (<InterfaceClass sample_app.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         """
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
@@ -62,7 +65,10 @@ class Declarator(object):
                 for _module in self.basic_modules[partition_type]:
                     try:
                         interface = getattr(_module, _to_interface(class_kwattr))
-                        standard_methods.update({key: checkmate._storage.store_data_structure(interface, class_kwattr)})
+                        if _module == self.module['states']:
+                            standard_methods.update({key: checkmate._storage.store_state(interface, class_kwattr)})
+                        elif _module == self.module['data_structure']:
+                            standard_methods.update({key: checkmate._storage.store_data_structure(interface, class_kwattr)})
                         break
                     except AttributeError:
                         continue

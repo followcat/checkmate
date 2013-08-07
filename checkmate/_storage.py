@@ -67,6 +67,8 @@ class PartitionStorage(object):
             elif type == 'exchanges':
                 _storage = store_exchange(interface, code, full_description[code])
                 self.storage.append(_storage)
+        if codes == None or len(codes) == 0:
+            self.storage.append(store_data_structure(interface, ''))
 
     def get_description(self, item):
         """ Return description corresponding to item """

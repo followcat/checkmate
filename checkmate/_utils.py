@@ -3,6 +3,8 @@ import sys
 
 
 def _has_argument(signature):
+    if signature == '':
+        return False
     body = ast.parse(signature).body[0]
     try:
         return (len(body.value.keywords) >= 0 or
