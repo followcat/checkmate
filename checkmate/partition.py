@@ -1,3 +1,8 @@
+import zope.interface.interface
+
+import checkmate._storage
+
+
 class Partition(object):
     """"""
     _queue = False
@@ -29,6 +34,11 @@ class Partition(object):
         self.args = args
         for key in list(kwargs.keys()):
             setattr(self, key, kwargs[key])
+        for name in dir(self):
+            attr = getattr(self, name)
+            if checkmate._storage.IStorage.providedBy(attr):
+                attr = attr.factory()
+                setattr(self, name, attr)
 
     def __eq__(self, other):
         """

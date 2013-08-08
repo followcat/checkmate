@@ -2,7 +2,7 @@ import collections
 
 import zope.interface.interface
 
-import checkmate.partition
+import checkmate._storage
 
 
 def new_exchange(name, parents, param):
@@ -30,6 +30,12 @@ class Exchange(checkmate.partition.Partition):
             if argument.isalpha():
                 self.parameters[argument] = None
         self.parameters.update(kwargs)
+
+        for name in dir(self):
+            attr = getattr(self, name)
+            if checkmate._storage.IStorage.providedBy(attr):
+                attr = attr.factory()
+                setattr(self, name, attr)
 
     def __eq__(self, other):
         """

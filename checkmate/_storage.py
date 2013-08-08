@@ -1,3 +1,5 @@
+import zope.interface
+
 import checkmate._utils
 
 
@@ -77,7 +79,12 @@ class PartitionStorage(object):
                 return stored_item.description
         return (None,None,None)
 
+class IStorage(zope.interface.Interface):
+    """"""
+    def factory(self, args=[], kwargs={}):
+        """"""
 
+@zope.interface.implementer(IStorage)
 class InternalStorage(object):
     def __init__(self, interface, name, description, function=None):
         self.code = checkmate._utils.internal_code(name)
