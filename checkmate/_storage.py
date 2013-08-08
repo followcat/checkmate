@@ -25,7 +25,7 @@ def store_exchange(interface, name, description=None):
         >>> store_ex = store_exchange(sample_app.exchanges.IAction, 'AP(R)')
         >>> ex = store_ex.factory({'R': 'HIGH'})
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
-        ('AP', <checkmate._storage.DataStructureStorage object at ...
+        ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
     code = checkmate._utils.internal_code(name)
     return checkmate._storage.ExchangeStorage(interface, name, description,
@@ -155,7 +155,7 @@ class ExchangeStorage(InternalStorage):
             >>> store_ex = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
             >>> ex = store_ex.factory()
             >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
-            ('AP', {'R': None}, <checkmate._storage.DataStructureStorage object at ...
+            ('AP', {'R': None}, <sample_app.data_structure.ActionRequest object at ...
             >>> store_ex.resolve('R', ex)
         """
         if arg in list(self.kw_arguments.keys()):
