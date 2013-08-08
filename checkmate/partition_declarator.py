@@ -54,6 +54,7 @@ class Declarator(object):
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
+        partition_attribute = []
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
             for class_attr in checkmate._utils.method_arguments(signature)[0]:
@@ -61,6 +62,7 @@ class Declarator(object):
                     try:
                         interface = getattr(_module, _to_interface(class_attr))
                         standard_methods.update({class_attr: checkmate._storage.store(interface, class_attr)})
+                        partition_attribute.append(class_attr)
                         break
                     except AttributeError:
                         continue
@@ -69,6 +71,7 @@ class Declarator(object):
                     try:
                         interface = getattr(_module, _to_interface(class_kwattr))
                         standard_methods.update({key: checkmate._storage.store(interface, class_kwattr)})
+                        partition_attribute.append(key)
                         break
                     except AttributeError:
                         continue
@@ -76,7 +79,8 @@ class Declarator(object):
             classname = signature
 
         _module = self.module[partition_type]
-        standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None]})
+        standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
+                                 'partition_attribute': tuple(partition_attribute)})
         setattr(_module, classname, _module.declare(classname, standard_methods))
         setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
         zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])

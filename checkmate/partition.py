@@ -6,12 +6,25 @@ import checkmate._storage
 class Partition(object):
     """"""
     _queue = False
+    partition_attribute = tuple()
 
     def __init__(self, value=None, *args, **kwargs):
         """
             >>> ds = Partition('AT1')
             >>> ds.value
             'AT1'
+
+            >>> import zope.interface
+            >>> def factory(self): print("In factory")
+            >>> A = type('A', (object,), {'factory': factory})
+            >>> _impl = zope.interface.implementer(checkmate._storage.IStorage)
+            >>> A = _impl(A)
+            >>> setattr(Partition, 'A', A())
+            >>> Partition.partition_attribute = ('A',)
+            >>> ds = Partition('AT1')
+            In factory
+            >>> delattr(Partition, 'A')
+            >>> Partition.partition_attribute = tuple()
         """
         if hasattr(self, 'append'):
             self._queue = True
@@ -34,11 +47,15 @@ class Partition(object):
         self.args = args
         for key in list(kwargs.keys()):
             setattr(self, key, kwargs[key])
+
         for name in dir(self):
             attr = getattr(self, name)
             if checkmate._storage.IStorage.providedBy(attr):
                 attr = attr.factory()
                 setattr(self, name, attr)
+
+    def __dir__(self):
+        return self.partition_attribute
 
     def __eq__(self, other):
         """
