@@ -60,7 +60,7 @@ class Declarator(object):
                 for _module in self.basic_modules[partition_type]:
                     try:
                         interface = getattr(_module, _to_interface(class_attr))
-                        standard_methods.update({class_attr: checkmate._storage.store_data_structure(interface, class_attr)})
+                        standard_methods.update({class_attr: checkmate._storage.store(interface, class_attr)})
                         break
                     except AttributeError:
                         continue
@@ -68,10 +68,7 @@ class Declarator(object):
                 for _module in self.basic_modules[partition_type]:
                     try:
                         interface = getattr(_module, _to_interface(class_kwattr))
-                        if _module == self.module['states']:
-                            standard_methods.update({key: checkmate._storage.store_state(interface, class_kwattr)})
-                        elif _module == self.module['data_structure']:
-                            standard_methods.update({key: checkmate._storage.store_data_structure(interface, class_kwattr)})
+                        standard_methods.update({key: checkmate._storage.store(interface, class_kwattr)})
                         break
                     except AttributeError:
                         continue

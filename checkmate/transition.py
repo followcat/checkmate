@@ -17,7 +17,7 @@ class Transition(object):
                 continue
             for _interface, _name in argc[item]:
                 if item in ['initial', 'final']:
-                    getattr(self, item).append(checkmate._storage.store_state(_interface, _name))
+                    getattr(self, item).append(checkmate._storage.store(_interface, _name))
                 elif item == 'incoming':
                     self.incoming = checkmate._storage.store_exchange(_interface, _name)
                 elif item == 'outgoing':

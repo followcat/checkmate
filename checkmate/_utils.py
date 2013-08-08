@@ -131,23 +131,13 @@ def valid_value_argument(signature):
             return _arguments(signature)[0]
     return None
 
-def method_value_arguments(signature):
-    """ All arguments are value
-
-        >>> method_value_arguments('func(AUTO, HIGH)')
-        (['AUTO', 'HIGH'], {})
-        >>> method_value_arguments("A0('AT1')")
-        (['AT1'], {})
-    """
-    _args = []
-    if is_method(signature):
-        if len(_arguments(signature)) != 0:
-            for argument in _arguments(signature):
-                _args.append(argument)
-    return (_args, {})
-
 def method_arguments(signature):
     """
+        >>> method_arguments('func(AUTO, HIGH)')
+        (['AUTO', 'HIGH'], {})
+        >>> method_arguments("A0('AT1')")
+        (['AT1'], {})
+
         >>> method_arguments('M0(True)')
         (['True'], {})
         >>> method_arguments("A0('AT1')")
@@ -163,8 +153,9 @@ def method_arguments(signature):
         ([], {'R': 'HIGH'})
         >>> method_arguments("RQ(R('HIGH'))")
         ([], {'R': 'HIGH'})
-        >>> method_arguments('ActionRequest(P=ActionPriority, A=Attribute)')
-        ([], {'P': 'ActionPriority', 'A': 'Attribute'})
+        >>> output = method_arguments('ActionRequest(P=ActionPriority, A=Attribute)')
+        >>> (output[-1]['P'], output[-1]['A'])
+        ('ActionPriority', 'Attribute')
     """
     _args = []
     _kw_args = {}
@@ -182,7 +173,7 @@ def argument_value(argument):
     """
     """
     return (argument.isdigit() or
-        argument in ['True', 'False', 'AT1', 'AT2', 'NORM', 'HIGH', 'None'])
+        argument in ['True', 'False', 'AT1', 'AT2', 'NORM', 'HIGH', 'None', 'AUTO', 'MANUAL'])
 
 def get_module_defining(interface):
     module_name = interface.__module__

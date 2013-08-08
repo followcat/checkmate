@@ -3,27 +3,13 @@ import zope.interface
 import checkmate._utils
 
 
-def store_data_structure(interface, name, description=None):
-    """
-        >>> import checkmate.test_data
-        >>> import sample_app.exchanges
-        >>> a = checkmate.test_data.App()
-        >>> store = store_data_structure(sample_app.data_structure.IAttribute, "AT('AT1')")
-        >>> attr = store.factory()
-        >>> attr.value
-        'AT1'
-        >>> store = store_data_structure(sample_app.data_structure.IAttribute, 'AT')
-        >>> attr = store.factory()
-    """
-    return checkmate._storage.DataStructureStorage(interface, name, description)
-
 def store_exchange(interface, name, description=None):
     """
         >>> import checkmate.test_data
         >>> import sample_app.exchanges
         >>> a = checkmate.test_data.App()
-        >>> store_ex = store_exchange(sample_app.exchanges.IAction, 'AP(R)')
-        >>> ex = store_ex.factory({'R': 'HIGH'})
+        >>> st = store_exchange(sample_app.exchanges.IAction, 'AP(R)')
+        >>> ex = st.factory({'R': 'HIGH'})
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
         ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
@@ -31,26 +17,29 @@ def store_exchange(interface, name, description=None):
     return checkmate._storage.ExchangeStorage(interface, name, description,
                 getattr(checkmate._utils.get_module_defining(interface), code))
 
-def store_state(interface, name, description=None):
+def store(interface, name, description=None):
     """
         >>> import checkmate.test_data
-        >>> import sample_app.component_1.states
+        >>> import sample_app.exchanges
         >>> a = checkmate.test_data.App()
-        >>> store_st = store_state(sample_app.component_1.states.IAnotherState, 'Q0()')
-        >>> state = store_st.factory()
+        >>> st = store(sample_app.data_structure.IAttribute, "AT('AT1')")
+        >>> attr = st.factory()
+        >>> attr.value
+        'AT1'
+        >>> st = store(sample_app.data_structure.IAttribute, 'AT')
+        >>> attr = st.factory()
+
+        >>> st = store(sample_app.component_1.states.IAnotherState, 'Q0()')
+        >>> state = st.factory()
         >>> state.value
         [None]
     """
     if checkmate._utils.method_unbound(name):
         code = checkmate._utils.internal_code(name)
-        return checkmate._storage.StateStorage(interface, name, description,
+        return checkmate._storage.InternalStorage(interface, name, description,
                 getattr(checkmate._utils.get_class_implementing(interface), code))
     else:
-        return checkmate._storage.StateStorage(interface, name, description)
-
-def store_state_value(interface, name, description=None):
-    (arguments, kw_arguments) = checkmate._utils.method_value_arguments(name)
-    return checkmate._storage.StateStorage(interface, name, description, arguments=arguments, kw_arguments=kw_arguments)
+        return checkmate._storage.InternalStorage(interface, name, description)
 
 
 class PartitionStorage(object):
@@ -60,17 +49,14 @@ class PartitionStorage(object):
         self.type = type
         self.storage = []
         for code in codes:
-            if type == 'states':
-                _storage = store_state_value(interface, code, full_description[code])
-                self.storage.append(_storage)
-            elif type == 'data_structure':
-                _storage = store_data_structure(interface, code, full_description[code])
+            if ((type == 'states') or (type == 'data_structure')):
+                _storage = store(interface, code, full_description[code])
                 self.storage.append(_storage)
             elif type == 'exchanges':
                 _storage = store_exchange(interface, code, full_description[code])
                 self.storage.append(_storage)
         if codes == None or len(codes) == 0:
-            self.storage.append(store_data_structure(interface, ''))
+            self.storage.append(store(interface, ''))
 
     def get_description(self, item):
         """ Return description corresponding to item """
@@ -86,7 +72,8 @@ class IStorage(zope.interface.Interface):
 
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
-    def __init__(self, interface, name, description, function=None):
+    """Support local storage of data (status or data_structure) information in transition"""
+    def __init__(self, interface, name ,description, function=None, arguments=None, kw_arguments=None):
         self.code = checkmate._utils.internal_code(name)
         self.description = description
         self.interface = interface
@@ -95,7 +82,10 @@ class InternalStorage(object):
             self.function = self._class
         else:
             self.function = function
-        (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
+        if ((arguments is not None) and (kw_arguments is not None)):
+            (self.arguments, self.kw_arguments) = (arguments, kw_arguments)
+        else:
+            (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
 
     def factory(self, args=[], kwargs={}):
         """
@@ -113,29 +103,19 @@ class InternalStorage(object):
             kwargs = self.kw_arguments
         return wrapper(self.function, args, kwargs)
 
-class DataStructureStorage(InternalStorage):
-    """Support local storage of data structure information in transition"""
-
-class StateStorage(InternalStorage):
-    """Support local storage of state information in transition"""
-    def __init__(self, interface, name ,description, function=None, arguments=None, kw_arguments=None):
-        super(StateStorage, self).__init__(interface, name, description, function)
-        if ((arguments is not None) and (kw_arguments is not None)):
-            (self.arguments, self.kw_arguments) = (arguments, kw_arguments)
-
     def resolve(self, arg, states):
         """
             >>> import checkmate.test_data
             >>> import sample_app.component_1.states
             >>> a = checkmate.test_data.App()
-            >>> store_st = StateStorage(sample_app.component_1.states.IAnotherState, 'Q0(R)', None)
-            >>> state = store_st.factory()
+            >>> st = InternalStorage(sample_app.component_1.states.IAnotherState, 'Q0(R)', None)
+            >>> state = st.factory()
             >>> state.append(R=1)
-            >>> store_st.resolve('R', [state])
+            >>> st.resolve('R', [state])
             Traceback (most recent call last):
             ...
             AttributeError
-            >>> store_st.resolve('Q0', [state])
+            >>> st.resolve('Q0', [state])
             [{'R': 1}]
         """
         if arg == self.code:
@@ -152,11 +132,11 @@ class ExchangeStorage(InternalStorage):
             >>> import checkmate.test_data
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
-            >>> store_ex = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
-            >>> ex = store_ex.factory()
+            >>> st = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
+            >>> ex = st.factory()
             >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
             ('AP', {'R': None}, <sample_app.data_structure.ActionRequest object at ...
-            >>> store_ex.resolve('R', ex)
+            >>> st.resolve('R', ex)
         """
         if arg in list(self.kw_arguments.keys()):
             if arg in iter(exchange.parameters):
