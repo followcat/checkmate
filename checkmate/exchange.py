@@ -14,10 +14,10 @@ def new_exchange_interface(name, parents, param):
 
 class Exchange(checkmate.partition.Partition):
     """"""
-    def __init__(self, action, *args, **kwargs):
+    def __init__(self, value, *args, **kwargs):
         """
             >>> e = Exchange('CA', 'AUTO')
-            >>> e.action
+            >>> e.value
             'CA'
             >>> e.parameters['AUTO']
             >>> e = Exchange('CA', R=1)
@@ -25,7 +25,7 @@ class Exchange(checkmate.partition.Partition):
             1
         """
         self.parameters = {}
-        self.action = action
+        self.value = value
         for argument in args:
             if argument.isalpha():
                 self.parameters[argument] = None
@@ -50,7 +50,7 @@ class Exchange(checkmate.partition.Partition):
             >>> Exchange('CA', R=1) == Exchange('CA', R0=1)
             False
         """
-        if self.action == other.action:
+        if self.value == other.value:
             if (len(self.parameters) == 0 or len(other.parameters) == 0):
                 return True
             elif (len(self.parameters) == len(other.parameters)):
@@ -65,3 +65,6 @@ class Exchange(checkmate.partition.Partition):
                 return True
         return False
 
+    @property
+    def action(self):
+        return self.value
