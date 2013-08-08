@@ -14,6 +14,14 @@ class Partition(object):
             >>> ds.value
             'AT1'
 
+            >>> e = Partition('CA', 'AUTO')
+            >>> e.value
+            'CA'
+            >>> e.parameters['AUTO']
+            >>> e = Partition('CA', R=1)
+            >>> e.parameters['R']
+            1
+
             >>> import zope.interface
             >>> def factory(self): print("In factory")
             >>> A = type('A', (object,), {'factory': factory})
@@ -44,9 +52,11 @@ class Partition(object):
                 except:
                     pass
             
-        self.args = args
-        for key in list(kwargs.keys()):
-            setattr(self, key, kwargs[key])
+        self.parameters = {}
+        for argument in args:
+            if argument.isalpha():
+                self.parameters[argument] = None
+        self.parameters.update(kwargs)
 
         for name in dir(self):
             attr = getattr(self, name)

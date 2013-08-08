@@ -1,8 +1,7 @@
-import collections
-
 import zope.interface.interface
 
 import checkmate._storage
+import checkmate.partition
 
 
 def new_exchange(name, parents, param):
@@ -14,29 +13,6 @@ def new_exchange_interface(name, parents, param):
 
 class Exchange(checkmate.partition.Partition):
     """"""
-    def __init__(self, value, *args, **kwargs):
-        """
-            >>> e = Exchange('CA', 'AUTO')
-            >>> e.value
-            'CA'
-            >>> e.parameters['AUTO']
-            >>> e = Exchange('CA', R=1)
-            >>> e.parameters['R']
-            1
-        """
-        self.parameters = {}
-        self.value = value
-        for argument in args:
-            if argument.isalpha():
-                self.parameters[argument] = None
-        self.parameters.update(kwargs)
-
-        for name in dir(self):
-            attr = getattr(self, name)
-            if checkmate._storage.IStorage.providedBy(attr):
-                attr = attr.factory()
-                setattr(self, name, attr)
-
     def __eq__(self, other):
         """
             >>> Exchange('CA') == Exchange('TM')
@@ -67,4 +43,9 @@ class Exchange(checkmate.partition.Partition):
 
     @property
     def action(self):
+        """
+            >>> e = Exchange('CA')
+            >>> e.action
+            'CA'
+        """
         return self.value

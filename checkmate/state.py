@@ -111,7 +111,7 @@ class State(checkmate.partition.Partition):
             True
             >>> delattr(State, 'append')
         """
-        super(State, self).__init__(value, args, kwargs)
+        super(State, self).__init__(value, *args, **kwargs)
 
     def __eq__(self, other):
         """
