@@ -154,10 +154,9 @@ class ExchangeStorage(InternalStorage):
             if arg in iter(exchange.parameters):
                 if exchange.parameters[arg] is not None:
                     return {arg: exchange.parameters[arg]}
-            else:
-                try:
-                    return {arg: getattr(exchange, arg)}
-                except AttributeError:
-                    raise AttributeError
+            try:
+                return {arg: getattr(exchange, arg)}
+            except AttributeError:
+                raise AttributeError
         raise AttributeError
 
