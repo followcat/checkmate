@@ -120,12 +120,12 @@ class InternalStorage(object):
             ...
             AttributeError
             >>> st.resolve('Q0', [state])
-            [{'R': 1}]
+            {'Q0': [{'R': 1}]}
         """
         if arg == self.code:
             for _state in states:
                 if self.interface.providedBy(_state):
-                    return _state.value
+                    return {arg: _state.value}
         raise AttributeError
 
 class ExchangeStorage(InternalStorage):
@@ -137,13 +137,19 @@ class ExchangeStorage(InternalStorage):
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
             >>> st = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
+
+            >>> ex = st.factory(kwargs={'R': 1})
+            >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
+            {'R': 1}
+
             >>> ex = st.factory()
             >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
             ('AP', {'R': None}, <sample_app.data_structure.ActionRequest object at ...
-            >>> st.resolve('R', ex)
+            >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
+            {'R': None}
         """
         if arg in list(self.kw_arguments.keys()):
             if arg in iter(exchange.parameters):
-                return exchange.parameters[arg]
+                return {arg: exchange.parameters[arg]}
         raise AttributeError
 

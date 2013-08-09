@@ -30,10 +30,14 @@ class Transition(object):
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
             >>> i = c.state_machine.transitions[0].incoming.factory()
+            >>> i.action
+            'AC'
             >>> c.state_machine.transitions[0].is_matching_incoming(i)
             True
             >>> c.state_machine.transitions[3].is_matching_incoming(i)
             False
+
+            >>> i = c.state_machine.transitions[1].incoming.factory()
         """
         if self.incoming is not None:
             _interface = self.incoming.interface
@@ -72,12 +76,14 @@ class Transition(object):
             >>> c = a.components['C1']
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
-            >>> i = t.incoming.factory()
-            >>> t.resolve_arguments('final', t.final[0], c.states, i)
-            {'R': None}
             >>> i = t.incoming.factory(kwargs={'R': 1})
             >>> t.resolve_arguments('final', t.final[0], c.states, i)
             {'R': 1}
+            >>> i = t.incoming.factory()
+            >>> (i.action, i.R.P.value)
+            ('AP', 'NORM')
+            >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
+            {'R': None}
         """
         resolved_arguments = {}
         entry = getattr(self, type)
@@ -91,7 +97,7 @@ class Transition(object):
             if type in ['final', 'incoming']:
                 for item in self.initial:
                     try:
-                        resolved_value = item.resolve(arg, states)
+                        resolved_arguments.update(item.resolve(arg, states))
                         found = True
                         break
                     except AttributeError:
@@ -99,7 +105,7 @@ class Transition(object):
             if ((not found) and self.incoming is not None):
                 if type in ['final', 'outgoing']:
                     try:
-                        resolved_value = self.incoming.resolve(arg, incoming)
+                        resolved_arguments.update(self.incoming.resolve(arg, incoming))
                         found = True
                     except AttributeError:
                         pass
@@ -107,13 +113,11 @@ class Transition(object):
                 if type in ['outgoing']:
                     for item in self.final:
                         try:
-                            resolved_value = item.resolve(arg, states)
+                            resolved_arguments.update(item.resolve(arg, states))
                             found = True
                             break
                         except AttributeError:
                             continue
-            if found:
-                resolved_arguments[arg] = resolved_value
         return resolved_arguments
 
 
