@@ -1,3 +1,5 @@
+import copy
+
 import zope.interface
 
 import checkmate._utils
@@ -107,6 +109,9 @@ class InternalStorage(object):
             >>> r = st.factory()
             >>> (r.P.value, r.A.value)
             ('HIGH', 'AT2')
+            >>> r = st.factory(kwargs={'P': 'NORM'})
+            >>> (r.P.value, r.A.value)
+            ('NORM', 'AT2')
         """
         def wrapper(func, param, kwparam):
             return func(*param, **kwparam)
@@ -115,6 +120,10 @@ class InternalStorage(object):
             args = self.arguments
         if len(kwargs) == 0:
             kwargs = self.kw_arguments
+        else:
+            _local_kwargs = copy.deepcopy(self.kw_arguments)
+            _local_kwargs.update(kwargs)
+            kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
     def resolve(self, arg, states):
