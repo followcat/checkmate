@@ -68,10 +68,17 @@ class Partition(object):
 
     def __eq__(self, other):
         """
-            >>> Partition('AT1') == Partition('AT2')
-            False
-            >>> Partition('AT1') == Partition('AT1')
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> r1 = a.data_structure[2][-1].storage[0].factory()
+            >>> r2 = a.data_structure[2][-1].storage[0].factory()
+            >>> r1 == r2
             True
+            >>> r1.P.value
+            'NORM'
+            >>> r1.P.value = 'HIGH'
+            >>> r1 == r2
+            False
         """
         if type(self) != type(other):
             return False
@@ -86,9 +93,16 @@ class Partition(object):
 
 def compare_value(one, other):
     """
-    >>> checkmate.partition.compare_value(Partition('AT1'), Partition('AT1'))
+    >>> import checkmate.test_data
+    >>> a = checkmate.test_data.App()
+    >>> r1 = a.data_structure[1][-1].storage[0].factory()
+    >>> r2 = a.data_structure[1][-1].storage[0].factory()
+    >>> checkmate.partition.compare_value(r1, r2)
     True
-    >>> checkmate.partition.compare_value(Partition('AT1'), Partition('AT2'))
+    >>> r1.value
+    'NORM'
+    >>> r1.value = 'HIGH'
+    >>> checkmate.partition.compare_value(r1, r2)
     False
     """
     if one._queue == True:
@@ -107,28 +121,16 @@ def compare_value(one, other):
 
 def compare_attr(one, other):
     """
-    >>> checkmate.partition.compare_attr(Partition('AT1'), Partition('AT2'))
+    >>> import checkmate.test_data
+    >>> a = checkmate.test_data.App()
+    >>> r1 = a.data_structure[2][-1].storage[0].factory()
+    >>> r2 = a.data_structure[2][-1].storage[0].factory()
+    >>> checkmate.partition.compare_attr(r1, r2)
     True
-    >>> import checkmate.exchange
-    >>> checkmate.partition.compare_attr(Partition('AT1'), checkmate.exchange.Exchange('R'))
-    False
-    >>> import sample_app.data_structure
-    >>> import sample_app.exchanges 
-    >>> import checkmate.state
-    >>> import collections
-    >>> import zope.interface
-    >>> import checkmate.partition_declarator
-    >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, sample_app.exchanges)
-    >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')", "P0('HIGH')"])
-    >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
-    >>> c = ar[-1].storage[0].factory()
-    >>> c1 = ar[-1].storage[0].factory()
-    >>> c.P.value
+    >>> r1.P.value
     'NORM'
-    >>> c1 == c
-    True
-    >>> c1.P.value = 'HIGH'
-    >>> c1 == c
+    >>> r1.P.value = 'HIGH'
+    >>> checkmate.partition.compare_attr(r1, r2)
     False
     """
     if type(one) != type(other):
