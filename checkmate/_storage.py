@@ -103,6 +103,10 @@ class InternalStorage(object):
             >>> r1 = st.factory(kwargs={'P': 'HIGH'})
             >>> r1.P.value
             'HIGH'
+            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R(P=HIGH,A=AT2)', None, sample_app.data_structure.ActionRequest)
+            >>> r = st.factory()
+            >>> (r.P.value, r.A.value)
+            ('HIGH', 'AT2')
         """
         def wrapper(func, param, kwparam):
             return func(*param, **kwparam)
