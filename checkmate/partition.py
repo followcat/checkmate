@@ -119,8 +119,8 @@ def compare_attr(one, other):
     >>> import zope.interface
     >>> import checkmate.partition_declarator
     >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, sample_app.exchanges)
-    >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')", "P0('HIGH')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value')), ("P0('HIGH')",('D-PRIO-02', 'HIGH valid value', 'HIGH priority value'))]))
-    >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[], full_description=collections.OrderedDict())
+    >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')", "P0('HIGH')"])
+    >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
     >>> c = ar[-1].storage[0].factory()
     >>> c1 = ar[-1].storage[0].factory()
     >>> c.P.value

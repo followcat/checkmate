@@ -24,7 +24,7 @@ class Declarator(object):
         self.basic_modules['states'] = [data_module]
         self.basic_modules['exchanges'] = [data_module, state_module]
 
-    def new_partition(self, partition_type, signature, standard_methods, codes, full_description):
+    def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
         >>> import sample_app.data_structure
         >>> import sample_app.exchanges
@@ -38,17 +38,17 @@ class Declarator(object):
         (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(sample_app.data_structure.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"], full_description=collections.OrderedDict([("M0(True)",('S-STATE-01', 'True valid value', 'State true value'))]))
+        >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[], full_description=collections.OrderedDict())
+        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
         >>> ar # doctest: +ELLIPSIS
         (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
         >>> sample_app.data_structure.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
         True
-        >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'], full_description=collections.OrderedDict([('AP(R)',('X-ACTION-02', 'action 2', 'Comment action 2'))]))
+        >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass sample_app.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()

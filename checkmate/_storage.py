@@ -43,17 +43,21 @@ def store(interface, name, description=None):
 
 
 class PartitionStorage(object):
-    def __init__(self, type, interface, codes, full_description):
+    def __init__(self, type, interface, codes, full_description=None):
         """ Build the list of InternalStorage
         """
         self.type = type
         self.storage = []
         for code in codes:
+            try:
+                code_description = full_description[code]
+            except:
+                code_description = (None,None,None)
             if ((type == 'states') or (type == 'data_structure')):
-                _storage = store(interface, code, full_description[code])
+                _storage = store(interface, code, code_description)
                 self.storage.append(_storage)
             elif type == 'exchanges':
-                _storage = store_exchange(interface, code, full_description[code])
+                _storage = store_exchange(interface, code, code_description)
                 self.storage.append(_storage)
         if codes == None or len(codes) == 0:
             self.storage.append(store(interface, ''))
