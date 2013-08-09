@@ -26,8 +26,8 @@ class Run(object):
             >>> i = c1.state_machine.transitions[1].incoming.factory()
             >>> o = c1.state_machine.transitions[1].process(c1.states, i)
             >>> r = Run(initial_state, i, c1.states, o)
-            >>> r.final
-            [([{'R': None}], 'S-ANOST-02')]
+            >>> r.final # doctest: +ELLIPSIS
+            [([{'R': <sample_app.data_structure.ActionRequest object at ...
         """
         # following lines cost 20sec in doctest
         #self.initial = initial

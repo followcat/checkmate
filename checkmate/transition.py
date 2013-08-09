@@ -83,7 +83,7 @@ class Transition(object):
             >>> (i.action, i.R.P.value)
             ('AP', 'NORM')
             >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
-            {'R': None}
+            {'R': <sample_app.data_structure.ActionRequest object at ...
         """
         resolved_arguments = {}
         entry = getattr(self, type)
@@ -141,12 +141,12 @@ class Transition(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> i = c.state_machine.transitions[1].incoming.factory()
             >>> o = c.state_machine.transitions[1].process(c.states, i)
-            >>> c.states[1].value
-            [{'R': None}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> i = c.state_machine.transitions[1].incoming.factory(kwargs={'R': 1})
             >>> o = c.state_machine.transitions[1].process(c.states, i)
-            >>> c.states[1].value
-            [{'R': None}, {'R': 1}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
         """
         def member_wrapper(cls, obj, args=[], kwargs={}):
             return cls(obj, *args, **kwargs)

@@ -24,11 +24,11 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> ds = sample_app.data_structure.Attribute('AT2') 
             >>> ds.description() # doctest: +ELLIPSIS
             ('D-ATTR-02', ...
-            >>> i = sample_app.exchanges.AP(R=1)
+            >>> i = sample_app.exchanges.AP()
             >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> c.states[1].value
-            [{'R': 1}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> i = sample_app.exchanges.AC()
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming(i)

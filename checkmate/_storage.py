@@ -139,6 +139,8 @@ class ExchangeStorage(InternalStorage):
             >>> st = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
 
             >>> ex = st.factory(kwargs={'R': 1})
+            >>> (ex.action, ex.parameters, ex.R)  # doctest: +ELLIPSIS
+            ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
             >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
             {'R': 1}
 
@@ -146,10 +148,16 @@ class ExchangeStorage(InternalStorage):
             >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
             ('AP', {'R': None}, <sample_app.data_structure.ActionRequest object at ...
             >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
-            {'R': None}
+            {'R': <sample_app.data_structure.ActionRequest object at ...
         """
         if arg in list(self.kw_arguments.keys()):
             if arg in iter(exchange.parameters):
-                return {arg: exchange.parameters[arg]}
+                if exchange.parameters[arg] is not None:
+                    return {arg: exchange.parameters[arg]}
+            else:
+                try:
+                    return {arg: getattr(exchange, arg)}
+                except AttributeError:
+                    raise AttributeError
         raise AttributeError
 

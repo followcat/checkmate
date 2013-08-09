@@ -20,8 +20,8 @@ class StateMachine(object):
             6
             >>> (r[0].initial, r[0].incoming, r[0].final)
             ([('True', 'S-STATE-01')], ('AC', 'X-ACTION-01'), [('False', 'S-STATE-02')])
-            >>> (r[1].initial, r[1].incoming, r[1].final)
-            ([([], 'S-ANOST-01')], ('AP', 'X-ACTION-02'), [([{'R': None}], 'S-ANOST-02')])
+            >>> (r[1].initial, r[1].incoming, r[1].final) # doctest: +ELLIPSIS
+            ([([], 'S-ANOST-01')], ('AP', 'X-ACTION-02'), [([{'R': <sample_app.data_structure.ActionRequest object at ...
         """
         for transition in self.transitions:
             if transition.is_matching_initial(states):
