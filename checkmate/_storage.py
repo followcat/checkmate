@@ -76,10 +76,23 @@ class IStorage(zope.interface.Interface):
     def factory(self, args=[], kwargs={}):
         """"""
 
+class ArgumentStorage(tuple):
+    """"""
+    @property
+    def values(self):
+        assert (len(self) == 2)
+        return self[0]
+
+    @property
+    def attribute_values(self):
+        assert (len(self) == 2)
+        return self[1]
+
+
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, name ,description, function=None, arguments=None, kw_arguments=None):
+    def __init__(self, interface, name ,description, function=None):
         """
             >>> import checkmate.test_data
             >>> import sample_app.data_structure
@@ -100,7 +113,7 @@ class InternalStorage(object):
         else:
             self.function = function
 
-        (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
+        self.arguments = ArgumentStorage(checkmate._utils.method_arguments(name))
 
     def factory(self, args=[], kwargs={}):
         """
@@ -126,11 +139,11 @@ class InternalStorage(object):
             return func(*param, **kwparam)
 
         if len(args) == 0:
-            args = self.arguments
+            args = self.arguments.values
         if len(kwargs) == 0:
-            kwargs = self.kw_arguments
+            kwargs = self.arguments.attribute_values
         else:
-            _local_kwargs = copy.deepcopy(self.kw_arguments)
+            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
@@ -178,7 +191,7 @@ class ExchangeStorage(InternalStorage):
             >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
         """
-        if arg in list(self.kw_arguments.keys()):
+        if arg in list(self.arguments.attribute_values.keys()):
             if arg in iter(exchange.parameters):
                 if exchange.parameters[arg] is not None:
                     return {arg: exchange.parameters[arg]}

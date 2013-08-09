@@ -88,9 +88,9 @@ class Transition(object):
         resolved_arguments = {}
         entry = getattr(self, type)
         if type == 'incoming':
-            arguments = list(entry.kw_arguments.keys())
+            arguments = list(entry.arguments.attribute_values.keys())
         else:
-            arguments = list(entry[entry.index(data)].kw_arguments.keys())
+            arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
         for arg in arguments:
             found = False
             resolved_value = None
