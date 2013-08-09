@@ -80,6 +80,17 @@ class IStorage(zope.interface.Interface):
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
     def __init__(self, interface, name ,description, function=None, arguments=None, kw_arguments=None):
+        """
+            >>> import checkmate.test_data
+            >>> import sample_app.data_structure
+            >>> a = checkmate.test_data.App()
+            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'P(HIGH)', None, sample_app.data_structure.ActionPriority)
+            >>> st.factory().value
+            'HIGH'
+            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'HIGH', None, sample_app.data_structure.ActionPriority)
+            >>> st.factory().value # doctest: +SKIP
+            'HIGH'
+        """
         self.code = checkmate._utils.internal_code(name)
         self.description = description
         self.interface = interface
@@ -88,10 +99,8 @@ class InternalStorage(object):
             self.function = self._class
         else:
             self.function = function
-        if ((arguments is not None) and (kw_arguments is not None)):
-            (self.arguments, self.kw_arguments) = (arguments, kw_arguments)
-        else:
-            (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
+
+        (self.arguments, self.kw_arguments) = checkmate._utils.method_arguments(name)
 
     def factory(self, args=[], kwargs={}):
         """
