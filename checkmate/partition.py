@@ -60,7 +60,10 @@ class Partition(object):
 
         for name in dir(self):
             attr = getattr(self, name)
-            attr = attr.factory()
+            if name in iter(kwargs):
+                attr = attr.factory([kwargs[name]])
+            else:
+                attr = attr.factory()
             setattr(self, name, attr)
 
     def __dir__(self):

@@ -95,8 +95,14 @@ class InternalStorage(object):
         """
             >>> 'Q0.append(R)'
             'Q0.append(R)'
-            >>> 'R(P=HIGH)'
-            'R(P=HIGH)'
+
+            >>> import checkmate.test_data
+            >>> import sample_app.data_structure
+            >>> a = checkmate.test_data.App()
+            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R', None, sample_app.data_structure.ActionRequest)
+            >>> r1 = st.factory(kwargs={'P': 'HIGH'})
+            >>> r1.P.value
+            'HIGH'
         """
         def wrapper(func, param, kwparam):
             return func(*param, **kwparam)
