@@ -1,6 +1,8 @@
 import ast
 import sys
 
+import zope.interface
+
 
 def _has_argument(signature):
     if signature == '':
@@ -134,28 +136,30 @@ def valid_value_argument(signature):
 def method_arguments(signature):
     """
         >>> method_arguments('func(AUTO, HIGH)')
-        (['AUTO', 'HIGH'], {})
+        (('AUTO', 'HIGH'), {})
         >>> method_arguments("A0('AT1')")
-        (['AT1'], {})
+        (('AT1',), {})
 
         >>> method_arguments('M0(True)')
-        (['True'], {})
+        (('True',), {})
         >>> method_arguments("A0('AT1')")
-        (['AT1'], {})
+        (('AT1',), {})
         >>> method_arguments('Q(None)')
-        (['None'], {})
+        (('None',), {})
         >>> l,d = method_arguments('func(R, P=HIGH)')
         >>> len (l)
         0
         >>> d['P']
         'HIGH'
         >>> method_arguments('RQ(R(HIGH))')
-        ([], {'R': 'HIGH'})
+        ((), {'R': 'HIGH'})
         >>> method_arguments("RQ(R('HIGH'))")
-        ([], {'R': 'HIGH'})
+        ((), {'R': 'HIGH'})
         >>> output = method_arguments('ActionRequest(P=ActionPriority, A=Attribute)')
         >>> (output[-1]['P'], output[-1]['A'])
         ('ActionPriority', 'Attribute')
+        >>> method_arguments('RQ(R(P=HIGH))') # doctest: +SKIP
+        ((), {'R': ((), {'P': 'HIGH'})})
     """
     _args = []
     _kw_args = {}
@@ -167,7 +171,7 @@ def method_arguments(signature):
                 _kw_args[argument] = None
         for item in _kw_arguments(signature):
             _kw_args[item[0]] = item[1]
-    return (_args, _kw_args)
+    return ArgumentStorage((tuple(_args), _kw_args))
 
 def argument_value(argument):
     """
@@ -200,4 +204,20 @@ def get_class_implementing(interface):
         if inspect.isclass(_o):
             if interface.implementedBy(_o):
                 return _o
+
+class IArgumentStorage(zope.interface.Interface):
+    """"""
+
+@zope.interface.implementer(IArgumentStorage)
+class ArgumentStorage(tuple):
+    """"""
+    @property
+    def values(self):
+        assert (len(self) == 2)
+        return self[0]
+
+    @property
+    def attribute_values(self):
+        assert (len(self) == 2)
+        return self[1]
 

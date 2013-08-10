@@ -1,5 +1,6 @@
 import zope.interface.interface
 
+import checkmate._utils
 import checkmate._storage
 
 
@@ -33,6 +34,14 @@ class Partition(object):
             In factory
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
+
+            >>> import checkmate._utils
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> args = checkmate._utils.ArgumentStorage(((), {'R': checkmate._utils.ArgumentStorage(((), {'P': checkmate._utils.ArgumentStorage((('HIGH',), {}))}))}))
+            >>> ac = a.exchanges[0][-1].storage[0].factory(args.values, args.attribute_values)
+            >>> ac.R.P.value
+            'HIGH'
         """
         if hasattr(self, 'append'):
             self._queue = True
@@ -54,14 +63,18 @@ class Partition(object):
             
         self.parameters = {}
         for argument in args:
-            if argument.isalpha():
+            if ((type(argument) == str) and (argument.isalpha())):
                 self.parameters[argument] = None
         self.parameters.update(kwargs)
 
         for name in dir(self):
             attr = getattr(self, name)
             if name in iter(kwargs):
-                attr = attr.factory([kwargs[name]])
+                if checkmate._utils.IArgumentStorage.providedBy(kwargs[name]):
+                    attr = attr.factory(kwargs[name].values, kwargs[name].attribute_values)
+                else:
+                    # Fallback, for doctest mostly
+                    attr = attr.factory((kwargs[name],))
             else:
                 attr = attr.factory()
             setattr(self, name, attr)

@@ -71,23 +71,11 @@ class PartitionStorage(object):
                 return stored_item.description
         return (None,None,None)
 
+
 class IStorage(zope.interface.Interface):
     """"""
     def factory(self, args=[], kwargs={}):
         """"""
-
-class ArgumentStorage(tuple):
-    """"""
-    @property
-    def values(self):
-        assert (len(self) == 2)
-        return self[0]
-
-    @property
-    def attribute_values(self):
-        assert (len(self) == 2)
-        return self[1]
-
 
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
@@ -113,7 +101,7 @@ class InternalStorage(object):
         else:
             self.function = function
 
-        self.arguments = ArgumentStorage(checkmate._utils.method_arguments(name))
+        self.arguments = checkmate._utils.method_arguments(name)
 
     def factory(self, args=[], kwargs={}):
         """
