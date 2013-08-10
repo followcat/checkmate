@@ -11,10 +11,7 @@ class Partition(object):
 
     def __init__(self, value=None, *args, **kwargs):
         """
-            >>> ds = Partition('AT1')
-            >>> ds.value
-            'AT1'
-
+        The arguments are of str type, the values are sotred in parameter dict.
             >>> e = Partition('CA', 'AUTO')
             >>> e.value
             'CA'
@@ -23,6 +20,7 @@ class Partition(object):
             >>> e.parameters['R']
             1
 
+        If the partition defines an attribute as implementing IStorage, the factory() is called to instantiate the attribute.
             >>> import zope.interface
             >>> def factory(self): print("In factory")
             >>> A = type('A', (object,), {'factory': factory})
@@ -35,12 +33,19 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
+        We can pass _utils.ArgumentStorage formatted argument to act on attribute instantiation.
             >>> import checkmate._utils
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> args = checkmate._utils.ArgumentStorage(((), {'R': checkmate._utils.ArgumentStorage(((), {'P': checkmate._utils.ArgumentStorage((('HIGH',), {}))}))}))
             >>> ac = a.exchanges[0][-1].storage[0].factory(args.values, args.attribute_values)
             >>> ac.R.P.value
+            'HIGH'
+
+        We can define a partition by passing an instance for attribute.
+            >>> re = a.data_structure[2][-1].storage[0].factory(kwargs={'P': 'HIGH'})
+            >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
+            >>> ac2.R.P.value
             'HIGH'
         """
         if hasattr(self, 'append'):
@@ -70,7 +75,9 @@ class Partition(object):
         for name in dir(self):
             attr = getattr(self, name)
             if name in iter(kwargs):
-                if checkmate._utils.IArgumentStorage.providedBy(kwargs[name]):
+                if attr.interface.providedBy(kwargs[name]):
+                    attr = kwargs[name]
+                elif checkmate._utils.IArgumentStorage.providedBy(kwargs[name]):
                     attr = attr.factory(kwargs[name].values, kwargs[name].attribute_values)
                 else:
                     # Fallback, for doctest mostly
