@@ -57,7 +57,7 @@ class Declarator(object):
         partition_attribute = []
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
-            for class_attr in checkmate._utils.method_arguments(signature)[0]:
+            for class_attr in checkmate._utils.method_arguments(signature).values:
                 for _module in self.basic_modules[partition_type]:
                     try:
                         interface = getattr(_module, _to_interface(class_attr))
@@ -66,11 +66,12 @@ class Declarator(object):
                         break
                     except AttributeError:
                         continue
-            for key, class_kwattr in checkmate._utils.method_arguments(signature)[1].items():
+            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
                 for _module in self.basic_modules[partition_type]:
                     try:
-                        interface = getattr(_module, _to_interface(class_kwattr))
-                        standard_methods.update({key: checkmate._storage.store(interface, class_kwattr)})
+                        # class_kwattr[0][0] to get the classname from source string
+                        interface = getattr(_module, _to_interface(class_kwattr[0][0]))
+                        standard_methods.update({key: checkmate._storage.store(interface, class_kwattr[0][0])})
                         partition_attribute.append(key)
                         break
                     except AttributeError:

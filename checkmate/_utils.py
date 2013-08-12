@@ -15,6 +15,10 @@ def _has_argument(signature):
         return False
 
 def _leading_name(signature):
+    """
+        >>> _leading_name('Action(R=ActionRequest)')
+        'Action'
+    """
     body = ast.parse(signature).body[0]
     try:
         return body.value.func.attr
@@ -53,19 +57,30 @@ def _kw_arguments(signature):
         [('R', 'HIGH')]
         >>> _kw_arguments("RQ(R('HIGH'))")
         [('R', 'HIGH')]
+        >>> _kw_arguments("RQ(R(P='HIGH', A='AT1'))")
+        [('R', "R(P='HIGH', A='AT1')")]
     """
     output = []
     body = ast.parse(signature).body[0]
     try:
+        #format the first layer of signature arguments
         for a in body.value.keywords:
             if type(a.value) == ast.Name:
                 output.append((a.arg, a.value.id))
             elif type(a.value) == ast.Str:
                 output.append((a.arg, a.value.s))
-        if type(body.value.args[0].args[0]) == ast.Name:
-            output.append((body.value.args[0].func.id, body.value.args[0].args[0].id))
-        elif type(body.value.args[0].args[0]) == ast.Str:
-            output.append((body.value.args[0].func.id, body.value.args[0].args[0].s))
+        _arg = body.value.args[0]
+        if hasattr(_arg, 'args') and len(_arg.args) > 0:
+            for arg in _arg.args:
+                if type(arg) == ast.Name:
+                    output.append((_arg.func.id, arg.id))
+                elif type(arg) == ast.Str:
+                    output.append((_arg.func.id, arg.s))
+        #keep the internal layers of signature arguments
+        if hasattr(_arg, 'keywords') and len(_arg.keywords) > 0:
+            _s = signature
+            _output = _s[_s.index(_arg.func.id+'('):_s.rindex(')')]
+            output.append((_arg.func.id, _output))
     finally:
         return output
 
@@ -149,17 +164,22 @@ def method_arguments(signature):
         >>> l,d = method_arguments('func(R, P=HIGH)')
         >>> len (l)
         0
-        >>> d['P']
+        >>> d['P'].values[0]
         'HIGH'
+        >>> method_arguments('Action(R=ActionRequest)')
+        ((), {'R': (('ActionRequest',), {})})
         >>> method_arguments('RQ(R(HIGH))')
-        ((), {'R': 'HIGH'})
-        >>> method_arguments("RQ(R('HIGH'))")
-        ((), {'R': 'HIGH'})
+        ((), {'R': (('HIGH',), {})})
         >>> output = method_arguments('ActionRequest(P=ActionPriority, A=Attribute)')
-        >>> (output[-1]['P'], output[-1]['A'])
+        >>> (output[-1]['P'].values[0], output[-1]['A'].values[0])
         ('ActionPriority', 'Attribute')
-        >>> method_arguments('RQ(R(P=HIGH))') # doctest: +SKIP
-        ((), {'R': ((), {'P': 'HIGH'})})
+        >>> method_arguments('RQ(R(P=HIGH))') 
+        ((), {'R': ((), {'P': (('HIGH',), {})})})
+        >>> o = method_arguments("RQ(R(P='HIGH', A='AT1'))")
+        >>> o.attribute_values['R'].attribute_values['A'].values
+        ('AT1',)
+        >>> o.attribute_values['R'].attribute_values['P'].values
+        ('HIGH',)
     """
     _args = []
     _kw_args = {}
@@ -170,7 +190,14 @@ def method_arguments(signature):
             else:
                 _kw_args[argument] = None
         for item in _kw_arguments(signature):
-            _kw_args[item[0]] = item[1]
+            _kw_val = item[1]
+            if is_method(item[1]):
+                # get inside layer of argument
+                _kw_val = method_arguments(item[1])
+            else:
+                # format the value
+                _kw_val = ArgumentStorage((tuple((item[1],)), {}))
+            _kw_args[item[0]] = _kw_val
     return ArgumentStorage((tuple(_args), _kw_args))
 
 def argument_value(argument):
