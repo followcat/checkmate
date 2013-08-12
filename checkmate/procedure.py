@@ -5,16 +5,30 @@ import checkmate.parser.doctree
 
 class Procedure(object):
     """"""
-    def __init__(self, name, path, _class, history=[], setup_procedure='-', teardown_procedure='-', initial_state=[], final_state=[], exchanges=[]):
+    def __init__(self, index, stub_name, sut_name, sut_run):
         """"""
-        self.name = name
-        self.path = path
-        self._class = _class
-        self.history = history
-        self.setup_procedure = setup_procedure
-        self.teardown_procedure = teardown_procedure
-        self.initial_state = initial_state
-        self.final_state = final_state
+        self.index = index
+        self.stub = stub_name
+        self.sut = sut_name
+        self.run = sut_run
+        
+
+    def _format_output(self):
+        self.name = 'TestProcedure_{index}'.format(index=self.index)
+        self.path = 'integration/procedures/test_{sut}.py'.format(sut=sut)
+        self._class = 'Test{sut}{state}{incoming}'.format(sut=sut,state=''.join([i.partition_id for i in self.run.initial]), incoming = self.run.desc_incoming)
+        self.history = ['Now']
+        self.setup_procedure = '-'
+        self.teardown_procedure = '-'
+        self.initial_state = [s.partition_id for s in self.run.initial]
+        self.final_state = [s.partition_id for s in self.run.final]
+
+        exchanges = [[self.run.incoming.partition_id, self.run.incoming.origin, self.run.incoming.destination, self.run.desc_incoming]]
+        for o in self.run.final:
+            if (o.partition_id != self.run.initial[self.run.final.index(o)].partition_id):
+                exchanges.append([o.partition_id, sut, sut, self.run.desc_final[self.run.final.index(o)]])
+        for o in self.run.outgoing:
+            exchanges.append([o.partition_id, sut, stub, self.run.desc_outgoing[self.run.outgoing.index(o)]])
         self.exchanges = exchanges
 
     def tsv(self):
@@ -31,6 +45,7 @@ class Procedure(object):
             >>> p.exchanges = [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]
             >>> p.tsv() # doctest: +SKIP
         """
+        self._format_output()
         buffer = "Procedure identification\n"
         buffer += self.name + '\n'
         buffer += 'Implementation\n{table heading_lines 0}\n'
@@ -63,6 +78,7 @@ class Procedure(object):
             >>> p.exchanges = [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]
             >>> p.doctree() # doctest: +SKIP
         """
+        self._format_output()
         buffer = collections.OrderedDict()
         implementation = ([], [])
         implementation[-1].append(['path', self.path])
