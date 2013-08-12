@@ -12,11 +12,10 @@ class Procedure(object):
         self.sut = sut_name
         self.run = sut_run
         
-
     def _format_output(self):
         self.name = 'TestProcedure_{index}'.format(index=self.index)
-        self.path = 'integration/procedures/test_{sut}.py'.format(sut=sut)
-        self._class = 'Test{sut}{state}{incoming}'.format(sut=sut,state=''.join([i.partition_id for i in self.run.initial]), incoming = self.run.desc_incoming)
+        self.path = 'integration/procedures/test_{sut}.py'.format(sut=self.sut)
+        self._class = 'Test{sut}{state}{incoming}'.format(sut=self.sut,state=''.join([i.partition_id for i in self.run.initial]), incoming = self.run.desc_incoming)
         self.history = ['Now']
         self.setup_procedure = '-'
         self.teardown_procedure = '-'
@@ -26,9 +25,9 @@ class Procedure(object):
         exchanges = [[self.run.incoming.partition_id, self.run.incoming.origin, self.run.incoming.destination, self.run.desc_incoming]]
         for o in self.run.final:
             if (o.partition_id != self.run.initial[self.run.final.index(o)].partition_id):
-                exchanges.append([o.partition_id, sut, sut, self.run.desc_final[self.run.final.index(o)]])
+                exchanges.append([o.partition_id, self.sut, self.sut, self.run.desc_final[self.run.final.index(o)]])
         for o in self.run.outgoing:
-            exchanges.append([o.partition_id, sut, stub, self.run.desc_outgoing[self.run.outgoing.index(o)]])
+            exchanges.append([o.partition_id, self.sut, self.stub, self.run.desc_outgoing[self.run.outgoing.index(o)]])
         self.exchanges = exchanges
 
     def tsv(self):
