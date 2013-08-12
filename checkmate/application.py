@@ -9,27 +9,24 @@ import checkmate.partition_declarator
 
 
 def define_procedure(index, stub_name, stub_run, sut_name, sut_run):
-    def partition_id(i):
-        """Return partition id of the given state or exchange"""
-        return i[1]
-
+    """"""
     name = 'TestProcedure_{index}'.format(index=index)
     path = 'integration/procedures/test_{sut}.py'.format(sut=sut_name)
-    _class = 'Test{sut}{state}{incoming}'.format(sut=sut_name,state=''.join([partition_id(i) for i in sut_run.initial]), incoming = sut_run.desc_incoming)
+    _class = 'Test{sut}{state}{incoming}'.format(sut=sut_name,state=''.join([i.partition_id for i in sut_run.initial]), incoming = sut_run.desc_incoming)
     history = ['Now']
-
-    initial_state = [partition_id(s) for s in sut_run.initial]
-
-    final_state = [partition_id(s) for s in sut_run.final]
-
-    exchanges = [[partition_id(sut_run.incoming), stub_name, sut_name, sut_run.desc_incoming]]
+ 
+    initial_state = [s.partition_id for s in sut_run.initial]
+ 
+    final_state = [s.partition_id for s in sut_run.final]
+ 
+    exchanges = [[sut_run.incoming.partition_id, sut_run.incoming.origin, sut_run.incoming.destination, sut_run.desc_incoming]]
     for o in sut_run.final:
-        if partition_id(o) != partition_id(sut_run.initial[sut_run.final.index(o)]):
-            exchanges.append([partition_id(o), sut_name, sut_name, sut_run.desc_final[sut_run.final.index(o)]])
-
+        if (o.partition_id != sut_run.initial[sut_run.final.index(o)].partition_id):
+            exchanges.append([o.partition_id, sut_name, sut_name, sut_run.desc_final[sut_run.final.index(o)]])
+ 
     for o in sut_run.outgoing:
-        exchanges.append([partition_id(o), sut_name, stub_name, sut_run.desc_outgoing[sut_run.outgoing.index(o)]])
-
+        exchanges.append([o.partition_id, sut_name, stub_name, sut_run.desc_outgoing[sut_run.outgoing.index(o)]])
+ 
     return checkmate.procedure.Procedure(name, path, _class, history=history, initial_state=initial_state, final_state=final_state, exchanges=exchanges)
 
 
@@ -47,7 +44,7 @@ class ApplicationMeta(type):
             global checkmate
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module)
             output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
-            #output = checkmate.parser.dtvisitor.call_visitor(matrix, data_structure_module=data_structure_module, exchange_module=exchange_module)
+
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
@@ -68,29 +65,27 @@ class Application(object):
         for component in list(self.components.values()):
             component.start()
         
-    def sender(self, exchange):
-        for exchange_interface in zope.interface.providedBy(exchange):
-            found = False
-            for transition in self.state_machine.transitions:
-                if exchange_interface in [o.interface for o in transition.outgoing]:
-                    found = True
-                    break
-            if found == False:
-                return False
-        return True
-
+    def find_run_with_incoming(self, origin, incoming, runs, components):
+        for destination in components:
+            for _run in runs[destination]:
+                if _run.incoming in incoming:
+                    _run.incoming.origin_destination(origin, destination)
+                    return (destination, _run)
+        return (None, None)
 
     def test_plan(self, system_under_test):
         """"""
-        self.system_under_test = system_under_test
+        # Take 2 sec
+        #self.start()
 
         runs = {}
-        stubs = list(self.components.keys())
+        self.stubs = list(self.components.keys())
+        self.system_under_test = system_under_test
         for name in system_under_test:
             if name not in list(self.components.keys()):
-                self.system_under_test.pop(self.system_under_test.index(name))
+                self.system_under_test.pop(system_under_test.index(name))
             else:
-                stubs.pop(stubs.index(name))
+                self.stubs.pop(self.stubs.index(name))
 
         for name in list(self.components.keys()):
             runs[name] = []
@@ -99,14 +94,16 @@ class Application(object):
 
         index = 0
         self.procedure_list = []
-        for stub_name in stubs:
+        for stub_name in self.stubs:
             for stub_run in runs[stub_name]:
-                for sut_name in system_under_test:
-                    for sut_run in runs[sut_name]:
-                        if sut_run.incoming in stub_run.outgoing:
-                            #print((((stub_name, stub_run.final), (sut_name, sut_run.initial)), (stub_name, stub_run.outgoing), ((stub_name, stub_run.final), (sut_name, sut_run.final)), (sut_name, sut_run.outgoing)))
-                            self.procedure_list.append(define_procedure(index, stub_name, stub_run, sut_name, sut_run))
-                            index += 1
+                (sut_name, sut_run) = self.find_run_with_incoming(stub_name, stub_run.outgoing, runs, self.system_under_test)
+                if sut_name is not None:
+                    #print((((stub_name, stub_run.final), (sut_name, sut_run.initial)), (stub_name, stub_run.outgoing),
+                    #       ((stub_name, stub_run.final), (sut_name, sut_run.final)), (sut_name, sut_run.outgoing)))
+                    self.procedure_list.append(define_procedure(index, stub_name, stub_run, sut_name, sut_run))
+                    index += 1
+
+
 
     def itp(self, filename):
         buffer = ""

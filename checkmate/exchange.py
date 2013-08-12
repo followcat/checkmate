@@ -49,3 +49,22 @@ class Exchange(checkmate.partition.Partition):
             'CA'
         """
         return self.value
+
+    def origin_destination(self, origin, destination):
+        self._origin = origin
+        self._destination = destination
+
+    @property
+    def origin(self):
+        try:
+            return self._origin
+        except AttributeError:
+            return ""
+
+    @property
+    def destination(self):
+        try:
+            return self._destination
+        except AttributeError:
+            return ""
+

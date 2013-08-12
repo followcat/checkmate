@@ -114,6 +114,10 @@ class Partition(object):
         except AttributeError:
             return (None,None,None)
 
+    @property
+    def partition_id(self):
+        return self.description()[0]
+
 def compare_value(one, other):
     """
     >>> import checkmate.test_data

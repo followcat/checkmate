@@ -26,23 +26,31 @@ class Run(object):
             >>> i = c1.state_machine.transitions[1].incoming.factory()
             >>> o = c1.state_machine.transitions[1].process(c1.states, i)
             >>> r = Run(initial_state, i, c1.states, o)
-            >>> r.final # doctest: +ELLIPSIS
+            >>> r.itemized[2] # doctest: +ELLIPSIS
             [([{'R': <sample_app.data_structure.ActionRequest object at ...
         """
-        # following lines cost 20sec in doctest
-        #self.initial = initial
-        #self.incoming = incoming
-        #self.final = final
-        #self.outgoing = outgoing
+        self.initial = initial
+        self.incoming = incoming
+        self.final = final
+        self.outgoing = outgoing
+
+        # Cache for fast comparison of two runs
         self.itemized = itemize(initial, incoming, final, outgoing)
-        self.initial = self.itemized[0]
-        self.incoming = self.itemized[1]
-        self.final = self.itemized[2]
-        self.outgoing = self.itemized[3]
-        self.desc_initial = [s.description()[2] for s in initial]
-        self.desc_incoming = incoming.description()[2]
-        self.desc_final = [s.description()[2] for s in final]
-        self.desc_outgoing = [s.description()[2] for s in outgoing]
+
+    @property
+    def desc_initial(self):
+        return [s.description()[2] for s in self.initial]
+    @property
+    def desc_incoming(self):
+        return self.incoming.description()[2]
+
+    @property
+    def desc_final(self):
+        return [s.description()[2] for s in self.final]
+
+    @property
+    def desc_outgoing(self):
+        return [s.description()[2] for s in self.outgoing]
 
     def __eq__(self, other):
         return (self.itemized == other.itemized)

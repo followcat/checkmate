@@ -18,9 +18,9 @@ class StateMachine(object):
             >>> r = c.state_machine.develop(c.states)
             >>> len(r)
             6
-            >>> (r[0].initial, r[0].incoming, r[0].final)
+            >>> (r[0].itemized[0], r[0].itemized[1], r[0].itemized[2])
             ([('True', 'S-STATE-01')], ('AC', 'X-ACTION-01'), [('False', 'S-STATE-02')])
-            >>> (r[1].initial, r[1].incoming, r[1].final) # doctest: +ELLIPSIS
+            >>> (r[1].itemized[0], r[1].itemized[1], r[1].itemized[2]) # doctest: +ELLIPSIS
             ([([], 'S-ANOST-01')], ('AP', 'X-ACTION-02'), [([{'R': <sample_app.data_structure.ActionRequest object at ...
         """
         for transition in self.transitions:
