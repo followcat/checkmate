@@ -32,10 +32,10 @@ class Procedure(object):
 
     def tsv(self):
         """
-            >>> name = "Procedure"
-            >>> path = "/home/vcr/Projects/Checkmate/test_procedures.py"
-            >>> _class = "TestProcedure"
-            >>> p = Procedure(name, path, _class)
+            >>> p = Procedure(0, 'mcrhci', 'abs', None)
+            >>> p.name = "Procedure"
+            >>> p.path = "/home/vcr/Projects/Checkmate/test_procedures.py"
+            >>> p._class = "TestProcedure"
             >>> p.history = ['ALL']
             >>> p.setup_procedure = 'TestSetup'
             >>> p.teardown_procedure = 'TestTeardown'
@@ -44,7 +44,6 @@ class Procedure(object):
             >>> p.exchanges = [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]
             >>> p.tsv() # doctest: +SKIP
         """
-        self._format_output()
         buffer = "Procedure identification\n"
         buffer += self.name + '\n'
         buffer += 'Implementation\n{table heading_lines 0}\n'
@@ -65,10 +64,10 @@ class Procedure(object):
     
     def doctree(self):
         """
-            >>> name = "Procedure"
-            >>> path = "/home/vcr/Projects/Checkmate/test_procedures.py"
-            >>> _class = "TestProcedure"
-            >>> p = Procedure(name, path, _class)
+            >>> p = Procedure(0, 'mcrhci', 'abs', None)
+            >>> p.name = "Procedure"
+            >>> p.path = "/home/vcr/Projects/Checkmate/test_procedures.py"
+            >>> p._class = "TestProcedure"
             >>> p.history = ['ALL']
             >>> p.setup_procedure = 'TestSetup'
             >>> p.teardown_procedure = 'TestTeardown'
@@ -77,7 +76,6 @@ class Procedure(object):
             >>> p.exchanges = [['TM()', 'mcrhci', 'abs', 'HCI toggle request'], ['ST()', 'abs', 'mcrhci', 'Beam scheduler publish state']]
             >>> p.doctree() # doctest: +SKIP
         """
-        self._format_output()
         buffer = collections.OrderedDict()
         implementation = ([], [])
         implementation[-1].append(['path', self.path])
