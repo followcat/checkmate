@@ -30,6 +30,10 @@ class ComponentMeta(type):
             return result
 
 
+class IComponent(zope.interface.Interface):
+    """"""
+
+@zope.interface.implementer(IComponent)
 class Component(object):
     def __init__(self, name):
         self.states = []
