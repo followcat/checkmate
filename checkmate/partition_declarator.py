@@ -27,12 +27,12 @@ class Declarator(object):
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
         >>> import sample_app.data_structure
-        >>> import sample_app.exchanges
+        >>> import checkmate.exchange
         >>> import checkmate.state
         >>> import collections
         >>> import zope.interface
         >>> import checkmate.partition_declarator
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, sample_app.exchanges)
+        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
@@ -50,7 +50,7 @@ class Declarator(object):
         True
         >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.exchange.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
