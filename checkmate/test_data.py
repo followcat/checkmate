@@ -4,13 +4,13 @@ import sample_app.application
 
 
 global my_data
-my_data = None
+my_data = {}
 
 
 def App(_application=sample_app.application.TestData):
     global my_data
-    if my_data is None:
-        my_data = _application()
-        my_data = pickle.dumps(my_data)
-    return pickle.loads(my_data)
+    if _application.__name__ not in iter(my_data):
+        my_data[_application.__name__] = _application()
+        my_data[_application.__name__] = pickle.dumps(my_data[_application.__name__])
+    return pickle.loads(my_data[_application.__name__])
 
