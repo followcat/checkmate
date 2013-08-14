@@ -16,7 +16,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']   
             >>> a.start()
-            >>> a.test_plan(['C1']) # doctest: +ELLIPSIS
+            >>> a.build_test_plan(['C1']) # doctest: +ELLIPSIS
             >>> c.states[0].value
             'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
@@ -57,10 +57,11 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
         #can only be loaded after application exchanges.rst is parsed by metaclass
         import sample_app.component_1.component
         import sample_app.component_2.component
+        import sample_app.component_3.component
 
         self.components = {'C1': sample_app.component_1.component.Component_1,
                            'C2': sample_app.component_2.component.Component_2,
-                           'C3': sample_app.component_2.component.Component_2}
+                           'C3': sample_app.component_3.component.Component_3}
         for name in list(self.components.keys()):
             self.components[name] = self.components[name](name)
 
