@@ -4,6 +4,7 @@ import docutils.nodes
 
 import checkmate.state
 
+from checkmate.parser.exceptions import *
 
 class Writer(docutils.writers.Writer):
   
@@ -85,12 +86,16 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         if self.title_level == 4:
             #hardcode the module 
             if self._high_level_flag == [1, 0, 0]:
+                assert (len(self._classname) != 0), "state class name empty"
                 self._state_partitions.append(self.get_partitions('states'))
             elif self._high_level_flag == [0, 1, 1]:
+                assert (len(self._classname) != 0), "data structure class name empty"
                 self._data_structure_partitions.append(self.get_partitions('data_structure'))
             elif self._high_level_flag == [0, 1, 0]:
+                assert (len(self._classname) != 0), "exchange class name empty"
                 self._exchange_partitions.append(self.get_partitions('exchanges'))
             elif self._high_level_flag == [0, 0, 1]:
+                assert (len(self.array_items) != 0), "transition empty"
                 self._transitions += self.get_transition(self.array_items)
             self.full_description = collections.OrderedDict()
             self.standard_methods = {}
@@ -118,10 +123,13 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
             self._high_level_flag = [0, 1, 1]
         #flag the low section
         if title == 'Definition and accessibility' or title == 'Definition':
+            assert self.title_level == 5, "source file is not in good format"
             self._low_level_flag = [1, 0, 0]
         elif  title == 'Value partitions':
+            assert self.title_level == 5, "source file is not in good format"
             self._low_level_flag = [0, 1, 0]
         elif  title == 'Standard methods' or title == 'Exchange' or title == 'Transitions - exchanges':
+            assert self.title_level == 5, "source file is not in good format"
             self._low_level_flag = [0, 0, 1]
  
     def depart_title(self, node):
@@ -146,6 +154,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         content = row.split('\n\n')
         if self._high_level_flag == [1, 0, 0] :
             if  self._low_level_flag == [0, 1, 0]:
+                assert (len(content) == 4), "4 columns are expected in state value partitions table row"
                 id = content[0]
                 code = content[1]
                 val = content[2]
@@ -153,11 +162,16 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 self.codes.append(code)
                 self.full_description[code] = (id, val, com)
             elif self._low_level_flag == [0, 0, 1]:
+                assert (len(content) == 2), "2 columns are expected in State standard method table row"
                 code = content[0]
                 com = content[1]
                 # Add standard member function to class
-                self.standard_methods[code] = getattr(checkmate.state, code)
+                try:
+                    self.standard_methods[code] = getattr(checkmate.state, code)
+                except AttributeError:
+                    raise AttributeError('no method defined in state module:', code)
         elif self._high_level_flag == [0, 1, 0] and self._low_level_flag == [0, 1, 0]:
+            assert (len(content) == 4), "4 columns are expected in Exchange value partitions table row"
             id = content[0]
             code = content[1]
             val = content[2]
@@ -167,6 +181,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         elif self._high_level_flag == [0, 0, 1] and self._low_level_flag == [0, 0, 1]:
             self.array_items.append(content)
         elif self._high_level_flag == [0, 1, 1] and self._low_level_flag == [0, 1, 0]:
+            assert (len(content) == 4), "4 columns are expected in Data structure value partitions table row"
             id = content[0]
             code = content[1]
             val = content[2]
