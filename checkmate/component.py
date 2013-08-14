@@ -60,12 +60,9 @@ class Component(object):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
 
-    
-def execute(_component, _exchange):
-    """
-    """
-    _transition = _component.get_transition_by_input(_exchange)
-    if _transition is None:
-        return None
-    return _transition.process(_component.states, _exchange)
+    def process(self, exchange):
+        _transition = self.get_transition_by_input(exchange)
+        if _transition is None:
+            return None
+        return _transition.process(self.states, exchange)
 

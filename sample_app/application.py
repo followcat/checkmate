@@ -25,7 +25,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> ds.description() # doctest: +ELLIPSIS
             ('D-ATTR-02', ...
             >>> i = sample_app.exchanges.AP()
-            >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
+            >>> c.process(i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
@@ -33,20 +33,20 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming(i)
             True
-            >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
+            >>> c.process(i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[0].value
             'False'
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-02', ...
-            >>> checkmate.component.execute(c, i)
+            >>> c.process(i)
             >>> c.states[0].value
             'False'
             >>> i = sample_app.exchanges.PP()
             >>> t = c.state_machine.transitions[2]
             >>> t.is_matching_incoming(i)
             True
-            >>> checkmate.component.execute(c, i) # doctest: +ELLIPSIS
+            >>> c.process(i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value
             []

@@ -14,8 +14,13 @@ def declare(name, param):
     return type(name, (checkmate.exchange.Exchange,), param) 
                         
 def declare_interface(name, param):
-    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
+    return zope.interface.interface.InterfaceClass(name, (IExchange,), param)
+ 
 
+class IExchange(zope.interface.Interface):
+    """"""
+
+@zope.interface.implementer(IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
     def __eq__(self, other):
