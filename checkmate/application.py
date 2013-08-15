@@ -1,10 +1,9 @@
 import os
 
 import checkmate.exchange
-import checkmate.procedure
+import checkmate.test_plan
 import checkmate.data_structure
 import checkmate.parser.dtvisitor
-import checkmate.parser.rst_writer
 import checkmate.partition_declarator
 
 
@@ -43,20 +42,8 @@ class Application(object):
         for component in list(self.components.values()):
             component.start()
         
-    def find_run_with_incoming(self, origin, incoming, runs, components):
-        for destination in components:
-            for _run in runs[destination]:
-                if _run.incoming in incoming:
-                    _run.incoming.origin_destination(origin, destination)
-                    return (destination, _run)
-        return (None, None)
-
-    def test_plan(self, system_under_test):
+    def sut(self, system_under_test):
         """"""
-        # Take 2 sec
-        #self.start()
-
-        runs = {}
         self.stubs = list(self.components.keys())
         self.system_under_test = system_under_test
         for name in system_under_test:
@@ -65,28 +52,10 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-        for name in list(self.components.keys()):
-            runs[name] = []
-            for found_run in self.components[name].state_machine.develop(self.components[name].states):
-                runs[name].append(found_run)
+    def build_test_plan(self, system_under_test):
+        """"""
+        # Take 2 sec
+        #self.start()
 
-        index = 0
-        self.procedure_list = []
-        for stub_name in self.stubs:
-            for stub_run in runs[stub_name]:
-                (sut_name, sut_run) = self.find_run_with_incoming(stub_name, stub_run.outgoing, runs, self.system_under_test)
-                if sut_name is not None:
-                    #print((((stub_name, stub_run.final), (sut_name, sut_run.initial)), (stub_name, stub_run.outgoing),
-                    #       ((stub_name, stub_run.final), (sut_name, sut_run.final)), (sut_name, sut_run.outgoing)))
-                    self.procedure_list.append(checkmate.procedure.Procedure(index, stub_name, sut_name, sut_run))
-                    index += 1
+        self.test_plan = checkmate.test_plan.TestPlan(self.components)
 
-
-    def itp(self, filename):
-        buffer = ""
-        f = open(filename, 'w')
-        wt = checkmate.parser.rst_writer.Writer()
-        for proc in self.procedure_list:
-            dt = proc.doctree()
-            wt.write(dt, f)
-        f.close()
