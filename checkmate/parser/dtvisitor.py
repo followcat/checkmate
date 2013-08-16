@@ -71,9 +71,11 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         self.standard_methods = {}
         self._state_keys = ''
         self._classname = '' 
+        self.tran_titles = []
         self.array_items = []
         self.inside_table = False
         self.inside_tbody = False
+        self.inside_thead = False
         self.title_level = 1
 
     def depart_document(self, node):
@@ -96,12 +98,13 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 self._exchange_partitions.append(self.get_partitions('exchanges'))
             elif self._high_level_flag == [0, 0, 1]:
                 assert (len(self.array_items) != 0), "transition empty"
-                self._transitions += self.get_transition(self.array_items)
+                self._transitions += self.get_transition(self.array_items, self.tran_titles)
             self.full_description = collections.OrderedDict()
             self.standard_methods = {}
             self.codes = []
             self._classname = ''
             self.array_items = []
+            self.tran_titles = []
         self.title_level -= 1
 
     def visit_title(self, node):
@@ -147,7 +150,15 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
     def depart_tbody(self, node):
         self.inside_tbody = False
 
+    def visit_thead(self, node):
+        self.inside_thead = True
+
+    def depart_thead(self, node):
+        self.inside_thead= False
+
     def visit_row(self, node):
+        if self.inside_thead == True:
+            self.tran_titles.extend(node.astext().split('\n\n'))
         if self.inside_tbody == False:
             return
         row = node.astext()
@@ -216,8 +227,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         (interface, partition_storage) =  self.declarator.new_partition(partition_type, self._classname, self.standard_methods, self.codes, self.full_description)
         return (interface, partition_storage)
 
-    def get_transition(self, array_items):
-        component_transition =  self.declarator.new_transition(array_items)
+    def get_transition(self, array_items, tran_titles):
+        component_transition =  self.declarator.new_transition(array_items, tran_titles)
         return component_transition
 
 

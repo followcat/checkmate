@@ -98,7 +98,7 @@ class Declarator(object):
         # Return storage for compatibility only
         return (interface, partition_storage)
 
-    def new_transition(self, array_items):
+    def new_transition(self, array_items, tran_titles):
         component_transition = []
         initial_state = []
         initial_state_id = []
@@ -144,11 +144,11 @@ class Declarator(object):
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                     output.append((interface, array_items[j][i]))
-                    if self.module['exchanges'] is not None:
-                        cls = checkmate._utils.get_class_implementing(interface)
-                        setattr(self.module['exchanges'], checkmate._utils.internal_code(array_items[j][i]),
-                                functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
-            t = checkmate.transition.Transition(initial=initial_state, incoming=input, final=final, outgoing=output)
+            try:
+                tran_name = tran_titles[i]
+            except IndexError:
+                tran_name = 'unknown'
+            t = checkmate.transition.Transition(tran_name=tran_name, initial=initial_state, incoming=input, final=final, outgoing=output)
             component_transition.append(t)
         return component_transition
 

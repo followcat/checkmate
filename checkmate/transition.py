@@ -11,6 +11,13 @@ class Transition(object):
         self.incoming = None
         self.final = []
         self.outgoing = []
+        try:
+            self.name = argc['tran_name']
+        except KeyError:
+            self.name = 'unknown'
+        finally:
+            if self.name == '':
+                self.name = 'unknown'
         for item in ['initial', 'incoming', 'final', 'outgoing']:
             _attribute = getattr(self, item)
             if (item in argc) == False:
@@ -29,6 +36,8 @@ class Transition(object):
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
+            >>> c.state_machine.transitions[0].name
+            'Toggle state tran01'
             >>> i = c.state_machine.transitions[0].incoming.factory()
             >>> i.action
             'AC'
