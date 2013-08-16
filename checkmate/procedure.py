@@ -4,15 +4,27 @@ import checkmate.parser.doctree
 
 
 class Procedure(object):
-    """"""
-    def __init__(self, index, stub_name, sut_name, sut_run):
-        """"""
+    def __init__(self, index, origin, run_tree):
         self.index = index
-        self.stub = stub_name
-        self.sut = sut_name
-        self.run = sut_run
+        self.origin = origin
+        self.runs = run_tree
         
+    def _format_run(self, run_tree):
+        output = []
+        for o in run_tree.root.final:
+            if (o.partition_id != run_tree.root.initial[run_tree.root.final.index(o)].partition_id):
+                output.append([o.partition_id, self.sut, self.sut, run_tree.root.desc_final[run_tree.root.final.index(o)]])
+        #for o in run_tree.root.outgoing:
+        #    output.append([o.partition_id, self.sut, self.origin, run_tree.root.desc_outgoing[run_tree.root.outgoing.index(o)]])
+        for node in run_tree.nodes:
+            output.append([node.root.incoming.partition_id, node.root.incoming.origin, node.root.incoming.destination, node.root.desc_incoming])
+            output += self._format_run(node)
+        return output
+
     def _format_output(self):
+        self.sut = ""
+        self.run = self.runs.root
+
         self.name = 'TestProcedure_{index}'.format(index=self.index)
         self.path = 'integration/procedures/test_{sut}.py'.format(sut=self.sut)
         self._class = 'Test{sut}{state}{incoming}'.format(sut=self.sut,state=''.join([i.partition_id for i in self.run.initial]), incoming = self.run.desc_incoming)
@@ -22,17 +34,11 @@ class Procedure(object):
         self.initial_state = [s.partition_id for s in self.run.initial]
         self.final_state = [s.partition_id for s in self.run.final]
 
-        exchanges = [[self.run.incoming.partition_id, self.run.incoming.origin, self.run.incoming.destination, self.run.desc_incoming]]
-        for o in self.run.final:
-            if (o.partition_id != self.run.initial[self.run.final.index(o)].partition_id):
-                exchanges.append([o.partition_id, self.sut, self.sut, self.run.desc_final[self.run.final.index(o)]])
-        for o in self.run.outgoing:
-            exchanges.append([o.partition_id, self.sut, self.stub, self.run.desc_outgoing[self.run.outgoing.index(o)]])
-        self.exchanges = exchanges
+        self.exchanges = self._format_run(self.runs)
 
     def tsv(self):
         """
-            >>> p = Procedure(0, 'mcrhci', 'abs', None)
+            >>> p = Procedure(0, 'mcrhci', None)
             >>> p.name = "Procedure"
             >>> p.path = "/home/vcr/Projects/Checkmate/test_procedures.py"
             >>> p._class = "TestProcedure"
@@ -64,7 +70,7 @@ class Procedure(object):
     
     def doctree(self):
         """
-            >>> p = Procedure(0, 'mcrhci', 'abs', None)
+            >>> p = Procedure(0, 'mcrhci', None)
             >>> p.name = "Procedure"
             >>> p.path = "/home/vcr/Projects/Checkmate/test_procedures.py"
             >>> p._class = "TestProcedure"

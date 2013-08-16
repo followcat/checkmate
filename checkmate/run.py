@@ -3,11 +3,13 @@ def itemize(initial, incoming, final, outgoing):
     for s in initial:
         if s != final[initial.index(s)]:
             filter_initial.append((s.value, s.description()[0]))
+    #filter_initial = [(s.value, s.description()[0]) for s in initial]
 
     filter_final = []
     for s in final:
         if s != initial[final.index(s)]:
             filter_final.append((s.value, s.description()[0]))
+    #filter_final = [(s.value, s.description()[0]) for s in final]
     return (filter_initial, (incoming.action, incoming.description()[0]),
             filter_final, [(o.action, o.description()[0]) for o in outgoing])
 

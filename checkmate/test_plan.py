@@ -1,3 +1,4 @@
+import checkmate._tree
 import checkmate.exchange
 import checkmate.procedure
 import checkmate.parser.rst_writer
@@ -16,30 +17,33 @@ class TestPlan(object):
         index = 0
         self.procedure_list = []
         for origin, _run in self.entry_points(runs):
-            (sut_name, sut_run) = self.find_run_with_incoming(origin, _run.outgoing, runs)
-            if sut_name is not None:
+            run_tree = self.find_run_with_incoming(origin, _run, runs)
+            if len(run_tree.nodes) != 0:
                 #print((((stub_name, stub_run.final), (sut_name, sut_run.initial)), (stub_name, stub_run.outgoing),
                 #       ((stub_name, stub_run.final), (sut_name, sut_run.final)), (sut_name, sut_run.outgoing)))
-                self.procedure_list.append(checkmate.procedure.Procedure(index, origin, sut_name, sut_run))
+                self.procedure_list.append(checkmate.procedure.Procedure(index, origin, run_tree))
                 index += 1
 
-    def find_run_with_incoming(self, origin, incoming, runs):
+    def find_run_with_incoming(self, origin, input_run, runs):
+        next_runs = []
         for destination in self.components:
             if destination == origin:
                 continue
             for _run in runs[destination]:
-                if _run.incoming in incoming:
+                if _run.incoming in input_run.outgoing:
                     _run.incoming.origin_destination(origin, destination)
-                    return (destination, _run)
-        return (None, None)
+                    following_runs = self.find_run_with_incoming(destination, _run, runs)
+                    next_runs.append(following_runs)
+        return checkmate._tree.Tree(input_run, next_runs)
 
     def entry_points(self, runs):
-        """Return list of runs
+        """Return list of runs that have no incoming
         """
         entry_runs = []
         for name in iter(runs):
             for _run in runs[name]:
                 if _run.incoming == checkmate.exchange.Exchange(None):
+                    _run.incoming.origin_destination('', name)
                     entry_runs.append((name, _run))
         return entry_runs
                    
