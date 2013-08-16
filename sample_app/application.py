@@ -16,7 +16,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']   
             >>> a.start()
-            >>> a.build_test_plan(['C1']) # doctest: +ELLIPSIS
+            >>> a.build_test_plan() # doctest: +ELLIPSIS
             >>> c.states[0].value
             'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
