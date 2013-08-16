@@ -52,7 +52,7 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-    def build_test_plan(self, system_under_test):
+    def build_test_plan(self):
         """"""
         # Take 2 sec
         #self.start()
