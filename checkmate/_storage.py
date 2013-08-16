@@ -16,8 +16,11 @@ def store_exchange(interface, name, description=None):
         ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
     code = checkmate._utils.internal_code(name)
-    return checkmate._storage.ExchangeStorage(interface, name, description,
+    try:
+        return checkmate._storage.ExchangeStorage(interface, name, description,
                 getattr(checkmate._utils.get_module_defining(interface), code))
+    except AttributeError:
+        raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
 
 def store(interface, name, description=None):
     """

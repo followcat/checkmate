@@ -169,7 +169,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 try:
                     self.standard_methods[code] = getattr(checkmate.state, code)
                 except AttributeError:
-                    raise AttributeError('no method defined in state module:', code)
+                    raise AttributeError(checkmate.state.__name__+' has no method defined: '+code)
         elif self._high_level_flag == [0, 1, 0] and self._low_level_flag == [0, 1, 0]:
             assert (len(content) == 4), "4 columns are expected in Exchange value partitions table row"
             id = content[0]

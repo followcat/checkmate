@@ -111,7 +111,7 @@ class Declarator(object):
                 try:
                     interface = getattr(self.module['states'], _to_interface(array_items[i][0]))
                 except AttributeError:
-                    raise AttributeError('state module has no interface defined:'+_to_interface(array_items[i][0]))
+                    raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[i][0]))
                 cls = checkmate._utils.get_class_implementing(interface)
                 initial_state.append((interface, array_items[i][1]))
                 if checkmate._utils.is_method(array_items[i][1]):
@@ -125,12 +125,8 @@ class Declarator(object):
                     try:
                         interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
                     except AttributeError:
-                        raise AttributeError('exchange module has no interface defined:'+_to_interface(array_items[j][0]))
+                        raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                     input.append((interface, array_items[j][i]))
-                    if self.module['exchanges'] is not None:
-                        cls = checkmate._utils.get_class_implementing(interface)
-                        setattr(self.module['exchanges'], checkmate._utils.internal_code(array_items[j][i]),
-                                functools.partial(cls, checkmate._utils.internal_code(array_items[j][i])))
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
@@ -138,7 +134,7 @@ class Declarator(object):
                 try:
                     interface = getattr(self.module['states'], _to_interface(array_items[j][0]))
                 except AttributeError:
-                    raise AttributeError('state module has no interface defined:'+_to_interface(array_items[j][0]))
+                    raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                 final.append((interface, array_items[j][i]))
             output = []
             for j in range(initial_state_id[-1]+1, row_count):
@@ -146,7 +142,7 @@ class Declarator(object):
                     try:
                         interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
                     except AttributeError:
-                        raise AttributeError('exchange module has no interface defined:'+_to_interface(array_items[j][0]))
+                        raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                     output.append((interface, array_items[j][i]))
                     if self.module['exchanges'] is not None:
                         cls = checkmate._utils.get_class_implementing(interface)
