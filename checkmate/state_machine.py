@@ -8,14 +8,14 @@ class StateMachine(object):
         self.states = states
         self.transitions = transitions
 
-    def develop(self, states, runs=[]):
+    def develop(self, states, runs):
         """Returns the list of possible runs
 
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
             >>> c.start()
-            >>> r = c.state_machine.develop(c.states)
+            >>> r = c.state_machine.develop(c.states, [])
             >>> len(r)
             6
             >>> (r[0].itemized[0], r[0].itemized[1], r[0].itemized[2])

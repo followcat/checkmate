@@ -23,11 +23,10 @@ class ComponentMeta(type):
             visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
             namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
-        except:
-            namespace['state_machine'] = checkmate.state_machine.StateMachine()
-        finally:
             result = type.__new__(cls, name, bases, dict(namespace))
             return result
+        except Exception as e:
+            raise e
 
 
 class IComponent(zope.interface.Interface):
