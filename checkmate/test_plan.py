@@ -10,7 +10,7 @@ class TestPlan(object):
         runs = {}
         for name in list(self.components.keys()):
             runs[name] = []
-            for found_run in self.components[name].state_machine.develop(self.components[name].states):
+            for found_run in self.components[name].state_machine.develop(self.components[name].states, []):
                 runs[name].append(found_run)
 
         index = 0
