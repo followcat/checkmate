@@ -41,8 +41,11 @@ def store(interface, name, description=None):
     """
     if checkmate._utils.method_unbound(name):
         code = checkmate._utils.internal_code(name)
-        return checkmate._storage.InternalStorage(interface, name, description,
-                getattr(checkmate._utils.get_class_implementing(interface), code))
+        try:
+            return checkmate._storage.InternalStorage(interface, name, description,
+                    getattr(checkmate._utils.get_class_implementing(interface), code))
+        except AttributeError:
+            raise AttributeError(checkmate._utils.get_class_implementing(interface).__name__+' has no function defined: '+code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
