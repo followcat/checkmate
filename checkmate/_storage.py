@@ -1,8 +1,42 @@
 import copy
+import collections
 
 import zope.interface
 
 import checkmate._utils
+
+
+def _build_resolve_logic(transition, type, data):
+    """
+    """
+    resolved_arguments = {}
+    entry = getattr(transition, type)
+    if type == 'incoming':
+        arguments = list(entry.arguments.attribute_values.keys())
+    else:
+        arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+    for arg in arguments:
+        found = False
+        resolved_value = None
+        if type in ['final', 'incoming']:
+            for item in transition.initial:
+                if arg == item.code:
+                    resolved_value[arg] = ('initial', transition.initial.index(item))
+                    found = True
+                    break
+        if ((not found) and transition.incoming is not None):
+            if type in ['final', 'outgoing']:
+                if arg in list(transition.incoming.arguments.attribute_values.keys()):
+                    resolved_value[arg] = ('incoming', None)
+                    found = True
+        if not found:
+            if type in ['outgoing']:
+                for item in transition.final:
+                    if arg == item.code:
+                        resolved_value[arg] = ('final', transition.final.index(item))
+                        found = True
+                        break
+    return resolved_arguments
 
 
 def store_exchange(interface, name, description=None):
@@ -49,7 +83,47 @@ def store(interface, name, description=None):
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
+class Data(object):
+    def __init__(self, type, interface, codes, full_description=None):
+        self.type = type
+        self.interface = interface
+        self.codes = codes
+        self.full_description = full_description
 
+    def storage(self):
+        _list = []
+        for code in self.codes:
+            try:
+                code_description = self.full_description[code]
+            except:
+                code_description = (None,None,None)
+            if ((type == 'states') or (type == 'data_structure')):
+                _storage = store(self.interface, code, code_description)
+                _list.append(_storage)
+            elif type == 'exchanges':
+                _storage = store_exchange(self.interface, code, code_description)
+                _list.append(_storage)
+        if self.codes == None or len(self.codes) == 0:
+            _list.append(store(self.interface, ''))
+        return _list
+        
+
+class TransitionData(collections.OrderedDict):
+    def __init__(self, initial, incoming, final, outgoing):
+        assert type(final) == list
+        assert type(initial) == list
+        assert type(outgoing) == list
+
+        assert (incoming is None or isinstance(incoming, Data))
+        for item in initial + final + outgoing:
+            assert isinstance(item, Data)
+
+        # OrderedDict to keep order ('initial', 'incoming', 'final', 'outgoing')
+        self['initial'] = initial
+        self['incoming'] = incoming
+        self['final'] = final
+        self['outgoing'] = outgoing
+    
 class StorageManager(object):
     def __init__(self, type, interface, codes, full_description=None):
         """ Build the list of InternalStorage
@@ -57,14 +131,14 @@ class StorageManager(object):
         self.type = type
         self.storage = []
         for code in codes:
-            try:
+             try:
                 code_description = full_description[code]
-            except:
-                code_description = (None,None,None)
-            if ((type == 'states') or (type == 'data_structure')):
+             except:
+                 code_description = (None,None,None)
+             if ((type == 'states') or (type == 'data_structure')):
                 _storage = store(interface, code, code_description)
                 self.storage.append(_storage)
-            elif type == 'exchanges':
+             elif type == 'exchanges':
                 _storage = store_exchange(interface, code, code_description)
                 self.storage.append(_storage)
         if codes == None or len(codes) == 0:
@@ -76,6 +150,43 @@ class StorageManager(object):
             if item == stored_item.factory():
                 return stored_item.description
         return (None,None,None)
+
+class PartitionStorage(object):
+    def __init__(self, data):
+        """ Build the list of InternalStorage
+        """
+        assert isinstance(data, Data)
+        self.type = data.type
+        self.storage = data.storage()
+        self.resolve_logic = {}
+
+    def get_description(self, item):
+        """ Return description corresponding to item """
+        for stored_item in list(self.storage):
+            if item == stored_item.factory():
+                return stored_item.description
+        return (None,None,None)
+
+
+class TransitionStorage(object):
+    def __init__(self, transition):
+        """ Build the list of InternalStorage
+        """
+        assert isinstance(data, TransitionData)
+        for key in iter(TransitionData):
+            if key == 'incoming':
+                self.incoming = PartitionStorage(TransitionData[key])
+            else:
+                _list = []
+                for item in TransitionData[key]:
+                    _list.append(PartitionStorage(item))
+                setattr(self, key, _list)
+
+        self.resolve_logic = _build_resolve_logic(self, 'incoming', self.incoming)
+        for final_state in self.final:
+            final_state.resolve_logic = _build_resolve_logic(self, 'final', final_state)
+        for outgoing_exchange in self.outgoing:
+            outgoing_exchange.resolve_logic = _build_resolve_logic(self, 'outgoing', outgoing_exchange)
 
 
 class IStorage(zope.interface.Interface):
