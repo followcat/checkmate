@@ -97,10 +97,10 @@ class Data(object):
                 code_description = self.full_description[code]
             except:
                 code_description = (None,None,None)
-            if ((type == 'states') or (type == 'data_structure')):
+            if ((self.type == 'states') or (self.type == 'data_structure')):
                 _storage = store(self.interface, code, code_description)
                 _list.append(_storage)
-            elif type == 'exchanges':
+            elif self.type == 'exchanges':
                 _storage = store_exchange(self.interface, code, code_description)
                 _list.append(_storage)
         if self.codes == None or len(self.codes) == 0:
