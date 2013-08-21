@@ -160,15 +160,13 @@ def compare_attr(one, other):
     >>> checkmate.partition.compare_attr(r1, r2)
     False
     """
-    if type(one) != type(other):
+    if ((type(one) != type(other)) or (len(dir(one)) != len(dir(other)))):
         return False
     for name in dir(one):
         attr = getattr(one, name)
         if not (hasattr(other, name) and attr == getattr(other, name)):
             return False
-    for name in dir(other):
-        attr = getattr(other, name)
-        if not (hasattr(one, name) and attr == getattr(one, name)):
-            return False
+    # if dir(one) and dir(other) have same length and all elements of one is in other,
+    # then *no* element of dir(other) is missing in dir(one)
     return True 
 
