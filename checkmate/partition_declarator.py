@@ -84,6 +84,7 @@ class Declarator(object):
                                  'partition_attribute': tuple(partition_attribute)})
         setattr(_module, classname, _module.declare(classname, standard_methods))
         setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
+        zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
 
         interface = getattr(_module, _to_interface(classname))
         cls = checkmate._utils.get_class_implementing(interface)
