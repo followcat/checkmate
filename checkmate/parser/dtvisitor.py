@@ -38,9 +38,9 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> wt.visitor._state_partitions
         []
         >>> wt.visitor._data_structure_partitions # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.StorageManager object at ...
         >>> wt.visitor._exchange_partitions # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.StorageManager object at ...
         >>> len(wt.visitor._exchange_partitions)
         2
         >>> wt.visitor._transitions
@@ -246,11 +246,11 @@ def call_visitor(content, declarator):
         >>> declarator = checkmate.partition_declarator.Declarator(sample_app.data_structure, exchange_module=sample_app.exchanges)
         >>> output = call_visitor(c, declarator)
         >>> output['data_structure'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.StorageManager object at ...
         >>> len(output['data_structure'])
         3
         >>> output['exchanges'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.StorageManager object at ...
         >>> len(output['exchanges'])
         2
         >>> import sample_app.component_1.states
@@ -261,7 +261,7 @@ def call_visitor(content, declarator):
         >>> declarator = checkmate.partition_declarator.Declarator(sample_app.data_structure, state_module=sample_app.component_1.states, exchange_module=sample_app.exchanges)
         >>> output = call_visitor(c, declarator)
         >>> output['states'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.component_1.states.IState>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.component_1.states.IState>, <checkmate._storage.StorageManager object at ...
         >>> len(output['states'])
         2
     """

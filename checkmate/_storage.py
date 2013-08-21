@@ -50,7 +50,7 @@ def store(interface, name, description=None):
         return checkmate._storage.InternalStorage(interface, name, description)
 
 
-class PartitionStorage(object):
+class StorageManager(object):
     def __init__(self, type, interface, codes, full_description=None):
         """ Build the list of InternalStorage
         """
