@@ -130,7 +130,14 @@ class InternalStorage(object):
             ('NORM', 'AT2')
         """
         def wrapper(func, param, kwparam):
-            return func(*param, **kwparam)
+            if type(args) == list and self.interface.implementedBy(self.function):
+                if len(self.arguments.values) > 0 and len(args) > 0:
+                    func = self.function.__init__
+                    state = args[0]
+                    value = self.arguments.values[0]
+                    return func(state, value)
+            else:
+                return func(*param, **kwparam)
 
         if len(args) == 0:
             args = self.arguments.values
