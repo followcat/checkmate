@@ -56,7 +56,7 @@ def store_exchange(interface, name, description=None):
     """
     code = checkmate._utils.internal_code(name)
     try:
-        return checkmate._storage.ExchangeStorage(interface, name, description,
+        return checkmate._storage.InternalStorage(interface, name, description,
                 getattr(checkmate._utils.get_module_defining(interface), code))
     except AttributeError:
         raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
@@ -309,36 +309,3 @@ class InternalStorage(object):
                         raise AttributeError
                 raise AttributeError
         raise AttributeError
-
-class ExchangeStorage(InternalStorage):
-    """Support local storage of exchange information in transition"""
-
-    def resolve(self, arg, exchange):
-        """
-            >>> import checkmate.test_data
-            >>> import sample_app.exchanges
-            >>> a = checkmate.test_data.App()
-            >>> st = ExchangeStorage(sample_app.exchanges.IAction, 'AP(R)', None, sample_app.exchanges.AP)
-
-            >>> ex = st.factory(kwargs={'R': 1})
-            >>> (ex.action, ex.parameters, ex.R)  # doctest: +ELLIPSIS
-            ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
-            >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
-            {'R': 1}
-
-            >>> ex = st.factory()
-            >>> (ex.action, ex.parameters, ex.R) # doctest: +ELLIPSIS
-            ('AP', {'R': None}, <sample_app.data_structure.ActionRequest object at ...
-            >>> st.resolve('R', ex)  # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
-        """
-        if arg in list(self.arguments.attribute_values.keys()):
-            if arg in iter(exchange.parameters):
-                if exchange.parameters[arg] is not None:
-                    return {arg: exchange.parameters[arg]}
-            try:
-                return {arg: getattr(exchange, arg)}
-            except AttributeError:
-                raise AttributeError
-        raise AttributeError
-
