@@ -35,22 +35,22 @@ class Declarator(object):
         >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.StorageManager object at ...
+        (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(sample_app.data_structure.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.StorageManager object at ...
+        (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.PartitionStorage object at ...
         >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
         >>> ar # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.StorageManager object at ...
+        (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
         >>> sample_app.data_structure.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
         True
         >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.exchange.ITestAction>, <checkmate._storage.StorageManager object at ...
+        (<InterfaceClass checkmate.exchange.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
@@ -92,7 +92,7 @@ class Declarator(object):
             if ((partition_type == 'exchanges') and (checkmate._utils.is_method(code))):
                 setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
 
-        partition_storage = checkmate._storage.StorageManager(partition_type, interface, codes, full_description)
+        partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
         setattr(cls, 'partition_storage', partition_storage)
 
         # Return storage for compatibility only
