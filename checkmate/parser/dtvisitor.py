@@ -4,7 +4,6 @@ import docutils.nodes
 
 import checkmate.state
 
-from checkmate.parser.exceptions import *
 
 class Writer(docutils.writers.Writer):
   
