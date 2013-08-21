@@ -21,19 +21,19 @@ def _build_resolve_logic(transition, type, data):
         if type in ['final', 'incoming']:
             for item in transition.initial:
                 if arg == item.code:
-                    resolved_value[arg] = ('initial', transition.initial.index(item))
+                    resolved_value[arg] = ('initial', item.interface)
                     found = True
                     break
         if ((not found) and transition.incoming is not None):
             if type in ['final', 'outgoing']:
                 if arg in list(transition.incoming.arguments.attribute_values.keys()):
-                    resolved_value[arg] = ('incoming', None)
+                    resolved_value[arg] = ('incoming', transition.incoming.interface)
                     found = True
         if not found:
             if type in ['outgoing']:
                 for item in transition.final:
                     if arg == item.code:
-                        resolved_value[arg] = ('final', transition.final.index(item))
+                        resolved_value[arg] = ('final', item.interface)
                         found = True
                         break
     return resolved_arguments
@@ -158,7 +158,7 @@ class PartitionStorage(object):
         assert isinstance(data, Data)
         self.type = data.type
         self.storage = data.storage()
-        self.resolve_logic = {}
+        #self.resolve_logic = {}
 
     def get_description(self, item):
         """ Return description corresponding to item """
@@ -175,11 +175,13 @@ class TransitionStorage(object):
         assert isinstance(data, TransitionData)
         for key in iter(TransitionData):
             if key == 'incoming':
-                self.incoming = PartitionStorage(TransitionData[key])
+                #self.incoming = PartitionStorage(TransitionData[key])
+                self.incoming = TransitionData[key].storage()
             else:
                 _list = []
                 for item in TransitionData[key]:
-                    _list.append(PartitionStorage(item))
+                    #_list.append(PartitionStorage(item))
+                    _list.append(item.storage())
                 setattr(self, key, _list)
 
         self.resolve_logic = _build_resolve_logic(self, 'incoming', self.incoming)
@@ -219,6 +221,7 @@ class InternalStorage(object):
             self.function = function
 
         self.arguments = checkmate._utils.method_arguments(name)
+        self.resolve_logic = {}
 
     def factory(self, args=[], kwargs={}):
         """
