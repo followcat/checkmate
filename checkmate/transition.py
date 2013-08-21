@@ -1,7 +1,5 @@
 import zope.interface
 
-import checkmate._storage
-
 
 class Transition(object):
     """Driving a change of state inside a state machine
