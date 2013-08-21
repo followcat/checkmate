@@ -274,6 +274,7 @@ class InternalStorage(object):
         """
             >>> import checkmate.test_data
             >>> import sample_app.component_1.states
+            >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming.factory()
@@ -284,6 +285,11 @@ class InternalStorage(object):
             AttributeError
             >>> t.final[0].resolve('R', exchange=inc) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> inc = t.incoming.factory(kwargs={'R': 1})
+            >>> (inc.action, inc.parameters, inc.R)  # doctest: +ELLIPSIS
+            ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
+            >>> t.final[0].resolve('R', exchange=inc)  # doctest: +ELLIPSIS
+            {'R': 1}
         """
         if arg in self.resolve_logic.keys():
             (_type, _interface) = self.resolve_logic[arg]
