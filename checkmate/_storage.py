@@ -8,6 +8,12 @@ import checkmate._utils
 
 def _build_resolve_logic(transition, type, data):
     """
+        >>> import checkmate.test_data
+        >>> import sample_app.exchanges
+        >>> a = checkmate.test_data.App()
+        >>> t = a.components['C1'].state_machine.transitions[1]
+        >>> _build_resolve_logic(t, 'final', t.final[0])
+        {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
     """
     resolved_arguments = {}
     entry = getattr(transition, type)
@@ -17,23 +23,22 @@ def _build_resolve_logic(transition, type, data):
         arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
     for arg in arguments:
         found = False
-        resolved_value = {} 
         if type in ['final', 'incoming']:
             for item in transition.initial:
                 if arg == item.code:
-                    resolved_value[arg] = ('initial', item.interface)
+                    resolved_arguments[arg] = ('initial', item.interface)
                     found = True
                     break
         if ((not found) and transition.incoming is not None):
             if type in ['final', 'outgoing']:
                 if arg in list(transition.incoming.arguments.attribute_values.keys()):
-                    resolved_value[arg] = ('incoming', transition.incoming.interface)
+                    resolved_arguments[arg] = ('incoming', transition.incoming.interface)
                     found = True
         if not found:
             if type in ['outgoing']:
                 for item in transition.final:
                     if arg == item.code:
-                        resolved_value[arg] = ('final', item.interface)
+                        resolved_arguments[arg] = ('final', item.interface)
                         found = True
                         break
     return resolved_arguments
@@ -265,25 +270,38 @@ class InternalStorage(object):
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, arg, states):
+    def resolve(self, arg, states=None, exchange=None):
         """
             >>> import checkmate.test_data
             >>> import sample_app.component_1.states
             >>> a = checkmate.test_data.App()
-            >>> st = InternalStorage(sample_app.component_1.states.IAnotherState, 'Q0(R)', None)
-            >>> state = st.factory()
-            >>> state.append(R=1)
-            >>> st.resolve('R', [state])
+            >>> t = a.components['C1'].state_machine.transitions[1]
+            >>> inc = t.incoming.factory()
+            >>> states = [t.initial[0].factory()]
+            >>> t.final[0].resolve('R', states=[states])
             Traceback (most recent call last):
             ...
             AttributeError
-            >>> st.resolve('Q0', [state])
-            {'Q0': [{'R': 1}]}
+            >>> t.final[0].resolve('R', exchange=inc) # doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
         """
-        if arg == self.code:
-            for _state in states:
-                if self.interface.providedBy(_state):
-                    return {arg: _state.value}
+        if arg in self.resolve_logic.keys():
+            (_type, _interface) = self.resolve_logic[arg]
+            if _type in ['initial', 'final']:
+                for _state in states:
+                    if _interface.providedBy(_state):
+                        return {arg: _state.value}
+                raise AttributeError
+            else:
+                if _interface.providedBy(exchange):
+                    if arg in iter(exchange.parameters):
+                        if exchange.parameters[arg] is not None:
+                            return {arg: exchange.parameters[arg]}
+                    try:
+                        return {arg: getattr(exchange, arg)}
+                    except AttributeError:
+                        raise AttributeError
+                raise AttributeError
         raise AttributeError
 
 class ExchangeStorage(InternalStorage):
