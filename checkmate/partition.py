@@ -1,5 +1,3 @@
-import zope.interface.interface
-
 import checkmate._utils
 import checkmate._storage
 
