@@ -19,16 +19,9 @@ class Transition(object):
             if self.name == '':
                 self.name = 'unknown'
         for item in ['initial', 'incoming', 'final', 'outgoing']:
-            _attribute = getattr(self, item)
             if (item in argc) == False:
                 continue
-            for _interface, _name in argc[item]:
-                if item in ['initial', 'final']:
-                    getattr(self, item).append(checkmate._storage.store(_interface, _name))
-                elif item == 'incoming':
-                    self.incoming = checkmate._storage.store_exchange(_interface, _name)
-                elif item == 'outgoing':
-                    self.outgoing.append(checkmate._storage.store_exchange(_interface, _name))
+            setattr(self, item, argc[item])
 
 
     def is_matching_incoming(self, exchange):
