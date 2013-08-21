@@ -126,9 +126,6 @@ class Transition(object):
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
         """
-        def member_wrapper(cls, obj, args=[], kwargs={}):
-            return cls(obj, *args, **kwargs)
-
         for _state in states:
             for _interface in zope.interface.providedBy(_state):
                 for _final in self.final:
