@@ -84,7 +84,6 @@ class Declarator(object):
                                  'partition_attribute': tuple(partition_attribute)})
         setattr(_module, classname, _module.declare(classname, standard_methods))
         setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
-        zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
 
         interface = getattr(_module, _to_interface(classname))
         cls = checkmate._utils.get_class_implementing(interface)
@@ -113,7 +112,7 @@ class Declarator(object):
                 except AttributeError:
                     raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[i][0]))
                 cls = checkmate._utils.get_class_implementing(interface)
-                initial_state.append(checkmate._storage.store(interface, array_items[i][1]))
+                initial_state.append(checkmate._storage.Data('states', interface, [array_items[i][1]]))
                 if checkmate._utils.is_method(array_items[i][1]):
                     cls = checkmate._utils.get_class_implementing(interface)
                     setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
@@ -126,7 +125,7 @@ class Declarator(object):
                         interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                    input = checkmate._storage.store_exchange(interface, array_items[j][i])
+                    input = checkmate._storage.Data('exchanges', interface, [array_items[j][i]])
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
@@ -135,7 +134,7 @@ class Declarator(object):
                     interface = getattr(self.module['states'], _to_interface(array_items[j][0]))
                 except AttributeError:
                     raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                final.append(checkmate._storage.store(interface, array_items[j][i]))
+                final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
             output = []
             for j in range(initial_state_id[-1]+1, row_count):
                 if array_items[j][i] != 'x':
@@ -143,12 +142,13 @@ class Declarator(object):
                         interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                    output.append(checkmate._storage.store_exchange(interface, array_items[j][i]))
+                    output.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
             try:
                 tran_name = tran_titles[i]
             except IndexError:
                 tran_name = 'unknown'
-            t = checkmate.transition.Transition(tran_name=tran_name, initial=initial_state, incoming=input, final=final, outgoing=output)
+            ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
+            t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
             component_transition.append(t)
         return component_transition
 

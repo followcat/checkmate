@@ -17,7 +17,7 @@ def _build_resolve_logic(transition, type, data):
         arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
     for arg in arguments:
         found = False
-        resolved_value = None
+        resolved_value = {} 
         if type in ['final', 'incoming']:
             for item in transition.initial:
                 if arg == item.code:
@@ -118,6 +118,7 @@ class TransitionData(collections.OrderedDict):
         for item in initial + final + outgoing:
             assert isinstance(item, Data)
 
+        super(TransitionData, self).__init__()
         # OrderedDict to keep order ('initial', 'incoming', 'final', 'outgoing')
         self['initial'] = initial
         self['incoming'] = incoming
@@ -158,7 +159,6 @@ class PartitionStorage(object):
         assert isinstance(data, Data)
         self.type = data.type
         self.storage = data.storage()
-        #self.resolve_logic = {}
 
     def get_description(self, item):
         """ Return description corresponding to item """
@@ -172,19 +172,21 @@ class TransitionStorage(object):
     def __init__(self, transition):
         """ Build the list of InternalStorage
         """
-        assert isinstance(data, TransitionData)
-        for key in iter(TransitionData):
+        assert isinstance(transition, TransitionData)
+        for key in iter(transition):
             if key == 'incoming':
-                #self.incoming = PartitionStorage(TransitionData[key])
-                self.incoming = TransitionData[key].storage()
+                try:
+                    self.incoming = transition[key].storage()[0]
+                except:
+                    self.incoming = None
             else:
                 _list = []
-                for item in TransitionData[key]:
-                    #_list.append(PartitionStorage(item))
-                    _list.append(item.storage())
+                for item in transition[key]:
+                    _list.append(item.storage()[0])
                 setattr(self, key, _list)
 
-        self.resolve_logic = _build_resolve_logic(self, 'incoming', self.incoming)
+        if self.incoming is not None:
+            self.resolve_logic = _build_resolve_logic(self, 'incoming', self.incoming)
         for final_state in self.final:
             final_state.resolve_logic = _build_resolve_logic(self, 'final', final_state)
         for outgoing_exchange in self.outgoing:
