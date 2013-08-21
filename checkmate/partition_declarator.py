@@ -61,7 +61,7 @@ class Declarator(object):
                 for _module in self.basic_modules[partition_type]:
                     try:
                         interface = getattr(_module, _to_interface(class_attr))
-                        standard_methods.update({class_attr: checkmate._storage.store(interface, class_attr)})
+                        standard_methods.update({class_attr: checkmate._storage.store(partition_type, interface, class_attr)})
                         partition_attribute.append(class_attr)
                         break
                     except AttributeError:
@@ -71,7 +71,7 @@ class Declarator(object):
                     try:
                         # class_kwattr[0][0] to get the classname from source string
                         interface = getattr(_module, _to_interface(class_kwattr[0][0]))
-                        standard_methods.update({key: checkmate._storage.store(interface, class_kwattr[0][0])})
+                        standard_methods.update({key: checkmate._storage.store(partition_type, interface, class_kwattr[0][0])})
                         partition_attribute.append(key)
                         break
                     except AttributeError:

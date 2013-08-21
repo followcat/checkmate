@@ -44,49 +44,44 @@ def _build_resolve_logic(transition, type, data):
     return resolved_arguments
 
 
-def store_exchange(interface, name, description=None):
+def store(type, interface, name, description=None):
     """
         >>> import checkmate.test_data
         >>> import sample_app.exchanges
         >>> a = checkmate.test_data.App()
-        >>> st = store_exchange(sample_app.exchanges.IAction, 'AP(R)')
+        >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
+        >>> attr = st.factory()
+        >>> attr.value
+        'AT1'
+        >>> st = store('data_structure', sample_app.data_structure.IAttribute, 'AT')
+        >>> attr = st.factory()
+
+        >>> st = store('states', sample_app.component_1.states.IAnotherState, 'Q0()')
+        >>> state = st.factory()
+        >>> state.value
+        [None]
+        >>> st = store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
         >>> ex = st.factory({'R': 'HIGH'})
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
         ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
-    code = checkmate._utils.internal_code(name)
-    try:
-        return checkmate._storage.InternalStorage(interface, name, description,
-                getattr(checkmate._utils.get_module_defining(interface), code))
-    except AttributeError:
-        raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
-
-def store(interface, name, description=None):
-    """
-        >>> import checkmate.test_data
-        >>> import sample_app.exchanges
-        >>> a = checkmate.test_data.App()
-        >>> st = store(sample_app.data_structure.IAttribute, "AT('AT1')")
-        >>> attr = st.factory()
-        >>> attr.value
-        'AT1'
-        >>> st = store(sample_app.data_structure.IAttribute, 'AT')
-        >>> attr = st.factory()
-
-        >>> st = store(sample_app.component_1.states.IAnotherState, 'Q0()')
-        >>> state = st.factory()
-        >>> state.value
-        [None]
-    """
-    if checkmate._utils.method_unbound(name):
+    if checkmate._utils.method_unbound(name) or type == 'exchanges':
         code = checkmate._utils.internal_code(name)
-        try:
-            return checkmate._storage.InternalStorage(interface, name, description,
-                    getattr(checkmate._utils.get_class_implementing(interface), code))
-        except AttributeError:
-            raise AttributeError(checkmate._utils.get_class_implementing(interface).__name__+' has no function defined: '+code)
+        if type == 'exchanges':
+            try:
+                return checkmate._storage.InternalStorage(interface, name, description,
+                        getattr(checkmate._utils.get_module_defining(interface), code))
+            except AttributeError:
+                raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
+        else:
+            try:
+                return checkmate._storage.InternalStorage(interface, name, description,
+                        getattr(checkmate._utils.get_class_implementing(interface), code))
+            except AttributeError:
+                raise AttributeError(checkmate._utils.get_class_implementing(interface).__name__+' has no function defined: '+code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
+
 
 class Data(object):
     def __init__(self, type, interface, codes, full_description=None):
@@ -103,13 +98,13 @@ class Data(object):
             except:
                 code_description = (None,None,None)
             if ((self.type == 'states') or (self.type == 'data_structure')):
-                _storage = store(self.interface, code, code_description)
+                _storage = store(self.type, self.interface, code, code_description)
                 _list.append(_storage)
             elif self.type == 'exchanges':
-                _storage = store_exchange(self.interface, code, code_description)
+                _storage = store(self.type, self.interface, code, code_description)
                 _list.append(_storage)
         if self.codes == None or len(self.codes) == 0:
-            _list.append(store(self.interface, ''))
+            _list.append(store(self.type, self.interface, ''))
         return _list
         
 
