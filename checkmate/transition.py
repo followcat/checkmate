@@ -69,7 +69,7 @@ class Transition(object):
                         return True
         return False
 
-    def resolve_arguments(self, type, data, states, incoming=None):
+    def resolve_arguments(self, _type, data, states, incoming=None):
         """
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
@@ -86,38 +86,16 @@ class Transition(object):
             {'R': <sample_app.data_structure.ActionRequest object at ...
         """
         resolved_arguments = {}
-        entry = getattr(self, type)
-        if type == 'incoming':
+        entry = getattr(self, _type)
+        if _type == 'incoming':
             arguments = list(entry.arguments.attribute_values.keys())
         else:
             arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
         for arg in arguments:
-            found = False
-            resolved_value = None
-            if type in ['final', 'incoming']:
-                for item in self.initial:
-                    try:
-                        resolved_arguments.update(item.resolve(arg, states))
-                        found = True
-                        break
-                    except AttributeError:
-                        continue
-            if ((not found) and self.incoming is not None):
-                if type in ['final', 'outgoing']:
-                    try:
-                        resolved_arguments.update(self.incoming.resolve(arg, incoming))
-                        found = True
-                    except AttributeError:
-                        pass
-            if not found:
-                if type in ['outgoing']:
-                    for item in self.final:
-                        try:
-                            resolved_arguments.update(item.resolve(arg, states))
-                            found = True
-                            break
-                        except AttributeError:
-                            continue
+            try:
+                resolved_arguments.update(data.resolve(arg, states=states, exchange=incoming))
+            except AttributeError:
+                continue
         return resolved_arguments
 
 
