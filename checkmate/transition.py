@@ -6,7 +6,7 @@ class Transition(object):
     """
     def __init__(self, **argc):
         self.initial = []
-        self.incoming = None
+        self.incoming = []
         self.final = []
         self.outgoing = []
         try:
@@ -29,7 +29,7 @@ class Transition(object):
             >>> c = a.components['C1']
             >>> c.state_machine.transitions[0].name
             'Toggle state tran01'
-            >>> i = c.state_machine.transitions[0].incoming.factory()
+            >>> i = c.state_machine.transitions[0].incoming[0].factory()
             >>> i.action
             'AC'
             >>> c.state_machine.transitions[0].is_matching_incoming(i)
@@ -37,14 +37,15 @@ class Transition(object):
             >>> c.state_machine.transitions[3].is_matching_incoming(i)
             False
 
-            >>> i = c.state_machine.transitions[1].incoming.factory()
+            >>> i = c.state_machine.transitions[1].incoming[0].factory()
         """
-        if self.incoming is not None:
-            _interface = self.incoming.interface
-            if _interface.providedBy(exchange):
-                obj = self.incoming.factory()
-                if exchange == obj:
-                    return True
+        if len(self.incoming) != 0:
+            for incoming_exchange in self.incoming:
+                _interface = incoming_exchange.interface
+                if _interface.providedBy(exchange):
+                    obj = incoming_exchange.factory()
+                    if exchange == obj:
+                        return True
         return False
 
     def is_matching_initial(self, state_list):
@@ -69,17 +70,17 @@ class Transition(object):
                         return True
         return False
 
-    def resolve_arguments(self, _type, data, states, incoming=None):
+    def resolve_arguments(self, _type, data, states, incoming_exchange=None):
         """
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
-            >>> i = t.incoming.factory(kwargs={'R': 1})
+            >>> i = t.incoming[0].factory(kwargs={'R': 1})
             >>> t.resolve_arguments('final', t.final[0], c.states, i)
             {'R': 1}
-            >>> i = t.incoming.factory()
+            >>> i = t.incoming[0].factory()
             >>> (i.action, i.R.P.value)
             ('AP', 'NORM')
             >>> t.resolve_arguments('final', t.final[0], c.states, i) # doctest: +ELLIPSIS
@@ -87,13 +88,10 @@ class Transition(object):
         """
         resolved_arguments = {}
         entry = getattr(self, _type)
-        if _type == 'incoming':
-            arguments = list(entry.arguments.attribute_values.keys())
-        else:
-            arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+        arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
         for arg in arguments:
             try:
-                resolved_arguments.update(data.resolve(arg, states=states, exchange=incoming))
+                resolved_arguments.update(data.resolve(arg, states=states, exchange=incoming_exchange))
             except AttributeError:
                 continue
         return resolved_arguments
@@ -104,8 +102,11 @@ class Transition(object):
 
         In case the transition has no incoming, raise AttributeError exception.
         """
-        arguments = self.resolve_arguments('incoming', self.incoming, states)
-        return self.incoming.factory(kwargs=arguments)
+        incoming_exchanges = []
+        for incoming in self.incoming:
+            arguments = self.resolve_arguments('incoming', incoming, states)
+            incoming_exchanges.append(incoming.factory(kwargs=arguments))
+        return incoming_exchanges
             
 
     def process(self, states, _incoming):
@@ -114,14 +115,14 @@ class Transition(object):
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
             >>> c.start()
-            >>> i = c.state_machine.transitions[0].incoming.factory()
+            >>> i = c.state_machine.transitions[0].incoming[0].factory()
             >>> c.state_machine.transitions[0].process(c.states, i) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> i = c.state_machine.transitions[1].incoming.factory()
+            >>> i = c.state_machine.transitions[1].incoming[0].factory()
             >>> o = c.state_machine.transitions[1].process(c.states, i)
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> i = c.state_machine.transitions[1].incoming.factory(kwargs={'R': 1})
+            >>> i = c.state_machine.transitions[1].incoming[0].factory(kwargs={'R': 1})
             >>> o = c.state_machine.transitions[1].process(c.states, i)
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...

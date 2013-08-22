@@ -30,10 +30,11 @@ class TestPlan(object):
             if destination == origin:
                 continue
             for _run in runs[destination]:
-                if _run.incoming in input_run.outgoing:
-                    _run.incoming.origin_destination(origin, destination)
-                    following_runs = self.find_run_with_incoming(destination, _run, runs)
-                    next_runs.append(following_runs)
+                for incoming_exchange in _run.incoming:
+                    if incoming_exchange in input_run.outgoing:
+                        incoming_exchange.origin_destination(origin, destination)
+                        following_runs = self.find_run_with_incoming(destination, _run, runs)
+                        next_runs.append(following_runs)
         return checkmate._tree.Tree(input_run, next_runs)
 
     def entry_points(self, runs):
@@ -42,8 +43,8 @@ class TestPlan(object):
         entry_runs = []
         for name in iter(runs):
             for _run in runs[name]:
-                if _run.incoming == checkmate.exchange.Exchange(None):
-                    _run.incoming.origin_destination('', name)
+                if _run.incoming[0] == checkmate.exchange.Exchange(None):
+                    _run.incoming[0].origin_destination('', name)
                     entry_runs.append((name, _run))
         return entry_runs
                    

@@ -17,10 +17,7 @@ def _build_resolve_logic(transition, type, data):
     """
     resolved_arguments = {}
     entry = getattr(transition, type)
-    if type == 'incoming':
-        arguments = list(entry.arguments.attribute_values.keys())
-    else:
-        arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -29,11 +26,13 @@ def _build_resolve_logic(transition, type, data):
                     resolved_arguments[arg] = ('initial', item.interface)
                     found = True
                     break
-        if ((not found) and transition.incoming is not None):
+        if ((not found) and len(transition.incoming) != 0):
             if type in ['final', 'outgoing']:
-                if arg in list(transition.incoming.arguments.attribute_values.keys()):
-                    resolved_arguments[arg] = ('incoming', transition.incoming.interface)
-                    found = True
+                for item in transition.incoming:
+                    if arg in list(item.arguments.attribute_values.keys()):
+                        resolved_arguments[arg] = ('incoming', item.interface)
+                        found = True
+                        break
         if not found:
             if type in ['outgoing']:
                 for item in transition.final:
@@ -112,10 +111,10 @@ class TransitionData(collections.OrderedDict):
     def __init__(self, initial, incoming, final, outgoing):
         assert type(final) == list
         assert type(initial) == list
+        assert type(incoming) == list
         assert type(outgoing) == list
 
-        assert (incoming is None or isinstance(incoming, Data))
-        for item in initial + final + outgoing:
+        for item in initial + final + incoming + outgoing:
             assert isinstance(item, Data)
 
         super(TransitionData, self).__init__()
@@ -148,19 +147,13 @@ class TransitionStorage(object):
         """
         assert isinstance(transition, TransitionData)
         for key in iter(transition):
-            if key == 'incoming':
-                try:
-                    self.incoming = transition[key].storage()[0]
-                except:
-                    self.incoming = None
-            else:
-                _list = []
-                for item in transition[key]:
-                    _list.append(item.storage()[0])
-                setattr(self, key, _list)
+            _list = []
+            for item in transition[key]:
+                _list.append(item.storage()[0])
+            setattr(self, key, _list)
 
-        if self.incoming is not None:
-            self.resolve_logic = _build_resolve_logic(self, 'incoming', self.incoming)
+        for incoming_exchange in self.incoming:
+            incoming_exchange.resolve_logic = _build_resolve_logic(self, 'incoming', incoming_exchange)
         for final_state in self.final:
             final_state.resolve_logic = _build_resolve_logic(self, 'final', final_state)
         for outgoing_exchange in self.outgoing:
@@ -246,7 +239,7 @@ class InternalStorage(object):
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
             >>> t = a.components['C1'].state_machine.transitions[1]
-            >>> inc = t.incoming.factory()
+            >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve('R', states=[states])
             Traceback (most recent call last):
@@ -254,7 +247,7 @@ class InternalStorage(object):
             AttributeError
             >>> t.final[0].resolve('R', exchange=inc) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> inc = t.incoming.factory(kwargs={'R': 1})
+            >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.action, inc.parameters, inc.R)  # doctest: +ELLIPSIS
             ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
             >>> t.final[0].resolve('R', exchange=inc)  # doctest: +ELLIPSIS

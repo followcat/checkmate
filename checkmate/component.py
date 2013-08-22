@@ -44,7 +44,7 @@ class Component(object):
         >>> a = checkmate.test_data.App()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> r_tm = c.state_machine.transitions[0].incoming.factory()
+        >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
         >>> c.get_transition_by_input(r_tm) == c.state_machine.transitions[0]
         True
         """

@@ -119,14 +119,14 @@ class Declarator(object):
                     setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
                             functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
         for i in range(2, len(array_items[0])):
-            input = None
+            input = [] 
             for j in range(0, initial_state_id[0]):
                 if array_items[j][i] != 'x':
                     try:
                         interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                    input = checkmate._storage.Data('exchanges', interface, [array_items[j][i]])
+                    input.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
