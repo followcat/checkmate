@@ -125,32 +125,6 @@ class TransitionData(collections.OrderedDict):
         self['final'] = final
         self['outgoing'] = outgoing
     
-class StorageManager(object):
-    def __init__(self, type, interface, codes, full_description=None):
-        """ Build the list of InternalStorage
-        """
-        self.type = type
-        self.storage = []
-        for code in codes:
-             try:
-                code_description = full_description[code]
-             except:
-                 code_description = (None,None,None)
-             if ((type == 'states') or (type == 'data_structure')):
-                _storage = store(interface, code, code_description)
-                self.storage.append(_storage)
-             elif type == 'exchanges':
-                _storage = store_exchange(interface, code, code_description)
-                self.storage.append(_storage)
-        if codes == None or len(codes) == 0:
-            self.storage.append(store(interface, ''))
-
-    def get_description(self, item):
-        """ Return description corresponding to item """
-        for stored_item in list(self.storage):
-            if item == stored_item.factory():
-                return stored_item.description
-        return (None,None,None)
 
 class PartitionStorage(object):
     def __init__(self, data):
