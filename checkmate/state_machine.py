@@ -31,11 +31,9 @@ class StateMachine(object):
                 # Some transition have no incoming
                 if len(incoming) == 0:
                     incoming.append(checkmate.exchange.Exchange(None))
-                outgoing_exchange_list = []
-                for incoming_exchange in incoming:
-                    outgoing_exchange_list.extend(transition.process(local_states, incoming_exchange))
+                outgoing = transition.process(local_states, incoming)
             
-                this_run = checkmate.run.Run(states, incoming, local_states, outgoing_exchange_list)
+                this_run = checkmate.run.Run(states, incoming, local_states, outgoing)
                 if this_run not in runs:
                     runs.append(this_run)
                     runs = self.develop(local_states, runs)

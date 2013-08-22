@@ -26,7 +26,7 @@ class Run(object):
             >>> c1.start()
             >>> initial_state = copy.deepcopy(c1.states)
             >>> i = c1.state_machine.transitions[1].incoming[0].factory()
-            >>> o = c1.state_machine.transitions[1].process(c1.states, i)
+            >>> o = c1.state_machine.transitions[1].process(c1.states, [i])
             >>> r = Run(initial_state, [i], c1.states, o)
             >>> r.itemized[2] # doctest: +ELLIPSIS
             [([{'R': <sample_app.data_structure.ActionRequest object at ...

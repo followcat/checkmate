@@ -232,7 +232,7 @@ class InternalStorage(object):
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, arg, states=None, exchange=None):
+    def resolve(self, arg, states=[], exchanges=[]):
         """
             >>> import checkmate.test_data
             >>> import sample_app.component_1.states
@@ -245,12 +245,12 @@ class InternalStorage(object):
             Traceback (most recent call last):
             ...
             AttributeError
-            >>> t.final[0].resolve('R', exchange=inc) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve('R', exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.action, inc.parameters, inc.R)  # doctest: +ELLIPSIS
             ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
-            >>> t.final[0].resolve('R', exchange=inc)  # doctest: +ELLIPSIS
+            >>> t.final[0].resolve('R', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
         """
         if arg in self.resolve_logic.keys():
@@ -261,12 +261,12 @@ class InternalStorage(object):
                         return {arg: _state.value}
                 raise AttributeError
             else:
-                if _interface.providedBy(exchange):
-                    if arg in iter(exchange.parameters):
-                        if exchange.parameters[arg] is not None:
-                            return {arg: exchange.parameters[arg]}
+                for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
+                    if arg in iter(_exchange.parameters):
+                        if _exchange.parameters[arg] is not None:
+                            return {arg: _exchange.parameters[arg]}
                     try:
-                        return {arg: getattr(exchange, arg)}
+                        return {arg: getattr(_exchange, arg)}
                     except AttributeError:
                         raise AttributeError
                 raise AttributeError

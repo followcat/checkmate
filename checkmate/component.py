@@ -45,7 +45,7 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.start()
         >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
-        >>> c.get_transition_by_input(r_tm) == c.state_machine.transitions[0]
+        >>> c.get_transition_by_input([r_tm]) == c.state_machine.transitions[0]
         True
         """
         for _t in self.state_machine.transitions:
