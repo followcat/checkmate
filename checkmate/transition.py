@@ -69,14 +69,20 @@ class Transition(object):
         """
         if len(self.initial) == 0:
             return True
+        local_copy = list(state_list)
         for _k in self.initial:
+            found = False
             _interface = _k.interface
-            for _s in state_list:
-                if _interface.providedBy(_s):
-                    obj = _k.factory()
-                    if _s == obj:
-                        return True
-        return False
+            for _state in [_s for _s in local_copy if _interface.providedBy(_s)]:
+                obj = _k.factory()
+                if _state == obj:
+                    found = True
+                    local_copy.remove(_state)
+                    break
+            if not found:
+                return False
+        # Do not check len(local_copy) as some state_list are not in self.initial
+        return True
 
     def resolve_arguments(self, _type, data, states, incoming_exchange=[]):
         """
