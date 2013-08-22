@@ -1,14 +1,7 @@
 import zope.interface.interface
 
-import checkmate._storage
 import checkmate.partition
 
-
-def new_exchange(name, parents, param):
-    return type(name, parents, param)
-
-def new_exchange_interface(name, parents, param):
-    return zope.interface.interface.InterfaceClass(name, parents, param)
 
 def declare(name, param):
     return type(name, (checkmate.exchange.Exchange,), param) 
