@@ -54,7 +54,7 @@ class Transition(object):
                     return False
             return len(local_copy) == 0
         else:
-            return len(exchange) == 0
+            return len(exchange_list) == 0
 
     def is_matching_initial(self, state_list):
         """
