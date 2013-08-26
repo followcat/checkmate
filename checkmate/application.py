@@ -1,5 +1,7 @@
 import os
 
+import zope.interface
+
 import checkmate.exchange
 import checkmate.test_plan
 import checkmate.data_structure
@@ -29,6 +31,10 @@ class ApplicationMeta(type):
             return result
 
 
+class IApplication(zope.interface.Interface):
+    """"""
+
+@zope.interface.implementer(IApplication)
 class Application(object):
     def __init__(self):
         """
