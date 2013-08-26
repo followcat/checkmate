@@ -31,7 +31,7 @@ class Client(object):
 
     def received(self, exchange):
         """"""
-        return True
+        return False
 
 
 @zope.interface.implementer(IProtocol)
