@@ -46,8 +46,7 @@ class Stub(Sut):
     def simulate(self, exchanges):
         return self.process(exchanges)
 
-    def validate(self, exchanges):
-        for incoming in exchanges:
-            if not self.connection.received(exchange):
-                return False
+    def validate(self, exchange):
+        if not self.connection.received(exchange):
+            return False
         return True
