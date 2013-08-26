@@ -25,7 +25,7 @@ class Runtime(object):
         checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
         checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
-    def setup_environment(self, sut=[]):
+    def setup_environment(self, sut):
         self.application.sut(sut)
         self.application.build_test_plan()
 
