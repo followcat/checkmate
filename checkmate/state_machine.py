@@ -28,9 +28,6 @@ class StateMachine(object):
                 local_states = copy.deepcopy(states)
 
                 incoming = transition.generic_incoming(local_states)
-                # Some transition have no incoming
-                if len(incoming) == 0:
-                    incoming.append(checkmate.exchange.Exchange(None))
                 outgoing = transition.process(local_states, incoming)
             
                 this_run = checkmate.run.Run(states, incoming, local_states, outgoing)

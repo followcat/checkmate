@@ -43,7 +43,8 @@ class TestPlan(object):
         entry_runs = []
         for name in iter(runs):
             for _run in runs[name]:
-                if _run.incoming[0] == checkmate.exchange.Exchange(None):
+                if len(_run.incoming) == 0:
+                    _run.incoming.append(checkmate.exchange.Exchange(None))
                     _run.incoming[0].origin_destination('', name)
                     entry_runs.append((name, _run))
         return entry_runs
