@@ -51,6 +51,7 @@ class Client(threading.Thread):
             self.received_lock.acquire()
             self.in_buffer.remove(exchange)
             self.received_lock.release()
+        return result
             
     def process_request(self):
         self.request_lock.acquire()
