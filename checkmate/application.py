@@ -51,7 +51,7 @@ class Application(object):
     def sut(self, system_under_test):
         """"""
         self.stubs = list(self.components.keys())
-        self.system_under_test = system_under_test
+        self.system_under_test = list(system_under_test)
         for name in system_under_test:
             if name not in list(self.components.keys()):
                 self.system_under_test.pop(system_under_test.index(name))
