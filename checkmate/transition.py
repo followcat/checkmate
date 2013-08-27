@@ -23,7 +23,10 @@ class Transition(object):
 
 
     def is_matching_incoming(self, exchange_list):
-        """
+        """Check if the transition incoming list is matching a list of exchange.
+
+        The exchange_list must contain all incoming from the transition to match.
+
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
@@ -57,7 +60,11 @@ class Transition(object):
             return len(exchange_list) == 0
 
     def is_matching_outgoing(self, exchange_list):
-        """
+        """Check if the transition outgoing list is matching a list of exchange.
+
+        The exchange_list can contain only a subset of the transition outgoing
+        to match. All item in exchange_list must be matched though.
+
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C2']
@@ -69,7 +76,7 @@ class Transition(object):
             >>> c.state_machine.transitions[1].is_matching_outgoing([i])
             False
         """
-        if len(self.outgoing) != 0:
+        if len(exchange_list) != 0:
             local_copy = list(exchange_list)
             for outgoing_exchange in self.outgoing:
                 found = False
@@ -80,11 +87,9 @@ class Transition(object):
                         local_copy.remove(_exchange)
                         found = True
                         break
-                if not found:
-                    return False
             return len(local_copy) == 0
         else:
-            return len(exchange_list) == 0
+            return True
 
     def is_matching_initial(self, state_list):
         """
