@@ -55,6 +55,23 @@ class Component(object):
         return None
 
             
+    def get_transition_by_output(self, exchange):
+        """
+        >>> import checkmate.test_data
+        >>> a = checkmate.test_data.App()
+        >>> c = a.components['C1']
+        >>> c.start()
+        >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
+        >>> c.get_transition_by_output([r_tm]) == c.state_machine.transitions[0]
+        True
+        """
+        for _t in self.state_machine.transitions:
+            if (_t.is_matching_initial(self.states) and
+                _t.is_matching_outgoing(exchange)):
+                return _t
+        return None
+
+            
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())

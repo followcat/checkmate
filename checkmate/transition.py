@@ -56,6 +56,36 @@ class Transition(object):
         else:
             return len(exchange_list) == 0
 
+    def is_matching_outgoing(self, exchange_list):
+        """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C2']
+            >>> i = c.state_machine.transitions[0].outgoing[0].factory()
+            >>> i.action
+            'AC'
+            >>> c.state_machine.transitions[0].is_matching_outgoing([i])
+            True
+            >>> c.state_machine.transitions[1].is_matching_outgoing([i])
+            False
+        """
+        if len(self.outgoing) != 0:
+            local_copy = list(exchange_list)
+            for outgoing_exchange in self.outgoing:
+                found = False
+                _interface = outgoing_exchange.interface
+                for _exchange in [_e for _e in local_copy if _interface.providedBy(_e)]:
+                    obj = outgoing_exchange.factory()
+                    if _exchange == obj:
+                        local_copy.remove(_exchange)
+                        found = True
+                        break
+                if not found:
+                    return False
+            return len(local_copy) == 0
+        else:
+            return len(exchange_list) == 0
+
     def is_matching_initial(self, state_list):
         """
             >>> import checkmate.test_data
