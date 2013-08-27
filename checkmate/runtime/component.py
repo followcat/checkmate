@@ -23,7 +23,7 @@ class IStub(ISut):
 class Sut(object):
     def __init__(self, component):
         self.context = component
-        client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.communication.IProtocol)
+        client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.communication.IConnection)
         self.connection = client(name=self.context.name)
 
     def start(self):

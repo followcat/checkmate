@@ -21,7 +21,7 @@ class Runtime(object):
         self.application = application
         self.communication = communication
 
-        checkmate.runtime.registry.global_registry.registerUtility(checkmate.runtime.communication.Client, checkmate.runtime.communication.IProtocol)
+        checkmate.runtime.registry.global_registry.registerUtility(self.communication.connection_handler, checkmate.runtime.communication.IConnection)
         checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
         checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 

@@ -185,6 +185,8 @@ class ConThread(threading.Thread):
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)
 class Communication(object):
+    connection_handler = Client
+
     """"""
     def initialize(self):
         self.registry = Registry()

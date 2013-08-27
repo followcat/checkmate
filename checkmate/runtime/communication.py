@@ -37,6 +37,8 @@ class Client(object):
 @zope.interface.implementer(IProtocol)
 class Communication(object):
     """"""
+    connection_handler = Client
+
     def initialize(self):
         """"""
 
