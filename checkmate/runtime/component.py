@@ -44,7 +44,8 @@ class Sut(object):
 @zope.component.adapter(checkmate.component.IComponent)
 class Stub(Sut):
     def simulate(self, exchanges):
-        return self.process(exchanges)
+        transition = self.context.get_transition_by_output([exchanges])
+        return self.process(transition.generic_incoming(self.context.states))
 
     def validate(self, exchange):
         if not self.connection.received(exchange):

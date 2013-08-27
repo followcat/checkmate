@@ -25,8 +25,8 @@ class Procedure(object):
             _origin = _node.root.origin
             if _origin not in self.system_under_test:
                 stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _origin)
-                stub.simulate(self.exchanges.root)
-                self._follow_up(self.exchanges)
+                stub.simulate(_node.root)
+                self._follow_up(_node)
                 
         if result is not None:
             result.addSuccess(self)
