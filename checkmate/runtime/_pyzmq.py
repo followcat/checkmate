@@ -19,6 +19,7 @@ class Client(threading.Thread):
         self.request_lock = threading.Lock()
         self.stop_lock = threading.Lock()
         self.end = False
+        self.in_buffer = []
         self.out_buffer = []
         self.name = name
         self.ports = []
