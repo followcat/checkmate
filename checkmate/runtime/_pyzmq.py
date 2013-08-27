@@ -9,17 +9,16 @@ import zmq
 import zope.interface
 
 import checkmate.runtime.communication
+import checkmate.runtime._threading
 
 
 @zope.interface.implementer(checkmate.runtime.communication.IConnection)
-class Client(threading.Thread):
+class Client(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, name=None):
         super(Client, self).__init__(name=name)
         self.received_lock = threading.Lock()
         self.request_lock = threading.Lock()
-        self.stop_lock = threading.Lock()
-        self.end = False
         self.in_buffer = []
         self.out_buffer = []
         self.name = name
@@ -49,19 +48,11 @@ class Client(threading.Thread):
     def run(self):
         """"""
         while(1):
-            self.process_request()
-            self.stop_lock.acquire()
-            if self.end:
-                self.stop_lock.release()
+            if self.check_for_stop():
                 break
-            self.stop_lock.release()
+            self.process_request()
             self.process_receive()
             time.sleep(0.1)
-
-    def stop(self):
-        self.stop_lock.acquire(timeout=0.3)
-        self.end = True
-        self.stop_lock.release()
 
     def send(self, exchange):
         """"""
@@ -113,15 +104,12 @@ class Client(threading.Thread):
         
 
 
-class Registry(threading.Thread):
+class Registry(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, name=None):
         """"""
         super(Registry, self).__init__(name=name)
-        self.stop_lock = threading.Lock()
-        self.end = False
         self.comp_sender = {}
-        self.start()
 
     def run(self):
         """"""
@@ -131,6 +119,8 @@ class Registry(threading.Thread):
         socket.bind("tcp://127.0.0.1:5000")
         poller.register(socket, zmq.POLLIN)
         while True:
+            if self.check_for_stop():
+                break
             socks = dict(poller.poll(10))
             for sock in iter(socks):
                 if sock == socket:
@@ -154,18 +144,17 @@ class Registry(threading.Thread):
                         return
                     sender.send(pickle.dumps(msg))
 
-    def stop(self):
-        self.stop_lock.acquire(timeout=0.5)
-        self.end = True
-        self.stop_lock.release()
-
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)
 class Communication(object):
+    """"""
     connection_handler = Client
 
-    """"""
     def initialize(self):
-        self.registry = Registry()
         """"""
+        self.registry = Registry()
+        self.registry.start()
+
+    def close(self):
+        self.registry.stop()
 

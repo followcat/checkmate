@@ -3,6 +3,11 @@ import zope.interface
 
 class IProtocol(zope.interface.Interface):
     """"""
+    def initialize(self):
+        """"""
+
+    def close(self):
+        """"""
 
 class IConnection(zope.interface.Interface):
     """"""
@@ -11,6 +16,7 @@ class IConnection(zope.interface.Interface):
 
     def connect(self, server):
         """"""
+
 
 @zope.interface.implementer(IConnection)
 class Client(object):
@@ -42,3 +48,5 @@ class Communication(object):
     def initialize(self):
         """"""
 
+    def close(self):
+        """"""

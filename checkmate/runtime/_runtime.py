@@ -74,4 +74,5 @@ class Runtime(object):
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
+        self.communication.close()
 
