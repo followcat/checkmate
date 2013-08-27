@@ -1,7 +1,8 @@
+import copy
 import time
-import threading
-
 import pickle
+import random
+import threading
 
 import zmq
 
@@ -28,8 +29,8 @@ class Client(threading.Thread):
             self.connect(self.ports)
 
     def request_ports(self):
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
+        self.context = zmq.Context()
+        socket = self.context.socket(zmq.REQ)
         socket.connect("tcp://127.0.0.1:5000")
         while len(self.ports) == 0:
             msg = "client1 request for ports"
@@ -40,9 +41,9 @@ class Client(threading.Thread):
 
     def connect(self, ports):
         if len(ports) == 2:
-            self.sender = context.socket(zmq.PUSH)
+            self.sender = self.context.socket(zmq.PUSH)
             self.sender.bind("tcp://127.0.0.1:%i"%ports[1])
-            self.reciever = context.socket(zmq.PULL)
+            self.reciever = self.context.socket(zmq.PULL)
             self.reciever.connect("tcp://127.0.0.1:%i"%ports[0])
             #poller = zmq.Poller()
             #poller.register(self.reciever, zmq.POLLIN)
@@ -120,13 +121,16 @@ class Registry(threading.Thread):
     """"""
     def __init__(self, name=None):
         """"""
-        super(Client, self).__init__(name=name)
+        super(Registry, self).__init__(name=name)
         self.comp_port = {}
         self.start()
 
     def run(self):
         """"""
         while True:
+            context = zmq.Context()
+            socket = context.socket(zmq.REP)
+            socket.bind("tcp://127.0.0.1:5000")
             msg = pickle.loads(socket.recv())
             name = msg[0]
             print("Got", msg[1])
@@ -151,10 +155,11 @@ class ConThread(threading.Thread):
 
     def run(self):
         """"""
-        self.sender = context.socket(zmq.PUSH)
+        self.context = zmq.Context()
+        self.sender = self.context.socket(zmq.PUSH)
         self.sender.bind("tcp://127.0.0.1:%i"%self.port_out)
         self.comp_sender.update({self.comp_name: self.sender})
-        self.receiver = context.socket(zmq.PULL)
+        self.receiver = self.context.socket(zmq.PULL)
         self.receiver.connect("tcp://127.0.0.1:%i"%self.port_in)
         #self.recv_exchange()
 
@@ -182,6 +187,6 @@ class ConThread(threading.Thread):
 class Communication(object):
     """"""
     def initialize(self):
-        self.registry = checkmate.runtime.Registry()
+        self.registry = Registry()
         """"""
 
