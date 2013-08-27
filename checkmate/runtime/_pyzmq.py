@@ -45,17 +45,6 @@ class Client(threading.Thread):
             self.sender.bind("tcp://127.0.0.1:%i"%ports[1])
             self.reciever = self.context.socket(zmq.PULL)
             self.reciever.connect("tcp://127.0.0.1:%i"%ports[0])
-            #poller = zmq.Poller()
-            #poller.register(self.reciever, zmq.POLLIN)
-            #for i in range(5):
-            #    socks = dict(poller.poll(100))
-            #    if self.reciever in socks and socks[self.reciever] == zmq.POLLIN:
-            #        print("reciving")
-            #        self.recieve_exchange()
-            #    self.send_exchange('exchange 01')
-            #    i += 1
-
-
 
     def run(self):
         """"""
@@ -100,15 +89,22 @@ class Client(threading.Thread):
         while(left_over):
             self.request_lock.acquire()
             exchange = self.out_buffer.pop()
+            destination = exchange.destination
+            print("dest: " + destination)
+            msg = pickle.dumps(exchange)
             left_over = (len(self.out_buffer) != 0)
             self.request_lock.release()
-            # Send exchange using protocol here
-            #
+            self.sender.send(pickle.dumps((destination, msg)))
 
     def process_receive(self):
         incoming_list = []
-        # Receive exchange using protocol here
-        #
+        poller = zmq.Poller()
+        poller.register(self.reciever, zmq.POLLIN)
+        socks = dict(poller.poll(10))
+        if self.reciever in socks and socks[self.reciever] == zmq.POLLIN:
+            msg = pickle.loads(self.reciever.recv())
+            if len(msg) == 2:
+                incoming_list.append(pickle.loads(msg[1]))
         if len(incoming_list) != 0:
             self.received_lock.acquire()
             for _incoming in incoming_list:
@@ -122,65 +118,46 @@ class Registry(threading.Thread):
     def __init__(self, name=None):
         """"""
         super(Registry, self).__init__(name=name)
-        self.comp_port = {}
+        self.stop_lock = threading.Lock()
+        self.end = False
+        self.comp_sender = {}
         self.start()
 
     def run(self):
         """"""
+        poller = zmq.Poller()
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind("tcp://127.0.0.1:5000")
+        poller.register(socket, zmq.POLLIN)
         while True:
-            context = zmq.Context()
-            socket = context.socket(zmq.REP)
-            socket.bind("tcp://127.0.0.1:5000")
-            msg = pickle.loads(socket.recv())
-            name = msg[0]
-            print("Got", msg[1])
-            port_out = random.Random().randint(6000, 6500)
-            port_in = random.Random().randint(7000, 7500)
-            self.comp_port[name] = port_out
-            socket.send(pickle.dumps([port_out, port_in]))
-            self.con_thrd = ConThread(port_out, port_in, name, self.comp_port)
-            self.con_thrd.start()
+            socks = dict(poller.poll(10))
+            for sock in iter(socks):
+                if sock == socket:
+                    msg = pickle.loads(socket.recv())
+                    name = msg[0]
+                    port_out = random.Random().randint(6000, 6500)
+                    port_in = random.Random().randint(7000, 7500)
+                    socket.send(pickle.dumps([port_out, port_in]))
+                    sender = context.socket(zmq.PUSH)
+                    receiver = context.socket(zmq.PULL)
+                    sender.bind("tcp://127.0.0.1:%i"%port_out)
+                    self.comp_sender[name] = sender
+                    receiver.connect("tcp://127.0.0.1:%i"%port_in)
+                    poller.register(receiver, zmq.POLLIN)
+                else:
+                    msg = pickle.loads(sock.recv())
+                    try:
+                        sender = self.comp_sender[msg[0]]
+                    except:
+                        print("no client registried " + msg[0])
+                        return
+                    sender.send(pickle.dumps(msg))
 
-
-
-class ConThread(threading.Thread):
-    """"""
-    def __init__(self, po, pi, name, comp_port):
-        """"""
-        threading.Thread.__init__(self, name=name)
-        self.port_out = po
-        self.port_in = pi
-        self.comp_name = name
-        self.comp_sender = comp_port
-
-    def run(self):
-        """"""
-        self.context = zmq.Context()
-        self.sender = self.context.socket(zmq.PUSH)
-        self.sender.bind("tcp://127.0.0.1:%i"%self.port_out)
-        self.comp_sender.update({self.comp_name: self.sender})
-        self.receiver = self.context.socket(zmq.PULL)
-        self.receiver.connect("tcp://127.0.0.1:%i"%self.port_in)
-        #self.recv_exchange()
-
-    def recv_exchange(self):
-        """"""
-        while(True):
-            msg = pickle.loads(self.receiver.recv())
-            name = msg[0]
-            print("receiving from client: " + msg[1])
-            self.send_exchange(msg)
-
-    def send_exchange(self, msg):
-        """"""
-        try:
-            sender = self.comp_sender[msg[0]]
-        except:
-            print("no component registried")
-            return
-        print("sending " + msg[1] + " to its destination " + msg[0])
-        sender.send(pickle.dumps(msg))
-
+    def stop(self):
+        self.stop_lock.acquire(timeout=0.5)
+        self.end = True
+        self.stop_lock.release()
 
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)
