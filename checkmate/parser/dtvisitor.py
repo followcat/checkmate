@@ -25,7 +25,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> import sample_app.exchanges
         >>> import sample_app.data_structure
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -37,9 +37,9 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         >>> wt.visitor._state_partitions
         []
         >>> wt.visitor._data_structure_partitions # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.data_structure.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
         >>> wt.visitor._exchange_partitions # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object at ...
         >>> len(wt.visitor._exchange_partitions)
         2
         >>> wt.visitor._transitions
@@ -238,29 +238,29 @@ def call_visitor(content, declarator):
         >>> import sample_app.exchanges
         >>> import sample_app.data_structure
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
         >>> declarator = checkmate.partition_declarator.Declarator(sample_app.data_structure, exchange_module=sample_app.exchanges)
         >>> output = call_visitor(c, declarator)
         >>> output['data_structure'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.data_structure.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
         >>> len(output['data_structure'])
         3
         >>> output['exchanges'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.exchanges.IAction>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object at ...
         >>> len(output['exchanges'])
         2
         >>> import sample_app.component_1.states
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/component_1/state_machine.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.rst'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
         >>> declarator = checkmate.partition_declarator.Declarator(sample_app.data_structure, state_module=sample_app.component_1.states, exchange_module=sample_app.exchanges)
         >>> output = call_visitor(c, declarator)
         >>> output['states'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.component_1.states.IState>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass sample_app.component_1.states.ITESTState>, <checkmate._storage.PartitionStorage object at ...
         >>> len(output['states'])
         2
     """
@@ -273,7 +273,7 @@ def call_visitor(content, declarator):
             'transitions': wt.visitor._transitions}
     
 def main():
-    input_file = os.getenv("CHECKMATE_HOME") + '/sample_app/exchanges.rst'
+    input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
     f1 = open(input_file)
     content = f1.read()
     f1.close()
