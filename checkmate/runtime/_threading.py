@@ -1,5 +1,6 @@
 import threading
 
+
 class Thread(threading.Thread):
     """Thread class with stop mechanism.
 
@@ -22,10 +23,10 @@ class Thread(threading.Thread):
         if check_for_stop() returns True
         """
 
-        result = True
+        result = False
         self.stop_lock.acquire()
-        if not self.end:
-            result = False
+        if self.end:
+            result = True
         self.stop_lock.release()
         return result
 

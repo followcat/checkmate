@@ -11,6 +11,7 @@ import zope.interface
 import checkmate.runtime.communication
 import checkmate.runtime._threading
 
+POLLING_TIMOUT_MS = 1000
 
 @zope.interface.implementer(checkmate.runtime.communication.IConnection)
 class Client(checkmate.runtime._threading.Thread):
@@ -23,12 +24,12 @@ class Client(checkmate.runtime._threading.Thread):
         self.out_buffer = []
         self.name = name
         self.ports = []
+        self.poller = zmq.Poller()
+        self.context = zmq.Context()
         self.request_ports()
-        if len(self.ports) > 1:
-            self.connect(self.ports)
+        self.connect_ports()
 
     def request_ports(self):
-        self.context = zmq.Context()
         socket = self.context.socket(zmq.REQ)
         socket.connect("tcp://127.0.0.1:5000")
         while len(self.ports) == 0:
@@ -37,30 +38,40 @@ class Client(checkmate.runtime._threading.Thread):
             self.ports.extend(pickle.loads(socket.recv()))
         socket.close()
 
-    def connect(self, ports):
-        if len(ports) == 2:
+    def connect_ports(self):
+        if len(self.ports) == 2:
+            self.request_lock.acquire()
             self.sender = self.context.socket(zmq.PUSH)
-            self.sender.bind("tcp://127.0.0.1:%i"%ports[1])
-            self.reciever = self.context.socket(zmq.PULL)
-            self.reciever.connect("tcp://127.0.0.1:%i"%ports[0])
+            self.sender.bind("tcp://127.0.0.1:%i"%self.ports[1])
+            self.request_lock.release()
+            self.receiver = self.context.socket(zmq.PULL)
+            self.receiver.connect("tcp://127.0.0.1:%i"%self.ports[0])
+            self.poller.register(self.receiver, zmq.POLLIN)
+
+    def close_ports(self):
+        self.request_lock.acquire()
+        self.sender.close()
+        self.request_lock.release()
+        self.receiver.close()
 
     def run(self):
         """"""
-        while(1):
+        while True:
             if self.check_for_stop():
+                self.close_ports()
                 break
             self.process_receive()
 
     def send(self, exchange):
         """"""
         self.request_lock.acquire()
-        self.out_buffer.append(exchange)
+        destination = exchange.destination
+        msg = pickle.dumps(exchange)
+        self.sender.send(pickle.dumps((destination, msg)))
         self.request_lock.release()
-        self.process_request()
 
 
     def received(self, exchange):
-        import time
         time.sleep(0.1)
         result = False
         self.received_lock.acquire()
@@ -73,34 +84,13 @@ class Client(checkmate.runtime._threading.Thread):
             self.received_lock.release()
         return result
             
-    def process_request(self):
-        self.request_lock.acquire()
-        left_over = (len(self.out_buffer) != 0)
-        self.request_lock.release()
-        while(left_over):
-            self.request_lock.acquire()
-            exchange = self.out_buffer.pop()
-            destination = exchange.destination
-            msg = pickle.dumps(exchange)
-            left_over = (len(self.out_buffer) != 0)
-            self.request_lock.release()
-            self.sender.send(pickle.dumps((destination, msg)))
-
     def process_receive(self):
         incoming_list = []
-        poller = zmq.Poller()
-        poller.register(self.reciever, zmq.POLLIN)
-        socks = dict(poller.poll(1000))
-        if self.reciever in socks and socks[self.reciever] == zmq.POLLIN:
-            msg = pickle.loads(self.reciever.recv())
-            if len(msg) == 2:
-                incoming_list.append(pickle.loads(msg[1]))
-        if len(incoming_list) != 0:
+        socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+        if self.receiver in socks:
             self.received_lock.acquire()
-            for _incoming in incoming_list:
-                self.in_buffer.append(_incoming)
+            self.in_buffer.append(pickle.loads(self.receiver.recv()))
             self.received_lock.release()
-        
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -109,22 +99,22 @@ class Registry(checkmate.runtime._threading.Thread):
         """"""
         super(Registry, self).__init__(name=name)
         self.comp_sender = {}
+        self.poller = zmq.Poller()
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
         self.socket.bind("tcp://127.0.0.1:5000")
+        self.poller.register(self.socket, zmq.POLLIN)
 
     def run(self):
         """"""
-        poller = zmq.Poller()
-        poller.register(self.socket, zmq.POLLIN)
         while True:
             if self.check_for_stop():
                 break
-            socks = dict(poller.poll(200))
+            socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
             for sock in iter(socks):
                 if sock == self.socket:
                     receiver = self.assign_ports()
-                    poller.register(receiver, zmq.POLLIN)
+                    self.poller.register(receiver, zmq.POLLIN)
                 else:
                     self.forward_incoming(sock)
 
@@ -149,7 +139,7 @@ class Registry(checkmate.runtime._threading.Thread):
         except:
             print("no client registried " + msg[0])
             return
-        sender.send(pickle.dumps(msg))
+        sender.send(msg[1])
 
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)

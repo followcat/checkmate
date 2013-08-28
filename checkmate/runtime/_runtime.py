@@ -81,6 +81,7 @@ class Runtime(object):
             False
             >>> c1.process(o) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
+            >>> r.stop_test()
         """
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
