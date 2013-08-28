@@ -62,7 +62,7 @@ class Checkmate(nose.plugins.Plugin):
         """Start the system under test"""
         a = checkmate.test_data.App()
         c = checkmate.runtime._pyzmq.Communication()
-        self.runtime = checkmate.runtime._runtime.Runtime(a, c)
+        self.runtime = checkmate.runtime._runtime.Runtime(a, c, threaded=True)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
         time.sleep(3)

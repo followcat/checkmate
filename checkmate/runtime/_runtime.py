@@ -15,14 +15,21 @@ class IRuntime(zope.interface.Interface):
 @zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.communication.IProtocol))
 class Runtime(object):
     """"""
-    def __init__(self, application, communication):
+    def __init__(self, application, communication, threaded=False):
         """"""
+        self.threaded = threaded
         self.application = application
         self.communication = communication
 
         checkmate.runtime.registry.global_registry.registerUtility(self.communication.connection_handler, checkmate.runtime.communication.IConnection)
-        checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-        checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+        if threaded:
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
+                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
+                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+        else:
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
         self.application.sut(sut)

@@ -34,6 +34,9 @@ class Client(object):
     def send(self, exchange):
         """"""
 
+    def read(self):
+        """"""
+        return []
 
     def received(self, exchange):
         """"""

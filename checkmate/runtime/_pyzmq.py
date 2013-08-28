@@ -70,6 +70,12 @@ class Client(checkmate.runtime._threading.Thread):
         self.sender.send(pickle.dumps((destination, msg)))
         self.request_lock.release()
 
+    def read(self):
+        self.received_lock.acquire()
+        _local_copy = copy.deepcopy(self.in_buffer)
+        self.in_buffer = []
+        self.received_lock.release()
+        return _local_copy
 
     def received(self, exchange):
         time.sleep(0.1)
