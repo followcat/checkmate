@@ -144,7 +144,29 @@ class Registry(checkmate.runtime._threading.Thread):
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)
 class Communication(object):
-    """"""
+    """
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.test_data
+        >>> import checkmate.runtime
+        >>> import checkmate.component
+        >>> import checkmate.runtime.communication
+        >>> a = checkmate.test_data.App()
+        >>> c = checkmate.runtime._pyzmq.Communication()
+        >>> r = checkmate.runtime._runtime.Runtime(a, c)
+        >>> r.setup_environment(['C3'])
+        >>> r.start_test()
+        >>> import checkmate.runtime.registry
+        >>> c2_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c1_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> simulated_exchange = a.components['C2'].state_machine.transitions[0].outgoing[0].factory()
+        >>> simulated_exchange.origin_destination('C2', 'C1')
+        >>> o = c2_stub.simulate(simulated_exchange)
+        >>> c1_stub.validate(o[0])
+        True
+        >>> r.stop_test()
+
+    """
     connection_handler = Client
 
     def initialize(self):
