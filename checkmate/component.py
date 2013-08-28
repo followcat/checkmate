@@ -76,6 +76,9 @@ class Component(object):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
 
+    def stop(self):
+        pass
+
     def process(self, exchange):
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
