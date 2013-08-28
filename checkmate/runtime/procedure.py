@@ -1,6 +1,6 @@
-import nose.plugins.skip
-
 import zope.interface
+
+import nose.plugins.skip
 
 import checkmate.component
 import checkmate.runtime.registry
@@ -44,7 +44,7 @@ class Procedure(object):
             if _next.root.destination not in self.system_under_test:
                 stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _next.root.destination)
                 if not stub.validate(_next.root):
-                    raise Exception('Not received')
+                    raise Exception('Not exchange %s received by component %s' %(_next.root.action, _next.root.destination))
         for _next in node.nodes:
             self._follow_up(_next)
 
