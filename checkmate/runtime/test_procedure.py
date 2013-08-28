@@ -31,7 +31,7 @@ class TestProcedure(checkmate.runtime.procedure.Procedure):
             >>> proc(result=None, system_under_test=['C1'])
             Traceback (most recent call last):
             ...
-            Exception: Not received
+            Exception: Not exchange RE received by component C3
         """
         super(TestProcedure, self).__init__(test)
         a = checkmate.test_data.App()
