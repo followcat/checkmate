@@ -110,39 +110,47 @@ class Registry(checkmate.runtime._threading.Thread):
         """"""
         super(Registry, self).__init__(name=name)
         self.comp_sender = {}
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REP)
+        self.socket.bind("tcp://127.0.0.1:5000")
 
     def run(self):
         """"""
         poller = zmq.Poller()
-        context = zmq.Context()
-        socket = context.socket(zmq.REP)
-        socket.bind("tcp://127.0.0.1:5000")
-        poller.register(socket, zmq.POLLIN)
+        poller.register(self.socket, zmq.POLLIN)
         while True:
             if self.check_for_stop():
                 break
             socks = dict(poller.poll(10))
             for sock in iter(socks):
-                if sock == socket:
-                    msg = pickle.loads(socket.recv())
-                    name = msg[0]
-                    port_out = random.Random().randint(6000, 6500)
-                    port_in = random.Random().randint(7000, 7500)
-                    socket.send(pickle.dumps([port_out, port_in]))
-                    sender = context.socket(zmq.PUSH)
-                    receiver = context.socket(zmq.PULL)
-                    sender.bind("tcp://127.0.0.1:%i"%port_out)
-                    self.comp_sender[name] = sender
-                    receiver.connect("tcp://127.0.0.1:%i"%port_in)
+                if sock == self.socket:
+                    receiver = self.assign_ports()
                     poller.register(receiver, zmq.POLLIN)
                 else:
-                    msg = pickle.loads(sock.recv())
-                    try:
-                        sender = self.comp_sender[msg[0]]
-                    except:
-                        print("no client registried " + msg[0])
-                        return
-                    sender.send(pickle.dumps(msg))
+                    self.forward_incoming(sock)
+
+    def assign_ports(self):
+        """""" 
+        msg = pickle.loads(self.socket.recv())
+        name = msg[0]
+        port_out = random.Random().randint(6000, 6500)
+        port_in = random.Random().randint(7000, 7500)
+        self.socket.send(pickle.dumps([port_out, port_in]))
+        sender = self.context.socket(zmq.PUSH)
+        receiver = self.context.socket(zmq.PULL)
+        sender.bind("tcp://127.0.0.1:%i"%port_out)
+        self.comp_sender[name] = sender
+        receiver.connect("tcp://127.0.0.1:%i"%port_in)
+        return receiver
+
+    def forward_incoming(self, socket):
+        msg = pickle.loads(socket.recv())
+        try:
+            sender = self.comp_sender[msg[0]]
+        except:
+            print("no client registried " + msg[0])
+            return
+        sender.send(pickle.dumps(msg))
 
 
 @zope.interface.implementer(checkmate.runtime.communication.IProtocol)
