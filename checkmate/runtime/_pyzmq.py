@@ -34,7 +34,6 @@ class Client(checkmate.runtime._threading.Thread):
         while len(self.ports) == 0:
             msg = "client1 request for ports"
             socket.send(pickle.dumps((self._name, msg)))
-            print(msg)
             self.ports.extend(pickle.loads(socket.recv()))
         socket.close()
 
@@ -50,18 +49,19 @@ class Client(checkmate.runtime._threading.Thread):
         while(1):
             if self.check_for_stop():
                 break
-            self.process_request()
             self.process_receive()
-            time.sleep(0.1)
 
     def send(self, exchange):
         """"""
         self.request_lock.acquire()
         self.out_buffer.append(exchange)
         self.request_lock.release()
+        self.process_request()
 
 
     def received(self, exchange):
+        import time
+        time.sleep(0.1)
         result = False
         self.received_lock.acquire()
         _local_copy = copy.deepcopy(self.in_buffer)
@@ -81,7 +81,6 @@ class Client(checkmate.runtime._threading.Thread):
             self.request_lock.acquire()
             exchange = self.out_buffer.pop()
             destination = exchange.destination
-            print("dest: " + destination)
             msg = pickle.dumps(exchange)
             left_over = (len(self.out_buffer) != 0)
             self.request_lock.release()
@@ -91,7 +90,7 @@ class Client(checkmate.runtime._threading.Thread):
         incoming_list = []
         poller = zmq.Poller()
         poller.register(self.reciever, zmq.POLLIN)
-        socks = dict(poller.poll(10))
+        socks = dict(poller.poll(1000))
         if self.reciever in socks and socks[self.reciever] == zmq.POLLIN:
             msg = pickle.loads(self.reciever.recv())
             if len(msg) == 2:
@@ -121,7 +120,7 @@ class Registry(checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            socks = dict(poller.poll(10))
+            socks = dict(poller.poll(200))
             for sock in iter(socks):
                 if sock == self.socket:
                     receiver = self.assign_ports()
