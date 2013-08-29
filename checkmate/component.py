@@ -5,6 +5,7 @@ import zope.interface
 import checkmate.state_machine
 import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
+import checkmate.service_registry
 
 
 class ComponentMeta(type):
@@ -23,6 +24,7 @@ class ComponentMeta(type):
             visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
             namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
                                                                       visitor_output['transitions'])
+            namespace['services'] = visitor_output['services']
             result = type.__new__(cls, name, bases, dict(namespace))
             return result
         except Exception as e:
@@ -61,6 +63,10 @@ class Component(object):
         >>> a = checkmate.test_data.App()
         >>> c = a.components['C1']
         >>> c.start()
+        >>> r = checkmate.service_registry.global_registry
+        >>> for service in c.services:
+        ...    print(r._registry[service])
+        ['C1']
         >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
         >>> c.get_transition_by_output([r_tm]) == c.state_machine.transitions[0]
         True
@@ -75,6 +81,8 @@ class Component(object):
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
+        r = checkmate.service_registry.global_registry
+        r.register(self, self.services)
 
     def stop(self):
         pass

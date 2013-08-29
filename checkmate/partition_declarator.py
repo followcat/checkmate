@@ -118,6 +118,7 @@ class Declarator(object):
                     cls = checkmate._utils.get_class_implementing(interface)
                     setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
                             functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
+        incoming_list = []
         for i in range(2, len(array_items[0])):
             input = [] 
             for j in range(0, initial_state_id[0]):
@@ -127,6 +128,8 @@ class Declarator(object):
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                     input.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
+                    if interface not in incoming_list:
+                        incoming_list.append(interface)
             final = []
             for j in range(initial_state_id[0], initial_state_id[-1]+1):
                 if array_items[j][0] == 'x':
@@ -151,5 +154,5 @@ class Declarator(object):
             ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
             t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
             component_transition.append(t)
-        return component_transition
+        return (incoming_list, component_transition)
 

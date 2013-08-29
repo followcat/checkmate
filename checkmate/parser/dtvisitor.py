@@ -61,6 +61,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         self._state_partitions = []
         self._data_structure_partitions = []
         self._exchange_partitions = []
+        self._services = []
         self._transitions = []
         self.inside_system_message = False
         self._high_level_flag = [0, 0, 0]
@@ -97,7 +98,10 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
                 self._exchange_partitions.append(self.get_partitions('exchanges'))
             elif self._high_level_flag == [0, 0, 1]:
                 assert (len(self.array_items) != 0), "transition empty"
-                self._transitions += self.get_transition(self.array_items, self.tran_titles)
+                _incomings = self.get_transition(self.array_items, self.tran_titles)[0]
+                for _incoming in [ _i for _i in _incomings if _i not in self._services]:
+                    self._services.append(_incoming)
+                self._transitions += self.get_transition(self.array_items, self.tran_titles)[1]
             self.full_description = collections.OrderedDict()
             self.standard_methods = {}
             self.codes = []
@@ -227,8 +231,8 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         return (interface, partition_storage)
 
     def get_transition(self, array_items, tran_titles):
-        component_transition =  self.declarator.new_transition(array_items, tran_titles)
-        return component_transition
+        component_incomings, component_transition =  self.declarator.new_transition(array_items, tran_titles)
+        return (component_incomings, component_transition)
 
 
 def call_visitor(content, declarator):
@@ -263,6 +267,8 @@ def call_visitor(content, declarator):
         [(<InterfaceClass sample_app.component_1.states.ITESTState>, <checkmate._storage.PartitionStorage object at ...
         >>> len(output['states'])
         2
+        >>> output['services']
+        [<InterfaceClass sample_app.exchanges.ITESTAction>]
     """
     dt = docutils.core.publish_doctree(source=content)
     wt = Writer(dt, declarator)
@@ -270,7 +276,8 @@ def call_visitor(content, declarator):
     return {'states': wt.visitor._state_partitions,
             'data_structure': wt.visitor._data_structure_partitions,
             'exchanges': wt.visitor._exchange_partitions,
-            'transitions': wt.visitor._transitions}
+            'transitions': wt.visitor._transitions,
+            'services': wt.visitor._services}
     
 def main():
     input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
