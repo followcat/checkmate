@@ -41,10 +41,6 @@ class Sut(object):
     def process(self, exchanges, outgoing=None):
         output = self.context.process(exchanges)
         for _o in output:
-            if outgoing is not None and _o == outgoing:
-                _o.origin_destination('', outgoing.destination)
-            else:
-                _o.origin_destination('', 'C3') #FIXME: Hardcoded destination
             self.connection.send(_o)
         return output
 
