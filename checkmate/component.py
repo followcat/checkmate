@@ -89,7 +89,7 @@ class Component(object):
     def process(self, exchange):
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
-            return None
+            return []
         output = []
         for _outgoing in _transition.process(self.states, exchange):
             for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
