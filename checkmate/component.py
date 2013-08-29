@@ -81,8 +81,7 @@ class Component(object):
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
-        r = checkmate.service_registry.global_registry
-        r.register(self, self.services)
+        checkmate.service_registry.global_registry.register(self, self.services)
 
     def stop(self):
         pass
@@ -91,5 +90,9 @@ class Component(object):
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
             return None
-        return _transition.process(self.states, exchange)
+        output = []
+        for _outgoing in _transition.process(self.states, exchange):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
+                output.append(_e)
+        return output
 
