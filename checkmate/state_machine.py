@@ -17,7 +17,7 @@ class StateMachine(object):
             >>> c.start()
             >>> r = c.state_machine.develop(c.states, [])
             >>> len(r)
-            6
+            5
             >>> (r[0].itemized[0], r[0].itemized[1], r[0].itemized[2])
             ([('True', 'S-STATE-01')], [('AC', 'X-ACTION-01')], [('False', 'S-STATE-02')])
             >>> (r[1].itemized[0], r[1].itemized[1], r[1].itemized[2]) # doctest: +ELLIPSIS

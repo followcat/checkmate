@@ -47,7 +47,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> t.is_matching_incoming([i])
             True
             >>> c.process([i]) # doctest: +ELLIPSIS
-            [<sample_app.exchanges.Reaction object at ...
+            [<sample_app.exchanges.Pause object at ...
             >>> c.states[1].value
             []
 

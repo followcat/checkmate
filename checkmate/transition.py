@@ -37,7 +37,7 @@ class Transition(object):
             'AC'
             >>> c.state_machine.transitions[0].is_matching_incoming([i])
             True
-            >>> c.state_machine.transitions[3].is_matching_incoming([i])
+            >>> c.state_machine.transitions[2].is_matching_incoming([i])
             False
 
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
@@ -99,7 +99,7 @@ class Transition(object):
             >>> c.start()
             >>> c.state_machine.transitions[0].is_matching_initial(c.states)
             True
-            >>> c.state_machine.transitions[3].is_matching_initial(c.states)
+            >>> c.state_machine.transitions[2].is_matching_initial(c.states)
             False
         """
         if len(self.initial) == 0:
