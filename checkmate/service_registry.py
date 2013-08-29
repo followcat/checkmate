@@ -22,6 +22,7 @@ class ServiceFactory(object):
             exchange = copy.deepcopy(self.context)
             exchange.origin_destination(origin, _d)
             yield exchange
+        yield from ()
 
 
 class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
@@ -71,6 +72,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
                 return _factory(component.name, _servers)
+        return _factory(component.name, [])
 
 global_registry = ServiceRegistry()
 
