@@ -47,7 +47,8 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         for _service in services:
             assert isinstance(_service, zope.interface.interface.InterfaceClass)
             if _service in self._registry.keys():
-                self._registry[_service].append(component.name)
+                if component.name not in self._registry[_service]:
+                    self._registry[_service].append(component.name)
             else:
                 self._registry[_service] = [component.name]
 
