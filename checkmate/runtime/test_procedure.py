@@ -41,12 +41,10 @@ class TestProcedure(checkmate.runtime.procedure.Procedure):
         a.start()
         transition = c2.state_machine.transitions[0]
         self.exchanges = checkmate._tree.Tree(transition.generic_incoming(c2.states), [])
-        for _e in transition.process(c2.states, self.exchanges.root):
-            _e.origin_destination(c2.name, c1.name)
+        for _e in c2.process(self.exchanges.root):
+            #_e.origin_destination(c2.name, c1.name)
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        transition = c1.state_machine.transitions[0]
-        for _e in transition.process(c1.states, [self.exchanges.nodes[0].root]):
-            _e.origin_destination(c1.name, c3.name)
+        for _e in c1.process([self.exchanges.nodes[0].root]):
             self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
         self.components = ('C1', 'C2', 'C3')
 
@@ -57,7 +55,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
         """
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
-            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime.communication
             >>> a = checkmate.test_data.App()
             >>> r = checkmate.runtime._runtime.Runtime(a, checkmate.runtime.communication.Communication())
             >>> r.setup_environment(['C1'])
@@ -84,24 +82,18 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
         a.start()
         transition = c2.state_machine.transitions[0]
         self.exchanges = checkmate._tree.Tree(transition.generic_incoming(c2.states), [])
-        for _e in transition.process(c2.states, [self.exchanges.root]):
+        for _e in c2.process(self.exchanges.root):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        transition = c1.state_machine.transitions[0]
-        for _e in transition.process(c1.states, [self.exchanges.nodes[0].root]):
+        for _e in c1.process([self.exchanges.nodes[0].root]):
             self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        transition = c3.state_machine.transitions[0]
-        for _e in transition.process(c3.states, [self.exchanges.nodes[0].nodes[0].root]):
+        for _e in c3.process([self.exchanges.nodes[0].nodes[0].root]):
             self.exchanges.nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        transition = c2.state_machine.transitions[1]
-        for _e in transition.process(c2.states, [self.exchanges.nodes[0].nodes[1].root]):
+        for _e in c2.process([self.exchanges.nodes[0].nodes[1].root]):
             self.exchanges.nodes[0].nodes[1].add_node(checkmate._tree.Tree(_e, []))
-        transition = c1.state_machine.transitions[1]
-        for _e in transition.process(c1.states, [self.exchanges.nodes[0].nodes[1].nodes[0].root]):
+        for _e in c1.process([self.exchanges.nodes[0].nodes[1].nodes[0].root]):
             self.exchanges.nodes[0].nodes[1].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        transition = c3.state_machine.transitions[1]
-        for _e in transition.process(c3.states, [self.exchanges.nodes[0].nodes[1].nodes[0].nodes[0].root]):
+        for _e in c3.process([self.exchanges.nodes[0].nodes[1].nodes[0].nodes[0].root]):
             self.exchanges.nodes[0].nodes[1].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        transition = c1.state_machine.transitions[2]
         for _e in c1.process([self.exchanges.nodes[0].nodes[1].nodes[0].nodes[0].nodes[0].root]):
             self.exchanges.nodes[0].nodes[1].nodes[0].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
         self.components = ('C1', 'C2', 'C3')
