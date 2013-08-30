@@ -38,7 +38,7 @@ class Sut(object):
         self.context.stop()
         self.connection.stop()
 
-    def process(self, exchanges, outgoing=None):
+    def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
             self.connection.send(_o)
@@ -50,7 +50,7 @@ class Sut(object):
 class Stub(Sut):
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
-        return self.process(transition.generic_incoming(self.context.states), exchange)
+        return self.process(transition.generic_incoming(self.context.states))
 
     def validate(self, exchange):
         if not self.connection.received(exchange):
@@ -60,7 +60,7 @@ class Stub(Sut):
 
 @zope.component.adapter(checkmate.component.IComponent)
 @zope.interface.implementer(ISut)
-class ThreadedSut(checkmate.runtime._threading.Thread, Sut):
+class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, component):
         Sut.__init__(self, component)
@@ -85,46 +85,39 @@ class ThreadedSut(checkmate.runtime._threading.Thread, Sut):
 
 @zope.component.adapter(checkmate.component.IComponent)
 @zope.interface.implementer(IStub)
-class ThreadedStub(checkmate.runtime._threading.Thread, Stub):
+class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, component):
         self.validation_list = []
         self.validation_lock = threading.Lock()
-        Stub.__init__(self, component)
-        checkmate.runtime._threading.Thread.__init__(self, name=component.name)
-
-    def start(self):
-        Stub.start(self)
-        checkmate.runtime._threading.Thread.start(self)
-
-    def stop(self):
-        Stub.stop(self)
-        checkmate.runtime._threading.Thread.stop(self)
+        super(ThreadedStub, self).__init__(component)
 
     def run(self):
         while True:
             if self.check_for_stop():
                 break
+            self.validation_lock.acquire()
             for exchange in self.connection.read():
-                self.validation_lock.acquire()
                 self.validation_list.append(exchange)
-                self.validation_lock.release()
                 self.process([exchange])
+            self.validation_lock.release()
             time.sleep(0.05)
 
-    def validate(self, exchange):
-        result = False
-        time.sleep(0.1)
+    def simulate(self, exchange):
         self.validation_lock.acquire()
-        if exchange in self.validation_list:
-            self.validation_list.remove(exchange)
-            result = True
+        transition = self.context.get_transition_by_output([exchange])
+        self.process(transition.generic_incoming(self.context.states))
         self.validation_lock.release()
-        return result
 
-    #TODO: Should we protect simulate() and validate() with a Lock
-
-
-
-
+    def validate(self, exchange):
+        time.sleep(0.1)
+        try:
+            result = True
+            self.validation_lock.acquire()
+            self.validation_list.remove(exchange)
+        except ValueError:
+            result = False
+        finally:
+            self.validation_lock.release()
+            return result
 
