@@ -11,6 +11,10 @@ import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
+SIMULATE_WAIT_SEC = 0.2
+THREAD_RUN_WAIT_SEC = 0.05
+
+
 class ISut(zope.interface.Interface):
     """"""
 
@@ -101,16 +105,16 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
                 self.validation_list.append(exchange)
                 self.process([exchange])
             self.validation_lock.release()
-            time.sleep(0.05)
+            time.sleep(THREAD_RUN_WAIT_SEC)
 
     def simulate(self, exchange):
         self.validation_lock.acquire()
         transition = self.context.get_transition_by_output([exchange])
         self.process(transition.generic_incoming(self.context.states))
         self.validation_lock.release()
+        time.sleep(SIMULATE_WAIT_SEC)
 
     def validate(self, exchange):
-        time.sleep(0.1)
         try:
             result = True
             self.validation_lock.acquire()
