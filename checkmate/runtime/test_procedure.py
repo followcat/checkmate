@@ -41,7 +41,6 @@ class TestProcedure(checkmate.runtime.procedure.Procedure):
         self.exchanges = checkmate._tree.Tree(c2.process(transition.generic_incoming(c2.states))[0], [])
         for _e in c1.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        self.components = ('C1', 'C2', 'C3')
 
 
 class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
@@ -87,5 +86,4 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             self.exchanges.nodes[1].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
         for _e in c1.process([self.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].root]):
             self.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        self.components = ('C1', 'C2', 'C3')
 
