@@ -44,7 +44,7 @@ class Procedure(object):
             if _next.root.destination not in self.system_under_test:
                 stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _next.root.destination)
                 if not stub.validate(_next.root):
-                    raise Exception('Not exchange %s received by component %s' %(_next.root.action, _next.root.destination))
+                    raise Exception("No exchange '%s' received by component '%s'" %(_next.root.action, _next.root.destination))
         for _next in node.nodes:
             self._follow_up(_next)
 
