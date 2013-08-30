@@ -121,3 +121,8 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
             self.validation_lock.release()
             return result
 
+    def beforeTest(self, result):
+        self.validation_lock.acquire()
+        self.validation_list = []
+        self.validation_lock.release()
+
