@@ -67,6 +67,7 @@ class Stub(Sut):
 class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, component):
+        #Need to call both ancestors
         Sut.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
@@ -94,6 +95,7 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
     def __init__(self, component):
         self.validation_list = []
         self.validation_lock = threading.Lock()
+        #Call ThreadedStub first ancestor: ThreadedSut expected
         super(ThreadedStub, self).__init__(component)
 
     def run(self):
