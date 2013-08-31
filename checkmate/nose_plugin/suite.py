@@ -3,15 +3,13 @@ import collections
 
 import nose.case
 import nose.suite
+import nose.proxy
 
 import checkmate.runtime.interfaces
 
 
 class TestCase(nose.case.Test):
     """"""
-    def __init__(self, *arg, **kw):
-        nose.case.Test.__init__(self, *arg, **kw)
-
     def runTest(self, result):
         """Run the test. Plugins may alter the test by returning a
         value from prepareTestCase. The value must be callable and
@@ -23,10 +21,21 @@ class TestCase(nose.case.Test):
             test = plug_test
         if checkmate.runtime.interfaces.IProcedure.providedBy(test):
             config_as_dict = self.config.todict()
-            test(result, config_as_dict['system_under_test'])
+            test(config_as_dict['system_under_test'], result)
         else:
             test(result)
+        #config_as_dict = self.config.todict()
+        #test(result, config_as_dict['system_under_test'])
 
+class FunctionTestCase(nose.case.FunctionTestCase):
+    def __init__(self, test, config, **kwargs):
+        super(FunctionTestCase, self).__init__(test, **kwargs)
+        self.config = config
+
+    def runTest(self):
+        """"""
+        config_as_dict = self.config.todict()
+        self.test(system_under_test=config_as_dict['system_under_test'])
 
 class ContextSuite(nose.suite.ContextSuite):
     """"""

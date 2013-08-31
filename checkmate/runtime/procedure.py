@@ -13,7 +13,7 @@ class Procedure(object):
         self.test = test
         self.components = []
         
-    def __call__(self, result, system_under_test, *args):
+    def __call__(self, system_under_test, result=None, *args):
         """"""
         self.result = result
         if len(self.components) == 0:

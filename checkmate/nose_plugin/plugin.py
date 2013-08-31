@@ -1,15 +1,19 @@
+import sys
 import time
-import string
+import inspect
+import collections
 
 import nose
 import nose.util
 import nose.config
+import nose.failure
 import nose.plugins
 
 import checkmate.test_data
 import checkmate.nose_plugin
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
+import checkmate.nose_plugin.suite
 import checkmate.runtime.interfaces
 
 
@@ -53,10 +57,32 @@ class Checkmate(nose.plugins.Plugin):
         if nose.util.isclass(obj):
             if checkmate.runtime.interfaces.IProcedure.implementedBy(obj):
                 return self.loadTestsFromTestCase(obj)
+        elif inspect.isfunction(obj):
+            if parent and obj.__module__ != parent.__name__:
+                obj = nose.util.transplant_func(obj, parent.__name__)
+            if nose.util.isgenerator(obj):
+                return self.loadTestsFromGenerator(obj, parent)
 
     def loadTestsFromTestCase(self, cls):
         """"""
         return self.suiteClass(tests=[cls(),])
+
+    def loadTestsFromGenerator(self, generator, module):
+        """"""
+        def generate(g=generator, m=module):
+            try:
+                for test in g():
+                    test_func, arg = self.loader.parseGeneratedTest(test)
+                    if not isinstance(test_func, collections.Callable):
+                        test_func = getattr(m, test_func)
+                    yield checkmate.nose_plugin.suite.FunctionTestCase(test_func, config=self.config, arg=arg, descriptor=g)
+            except KeyboardInterrupt:
+                raise
+            except:
+                exc = sys.exc_info()
+                yield nose.failure.Failure(exc[0], exc[1], exc[2],
+                              address=nose.util.test_address(generator))
+        return self.suiteClass(generate, context=generator, can_split=False)
 
     def begin(self):
         """Start the system under test"""
