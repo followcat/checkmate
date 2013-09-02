@@ -24,8 +24,6 @@ class TestCase(nose.case.Test):
             test(config_as_dict['system_under_test'], result)
         else:
             test(result)
-        #config_as_dict = self.config.todict()
-        #test(result, config_as_dict['system_under_test'])
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
