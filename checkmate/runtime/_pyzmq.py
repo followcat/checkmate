@@ -16,19 +16,23 @@ import checkmate.runtime.interfaces
 POLLING_TIMOUT_MS = 1000
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
-class Client(checkmate.runtime._threading.Thread):
+class Encoder(object):
+    def encode(self, exchange):
+        return pickle.dumps(exchange)
+
+    def decode(self, message):
+        return pickle.loads(message)
+
+class Connector(object):
     """"""
-    def __init__(self, name=None):
-        super(Client, self).__init__(name=name)
-        self.received_lock = threading.Lock()
-        self.request_lock = threading.Lock()
-        self.in_buffer = []
-        self.out_buffer = []
-        self.name = name
+    def __init__(self, name, port):
+        self._name = name
         self.ports = []
+        self.sender = None
+        self.receiver = None
         self.poller = zmq.Poller()
         self.context = zmq.Context()
+        self._initport = port
         self.request_ports()
         self.connect_ports()
 
@@ -43,34 +47,53 @@ class Client(checkmate.runtime._threading.Thread):
 
     def connect_ports(self):
         if len(self.ports) == 2:
-            self.request_lock.acquire()
             self.sender = self.context.socket(zmq.PUSH)
             self.sender.bind("tcp://127.0.0.1:%i"%self.ports[1])
-            self.request_lock.release()
             self.receiver = self.context.socket(zmq.PULL)
             self.receiver.connect("tcp://127.0.0.1:%i"%self.ports[0])
             self.poller.register(self.receiver, zmq.POLLIN)
 
-    def close_ports(self):
-        self.request_lock.acquire()
+    def close(self):
         self.sender.close()
-        self.request_lock.release()
         self.receiver.close()
+
+    def send(self, destination, msg):
+        """"""
+        self.sender.send(pickle.dumps((destination, msg)))
+            
+    def receive(self):
+        socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+        if self.receiver in socks:
+            return self.receiver.recv()
+
+
+@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
+class Client(checkmate.runtime._threading.Thread):
+    """"""
+    def __init__(self, name=None):
+        super(Client, self).__init__(name=name)
+        self.received_lock = threading.Lock()
+        self.request_lock = threading.Lock()
+        self.in_buffer = []
+        self.out_buffer = []
+        self.name = name
+        self.connections = Connector(name, self._initport)
+        self.encoder = Encoder()
 
     def run(self):
         """"""
         while True:
             if self.check_for_stop():
-                self.close_ports()
+                self.connections.close()
                 break
             self.process_receive()
 
     def send(self, exchange):
         """"""
-        self.request_lock.acquire()
+        msg = self.encoder.encode(exchange)
         destination = exchange.destination
-        msg = pickle.dumps(exchange)
-        self.sender.send(pickle.dumps((destination, msg)))
+        self.request_lock.acquire()
+        self.connections.send(destination, msg)
         self.request_lock.release()
 
     def read(self):
@@ -80,6 +103,15 @@ class Client(checkmate.runtime._threading.Thread):
         self.received_lock.release()
         return _local_copy
 
+    def process_receive(self):
+        message = self.connections.receive()
+        if message is not None:
+            exchange = self.encoder.decode(message)
+            self.received_lock.acquire()
+            self.in_buffer.append(exchange)
+            self.received_lock.release()
+
+    # Only used by non-threaded Stub
     def received(self, exchange):
         time.sleep(0.1)
         result = False
@@ -93,14 +125,6 @@ class Client(checkmate.runtime._threading.Thread):
             self.received_lock.release()
         return result
             
-    def process_receive(self):
-        incoming_list = []
-        socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
-        if self.receiver in socks:
-            self.received_lock.acquire()
-            self.in_buffer.append(pickle.loads(self.receiver.recv()))
-            self.received_lock.release()
-
 
 class Registry(checkmate.runtime._threading.Thread):
     """"""
@@ -195,6 +219,7 @@ class Communication(object):
         """"""
         self.registry = Registry()
         Client._initport = self.registry._initport
+        Client.encoding_handler = Encoder
         self.registry.start()
 
     def close(self):
