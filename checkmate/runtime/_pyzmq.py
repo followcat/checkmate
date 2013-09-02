@@ -111,8 +111,11 @@ class Registry(checkmate.runtime._threading.Thread):
         self.poller = zmq.Poller()
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
+        self.get_assign_port_lock = threading.Lock()
+        self.get_assign_port_lock.acquire()
         self._initport = self.pickfreeport()
         self.socket.bind("tcp://127.0.0.1:%i"%self._initport)
+        self.get_assign_port_lock.release()
         self.poller.register(self.socket, zmq.POLLIN)
 
     def run(self):
@@ -132,14 +135,18 @@ class Registry(checkmate.runtime._threading.Thread):
         """""" 
         msg = pickle.loads(self.socket.recv())
         name = msg[0]
-        port_out = random.Random().randint(6000, 6500)
-        port_in = random.Random().randint(7000, 7500)
-        self.socket.send(pickle.dumps([port_out, port_in]))
         sender = self.context.socket(zmq.PUSH)
         receiver = self.context.socket(zmq.PULL)
+        self.get_assign_port_lock.acquire()
+        port_out = self.pickfreeport()
         sender.bind("tcp://127.0.0.1:%i"%port_out)
+        self.get_assign_port_lock.release()
         self.comp_sender[name] = sender
+        self.get_assign_port_lock.acquire()
+        port_in = self.pickfreeport()
         receiver.connect("tcp://127.0.0.1:%i"%port_in)
+        self.get_assign_port_lock.release()
+        self.socket.send(pickle.dumps([port_out, port_in]))
         return receiver
 
     def forward_incoming(self, socket):
