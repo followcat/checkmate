@@ -5,14 +5,11 @@ import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
 import checkmate.runtime.component
-import checkmate.runtime.communication
+import checkmate.runtime.interfaces
 
 
-class IRuntime(zope.interface.Interface):
-    """"""
-
-@zope.interface.implementer(IRuntime)
-@zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.communication.IProtocol))
+@zope.interface.implementer(checkmate.runtime.interfaces.IRuntime)
+@zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.interfaces.IProtocol))
 class Runtime(object):
     """"""
     def __init__(self, application, communication, threaded=False):
@@ -21,7 +18,7 @@ class Runtime(object):
         self.application = application
         self.communication = communication
 
-        checkmate.runtime.registry.global_registry.registerUtility(self.communication.connection_handler, checkmate.runtime.communication.IConnection)
+        checkmate.runtime.registry.global_registry.registerUtility(self.communication.connection_handler, checkmate.runtime.interfaces.IConnection)
         if threaded:
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.IStub)

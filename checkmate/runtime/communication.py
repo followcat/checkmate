@@ -1,24 +1,9 @@
 import zope.interface
 
-
-class IProtocol(zope.interface.Interface):
-    """"""
-    def initialize(self):
-        """"""
-
-    def close(self):
-        """"""
-
-class IConnection(zope.interface.Interface):
-    """"""
-    def startup(self):
-        """"""
-
-    def connect(self, server):
-        """"""
+import checkmate.runtime.interfaces
 
 
-@zope.interface.implementer(IConnection)
+@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(object):
     """"""
     def __init__(self, name=None):
@@ -43,7 +28,7 @@ class Client(object):
         return False
 
 
-@zope.interface.implementer(IProtocol)
+@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Communication(object):
     """"""
     connection_handler = Client

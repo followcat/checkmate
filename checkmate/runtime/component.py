@@ -8,7 +8,7 @@ import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
 import checkmate.runtime._threading
-import checkmate.runtime.communication
+import checkmate.runtime.interfaces
 
 
 SIMULATE_WAIT_SEC = 0.2
@@ -31,7 +31,7 @@ class IStub(ISut):
 class Sut(object):
     def __init__(self, component):
         self.context = component
-        client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.communication.IConnection)
+        client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IConnection)
         self.connection = client(name=self.context.name)
 
     def start(self):

@@ -8,12 +8,14 @@ import zmq
 
 import zope.interface
 
-import checkmate.runtime.communication
 import checkmate.runtime._threading
+import checkmate.runtime.interfaces
+
 
 POLLING_TIMOUT_MS = 1000
 
-@zope.interface.implementer(checkmate.runtime.communication.IConnection)
+
+@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, name=None):
@@ -148,7 +150,7 @@ class Registry(checkmate.runtime._threading.Thread):
         sender.send(msg[1])
 
 
-@zope.interface.implementer(checkmate.runtime.communication.IProtocol)
+@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Communication(object):
     """
         >>> import checkmate.runtime._pyzmq
@@ -156,7 +158,6 @@ class Communication(object):
         >>> import checkmate.test_data
         >>> import checkmate.runtime
         >>> import checkmate.component
-        >>> import checkmate.runtime.communication
         >>> a = checkmate.test_data.App()
         >>> c = checkmate.runtime._pyzmq.Communication()
         >>> r = checkmate.runtime._runtime.Runtime(a, c)
