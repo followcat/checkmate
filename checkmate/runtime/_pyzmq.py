@@ -5,6 +5,7 @@ import random
 import threading
 
 import zmq
+import socket
 
 import zope.interface
 
@@ -33,7 +34,7 @@ class Client(checkmate.runtime._threading.Thread):
 
     def request_ports(self):
         socket = self.context.socket(zmq.REQ)
-        socket.connect("tcp://127.0.0.1:5000")
+        socket.connect("tcp://127.0.0.1:%i"%self._initport)
         while len(self.ports) == 0:
             msg = "client1 request for ports"
             socket.send(pickle.dumps((self._name, msg)))
@@ -110,7 +111,8 @@ class Registry(checkmate.runtime._threading.Thread):
         self.poller = zmq.Poller()
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
-        self.socket.bind("tcp://127.0.0.1:5000")
+        self._initport = self.pickfreeport()
+        self.socket.bind("tcp://127.0.0.1:%i"%self._initport)
         self.poller.register(self.socket, zmq.POLLIN)
 
     def run(self):
@@ -149,6 +151,12 @@ class Registry(checkmate.runtime._threading.Thread):
             return
         sender.send(msg[1])
 
+    def pickfreeport(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.1', 0))
+        addr, port = s.getsockname()
+        s.close()
+        return port
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Communication(object):
@@ -179,6 +187,7 @@ class Communication(object):
     def initialize(self):
         """"""
         self.registry = Registry()
+        Client._initport = self.registry._initport
         self.registry.start()
 
     def close(self):
