@@ -6,6 +6,9 @@ import sample_app.exchanges
 import sample_app.data_structure
 
 class TestData(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
+    """"""
+    __test__ = False
+
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
