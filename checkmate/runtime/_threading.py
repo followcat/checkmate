@@ -1,6 +1,10 @@
 import threading
 
 
+#Only use this sleep time for thread who do *not* read on connection
+SLEEP_WHEN_RUN_SEC = 0.05
+
+
 class Thread(threading.Thread):
     """Thread class with stop mechanism.
 
@@ -12,6 +16,7 @@ class Thread(threading.Thread):
         super(Thread, self).__init__(name=name)
         self.stop_lock = threading.Lock()
         self.end = False
+
 
     def run(self):
         raise NotImplementedError()
