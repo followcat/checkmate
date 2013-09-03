@@ -1,7 +1,5 @@
-import zmq
 import time
 import copy
-import pickle
 
 import threading
 
