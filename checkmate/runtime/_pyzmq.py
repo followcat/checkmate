@@ -9,6 +9,7 @@ import socket
 
 import zope.interface
 
+import checkmate.runtime.client
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
@@ -23,16 +24,17 @@ class Encoder(object):
     def decode(self, message):
         return pickle.loads(message)
 
+@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Connector(object):
     """"""
-    def __init__(self, name, port):
+    def __init__(self, name):
         self._name = name
         self.ports = []
         self.sender = None
         self.receiver = None
+        self.encoder = Encoder()
         self.poller = zmq.Poller()
         self.context = zmq.Context()
-        self._initport = port
         self.request_ports()
         self.connect_ports()
 
@@ -57,74 +59,18 @@ class Connector(object):
         self.sender.close()
         self.receiver.close()
 
-    def send(self, destination, msg):
+    def send(self, destination, exchange):
         """"""
+        msg = self.encoder.encode(exchange)
         self.sender.send(pickle.dumps((destination, msg)))
             
     def receive(self):
         socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
         if self.receiver in socks:
-            return self.receiver.recv()
+            msg = self.receiver.recv()
+            if msg != None:
+                return self.encoder.decode(msg)
 
-
-@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
-class Client(checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, name=None):
-        super(Client, self).__init__(name=name)
-        self.received_lock = threading.Lock()
-        self.request_lock = threading.Lock()
-        self.in_buffer = []
-        self.out_buffer = []
-        self.name = name
-        self.connections = Connector(name, self._initport)
-        self.encoder = Encoder()
-
-    def run(self):
-        """"""
-        while True:
-            if self.check_for_stop():
-                self.connections.close()
-                break
-            self.process_receive()
-
-    def send(self, exchange):
-        """"""
-        msg = self.encoder.encode(exchange)
-        destination = exchange.destination
-        self.request_lock.acquire()
-        self.connections.send(destination, msg)
-        self.request_lock.release()
-
-    def read(self):
-        self.received_lock.acquire()
-        _local_copy = copy.deepcopy(self.in_buffer)
-        self.in_buffer = []
-        self.received_lock.release()
-        return _local_copy
-
-    def process_receive(self):
-        message = self.connections.receive()
-        if message is not None:
-            exchange = self.encoder.decode(message)
-            self.received_lock.acquire()
-            self.in_buffer.append(exchange)
-            self.received_lock.release()
-
-    # Only used by non-threaded Stub
-    def received(self, exchange):
-        time.sleep(0.1)
-        result = False
-        self.received_lock.acquire()
-        _local_copy = copy.deepcopy(self.in_buffer)
-        self.received_lock.release()
-        if exchange in _local_copy:
-            result = True
-            self.received_lock.acquire()
-            self.in_buffer.remove(exchange)
-            self.received_lock.release()
-        return result
-            
 
 class Registry(checkmate.runtime._threading.Thread):
     """"""
@@ -211,15 +157,13 @@ class Communication(object):
         >>> c1_stub.validate(o[0])
         True
         >>> r.stop_test()
-
     """
-    connection_handler = Client
-
+    connection_handler = checkmate.runtime.client.Client
     def initialize(self):
         """"""
+        checkmate.runtime.registry.global_registry.registerUtility(Connector, checkmate.runtime.interfaces.IProtocol) 
         self.registry = Registry()
-        Client._initport = self.registry._initport
-        Client.encoding_handler = Encoder
+        Connector._initport = self.registry._initport
         self.registry.start()
 
     def close(self):
