@@ -1,4 +1,5 @@
 import pickle
+import logging
 import threading
 
 import zmq
@@ -6,6 +7,7 @@ import socket
 
 import zope.interface
 
+import checkmate.logger
 import checkmate.runtime.client
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
@@ -73,20 +75,24 @@ class Registry(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, name=None):
         """"""
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
         super(Registry, self).__init__(name=name)
         self.comp_sender = {}
         self.poller = zmq.Poller()
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
+        self.logger.info("%s init"%self)
         self.get_assign_port_lock = threading.Lock()
         self.get_assign_port_lock.acquire()
         self._initport = self.pickfreeport()
         self.socket.bind("tcp://127.0.0.1:%i"%self._initport)
         self.get_assign_port_lock.release()
+        self.logger.info("%s bind port %i to listen port request"%(self, self._initport))
         self.poller.register(self.socket, zmq.POLLIN)
 
     def run(self):
         """"""
+        self.logger.info("%s startup"%self)
         while True:
             if self.check_for_stop():
                 break
@@ -109,21 +115,29 @@ class Registry(checkmate.runtime._threading.Thread):
         sender.bind("tcp://127.0.0.1:%i"%port_out)
         self.get_assign_port_lock.release()
         self.comp_sender[name] = sender
+        self.logger.info("%s bind port %i to send exchange to %s"%(self, port_out, name))
         self.get_assign_port_lock.acquire()
         port_in = self.pickfreeport()
         receiver.connect("tcp://127.0.0.1:%i"%port_in)
         self.get_assign_port_lock.release()
+        self.logger.info("%s listen to port %i to receive exchange from %s"%(self, port_in, name))
         self.socket.send(pickle.dumps([port_out, port_in]))
         return receiver
+
+    def stop(self):
+        self.logger.info("%s stop"%self)
+        super(Registry, self).stop()
 
     def forward_incoming(self, socket):
         msg = pickle.loads(socket.recv())
         try:
             sender = self.comp_sender[msg[0]]
+            self.logger.info("%s receive exchange, destination %s"%(self, msg[0]))
         except:
-            print("no client registried " + msg[0])
+            self.logger.error("%s has no client registried %s"%(self, msg[0]))
             return
         sender.send(msg[1])
+        self.logger.info("%s forward exchange %s to %s"%(self, msg[1], msg[0]))
 
     def pickfreeport(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -158,6 +172,8 @@ class Communication(object):
     connection_handler = checkmate.runtime.client.Client
     def initialize(self):
         """"""
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
+        self.logger.info("%s initialize"%self)
         checkmate.runtime.registry.global_registry.registerUtility(Connector, checkmate.runtime.interfaces.IProtocol) 
         self.registry = Registry()
         Connector._initport = self.registry._initport
@@ -165,4 +181,5 @@ class Communication(object):
 
     def close(self):
         self.registry.stop()
+        self.logger.info("%s close"%self)
 
