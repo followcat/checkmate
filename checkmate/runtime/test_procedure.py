@@ -136,7 +136,7 @@ def TestLogProcedureGenerator():
                 yield read_log(_f), _filename
                 _f.close()
             except FileNotFoundError:
-                pass
+                continue
             except EOFError:
-                pass
+                continue
 
