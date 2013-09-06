@@ -36,7 +36,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         super(ServiceRegistry, self).__init__()
         self.registerAdapter(ServiceFactory, (checkmate.exchange.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
-        filename = os.getenv("CHECKMATE_LOG") + "exchange" + time.asctime().replace(' ', '-') + ".log"
+        filename = os.getenv("CHECKMATE_LOG") + "/exchange" + time.asctime().replace(' ', '-') + ".log"
         self.wf = open(filename, 'wb')
 
     def __del__(self):
