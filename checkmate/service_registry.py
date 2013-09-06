@@ -1,4 +1,7 @@
+import os
 import copy
+import time
+import pickle
 
 import zope.interface
 import zope.interface.interface
@@ -16,11 +19,12 @@ class ServiceFactory(object):
         """"""
         self.context = exchange
 
-    def __call__(self, origin, destinations):
+    def __call__(self, origin, destinations, wf):
         """"""
         for _d in destinations:
             exchange = copy.deepcopy(self.context)
             exchange.origin_destination(origin, _d)
+            pickle.dump(exchange, wf)
             yield exchange
         yield from ()
 
@@ -32,6 +36,12 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         super(ServiceRegistry, self).__init__()
         self.registerAdapter(ServiceFactory, (checkmate.exchange.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
+        filename = os.getenv("CHECKMATE_LOG") + "exchange" + time.asctime().replace(' ', '-') + ".log"
+        self.wf = open(filename, 'wb')
+
+    def __del__(self):
+        self.wf.flush()
+        self.wf.close()
 
     def register(self, component, services):
         """
@@ -71,8 +81,8 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
-                return _factory(component.name, _servers)
-        return _factory(component.name, [])
+                return _factory(component.name, _servers, self.wf)
+        return _factory(component.name, [], self.wf)
 
 global_registry = ServiceRegistry()
 
