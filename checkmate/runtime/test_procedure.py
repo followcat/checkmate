@@ -1,3 +1,5 @@
+import os, re
+import pickle
 import checkmate._tree
 import checkmate.test_data
 import checkmate.runtime.procedure
@@ -107,4 +109,34 @@ def TestProcedureGenerator():
         _i = c2.process(transition.generic_incoming(c2.states))
         _o = c1.process(_i)
         yield build_procedure(_i, _o), c2.name, _i[0].action
+
+def read_log(_f):
+    class TestProc(checkmate.runtime.procedure.Procedure):
+        """"""
+            
+    _e = pickle.load(_f)
+    proc = TestProc()
+    setattr(proc, 'exchanges', checkmate._tree.Tree(_e, []))
+    _n = proc.exchanges
+    try:
+        while True:
+            _e = pickle.load(_f)
+            _n.add_node(checkmate._tree.Tree(_e, []))
+            _n = _n.nodes[0]
+    except EOFError:
+        pass
+    return proc
+
+def TestLogProcedureGenerator():
+    a = checkmate.test_data.App()
+    for dirpath, dirnames, filenames in os.walk(os.getenv('CHECKMATE_LOG', './')):
+        for _filename in [_f for _f in filenames if re.match('exchange-.*\.log', _f) is not None]:
+            try:
+                _f = open(os.path.join(dirpath, _filename), 'rb')
+                yield read_log(_f), _filename
+                _f.close()
+            except FileNotFoundError:
+                pass
+            except EOFError:
+                pass
 
