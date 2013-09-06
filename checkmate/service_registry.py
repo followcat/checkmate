@@ -19,12 +19,13 @@ class ServiceFactory(object):
         """"""
         self.context = exchange
 
-    def __call__(self, origin, destinations, wf):
+    def __call__(self, origin, destinations, wf, log=False):
         """"""
         for _d in destinations:
             exchange = copy.deepcopy(self.context)
             exchange.origin_destination(origin, _d)
-            pickle.dump(exchange, wf)
+            if log:
+                pickle.dump(exchange, wf)
             yield exchange
         yield from ()
 
@@ -63,7 +64,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             else:
                 self._registry[_service] = [component.name]
 
-    def server_exchanges(self, exchange, component):
+    def server_exchanges(self, exchange, component, log=False):
         """
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
@@ -81,8 +82,8 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
-                return _factory(component.name, _servers, self.wf)
-        return _factory(component.name, [], self.wf)
+                return _factory(component.name, _servers, self.wf, log)
+        return _factory(component.name, [], self.wf, log)
 
 global_registry = ServiceRegistry()
 

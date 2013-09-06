@@ -42,7 +42,7 @@ class Sut(object):
         self.connection.stop()
 
     def process(self, exchanges):
-        output = self.context.process(exchanges)
+        output = self.context.process(exchanges, send_away=True)
         for _o in output:
             self.connection.send(_o)
         return output
