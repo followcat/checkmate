@@ -55,12 +55,12 @@ class Checkmate(nose.plugins.Plugin):
 
     def wantClass(self, cls):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
-        return checkmate.runtime.interfaces.IProcedure.implementedBy(cls)
+        return not(self.runlog) and checkmate.runtime.interfaces.IProcedure.implementedBy(cls)
         
     def wantFunction(self, function):
         """Do not select TestLogProcedureGenerator"""
         if self.runlog:
-            return "Test" in function.__name__
+            return "TestLog" in function.__name__
         return self.runlog or "TestProcedure" in function.__name__ 
 
     def makeTest(self, obj, parent=None):
