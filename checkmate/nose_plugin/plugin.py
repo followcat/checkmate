@@ -30,6 +30,10 @@ class Checkmate(nose.plugins.Plugin):
                           metavar="COMP1,COMP2",
                           default="",
                           help="Specify the system under test.")
+        parser.add_option('--runlog', action='store_true',
+                          dest='runlog',
+                          default=False,
+                          help="if run from the log file")
         return parser
 
     def configure(self, options, config):
@@ -37,6 +41,7 @@ class Checkmate(nose.plugins.Plugin):
         nose.plugins.Plugin.configure(self, options, config)
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
+        self.runlog = options.runlog
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
@@ -52,6 +57,12 @@ class Checkmate(nose.plugins.Plugin):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
         return checkmate.runtime.interfaces.IProcedure.implementedBy(cls)
         
+    def wantFunction(self, function):
+        """Do not select TestLogProcedureGenerator"""
+        if self.runlog:
+            return "Test" in function.__name__
+        return self.runlog or "TestProcedure" in function.__name__ 
+
     def makeTest(self, obj, parent=None):
         """"""
         if nose.util.isclass(obj):
