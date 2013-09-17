@@ -1,14 +1,13 @@
 import os
 import copy
-import time
 import pickle
-import os.path
 
 import zope.interface
 import zope.interface.interface
 import zope.component.interfaces
 import zope.component.globalregistry
 
+import checkmate.logger
 import checkmate.exchange
 
 
@@ -38,7 +37,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         super(ServiceRegistry, self).__init__()
         self.registerAdapter(ServiceFactory, (checkmate.exchange.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
-        filename = os.path.join(os.getenv("CHECKMATE_LOG", "."), "exchange-" + time.asctime().replace(' ', '-') + ".log")
+        filename = checkmate.logger.exchange_log_name()
         self.wf = open(filename, 'wb')
 
     def __del__(self):
