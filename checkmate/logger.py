@@ -27,4 +27,3 @@ shandler=logging.StreamHandler()
 shandler.setLevel(logging.ERROR)
 shandler.setFormatter(formatter)
 logger.addHandler(shandler)
-
