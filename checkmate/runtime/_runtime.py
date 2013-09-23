@@ -48,6 +48,8 @@ class Runtime(object):
             >>> import checkmate.runtime
             >>> import checkmate.component
             >>> import checkmate.runtime.communication
+            >>> del checkmate.test_data.my_data
+            >>> checkmate.test_data.my_data = {}
             >>> a = checkmate.test_data.App()
             >>> c = checkmate.runtime.communication.Communication()
             >>> r = checkmate.runtime._runtime.Runtime(a, c)
@@ -78,5 +80,6 @@ class Runtime(object):
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
+        self.application.stop()
         self.communication.close()
 

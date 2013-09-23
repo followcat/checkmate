@@ -40,7 +40,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         filename = checkmate.logger.exchange_log_name()
         self.wf = open(filename, 'wb')
 
-    def __del__(self):
+    def stop(self):
         self.wf.flush()
         self.wf.close()
 
@@ -85,5 +85,4 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
                 return _factory(component.name, _servers, self.wf, log)
         return _factory(component.name, [], self.wf, log)
 
-global_registry = ServiceRegistry()
 
