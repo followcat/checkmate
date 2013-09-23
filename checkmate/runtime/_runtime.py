@@ -1,6 +1,7 @@
 import zope.interface
 import zope.component
 
+import checkmate.logger
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
@@ -68,6 +69,9 @@ class Runtime(object):
             >>> r.stop_test()
         """
         # Start stubs first
+        filename = checkmate.logger.exchange_log_name()
+        self.wf = open(filename, 'wb')
+        setattr(checkmate.runtime.component, 'exchange_log_file', self.wf)
         component_list = self.application.stubs + self.application.system_under_test
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
@@ -80,6 +84,7 @@ class Runtime(object):
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
-        self.application.stop()
+        self.wf.flush()
+        self.wf.close()
         self.communication.close()
 

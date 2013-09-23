@@ -5,7 +5,6 @@ import zope.interface
 import checkmate.exchange
 import checkmate.test_plan
 import checkmate.data_structure
-import checkmate.service_registry
 import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
 
@@ -42,7 +41,6 @@ class Application(object):
         """
         self.components = {}
         self.procedure_list = []
-        setattr(checkmate.service_registry, 'global_registry', checkmate.service_registry.ServiceRegistry())
 
     def start(self):
         """
@@ -50,10 +48,6 @@ class Application(object):
         for component in list(self.components.values()):
             component.start()
 
-    def stop(self):
-        """"""
-        checkmate.service_registry.global_registry.stop()
-        
     def sut(self, system_under_test):
         """"""
         self.stubs = list(self.components.keys())

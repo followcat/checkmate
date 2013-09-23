@@ -1,13 +1,10 @@
-import os
 import copy
-import pickle
 
 import zope.interface
 import zope.interface.interface
 import zope.component.interfaces
 import zope.component.globalregistry
 
-import checkmate.logger
 import checkmate.exchange
 
 
@@ -19,13 +16,11 @@ class ServiceFactory(object):
         """"""
         self.context = exchange
 
-    def __call__(self, origin, destinations, wf, log=False):
+    def __call__(self, origin, destinations):
         """"""
         for _d in destinations:
             exchange = copy.deepcopy(self.context)
             exchange.origin_destination(origin, _d)
-            if log:
-                pickle.dump(exchange, wf)
             yield exchange
         yield from ()
 
@@ -37,12 +32,6 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         super(ServiceRegistry, self).__init__()
         self.registerAdapter(ServiceFactory, (checkmate.exchange.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
-        filename = checkmate.logger.exchange_log_name()
-        self.wf = open(filename, 'wb')
-
-    def stop(self):
-        self.wf.flush()
-        self.wf.close()
 
     def register(self, component, services):
         """
@@ -64,7 +53,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             else:
                 self._registry[_service] = [component.name]
 
-    def server_exchanges(self, exchange, component, log=False):
+    def server_exchanges(self, exchange, component):
         """
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
@@ -82,7 +71,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
-                return _factory(component.name, _servers, self.wf, log)
-        return _factory(component.name, [], self.wf, log)
+                return _factory(component.name, _servers)
+        return _factory(component.name, [])
 
-
+global_registry = ServiceRegistry()

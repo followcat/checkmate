@@ -1,4 +1,5 @@
 import time
+import pickle
 import threading
 
 import zope.interface
@@ -42,8 +43,9 @@ class Sut(object):
         self.connection.stop()
 
     def process(self, exchanges):
-        output = self.context.process(exchanges, send_away=True)
+        output = self.context.process(exchanges)
         for _o in output:
+            pickle.dump(_o, exchange_log_file)
             self.connection.send(_o)
         return output
 
