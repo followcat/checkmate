@@ -1,10 +1,10 @@
 import time
-import pickle
 import threading
 
 import zope.interface
 import zope.component
 
+import checkmate.logger
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
@@ -45,7 +45,7 @@ class Sut(object):
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
-            pickle.dump(_o, exchange_log_file)
+            checkmate.logger.global_logger.log_exchange(_o)
             self.connection.send(_o)
         return output
 
