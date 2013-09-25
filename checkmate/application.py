@@ -5,7 +5,6 @@ import zope.interface
 import checkmate.exchange
 import checkmate.test_plan
 import checkmate.data_structure
-import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
 
 
@@ -21,8 +20,8 @@ class ApplicationMeta(type):
         _file.close()
         try:
             global checkmate
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module)
-            output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
+            output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']

@@ -3,7 +3,6 @@ import os
 import zope.interface
 
 import checkmate.state_machine
-import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
 import checkmate.service_registry
 
@@ -20,11 +19,11 @@ class ComponentMeta(type):
         matrix = _file.read()
         _file.close()
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module)
-            visitor_output = checkmate.parser.dtvisitor.call_visitor(matrix, declarator)
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(visitor_output['states'],
-                                                                      visitor_output['transitions'])
-            namespace['services'] = visitor_output['services']
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
+            declarator_output = declarator.get_output()
+            namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'],
+                                                                      declarator_output['transitions'])
+            namespace['services'] = declarator_output['services']
             result = type.__new__(cls, name, bases, dict(namespace))
             return result
         except Exception as e:

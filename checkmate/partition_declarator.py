@@ -5,6 +5,7 @@ import zope.interface
 import checkmate._utils
 import checkmate._storage
 import checkmate.transition
+import checkmate.parser.dtvisitor
 
 
 def _to_interface(_classname):
@@ -13,7 +14,7 @@ def _to_interface(_classname):
 
 class Declarator(object):
     def __init__(self, data_module, state_module=None, exchange_module=None,
-                       transition_module=None):
+                       transition_module=None, content=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
@@ -23,6 +24,10 @@ class Declarator(object):
         self.basic_modules['data_structure'] = [data_module]
         self.basic_modules['states'] = [data_module]
         self.basic_modules['exchanges'] = [data_module, state_module]
+        self.content = content
+        if self.content is not None:
+            self.data_source = checkmate.parser.dtvisitor.call_visitor(self.content)
+        self.output = {}
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
@@ -156,3 +161,66 @@ class Declarator(object):
             component_transition.append(t)
         return (incoming_list, component_transition)
 
+    def get_partitions(self):
+        """
+        >>> import sample_app.data_structure
+        >>> import checkmate.exchange
+        >>> import checkmate.state
+        >>> import collections
+        >>> import os
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
+        >>> f1 = open(input_file,'r')
+        >>> c = f1.read()
+        >>> f1.close()
+        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de.get_partitions()
+        >>> de.output['states']
+        []
+        >>> de.output['data_structure'] # doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.data_structure.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
+        >>> de.output['exchanges'] # doctest: +ELLIPSIS
+        [(<InterfaceClass checkmate.exchange.ITESTAction>, <checkmate._storage.PartitionStorage object ...
+        """
+        for partition_type in ('states', 'data_structure', 'exchanges'):
+            partitions = []
+            for data in self.data_source[partition_type]:
+                partitions.append(self.new_partition(partition_type, data['clsname'], data['standard_methods'], data['codes'], data['full_desc']))
+            self.output[partition_type] = partitions
+
+    def get_transitions(self):
+        """
+        >>> import sample_app.data_structure
+        >>> import checkmate.exchange
+        >>> import checkmate.state
+        >>> import collections
+        >>> import os
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.rst'
+        >>> f1 = open(input_file,'r')
+        >>> c = f1.read()
+        >>> f1.close()
+        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de.get_partitions()
+        >>> de.get_transitions()
+        >>> de.output['services']
+        [<InterfaceClass checkmate.exchange.ITESTAction>]
+        >>> de.output['transitions'] # doctest: +ELLIPSIS
+        [<checkmate.transition.Transition object at ...
+        >>> len(de.output['transitions'])
+        4
+        """
+        transitions = []
+        services = []
+        for data in self.data_source['transitions']:
+            _incomings, transition = self.new_transition(data['array_items'], data['tran_titles'])
+            for _incoming in [ _i for _i in _incomings if _i not in services]:
+                services.append(_incoming)
+            transitions.extend(transition)
+        self.output['services'] = services
+        self.output['transitions'] = transitions
+
+    def get_output(self):
+        if self.content is not None:
+            self.get_partitions()
+            self.get_transitions()
+            return self.output
+        
