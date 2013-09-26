@@ -169,7 +169,7 @@ class Communication(object):
         True
         >>> r.stop_test()
     """
-    connection_handler = checkmate.runtime.client.Client
+    connection_handler = checkmate.runtime.client.ThreadedClient
     def initialize(self):
         """"""
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')

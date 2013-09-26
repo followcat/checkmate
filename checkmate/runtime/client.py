@@ -11,12 +11,36 @@ import checkmate.runtime.registry
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
+
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
-class Client(checkmate.runtime._threading.Thread):
+class Client(object):
     """"""
     def __init__(self, name=None):
-        self.logger = logging.getLogger('checkmate.runtime.client.Client')
-        super(Client, self).__init__(name=name)
+        """"""
+        self.name = name
+
+    def start(self):
+        """"""
+
+    def stop(self):
+        """"""
+
+    def send(self, exchange):
+        """"""
+
+    def read(self):
+        """"""
+
+    def received(self, exchange):
+        return False
+
+
+@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
+class ThreadedClient(checkmate.runtime._threading.Thread):
+    """"""
+    def __init__(self, name=None):
+        self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
+        super(ThreadedClient, self).__init__(name=name)
         self.received_lock = threading.Lock()
         self.request_lock = threading.Lock()
         self.in_buffer = []
@@ -38,7 +62,7 @@ class Client(checkmate.runtime._threading.Thread):
     def stop(self):
         """"""
         self.logger.info("%s stop"%self)
-        super(Client, self).stop()
+        super(ThreadedClient, self).stop()
 
     def send(self, exchange):
         """"""
