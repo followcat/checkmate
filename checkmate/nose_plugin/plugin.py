@@ -81,7 +81,7 @@ class Checkmate(nose.plugins.Plugin):
 
     def loadTestsFromGenerator(self, generator, module):
         """"""
-        def generatexxx(g=generator, m=module):
+        def generate(g=generator, m=module):
             try:
                 for test in g(self.application_class):
                     test_func, arg = self.loader.parseGeneratedTest(test)
@@ -94,7 +94,7 @@ class Checkmate(nose.plugins.Plugin):
                 exc = sys.exc_info()
                 yield nose.failure.Failure(exc[0], exc[1], exc[2],
                               address=nose.util.test_address(generator))
-        return self.suiteClass(generatexxx, context=generator, can_split=False)
+        return self.suiteClass(generate, context=generator, can_split=False)
 
     def begin(self):
         """Start the system under test"""
