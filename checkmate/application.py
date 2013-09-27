@@ -1,10 +1,13 @@
 import os
+import collections
 
 import zope.interface
 
+import checkmate._utils
 import checkmate.exchange
 import checkmate.test_plan
 import checkmate.data_structure
+import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
 
 
@@ -64,3 +67,31 @@ class Application(object):
 
         self.test_plan = checkmate.test_plan.TestPlan(self.components)
 
+    def get_initial_transitions(self, itp_file):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.component
+            >>> import os
+            >>> a = sample_app.application.TestData()
+            >>> a.start()
+            >>> itp_file = os.getenv('CHECKMATE_HOME', './')+"/sample_app/itp.rst"
+            >>> a.get_initial_transitions(itp_file)
+            >>> a.initial_transitions[0].initial[0].interface
+            <InterfaceClass sample_app.component_1.states.IState>
+            >>> a.initial_transitions[0].incoming[0].interface
+            <InterfaceClass sample_app.exchanges.IAction>
+            >>> a.initial_transitions[0].final[0].interface
+            <InterfaceClass sample_app.component_1.states.IState>
+        """
+        #_file = open(os.getenv('CHECKMATE_HOME', './')+"/sample_app/itp.rst", 'r')
+        _file = open(itp_file, 'r')
+        matrix = _file.read()
+        _file.close()
+        _output = checkmate.parser.dtvisitor.call_visitor(matrix)
+        state_modules = []
+        for name in list(self.components.keys()):
+            state_modules.append(self.components[name].state_module)
+        self.initial_transitions = []
+        for data in _output['transitions']:
+            array_items = data['array_items']
+            self.initial_transitions.append(checkmate.partition_declarator.new_procedure(array_items, self.exchange_module, state_modules))

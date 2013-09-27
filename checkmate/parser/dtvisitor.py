@@ -124,7 +124,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
             self._high_level_flag = [1, 0, 0]
         elif title == 'Exchange identification':
             self._high_level_flag = [0, 1, 0]
-        elif title == 'State machine': 
+        elif title == 'State machine' or title == 'Test procedure': 
             self._high_level_flag = [0, 0, 1]
         elif title == 'Data structure':
             self._high_level_flag = [0, 1, 1]
@@ -135,7 +135,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         elif  title == 'Value partitions':
             assert self.title_level == 5, "source file is not in good format"
             self._low_level_flag = [0, 1, 0]
-        elif  title == 'Standard methods' or title == 'Exchange' or title == 'Transitions - exchanges':
+        elif  title == 'Standard methods' or title == 'Exchange' or title == 'Transitions - exchanges' or title == 'Procedures - exchanges':
             assert self.title_level == 5, "source file is not in good format"
             self._low_level_flag = [0, 0, 1]
  
