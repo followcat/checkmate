@@ -98,8 +98,8 @@ def build_procedure(exchanges, output):
     setattr(proc, 'exchanges', checkmate._tree.Tree(exchanges[0], [checkmate._tree.Tree(_o, []) for _o in output]))
     return proc
 
-def TestProcedureGenerator():
-    a = checkmate.test_data.App()
+def TestProcedureGenerator(application_class=checkmate.test_data.App):
+    a = application_class()
     c1 = a.components['C1']
     c2 = a.components['C2']
     c3 = a.components['C3']
@@ -128,8 +128,8 @@ def read_log(_f):
         pass
     return proc
 
-def TestLogProcedureGenerator():
-    a = checkmate.test_data.App()
+def TestLogProcedureGenerator(application_class=checkmate.test_data.App):
+    a = application_class()
     for dirpath, dirnames, filenames in os.walk(os.getenv('CHECKMATE_LOG', './')):
         for _filename in [_f for _f in filenames if re.match('exchange-.*\.log', _f) is not None]:
             try:
@@ -141,8 +141,8 @@ def TestLogProcedureGenerator():
             except EOFError:
                 continue
 
-def TestProcedureInitialGenerator():
-    a = checkmate.test_data.App()
+def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
+    a = application_class()
     c1 = a.components['C1']
     c2 = a.components['C2']
     c3 = a.components['C3']

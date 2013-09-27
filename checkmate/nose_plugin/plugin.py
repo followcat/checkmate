@@ -42,6 +42,7 @@ class Checkmate(nose.plugins.Plugin):
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
+        self.application_class = checkmate.test_data.App
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
@@ -80,9 +81,9 @@ class Checkmate(nose.plugins.Plugin):
 
     def loadTestsFromGenerator(self, generator, module):
         """"""
-        def generate(g=generator, m=module):
+        def generatexxx(g=generator, m=module):
             try:
-                for test in g():
+                for test in g(self.application_class):
                     test_func, arg = self.loader.parseGeneratedTest(test)
                     if not isinstance(test_func, collections.Callable):
                         test_func = getattr(m, test_func)
@@ -93,11 +94,11 @@ class Checkmate(nose.plugins.Plugin):
                 exc = sys.exc_info()
                 yield nose.failure.Failure(exc[0], exc[1], exc[2],
                               address=nose.util.test_address(generator))
-        return self.suiteClass(generate, context=generator, can_split=False)
+        return self.suiteClass(generatexxx, context=generator, can_split=False)
 
     def begin(self):
         """Start the system under test"""
-        a = checkmate.test_data.App()
+        a = self.application_class()
         c = checkmate.runtime._pyzmq.Communication()
         self.runtime = checkmate.runtime._runtime.Runtime(a, c, threaded=True)
         self.runtime.setup_environment(self.sut)
