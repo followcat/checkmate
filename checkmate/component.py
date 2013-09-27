@@ -24,6 +24,7 @@ class ComponentMeta(type):
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'],
                                                                       declarator_output['transitions'])
             namespace['services'] = declarator_output['services']
+            namespace['outgoings'] = declarator_output['outgoings']
             result = type.__new__(cls, name, bases, dict(namespace))
             return result
         except Exception as e:

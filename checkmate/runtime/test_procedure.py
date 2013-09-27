@@ -141,6 +141,11 @@ def TestLogProcedureGenerator(application_class=checkmate.test_data.App):
             except EOFError:
                 continue
 
+def get_origin_component(exchange, components):
+    for _c in components:
+        if exchange.action in _c.outgoings:
+            return _c
+
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     a = application_class()
     c1 = a.components['C1']
@@ -149,7 +154,8 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     a.start()
     a.get_initial_transitions()
     _incoming = a.initial_transitions[0].incoming[0].factory()
-    for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, c1):
+    origin = get_origin_component(_incoming, [c1,c2,c3])
+    for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
         _o = a.components[_e.destination].process([_e])
-        yield build_procedure([_e], _o), c1.name, _e.action, _e.destination
+        yield build_procedure([_e], _o), origin.name, _e.action, _e.destination
 

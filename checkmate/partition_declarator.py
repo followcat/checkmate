@@ -124,6 +124,7 @@ class Declarator(object):
                     setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
                             functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
         incoming_list = []
+        outgoing_list = []
         for i in range(2, len(array_items[0])):
             input = [] 
             for j in range(0, initial_state_id[0]):
@@ -152,6 +153,9 @@ class Declarator(object):
                     except AttributeError:
                         raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
                     output.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
+                    action = checkmate._utils.internal_code(array_items[j][i])
+                    if action not in outgoing_list:
+                        outgoing_list.append(action)
             try:
                 tran_name = tran_titles[i]
             except IndexError:
@@ -159,7 +163,7 @@ class Declarator(object):
             ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
             t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
             component_transition.append(t)
-        return (incoming_list, component_transition)
+        return (incoming_list, outgoing_list, component_transition)
 
     def get_partitions(self):
         """
@@ -210,12 +214,16 @@ class Declarator(object):
         """
         transitions = []
         services = []
+        outgoings = []
         for data in self.data_source['transitions']:
-            _incomings, transition = self.new_transition(data['array_items'], data['tran_titles'])
+            _incomings, _outgoings, transition = self.new_transition(data['array_items'], data['tran_titles'])
             for _incoming in [ _i for _i in _incomings if _i not in services]:
                 services.append(_incoming)
+            for _outgoing in [ _i for _i in _outgoings if _i not in outgoings]:
+                outgoings.append(_outgoing)
             transitions.extend(transition)
         self.output['services'] = services
+        self.output['outgoings'] = outgoings
         self.output['transitions'] = transitions
 
     def get_output(self):
