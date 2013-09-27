@@ -2,6 +2,7 @@ import os, re
 import pickle
 import checkmate._tree
 import checkmate.test_data
+import checkmate.service_registry
 import checkmate.runtime.procedure
 
 class TestProcedure(checkmate.runtime.procedure.Procedure):
@@ -141,7 +142,6 @@ def TestLogProcedureGenerator():
                 continue
 
 def TestProcedureInitialGenerator():
-    import checkmate.service_registry
     a = checkmate.test_data.App()
     c1 = a.components['C1']
     c2 = a.components['C2']
