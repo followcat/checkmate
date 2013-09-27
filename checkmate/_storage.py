@@ -96,12 +96,8 @@ class Data(object):
                 code_description = self.full_description[code]
             except:
                 code_description = (None,None,None)
-            if ((self.type == 'states') or (self.type == 'data_structure')):
-                _storage = store(self.type, self.interface, code, code_description)
-                _list.append(_storage)
-            elif self.type == 'exchanges':
-                _storage = store(self.type, self.interface, code, code_description)
-                _list.append(_storage)
+            _storage = store(self.type, self.interface, code, code_description)
+            _list.append(_storage)
         if self.codes == None or len(self.codes) == 0:
             _list.append(store(self.type, self.interface, ''))
         return _list
@@ -152,12 +148,9 @@ class TransitionStorage(object):
                 _list.append(item.storage()[0])
             setattr(self, key, _list)
 
-        for incoming_exchange in self.incoming:
-            incoming_exchange.resolve_logic = _build_resolve_logic(self, 'incoming', incoming_exchange)
-        for final_state in self.final:
-            final_state.resolve_logic = _build_resolve_logic(self, 'final', final_state)
-        for outgoing_exchange in self.outgoing:
-            outgoing_exchange.resolve_logic = _build_resolve_logic(self, 'outgoing', outgoing_exchange)
+        for _attribute in ('incoming', 'final', 'outgoing'):
+            for item in getattr(self, _attribute):
+                item.resolve_logic = _build_resolve_logic(self, _attribute, item)
 
 
 class IStorage(zope.interface.Interface):
