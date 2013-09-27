@@ -67,24 +67,24 @@ class Application(object):
 
         self.test_plan = checkmate.test_plan.TestPlan(self.components)
 
-    def get_initial_transitions(self, itp_file):
+    def get_initial_transitions(self):
         """
             >>> import sample_app.application
             >>> import checkmate.component
             >>> import os
             >>> a = sample_app.application.TestData()
             >>> a.start()
-            >>> itp_file = os.getenv('CHECKMATE_HOME', './')+"/sample_app/itp.rst"
-            >>> a.get_initial_transitions(itp_file)
+            >>> a.get_initial_transitions()
             >>> a.initial_transitions[0].initial[0].interface
             <InterfaceClass sample_app.component_1.states.IState>
             >>> a.initial_transitions[0].incoming[0].interface
             <InterfaceClass sample_app.exchanges.IAction>
-            >>> a.initial_transitions[0].final[0].interface
-            <InterfaceClass sample_app.component_1.states.IState>
+            >>> a.initial_transitions[0].final[2].interface
+            <InterfaceClass sample_app.component_3.states.IAcknowledge>
         """
-        #_file = open(os.getenv('CHECKMATE_HOME', './')+"/sample_app/itp.rst", 'r')
-        _file = open(itp_file, 'r')
+        path = os.path.dirname(self.exchange_module.__file__)
+        filename = 'itp.rst'
+        _file = open(os.sep.join([path, filename]), 'r')
         matrix = _file.read()
         _file.close()
         _output = checkmate.parser.dtvisitor.call_visitor(matrix)

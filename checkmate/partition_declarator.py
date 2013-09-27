@@ -238,10 +238,7 @@ def new_procedure(array_items, exchange_module, state_modules=[]):
                     interface = getattr(s_module, _to_interface(array_items[i][0]))
                     cls = checkmate._utils.get_class_implementing(interface)
                     initial_state.append(checkmate._storage.Data('states', interface, [array_items[i][1]]))
-                    if checkmate._utils.is_method(array_items[i][1]):
-                        cls = checkmate._utils.get_class_implementing(interface)
-                        setattr(s_module, checkmate._utils.internal_code(array_items[i][1]),
-                                functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
+
     for i in range(2, len(array_items[0])):
         input = []
         for j in range(0, initial_state_id[0]):

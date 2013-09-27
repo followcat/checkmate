@@ -140,3 +140,16 @@ def TestLogProcedureGenerator():
             except EOFError:
                 continue
 
+def TestProcedureInitialGenerator():
+    import checkmate.service_registry
+    a = checkmate.test_data.App()
+    c1 = a.components['C1']
+    c2 = a.components['C2']
+    c3 = a.components['C3']
+    a.start()
+    a.get_initial_transitions()
+    _incoming = a.initial_transitions[0].incoming[0].factory()
+    for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, c1):
+        _o = a.components[_e.destination].process([_e])
+        yield build_procedure([_e], _o), c1.name, _e.action, _e.destination
+
