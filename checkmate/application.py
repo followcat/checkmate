@@ -43,6 +43,7 @@ class Application(object):
         """
         self.components = {}
         self.procedure_list = []
+        self.name = self.__module__.split('.')[-2]
 
     def start(self):
         """
