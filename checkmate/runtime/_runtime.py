@@ -20,6 +20,7 @@ class Runtime(object):
         self.communication = communication
 
         checkmate.runtime.registry.global_registry.registerUtility(self.communication.connection_handler, checkmate.runtime.interfaces.IConnection)
+        checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
         if threaded:
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.IStub)

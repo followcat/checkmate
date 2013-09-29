@@ -55,7 +55,10 @@ class Sut(object):
 class Stub(Sut):
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
-        return self.process(transition.generic_incoming(self.context.states))
+        try:
+            return self.process(transition.generic_incoming(self.context.states))
+        except:
+            raise AttributeError('current state is not a proper state')
 
     def validate(self, exchange):
         if not self.connection.received(exchange):
@@ -113,7 +116,10 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
     def simulate(self, exchange):
         self.validation_lock.acquire()
         transition = self.context.get_transition_by_output([exchange])
-        self.process(transition.generic_incoming(self.context.states))
+        try:
+            self.process(transition.generic_incoming(self.context.states))
+        except:
+            raise AttributeError('current state is not a proper state')
         self.validation_lock.release()
         time.sleep(SIMULATE_WAIT_SEC)
 

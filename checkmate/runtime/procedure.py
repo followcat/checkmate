@@ -1,8 +1,11 @@
+import copy
+
 import zope.interface
 
 import nose.plugins.skip
 
 import checkmate.component
+import checkmate.application
 import checkmate.runtime.registry
 import checkmate.runtime.interfaces
 
@@ -22,8 +25,22 @@ class Procedure(object):
             raise nose.plugins.skip.SkipTest("Procedure components do not match SUT")
         self.system_under_test = system_under_test
 
+        self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        self.application.get_initial_transitions()
+        initials = copy.deepcopy(self.application.initial_states)
+        current, matching = 0, 0
+        for _c in self.components:
+            if _c in self.application.components:
+                for _s in self.application.components[_c].states:
+                    current += 1
+                    for _initial in initials:
+                        if _s == _initial.factory():
+                            matching += 1
+                            initials.remove(_initial)
+                            break
+        if current != matching:
+            raise nose.plugins.skip.SkipTest("Procedure components states do not match Initial")
         self._run_from_startpoint(self.exchanges)
-
 
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and

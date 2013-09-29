@@ -96,3 +96,6 @@ class Application(object):
         for data in _output['transitions']:
             array_items = data['array_items']
             self.initial_transitions.append(checkmate.partition_declarator.new_procedure(array_items, self.exchange_module, state_modules))
+        self.initial_states = []
+        for _t in self.initial_transitions:
+            self.initial_states.extend(_t.initial)

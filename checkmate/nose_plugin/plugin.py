@@ -15,6 +15,7 @@ import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.nose_plugin.suite
 import checkmate.runtime.interfaces
+import sample_app.application
 
 
 class Checkmate(nose.plugins.Plugin):
@@ -42,7 +43,7 @@ class Checkmate(nose.plugins.Plugin):
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
-        self.application_class = checkmate.test_data.App
+        self.application_class = sample_app.application.TestData
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
