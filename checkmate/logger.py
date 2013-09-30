@@ -43,19 +43,19 @@ class Logger(object):
 
     def log_exchange(self, exchange):
         """"""
-        if self._isexchangelogstarted() and exchange is not None:
+        assert self._isexchangelogstarted()
+        if exchange is not None:
             pickle.dump(exchange, self.wf)
         
     def _isexchangelogstarted(self):
         try:
-            if self.wf.writable():
-                return True
+            return self.wf.writable()
         except:
             return False
 
     def stop_exchange_logger(self):
-        assert self._isexchangelogstarted()
-        self.wf.flush()
-        self.wf.close()
+        if self._isexchangelogstarted():
+            self.wf.flush()
+            self.wf.close()
 
 global_logger = Logger()
