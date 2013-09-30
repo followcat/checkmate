@@ -96,11 +96,18 @@ class Transition(object):
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
             >>> c = a.components['C1']
-            >>> c.start()
+            >>> a.start()
             >>> c.state_machine.transitions[0].is_matching_initial(c.states)
             True
             >>> c.state_machine.transitions[2].is_matching_initial(c.states)
             False
+
+            >>> c3 = a.components['C3']
+            >>> c3.states[0].value = True
+            >>> t3 = c3.state_machine.transitions[2]
+            >>> t3.is_matching_initial(c3.states)
+            True
+            >>> a.start()
         """
         if len(self.initial) == 0:
             return True
