@@ -26,6 +26,7 @@ class Procedure(object):
                 self.result.startTest(self)  
                 self.result.addSkip(self, "Procedure components do not match SUT")  
                 self.result.stopTest(self)  
+                return
 
         self.system_under_test = system_under_test
 
@@ -47,6 +48,7 @@ class Procedure(object):
                 self.result.startTest(self)  
                 self.result.addSkip(self, "Procedure components states do not match Initial")
                 self.result.stopTest(self)  
+                return
 
         self._run_from_startpoint(self.exchanges)
 
