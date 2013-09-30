@@ -31,6 +31,7 @@ class Runtime(object):
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
+        checkmate.logger.global_logger.start_exchange_logger()
         self.application.sut(sut)
         self.application.build_test_plan()
 
@@ -70,7 +71,6 @@ class Runtime(object):
             >>> r.stop_test()
         """
         # Start stubs first
-        checkmate.logger.global_logger.start_exchange_logger()
         component_list = self.application.stubs + self.application.system_under_test
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
