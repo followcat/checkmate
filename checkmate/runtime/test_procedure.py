@@ -148,13 +148,10 @@ def get_origin_component(exchange, components):
 
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     a = application_class()
-    c1 = a.components['C1']
-    c2 = a.components['C2']
-    c3 = a.components['C3']
     a.start()
     a.get_initial_transitions()
     _incoming = a.initial_transitions[0].incoming[0].factory()
-    origin = get_origin_component(_incoming, [c1,c2,c3])
+    origin = get_origin_component(_incoming, list(a.components.values()))
     for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
         _o = a.components[_e.destination].process([_e])
         yield build_procedure([_e], _o), origin.name, _e.action, _e.destination
