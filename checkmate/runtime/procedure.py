@@ -31,26 +31,27 @@ class Procedure(object):
 
         self.system_under_test = system_under_test
 
-        self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-        self.application.get_initial_transitions()
-        initials = copy.deepcopy(self.application.initial_states)
-        current, matching = 0, 0
-        for _c in self.components:
-            if _c in self.application.components:
-                for _s in self.application.components[_c].states:
-                    current += 1
-                    for _initial in initials:
-                        if _s == _initial.factory():
-                            matching += 1
-                            initials.remove(_initial)
-                            break
-        if current != matching:
-            #if self.result is not None:
-                #self.result.startTest(self)  
-                #self.result.addSkip(self, "Procedure components states do not match Initial")
-                #self.result.stopTest(self)  
-                #return
-            raise nose.plugins.skip.SkipTest("Procedure components states do not match Initial")
+        if hasattr(self, 'initial'):
+            current = 0
+            matching = 0
+            initials = copy.deepcopy(self.initial)
+            application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+            for _c in self.components:
+                if _c in application.components:
+                    for _s in application.components[_c].states:
+                        current += 1
+                        for _initial in initials:
+                            if _s == _initial.factory():
+                                matching += 1
+                                initials.remove(_initial)
+                                break
+            if current != matching:
+                #if self.result is not None:
+                    #self.result.startTest(self)  
+                    #self.result.addSkip(self, "Procedure components states do not match Initial")
+                    #self.result.stopTest(self)  
+                    #return
+                raise nose.plugins.skip.SkipTest("Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
 
