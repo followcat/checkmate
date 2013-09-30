@@ -1,6 +1,8 @@
+import os
 import sys
 import time
 import inspect
+import importlib
 import collections
 
 import nose
@@ -15,7 +17,6 @@ import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.nose_plugin.suite
 import checkmate.runtime.interfaces
-import sample_app.application
 
 
 class Checkmate(nose.plugins.Plugin):
@@ -29,12 +30,20 @@ class Checkmate(nose.plugins.Plugin):
         parser.add_option('--sut', action='store',
                           dest='sut',
                           metavar="COMP1,COMP2",
-                          default="",
+                          default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
                           help="Specify the system under test.")
         parser.add_option('--runlog', action='store_true',
                           dest='runlog',
                           default=False,
                           help="if run from the log file")
+        parser.add_option('--application', action='store',
+                          dest='app_class',
+                          default=os.getenv('CHECKMATE_RUNTIME_APPLICATION', "sample_app.application.TestData"),
+                          help="Specify the application class in runtime")
+        parser.add_option('--communication', action='store',
+                          dest='comm_class',
+                          default=os.getenv('CHECKMATE_RUNTIME_COMMUNICATION', "checkmate.runtime._pyzmq.Communication"),
+                          help="Specify the communication class in runtime")
         return parser
 
     def configure(self, options, config):
@@ -43,7 +52,18 @@ class Checkmate(nose.plugins.Plugin):
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
-        self.application_class = sample_app.application.TestData
+        self.application_class = self.get_option_value(options.app_class)
+        self.communication_class = self.get_option_value(options.comm_class)
+    
+    def get_option_value(self, value):
+        if len(value) == 0:
+            return
+        try:
+            module, classname = value[0: value.rindex('.')], value[value.rindex('.')+1:]
+            option_value = getattr(importlib.import_module(module), classname)
+        except:
+            raise ValueError("either env or command option is not properly specified")
+        return option_value
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
