@@ -22,11 +22,12 @@ class Procedure(object):
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
         if not self._components_match_sut(system_under_test):
-            if self.result is not None:
-                self.result.startTest(self)  
-                self.result.addSkip(self, "Procedure components do not match SUT")  
-                self.result.stopTest(self)  
-                return
+            #if self.result is not None:
+                #self.result.startTest(self)  
+                #self.result.addSkip(self, "Procedure components do not match SUT")  
+                #self.result.stopTest(self)  
+                #return
+            raise nose.plugins.skip.SkipTest("Procedure components do not match SUT")
 
         self.system_under_test = system_under_test
 
@@ -44,11 +45,12 @@ class Procedure(object):
                             initials.remove(_initial)
                             break
         if current != matching:
-            if self.result is not None:
-                self.result.startTest(self)  
-                self.result.addSkip(self, "Procedure components states do not match Initial")
-                self.result.stopTest(self)  
-                return
+            #if self.result is not None:
+                #self.result.startTest(self)  
+                #self.result.addSkip(self, "Procedure components states do not match Initial")
+                #self.result.stopTest(self)  
+                #return
+            raise nose.plugins.skip.SkipTest("Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
 
