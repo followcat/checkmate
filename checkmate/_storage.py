@@ -170,7 +170,7 @@ class InternalStorage(object):
             >>> st.factory().value
             'HIGH'
             >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'HIGH', None, sample_app.data_structure.ActionPriority)
-            >>> st.factory().value # doctest: +SKIP
+            >>> st.factory().value
             'HIGH'
         """
         self.code = checkmate._utils.internal_code(name)
