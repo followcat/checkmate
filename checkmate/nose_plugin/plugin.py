@@ -11,9 +11,7 @@ import nose.config
 import nose.failure
 import nose.plugins
 
-import checkmate.test_data
 import checkmate.nose_plugin
-import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.nose_plugin.suite
 import checkmate.runtime.interfaces
@@ -120,7 +118,7 @@ class Checkmate(nose.plugins.Plugin):
     def begin(self):
         """Start the system under test"""
         a = self.application_class()
-        c = checkmate.runtime._pyzmq.Communication()
+        c = self.communication_class()
         self.runtime = checkmate.runtime._runtime.Runtime(a, c, threaded=True)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
