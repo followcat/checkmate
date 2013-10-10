@@ -32,21 +32,21 @@ class Sut(object):
     def __init__(self, component):
         self.context = component
         client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IConnection)
-        self.connection = client(component=self.context)
+        self.client = client(component=self.context)
 
     def start(self):
         self.context.start()
-        self.connection.start()
+        self.client.start()
 
     def stop(self):
         self.context.stop()
-        self.connection.stop()
+        self.client.stop()
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
             checkmate.logger.global_logger.log_exchange(_o)
-            self.connection.send(_o)
+            self.client.send(_o)
         return output
 
 
@@ -61,7 +61,7 @@ class Stub(Sut):
             raise AttributeError('current state is not a proper state')
 
     def validate(self, exchange):
-        if not self.connection.received(exchange):
+        if not self.client.received(exchange):
             return False
         return True
 
@@ -87,7 +87,7 @@ class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            for exchange in self.connection.read():
+            for exchange in self.client.read():
                 self.process([exchange])
             time.sleep(checkmate.runtime._threading.SLEEP_WHEN_RUN_SEC)
 
@@ -107,7 +107,7 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
             if self.check_for_stop():
                 break
             self.validation_lock.acquire()
-            for exchange in self.connection.read():
+            for exchange in self.client.read():
                 self.validation_list.append(exchange)
                 self.process([exchange])
             self.validation_lock.release()
