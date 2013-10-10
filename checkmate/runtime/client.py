@@ -15,9 +15,10 @@ import checkmate.runtime.interfaces
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(object):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, component):
         """"""
-        self.name = name
+        self.name = component.name
+        self.component = component
 
     def start(self):
         """"""
@@ -38,17 +39,18 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, component):
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
-        super(ThreadedClient, self).__init__(name=name)
+        super(ThreadedClient, self).__init__(component)
         self.received_lock = threading.Lock()
         self.request_lock = threading.Lock()
         self.in_buffer = []
         self.out_buffer = []
-        self.name = name
+        self.name = component.name
+        self.component = component
         self.logger.info("%s initial"%self)
         connector = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IProtocol)
-        self.connections = connector(name)
+        self.connections = connector(self.component)
 
     def run(self):
         """"""

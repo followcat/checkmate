@@ -26,8 +26,9 @@ class Encoder(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Connector(object):
     """"""
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, component):
+        self.component = component
+        self._name = component.name
         self.ports = []
         self.sender = None
         self.receiver = None

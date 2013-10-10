@@ -32,7 +32,7 @@ class Sut(object):
     def __init__(self, component):
         self.context = component
         client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IConnection)
-        self.connection = client(name=self.context.name)
+        self.connection = client(component=self.context)
 
     def start(self):
         self.context.start()
