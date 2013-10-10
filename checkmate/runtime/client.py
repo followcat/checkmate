@@ -40,8 +40,8 @@ class Client(object):
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, component):
-        self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         super(ThreadedClient, self).__init__(component)
+        self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.received_lock = threading.Lock()
         self.request_lock = threading.Lock()
         self.in_buffer = []
@@ -55,6 +55,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def run(self):
         """"""
         self.logger.info("%s startup"%self)
+        self.connections.open()
         while True:
             if self.check_for_stop():
                 self.connections.close()

@@ -55,6 +55,10 @@ class Connector(object):
             self.receiver.connect("tcp://127.0.0.1:%i"%self.ports[0])
             self.poller.register(self.receiver, zmq.POLLIN)
 
+    def open(self):
+        """"""
+        pass
+
     def close(self):
         self.sender.close()
         self.receiver.close()
