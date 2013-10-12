@@ -41,7 +41,8 @@ class Sut(object):
     def stop(self):
         self.context.stop()
         self.client.stop()
-        self.client.join()
+        if isinstance(self.client, threading.Thread):
+            self.client.join()
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
