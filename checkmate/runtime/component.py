@@ -113,13 +113,11 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
                 self.process([exchange])
 
     def simulate(self, exchange):
-        self.validation_lock.acquire()
         transition = self.context.get_transition_by_output([exchange])
         try:
             self.process(transition.generic_incoming(self.context.states))
         except:
             raise AttributeError('current state is not a proper state')
-        self.validation_lock.release()
         time.sleep(SIMULATE_WAIT_SEC)
 
     def validate(self, exchange):
