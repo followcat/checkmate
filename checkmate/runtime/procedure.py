@@ -74,22 +74,18 @@ class Procedure(object):
         return True
     
     def _run_from_startpoint(self, current_node):
-        _origin = current_node.root.origin
-        if _origin not in self.system_under_test:
-            if self.result is not None:
-                self.result.startTest(self)  
+        if self.result is not None:
+            self.result.startTest(self)  
 
-            stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _origin)
-            stub.simulate(current_node.root)
-            self._follow_up(current_node)
+        stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
+        stub.simulate(current_node.root)
+        self._follow_up(current_node)
 
-            if self.result is not None:
-                self.result.addSuccess(self)
-            if self.result is not None:
-                self.result.stopTest(self)
-        else:    
-            for _node in current_node.nodes:
-                self._run_from_startpoint(_node)
+        if self.result is not None:
+            self.result.addSuccess(self)
+        if self.result is not None:
+            self.result.stopTest(self)
+
 
     def _follow_up(self, node):
         for _next in node.nodes:
