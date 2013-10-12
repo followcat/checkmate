@@ -51,10 +51,6 @@ class Sut(object):
             self.client.send(_o)
         return output
 
-
-@zope.interface.implementer(IStub)
-@zope.component.adapter(checkmate.component.IComponent)
-class Stub(Sut):
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
         try:
@@ -62,6 +58,10 @@ class Stub(Sut):
         except:
             raise AttributeError('current state is not a proper state')
 
+
+@zope.interface.implementer(IStub)
+@zope.component.adapter(checkmate.component.IComponent)
+class Stub(Sut):
     def validate(self, exchange):
         if not self.client.received(exchange):
             return False
