@@ -2,7 +2,22 @@ import threading
 
 
 #Only use this sleep time for thread who do *not* read on connection
+TIMEOUT_LOCK_ACQUIRE = 1
 SLEEP_WHEN_RUN_SEC = 0.05
+
+
+class StopCondition(threading.Condition):
+    def __init__(self):
+        super(StopCondition, self).__init__()
+        self.end = False
+
+    def request(self):
+        self.acquire()
+        self.end = True
+        self.release()
+
+    def check(self):
+        return self.end
 
 
 class Thread(threading.Thread):
@@ -14,8 +29,7 @@ class Thread(threading.Thread):
     def __init__(self, name=None):
         """"""
         super(Thread, self).__init__(name=name)
-        self.stop_lock = threading.Lock()
-        self.end = False
+        self.stop_condition = StopCondition()
 
 
     def run(self):
@@ -27,20 +41,15 @@ class Thread(threading.Thread):
         This should be called in the child run() method and run() should exit
         if check_for_stop() returns True
         """
-
-        result = False
-        self.stop_lock.acquire()
-        if self.end:
-            result = True
-        self.stop_lock.release()
-        return result
+        self.stop_condition.acquire()
+        output = self.stop_condition.wait_for(self.stop_condition.check, SLEEP_WHEN_RUN_SEC)
+        self.stop_condition.release()
+        return output
 
     def stop(self):
         """Send stop request
 
         Provided for the parent to stop the thread.
         """
-        self.stop_lock.acquire(timeout=0.3)
-        self.end = True
-        self.stop_lock.release()
+        self.stop_condition.request()
 

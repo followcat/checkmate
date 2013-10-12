@@ -41,6 +41,7 @@ class Sut(object):
     def stop(self):
         self.context.stop()
         self.client.stop()
+        self.client.join()
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
@@ -89,7 +90,6 @@ class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
                 break
             for exchange in self.client.read():
                 self.process([exchange])
-            time.sleep(checkmate.runtime._threading.SLEEP_WHEN_RUN_SEC)
 
 
 @zope.component.adapter(checkmate.component.IComponent)
@@ -106,12 +106,11 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            self.validation_lock.acquire()
             for exchange in self.client.read():
+                self.validation_lock.acquire()
                 self.validation_list.append(exchange)
+                self.validation_lock.release()
                 self.process([exchange])
-            self.validation_lock.release()
-            time.sleep(checkmate.runtime._threading.SLEEP_WHEN_RUN_SEC)
 
     def simulate(self, exchange):
         self.validation_lock.acquire()

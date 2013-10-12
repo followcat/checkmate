@@ -83,6 +83,8 @@ class Runtime(object):
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
+            if self.threaded:
+                _component.join()
         self.communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 
