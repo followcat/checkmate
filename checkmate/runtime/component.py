@@ -91,6 +91,14 @@ class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
             for exchange in self.client.read():
                 self.process([exchange])
 
+    def simulate(self, exchange):
+        transition = self.context.get_transition_by_output([exchange])
+        try:
+            self.process(transition.generic_incoming(self.context.states))
+        except:
+            raise AttributeError('current state is not a proper state')
+        time.sleep(SIMULATE_WAIT_SEC)
+
 
 @zope.component.adapter(checkmate.component.IComponent)
 @zope.interface.implementer(IStub)
@@ -111,14 +119,6 @@ class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
                 self.validation_list.append(exchange)
                 self.validation_lock.release()
                 self.process([exchange])
-
-    def simulate(self, exchange):
-        transition = self.context.get_transition_by_output([exchange])
-        try:
-            self.process(transition.generic_incoming(self.context.states))
-        except:
-            raise AttributeError('current state is not a proper state')
-        time.sleep(SIMULATE_WAIT_SEC)
 
     def validate(self, exchange):
         try:
