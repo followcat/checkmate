@@ -37,20 +37,19 @@ class Procedure(object):
         self.system_under_test = system_under_test
 
         if hasattr(self, 'initial'):
-            current = 0
             matching = 0
-            initials = copy.deepcopy(self.initial)
             application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-            for _c in self.components:
-                if _c in application.components:
-                    for _s in application.components[_c].states:
-                        current += 1
-                        for _initial in initials:
-                            if _s == _initial.factory():
-                                matching += 1
-                                initials.remove(_initial)
-                                break
-            if current != matching:
+            for _initial in self.initial:
+                for _component in list(application.components.values()):
+                    try:
+                        #Assume at most one state of component implements interface
+                        _state = [_s for _s in _component.states if _initial.interface.providedBy(_s)].pop(0)
+                        if _state == _initial.factory():
+                            matching += 1
+                            break
+                    except IndexError:
+                        continue
+            if matching != len(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
