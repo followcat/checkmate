@@ -8,6 +8,7 @@ import checkmate.logger
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
+import checkmate.runtime.launcher
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
@@ -26,29 +27,27 @@ class IStub(ISut):
     def validate(self, exchange):
         """"""
 
-@zope.interface.implementer(ISut)
-@zope.component.adapter(checkmate.component.IComponent)
-class Sut(object):
+class Component(object):
     def __init__(self, component):
         self.context = component
         client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IConnection)
-        self.client = client(component=self.context)
+        self.internal_client = client(component=self.context)
 
     def start(self):
         self.context.start()
-        self.client.start()
+        self.internal_client.start()
 
     def stop(self):
         self.context.stop()
-        self.client.stop()
-        if isinstance(self.client, threading.Thread):
-            self.client.join()
+        self.internal_client.stop()
+        if isinstance(self.internal_client, threading.Thread):
+            self.internal_client.join()
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
             checkmate.logger.global_logger.log_exchange(_o)
-            self.client.send(_o)
+            self.internal_client.send(_o)
         return output
 
     def simulate(self, exchange):
@@ -59,37 +58,50 @@ class Sut(object):
             raise AttributeError('current state is not a proper state')
 
 
+@zope.interface.implementer(ISut)
+@zope.component.adapter(checkmate.component.IComponent)
+class Sut(Component):
+    """"""
+    def process(self, exchanges):
+        output = self.context.process(exchanges)
+        for _o in output:
+            checkmate.logger.global_logger.log_exchange(_o)
+            #TODO forward output to SUT based on SUT communication
+        return output
+
+
 @zope.interface.implementer(IStub)
 @zope.component.adapter(checkmate.component.IComponent)
-class Stub(Sut):
+class Stub(Component):
     def validate(self, exchange):
-        if not self.client.received(exchange):
+        if not self.internal_client.received(exchange):
             return False
         return True
 
 
-@zope.component.adapter(checkmate.component.IComponent)
-@zope.interface.implementer(ISut)
-class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
+class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, component):
         #Need to call both ancestors
-        Sut.__init__(self, component)
+        Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
+        self.external_client_list = []
+        #TODO Open external client for communication with SUT
+
     def start(self):
-        Sut.start(self)
+        Component.start(self)
         checkmate.runtime._threading.Thread.start(self)
 
     def stop(self):
-        Sut.stop(self)
+        Component.stop(self)
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
         while True:
             if self.check_for_stop():
                 break
-            for exchange in self.client.read():
+            for exchange in self.internal_client.read():
                 self.process([exchange])
 
     def simulate(self, exchange):
@@ -102,20 +114,37 @@ class ThreadedSut(Sut, checkmate.runtime._threading.Thread):
 
 
 @zope.component.adapter(checkmate.component.IComponent)
+@zope.interface.implementer(ISut)
+class ThreadedSut(ThreadedComponent, Sut):
+    """"""
+    def __init__(self, component):
+        super(ThreadedSut, self).__init__(component)
+        #TODO Add start up of the SUT
+        if hasattr(component, 'launch_command'):
+            self.launcher = checkmate.runtime.launcher.launch(component.launch_command)
+        else:
+            self.launcher = checkmate.runtime.launcher.launch_component(component)
+
+    def stop(self):
+        checkmate.runtime.launcher.end(self.launcher)
+        super(ThreadedSut, self).stop()
+
+
+@zope.component.adapter(checkmate.component.IComponent)
 @zope.interface.implementer(IStub)
-class ThreadedStub(ThreadedSut, checkmate.runtime._threading.Thread):
+class ThreadedStub(ThreadedComponent, Stub):
     """"""
     def __init__(self, component):
         self.validation_list = []
         self.validation_lock = threading.Lock()
-        #Call ThreadedStub first ancestor: ThreadedSut expected
+        #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
 
     def run(self):
         while True:
             if self.check_for_stop():
                 break
-            for exchange in self.client.read():
+            for exchange in self.internal_client.read():
                 self.validation_lock.acquire()
                 self.validation_list.append(exchange)
                 self.validation_lock.release()
