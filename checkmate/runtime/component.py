@@ -7,6 +7,7 @@ import zope.component
 import checkmate.logger
 import checkmate.component
 import checkmate.application
+import checkmate.runtime.client
 import checkmate.runtime.registry
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
@@ -30,8 +31,7 @@ class IStub(ISut):
 class Component(object):
     def __init__(self, component):
         self.context = component
-        client = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IConnection)
-        self.internal_client = client(component=self.context)
+        self.internal_client = checkmate.runtime.client.Client(component=self.context)
 
     def start(self):
         self.context.start()
@@ -86,6 +86,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
+        self.internal_client = checkmate.runtime.client.ThreadedClient(component=self.context)
         self.external_client_list = []
         #TODO Open external client for communication with SUT
 

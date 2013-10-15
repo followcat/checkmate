@@ -8,7 +8,6 @@ import socket
 import zope.interface
 
 import checkmate.logger
-import checkmate.runtime.client
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
@@ -174,7 +173,6 @@ class Communication(object):
         True
         >>> r.stop_test()
     """
-    connection_handler = checkmate.runtime.client.ThreadedClient
     def initialize(self):
         """"""
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
