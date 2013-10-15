@@ -35,6 +35,9 @@ class Runtime(object):
         self.application.build_test_plan()
 
         self.communication.initialize()
+        for communication in self.application.communication_list:
+            communication.initialize()
+
         for component in self.application.stubs:
             stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
             checkmate.runtime.registry.global_registry.registerUtility(stub, checkmate.component.IComponent, component)
@@ -85,5 +88,7 @@ class Runtime(object):
             if self.threaded:
                 _component.join()
         self.communication.close()
+        for communication in self.application.communication_list:
+            communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 
