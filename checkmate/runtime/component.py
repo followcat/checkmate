@@ -153,14 +153,18 @@ class ThreadedStub(ThreadedComponent, Stub):
 
     def validate(self, exchange):
         try:
-            result = True
+            result = False
             self.validation_lock.acquire()
             self.validation_list.remove(exchange)
-        except ValueError:
-            result = False
-        finally:
+            result = True
             self.validation_lock.release()
             return result
+        except ValueError:
+            self.validation_lock.release()
+            return result
+        except Exception as e:
+            self.validation_lock.release()
+            raise e
 
     def beforeTest(self, result):
         self.validation_lock.acquire()
