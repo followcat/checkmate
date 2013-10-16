@@ -1,8 +1,11 @@
 import time
 import copy
-
+import socket
+import pickle
 import logging
 import threading
+
+import zmq
 
 import zope.interface
 
@@ -39,7 +42,7 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, component, protocol=checkmate.runtime.interfaces.IProtocol):
+    def __init__(self, component, address, protocol=checkmate.runtime.interfaces.IProtocol):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.received_lock = threading.Lock()
@@ -49,6 +52,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.name = component.name
         self.component = component
         self.logger.info("%s initial"%self)
+        self.zmq_context = zmq.Context()
+        self.sender = self.zmq_context.socket(zmq.PUSH)
+        self.sender.bind(address)
         connector = checkmate.runtime.registry.global_registry.getUtility(protocol)
         self.connections = connector(self.component)
 
@@ -85,9 +91,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def process_receive(self):
         exchange = self.connections.receive()
         if exchange is not None:
-            self.received_lock.acquire()
-            self.in_buffer.append(exchange)
-            self.received_lock.release()
+            self.sender.send(pickle.dumps(exchange))
             self.logger.info("%s receive exchange %s"%(self, exchange.value))
 
     # Only used by non-threaded Stub

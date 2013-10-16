@@ -1,6 +1,10 @@
 import copy
 import time
+import socket
+import pickle
 import threading
+
+import zmq
 
 import zope.interface
 import zope.component
@@ -87,7 +91,15 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
-        self.internal_client = checkmate.runtime.client.ThreadedClient(component=self.context)
+        self.zmq_context = zmq.Context()
+        read_socket = self.zmq_context.socket(zmq.PULL)
+        port = read_socket.bind_to_random_port("tcp://127.0.0.1")
+        read_socket.close()
+        read_socket = self.zmq_context.socket(zmq.PULL)
+        read_socket.connect("tcp://127.0.0.1:%i"%port)
+        self.poller = zmq.Poller()
+        self.poller.register(read_socket, zmq.POLLIN)
+        self.internal_client = checkmate.runtime.client.ThreadedClient(component=self.context, address="tcp://127.0.0.1:%i"%port)
         self.external_client_list = []
         #TODO Open external client for communication with SUT
 
@@ -103,8 +115,11 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            for exchange in self.internal_client.read():
-                self.process([exchange])
+            s = dict(self.poller.poll(1000))
+            for socket in iter(s):
+                exchange = pickle.loads(socket.recv())
+                if exchange is not None:
+                    self.process([exchange])
 
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
@@ -146,11 +161,13 @@ class ThreadedStub(ThreadedComponent, Stub):
         while True:
             if self.check_for_stop():
                 break
-            for exchange in self.internal_client.read():
-                self.validation_lock.acquire()
-                self.validation_list.append(exchange)
-                self.validation_lock.release()
-                self.process([exchange])
+            for socket in dict(self.poller.poll(1000)):
+                exchange = pickle.loads(socket.recv())
+                if exchange is not None:
+                    self.validation_lock.acquire()
+                    self.validation_list.append(exchange)
+                    self.validation_lock.release()
+                    self.process([exchange])
 
     def validate(self, exchange):
         try:
