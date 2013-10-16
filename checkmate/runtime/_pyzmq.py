@@ -118,7 +118,10 @@ class Registry(checkmate.runtime._threading.Thread):
         port_out = self.pickfreeport()
         sender.bind("tcp://127.0.0.1:%i"%port_out)
         self.get_assign_port_lock.release()
-        self.comp_sender[name] = sender
+        if name in self.comp_sender.keys():
+            self.comp_sender[name].append(sender)
+        else:
+            self.comp_sender[name] = [sender]
         self.logger.info("%s bind port %i to send exchange to %s"%(self, port_out, name))
         self.get_assign_port_lock.acquire()
         port_in = self.pickfreeport()
@@ -140,7 +143,8 @@ class Registry(checkmate.runtime._threading.Thread):
         except:
             self.logger.error("%s has no client registried %s"%(self, msg[0]))
             return
-        sender.send(msg[1])
+        for _s in sender:
+            _s.send(msg[1])
         self.logger.info("%s forward exchange %s to %s"%(self, msg[1], msg[0]))
 
     def pickfreeport(self):
