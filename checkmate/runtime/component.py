@@ -1,3 +1,4 @@
+import copy
 import time
 import threading
 
@@ -122,12 +123,12 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).__init__(component)
         #TODO Add start up of the SUT
         if hasattr(component, 'launch_command'):
-            self.launcher = checkmate.runtime.launcher.launch(component.launch_command)
+            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
         else:
-            self.launcher = checkmate.runtime.launcher.launch_component(component)
+            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 
     def stop(self):
-        checkmate.runtime.launcher.end(self.launcher)
+        self.launcher.end()
         super(ThreadedSut, self).stop()
 
 

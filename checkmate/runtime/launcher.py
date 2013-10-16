@@ -1,21 +1,25 @@
 import time
-import shlex
-import pickle
 import subprocess
 
+import checkmate.runtime.component
 
-def launch(command, args=[''], wait_sec=0):
-    process = subprocess.Popen(command)
-    time.sleep(wait_sec)
-    return process
 
-def launch_component(component):
-    pickled_component = pickle.dumps(component)
-    process = subprocess.Popen(shlex.split('python checkmate/runtime/_component_launcher.py'), stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-    process.stdin.write(pickled_component)
-    return process
+class Launcher(object):
+    def __init__(self, command=None, args=[''], component=None, wait_sec=0):
+        if command is not None:
+            self.process = subprocess.Popen(command)
+            time.sleep(wait_sec)
+        elif component is not None:
+            self.process = None
+            self.runtime_component = checkmate.runtime.component.ThreadedComponent(component)
+            self.runtime_component.start()
+        else:
+            raise Exception("No command nor component")
 
-def end(process):
-    process.terminate()
-    process.communicate()
+    def end(self):
+        if self.process is not None:
+            self.process.terminate()
+            self.process.communicate()
+        else:
+            self.runtime_component.stop()
 
