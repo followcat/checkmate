@@ -84,10 +84,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
     def process_receive(self):
         exchange = self.connections.receive()
-        self.received_lock.acquire()
-        self.in_buffer.append(exchange)
-        self.received_lock.release()
         if exchange is not None:
+            self.received_lock.acquire()
+            self.in_buffer.append(exchange)
+            self.received_lock.release()
             self.logger.info("%s receive exchange %s"%(self, exchange.value))
 
     # Only used by non-threaded Stub
