@@ -20,6 +20,7 @@ import checkmate.runtime.interfaces
 
 
 SIMULATE_WAIT_SEC = 0.2
+VALIDATE_TIMEOUT_SEC = 0.1
 
 
 class ISut(zope.interface.Interface):
@@ -154,6 +155,7 @@ class ThreadedStub(ThreadedComponent, Stub):
     def __init__(self, component):
         self.validation_list = []
         self.validation_lock = threading.Lock()
+        self.validation_condition = threading.Condition(self.validation_lock)
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
 
@@ -170,19 +172,29 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.process([exchange])
 
     def validate(self, exchange):
+        self._exchange_to_validate = exchange
         try:
             result = False
             self.validation_lock.acquire()
-            self.validation_list.remove(exchange)
+            self.validation_list.remove(self._exchange_to_validate)
             result = True
             self.validation_lock.release()
             return result
         except ValueError:
+            result = self.validation_condition.wait_for(self._validate_exchange, timeout=VALIDATE_TIMEOUT_SEC)
             self.validation_lock.release()
             return result
         except Exception as e:
             self.validation_lock.release()
             raise e
+
+    def _validate_exchange(self):
+        try:
+            result = False
+            self.validation_list.remove(self._exchange_to_validate)
+            result = True
+        finally:
+            return result
 
     def beforeTest(self, result):
         self.validation_lock.acquire()
