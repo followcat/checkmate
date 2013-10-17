@@ -93,16 +93,18 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
         self.zmq_context = zmq.Context()
+        self.poller = zmq.Poller()
+        self.internal_client = self._create_client(component)
+        self.external_client_list = []
+
+    def _create_client(self, component, protocol=checkmate.runtime.interfaces.IProtocol):
         read_socket = self.zmq_context.socket(zmq.PULL)
         port = read_socket.bind_to_random_port("tcp://127.0.0.1")
         read_socket.close()
         read_socket = self.zmq_context.socket(zmq.PULL)
         read_socket.connect("tcp://127.0.0.1:%i"%port)
-        self.poller = zmq.Poller()
         self.poller.register(read_socket, zmq.POLLIN)
-        self.internal_client = checkmate.runtime.client.ThreadedClient(component=self.context, address="tcp://127.0.0.1:%i"%port)
-        self.external_client_list = []
-        #TODO Open external client for communication with SUT
+        return checkmate.runtime.client.ThreadedClient(component=self.context, address="tcp://127.0.0.1:%i"%port, protocol=protocol)
 
     def start(self):
         Component.start(self)
