@@ -45,10 +45,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def __init__(self, component, address, protocol=checkmate.runtime.interfaces.IProtocol):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
-        self.received_lock = threading.Lock()
         self.request_lock = threading.Lock()
-        self.in_buffer = []
-        self.out_buffer = []
         self.name = component.name
         self.component = component
         self.logger.info("%s initial"%self)
@@ -77,34 +74,15 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """"""
         destination = exchange.destination
         self.request_lock.acquire()
-        self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
         self.connections.send(destination, exchange)
         self.request_lock.release()
-
-    def read(self):
-        self.received_lock.acquire()
-        _local_copy = copy.deepcopy(self.in_buffer)
-        self.in_buffer = []
-        self.received_lock.release()
-        return _local_copy
+        self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
 
     def process_receive(self):
+        self.request_lock.acquire()
         exchange = self.connections.receive()
+        self.request_lock.release()
         if exchange is not None:
             self.sender.send(pickle.dumps(exchange))
             self.logger.info("%s receive exchange %s"%(self, exchange.value))
-
-    # Only used by non-threaded Stub
-    def received(self, exchange):
-        time.sleep(0.1)
-        result = False
-        self.received_lock.acquire()
-        _local_copy = copy.deepcopy(self.in_buffer)
-        self.received_lock.release()
-        if exchange in _local_copy:
-            result = True
-            self.received_lock.acquire()
-            self.in_buffer.remove(exchange)
-            self.received_lock.release()
-        return result
 
