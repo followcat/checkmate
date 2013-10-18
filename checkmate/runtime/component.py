@@ -94,17 +94,21 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
         self.zmq_context = zmq.Context()
         self.poller = zmq.Poller()
-        self.internal_client = self._create_client(component)
         self.external_client_list = []
+        for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
+            if name == 'default':
+                self.internal_client = self._create_client(component, factory)
+            else:
+                self.external_client_list.append(self._create_client(component, factory))
 
-    def _create_client(self, component, protocol=checkmate.runtime.interfaces.IProtocol):
+    def _create_client(self, component, connector_factory):
         read_socket = self.zmq_context.socket(zmq.PULL)
         port = read_socket.bind_to_random_port("tcp://127.0.0.1")
         read_socket.close()
         read_socket = self.zmq_context.socket(zmq.PULL)
         read_socket.connect("tcp://127.0.0.1:%i"%port)
         self.poller.register(read_socket, zmq.POLLIN)
-        return checkmate.runtime.client.ThreadedClient(component=self.context, address="tcp://127.0.0.1:%i"%port, protocol=protocol)
+        return checkmate.runtime.client.ThreadedClient(component=self.context, connector=connector_factory, address="tcp://127.0.0.1:%i"%port)
 
     def start(self):
         Component.start(self)

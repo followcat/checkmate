@@ -10,6 +10,7 @@ import zope.interface
 import checkmate.logger
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+import checkmate.runtime.communication
 
 
 POLLING_TIMOUT_MS = 1000
@@ -154,16 +155,16 @@ class Registry(checkmate.runtime._threading.Thread):
         s.close()
         return port
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
-class Communication(object):
+
+class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.test_data
         >>> import checkmate.runtime
         >>> import checkmate.component
-        >>> a = checkmate.test_data.App()
-        >>> c = checkmate.runtime._pyzmq.Communication()
+        >>> a = checkmate.test_data.App
+        >>> c = checkmate.runtime._pyzmq.Communication
         >>> r = checkmate.runtime._runtime.Runtime(a, c)
         >>> r.setup_environment(['C3'])
         >>> r.start_test()
@@ -177,11 +178,15 @@ class Communication(object):
         True
         >>> r.stop_test()
     """
+    def __init__(self, default=False):
+        super(Communication, self).__init__(default)
+        self.connector = Connector
+
     def initialize(self):
         """"""
+        super(Communication, self).initialize()
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize"%self)
-        checkmate.runtime.registry.global_registry.registerUtility(Connector, checkmate.runtime.interfaces.IProtocol) 
         self.registry = Registry()
         Connector._initport = self.registry._initport
         self.registry.start()

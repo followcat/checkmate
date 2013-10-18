@@ -16,8 +16,10 @@ class Runtime(object):
     def __init__(self, application, communication, threaded=False):
         """"""
         self.threaded = threaded
-        self.application = application
-        self.communication = communication
+        self.application = application()
+        self.communication_list = [communication(default=True)]
+        for communication in self.application.communication_list:
+            self.communication_list.append(communication())
 
         checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
         if threaded:
@@ -34,8 +36,7 @@ class Runtime(object):
         self.application.sut(sut)
         self.application.build_test_plan()
 
-        self.communication.initialize()
-        for communication in self.application.communication_list:
+        for communication in self.communication_list:
             communication.initialize()
 
         for component in self.application.stubs:
@@ -87,8 +88,7 @@ class Runtime(object):
             _component.stop()
             if self.threaded:
                 _component.join()
-        self.communication.close()
-        for communication in self.application.communication_list:
+        for communication in self.communication_list:
             communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 

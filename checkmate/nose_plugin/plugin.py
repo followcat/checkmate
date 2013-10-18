@@ -117,9 +117,7 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
-        a = self.application_class()
-        c = self.communication_class()
-        self.runtime = checkmate.runtime._runtime.Runtime(a, c, threaded=True)
+        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
         time.sleep(3)
