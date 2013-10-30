@@ -10,8 +10,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
-            >>> a = checkmate.test_data.App()
-            >>> r = checkmate.runtime._runtime.Runtime(a, checkmate.runtime.communication.Communication())
+            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> proc = TestProcedureThreaded()
@@ -30,6 +29,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             Traceback (most recent call last):
             ...
             Exception: No exchange 'RE' received by component 'C3'
+            >>> r.stop_test()
         """
         super(TestProcedureThreaded, self).__init__(test)
         a = checkmate.test_data.App()

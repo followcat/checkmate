@@ -38,22 +38,26 @@ class Component(object):
     def __init__(self, component):
         self.context = component
         self.internal_client = checkmate.runtime.client.Client(component=self.context)
+        self.external_client_list = []
 
     def start(self):
         self.context.start()
+        for client in self.external_client_list:
+            client.start()
         self.internal_client.start()
 
     def stop(self):
         self.context.stop()
+        for client in self.external_client_list:
+            client.stop()
         self.internal_client.stop()
-        if isinstance(self.internal_client, threading.Thread):
-            self.internal_client.join()
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
+            for client in self.external_client_list:
+                client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-            self.internal_client.send(_o)
         return output
 
     def simulate(self, exchange):
@@ -71,14 +75,23 @@ class Sut(Component):
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
+            self.internal_client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-            #TODO forward output to SUT based on SUT communication
         return output
 
 
 @zope.interface.implementer(IStub)
 @zope.component.adapter(checkmate.component.IComponent)
 class Stub(Component):
+    def process(self, exchanges):
+        output = self.context.process(exchanges)
+        for _o in output:
+            self.internal_client.send(_o)
+            for client in self.external_client_list:
+                client.send(_o)
+            checkmate.logger.global_logger.log_exchange(_o)
+        return output
+
     def validate(self, exchange):
         if not self.internal_client.received(exchange):
             return False
@@ -87,27 +100,25 @@ class Stub(Component):
 
 class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, component):
+    def __init__(self, component, poll_socket=True):
         #Need to call both ancestors
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
-        self.zmq_context = zmq.Context()
+        self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
-        self.external_client_list = []
         for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
-            if name == 'default':
-                self.internal_client = self._create_client(component, factory)
-            else:
-                self.external_client_list.append(self._create_client(component, factory))
+            if name != 'default':
+                self.external_client_list.append(self._create_client(component, factory, poll_socket))
 
-    def _create_client(self, component, connector_factory):
+    def _create_client(self, component, connector_factory, poll_socket):
         read_socket = self.zmq_context.socket(zmq.PULL)
         port = read_socket.bind_to_random_port("tcp://127.0.0.1")
         read_socket.close()
         read_socket = self.zmq_context.socket(zmq.PULL)
         read_socket.connect("tcp://127.0.0.1:%i"%port)
-        self.poller.register(read_socket, zmq.POLLIN)
+        if poll_socket:
+            self.poller.register(read_socket, zmq.POLLIN)
         return checkmate.runtime.client.ThreadedClient(component=self.context, connector=connector_factory, address="tcp://127.0.0.1:%i"%port)
 
     def start(self):
@@ -142,12 +153,25 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 class ThreadedSut(ThreadedComponent, Sut):
     """"""
     def __init__(self, component):
-        super(ThreadedSut, self).__init__(component)
-        #TODO Add start up of the SUT
+        #TODO clean the class tree
+        #Do not use the ThreadedComponent.__init__()
+        Component.__init__(self, component)
+        checkmate.runtime._threading.Thread.__init__(self, name=component.name)
+
+        self.zmq_context = zmq.Context.instance()
+        self.poller = zmq.Poller()
+
+        for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
+            if name == 'default':
+                self.internal_client = self._create_client(component, factory, True)
+
         if hasattr(component, 'launch_command'):
             self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+
+    def process(self, exchanges):
+        Sut.process(self, exchanges)
 
     def stop(self):
         self.launcher.end()
@@ -163,7 +187,15 @@ class ThreadedStub(ThreadedComponent, Stub):
         self.validation_lock = threading.Lock()
         self.validation_condition = threading.Condition(self.validation_lock)
         #Call ThreadedStub first ancestor: ThreadedComponent expected
-        super(ThreadedStub, self).__init__(component)
+        super(ThreadedStub, self).__init__(component, poll_socket=True)
+
+        #FIXME Need to connect to both internal and external clients
+        #for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
+        #    if name == 'default':
+        #        self.internal_client = self._create_client(component, factory, False)
+
+    def process(self, exchanges):
+        Stub.process(self, exchanges)
 
     def run(self):
         while True:

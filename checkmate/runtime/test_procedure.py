@@ -29,7 +29,7 @@ def TestLogProcedureGenerator(application_class=checkmate.test_data.App):
         for _filename in [_f for _f in filenames if re.match('exchange-.*\.log', _f) is not None]:
             try:
                 _f = open(os.path.join(dirpath, _filename), 'rb')
-                yield read_log(_f), _filename
+                yield read_log(_f), "fdgesgetsge"
                 _f.close()
             except FileNotFoundError:
                 continue

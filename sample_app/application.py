@@ -1,6 +1,7 @@
 import os.path
 
 import checkmate.application
+import checkmate.runtime._pyzmq
 
 import sample_app.exchanges
 import sample_app.data_structure
@@ -68,4 +69,6 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
                            'C3': sample_app.component_3.component.Component_3}
         for name in list(self.components.keys()):
             self.components[name] = self.components[name](name)
+
+        self.communication_list = (checkmate.runtime._pyzmq.Communication,)
 

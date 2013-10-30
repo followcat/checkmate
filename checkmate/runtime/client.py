@@ -49,38 +49,37 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.name = component.name
         self.component = component
         self.logger.info("%s initial"%self)
-        self.zmq_context = zmq.Context()
+        self.zmq_context = zmq.Context.instance()
         self.sender = self.zmq_context.socket(zmq.PUSH)
         self.sender.bind(address)
         self.connections = connector(self.component)
 
     def run(self):
         """"""
-        self.logger.info("%s startup"%self)
         self.connections.open()
+        self.logger.debug("%s startup"%self)
         while True:
             if self.check_for_stop():
                 self.connections.close()
+                self.logger.debug("%s stop"%self)
                 break
             self.process_receive()
 
     def stop(self):
         """"""
-        self.logger.info("%s stop"%self)
+        self.logger.info("%s stop request"%self)
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
         """"""
         destination = exchange.destination
-        self.request_lock.acquire()
-        self.connections.send(destination, exchange)
-        self.request_lock.release()
+        with self.request_lock:
+            self.connections.send(destination, exchange)
         self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
 
     def process_receive(self):
-        self.request_lock.acquire()
-        exchange = self.connections.receive()
-        self.request_lock.release()
+        with self.request_lock:
+            exchange = self.connections.receive()
         if exchange is not None:
             self.sender.send(pickle.dumps(exchange))
             self.logger.info("%s receive exchange %s"%(self, exchange.value))

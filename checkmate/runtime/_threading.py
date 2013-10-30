@@ -12,9 +12,7 @@ class StopCondition(threading.Condition):
         self.end = False
 
     def request(self):
-        self.acquire()
         self.end = True
-        self.release()
 
     def check(self):
         return self.end
@@ -41,9 +39,8 @@ class Thread(threading.Thread):
         This should be called in the child run() method and run() should exit
         if check_for_stop() returns True
         """
-        self.stop_condition.acquire()
-        output = self.stop_condition.wait_for(self.stop_condition.check, SLEEP_WHEN_RUN_SEC)
-        self.stop_condition.release()
+        with self.stop_condition:
+            output = self.stop_condition.wait_for(self.stop_condition.check, SLEEP_WHEN_RUN_SEC)
         return output
 
     def stop(self):
@@ -51,5 +48,7 @@ class Thread(threading.Thread):
 
         Provided for the parent to stop the thread.
         """
-        self.stop_condition.request()
+        with self.stop_condition:
+            self.stop_condition.request()
+        self.join()
 

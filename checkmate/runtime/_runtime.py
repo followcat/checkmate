@@ -56,14 +56,15 @@ class Runtime(object):
             >>> import checkmate.runtime.communication
             >>> del checkmate.test_data.my_data
             >>> checkmate.test_data.my_data = {}
-            >>> a = checkmate.test_data.App()
-            >>> c = checkmate.runtime.communication.Communication()
-            >>> r = checkmate.runtime._runtime.Runtime(a, c)
+            >>> ac = checkmate.test_data.App
+            >>> cc = checkmate.runtime.communication.Communication
+            >>> r = checkmate.runtime._runtime.Runtime(ac, cc)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> c2_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
             >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
             True
+            >>> a = r.application
             >>> simulated_exchange = a.components['C2'].state_machine.transitions[0].outgoing[0].factory()
             >>> o = c2_stub.simulate(simulated_exchange) # doctest: +ELLIPSIS
             >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
@@ -86,8 +87,8 @@ class Runtime(object):
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
-            if self.threaded:
-                _component.join()
+            #if self.threaded:
+            #    _component.join()
         for communication in self.communication_list:
             communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
