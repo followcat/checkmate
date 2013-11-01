@@ -1,7 +1,6 @@
 import time
 import copy
 import socket
-import pickle
 import logging
 import threading
 
@@ -81,6 +80,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         with self.request_lock:
             exchange = self.connections.receive()
         if exchange is not None:
-            self.sender.send(pickle.dumps(exchange))
+            self.sender.send_pyobj(exchange)
             self.logger.info("%s receive exchange %s"%(self, exchange.value))
 

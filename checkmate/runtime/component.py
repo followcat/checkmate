@@ -1,7 +1,6 @@
 import copy
 import time
 import socket
-import pickle
 import threading
 
 import zmq
@@ -86,7 +85,8 @@ class Stub(Component):
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
-            self.internal_client.send(_o)
+            #FIXME Need to send exchange to both internal and external clients
+            #self.internal_client.send(_o)
             for client in self.external_client_list:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
@@ -135,7 +135,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 break
             s = dict(self.poller.poll(1000))
             for socket in iter(s):
-                exchange = pickle.loads(socket.recv())
+                exchange = socket.recv_pyobj()
                 if exchange is not None:
                     self.process([exchange])
 
@@ -189,10 +189,9 @@ class ThreadedStub(ThreadedComponent, Stub):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component, poll_socket=True)
 
-        #FIXME Need to connect to both internal and external clients
-        #for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
-        #    if name == 'default':
-        #        self.internal_client = self._create_client(component, factory, False)
+        for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
+            if name == 'default':
+                self.internal_client = self._create_client(component, factory, False)
 
     def process(self, exchanges):
         Stub.process(self, exchanges)
@@ -202,7 +201,7 @@ class ThreadedStub(ThreadedComponent, Stub):
             if self.check_for_stop():
                 break
             for socket in dict(self.poller.poll(1000)):
-                exchange = pickle.loads(socket.recv())
+                exchange = socket.recv_pyobj()
                 if exchange is not None:
                     self.validation_lock.acquire()
                     self.validation_list.append(exchange)
