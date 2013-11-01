@@ -85,8 +85,7 @@ class Stub(Component):
     def process(self, exchanges):
         output = self.context.process(exchanges)
         for _o in output:
-            #FIXME Need to send exchange to both internal and external clients
-            #self.internal_client.send(_o)
+            self.internal_client.send(_o)
             for client in self.external_client_list:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
@@ -119,7 +118,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         read_socket.connect("tcp://127.0.0.1:%i"%port)
         if poll_socket:
             self.poller.register(read_socket, zmq.POLLIN)
-        return checkmate.runtime.client.ThreadedClient(component=self.context, connector=connector_factory, address="tcp://127.0.0.1:%i"%port)
+        return checkmate.runtime.client.ThreadedClient(component=self.context, connector=connector_factory,
+                                                       address="tcp://127.0.0.1:%i"%port, sender_socket=poll_socket)
 
     def start(self):
         Component.start(self)
