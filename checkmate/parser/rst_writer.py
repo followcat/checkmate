@@ -71,6 +71,8 @@ class TableNodeVisitor(docutils.nodes.GenericNodeVisitor):
 
     def visit_section(self, node):
         self.title_level += 1
+        if self.title_level > 5:
+            raise SyntaxError("'" + node.astext().split('\n')[0] + "' is over the top title level 5")
 
     def depart_section(self, node):
         self.title_level -= 1
