@@ -81,6 +81,17 @@ class Procedure(object):
         stub.simulate(current_node.root)
         self._follow_up(current_node)
 
+        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication) 
+        component_list = application.system_under_test + application.stubs
+        busy = True
+        while busy:
+            for name in component_list:
+                _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+                if _component.is_busy():
+                    busy = True
+                    break
+                else:
+                    busy = False
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
