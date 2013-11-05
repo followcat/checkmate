@@ -109,8 +109,11 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
         self.zmq_context = zmq.Context.instance()
-        self.isbusy = False
         self.poller = zmq.Poller()
+        self.busy_lock = threading.Lock()
+        self.busy_lock.acquire()
+        self.isbusy = True
+        self.busy_lock.release()
         for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
             if name == 'default':
                 if self.using_internal_client:
@@ -143,9 +146,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 break
             s = dict(self.poller.poll(1000))
             if len(s.keys()) == 0:
-                self.isbusy = False
+                self._set_busy(False)
             else:
-                self.isbusy = True
+                self._set_busy(True)
             for socket in iter(s):
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
@@ -155,6 +158,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         if timeout != 0:
             time.sleep(timeout)
         return self.isbusy
+
+    def _set_busy(self, isbusy=True):
+        self.busy_lock.acquire()
+        self.isbusy = isbusy
+        self.busy_lock.release()
+
 
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
@@ -213,7 +222,12 @@ class ThreadedStub(ThreadedComponent, Stub):
         while True:
             if self.check_for_stop():
                 break
-            for socket in dict(self.poller.poll(1000)):
+            s = dict(self.poller.poll(1000))
+            if len(s.keys()) == 0:
+                self._set_busy(False)
+            else:
+                self._set_busy(True)
+            for socket in s:
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
                     self.validation_lock.acquire()
