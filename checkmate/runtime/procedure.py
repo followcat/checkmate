@@ -37,22 +37,26 @@ class Procedure(object):
         self.system_under_test = system_under_test
 
         if hasattr(self, 'initial'):
-            matching = 0
-            application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-            for _initial in self.initial:
-                for _component in list(application.components.values()):
-                    try:
-                        #Assume at most one state of component implements interface
-                        _state = [_s for _s in _component.states if _initial.interface.providedBy(_s)].pop(0)
-                        if _state == _initial.factory():
-                            matching += 1
-                            break
-                    except IndexError:
-                        continue
-            if matching != len(self.initial):
+            if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
+
+    def compare_states(self, target):
+        """"""
+        matching = 0
+        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        for _target in target:
+            for _component in list(application.components.values()):
+                try:
+                    #Assume at most one state of component implements interface
+                    _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
+                    if _state == _target.factory():
+                        matching += 1
+                        break
+                except IndexError:
+                        continue
+        return matching == len(target)
 
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and
@@ -92,6 +96,9 @@ class Procedure(object):
                     break
                 else:
                     busy = False
+        if hasattr(self, 'final'):
+            if not self.compare_states(self.final):
+                raise ValueError("Final states are not as expected")
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
