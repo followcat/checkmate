@@ -87,17 +87,18 @@ class Procedure(object):
 
         application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication) 
         component_list = application.system_under_test + application.stubs
-        busy = True
-        while busy:
-            for name in component_list:
-                _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
-                if _component.is_busy():
-                    busy = True
-                    break
-                else:
-                    busy = False
         if hasattr(self, 'final'):
+            busy = True
+            while busy:
+                for name in component_list:
+                    _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+                    if _component.is_busy():
+                        busy = True
+                        break
+                    else:
+                        busy = False
             if not self.compare_states(self.final):
+                #need to modify A0() to A0(True) in line78 of sample_app/component_3/state_machine.rst to make final states fix
                 raise ValueError("Final states are not as expected")
         if self.result is not None:
             self.result.addSuccess(self)
