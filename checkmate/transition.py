@@ -165,6 +165,29 @@ class Transition(object):
         return incoming_exchanges
             
 
+    def generic_process(self, states):
+        """
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> c = a.components['C3']
+            >>> c.start()
+            >>> c.states[0].value
+            'False'
+            >>> final =  c.state_machine.transitions[0].generic_process(c.states) 
+            >>> c.states[0].value
+            'True'
+        """
+        _incoming = self.generic_incoming(states)
+        for _state in states:
+            for _interface in zope.interface.providedBy(_state):
+                for _final in self.final:
+                    if _final == None:
+                        continue
+                    _final_interface = _final.interface
+                    if _final_interface == _interface:
+                        resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
+                        _final.factory(args=[_state], kwargs=resolved_arguments)
+
     def process(self, states, _incoming):
         """
             >>> import checkmate.test_data

@@ -25,6 +25,8 @@ class Procedure(object):
     def __init__(self, test=None):
         self.test = test
         self.components = []
+        self.unmatching_components = {}
+        self.tran_dict = {}
         
     def __call__(self, system_under_test, result=None, *args):
         """"""
@@ -38,9 +40,41 @@ class Procedure(object):
 
         if hasattr(self, 'initial'):
             if not self.compare_states(self.initial):
+                application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+                while(len(list(self.unmatching_components.keys()))>0):
+                    c_name, target = self.unmatching_components.popitem()
+                    self.tran_dict[c_name] = self.state_initialize(application.components[c_name], target)
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
+
+    def state_initialize(self, component, target):
+        """"""
+        tran_list = []
+        state = target
+        current = copy.deepcopy(component.states)
+        transitions = list(component.state_machine.transitions)
+        tran_list.extend(self.get_transition(transitions, state, current))
+        return tran_list
+        
+
+    def get_transition(self, transitions, state, current):
+        tran_list = []
+        tran_copies = copy.deepcopy(transitions)
+        for _tran in tran_copies:
+            if _tran.is_matching_initial(current):
+                tran_list.append(_tran)
+                tran_copies.remove(_tran)
+                states = copy.deepcopy(current)
+                _tran.generic_process(states)
+                _state = [_s for _s in states if state.interface.providedBy(_s)].pop(0)
+                if _state == state.factory():
+                    return tran_list
+                else:
+                    tran_list.extend(self.get_transtion(transitions, state, states))
+            else:
+                continue
+        return tran_list
 
     def compare_states(self, target):
         """"""
@@ -53,6 +87,9 @@ class Procedure(object):
                     _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
                     if _state == _target.factory():
                         matching += 1
+                        break
+                    else:
+                        self.unmatching_components[_component.name] = _target
                         break
                 except IndexError:
                         continue
