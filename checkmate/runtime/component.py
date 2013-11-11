@@ -59,6 +59,13 @@ class Component(object):
             checkmate.logger.global_logger.log_exchange(_o)
         return output
 
+    def generic_process(self, exchange):
+        transition = self.context.get_transition_by_input([exchange])
+        try:
+            self.process(transition.generic_incoming(self.context.states))
+        except:
+            raise AttributeError('current state is not a proper state')
+
     def simulate(self, exchange):
         transition = self.context.get_transition_by_output([exchange])
         try:

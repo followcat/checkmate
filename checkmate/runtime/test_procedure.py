@@ -52,6 +52,45 @@ def get_origin_component(exchange, components):
             return _c
 
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
+    """
+        >>> import checkmate.test_data
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime._pyzmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime.test_procedure
+        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> r.setup_environment(['C1'])
+        >>> r.start_test()
+        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
+        >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
+        >>> c1.context.states[0].value
+        'False'
+        >>> c3.context.states[0].value
+        'True'
+        >>> gen = checkmate.runtime.test_procedure.TestProcedureInitialGenerator(sample_app.application.TestData)
+        >>> for p in gen:
+        ...     proc = p[0]
+
+        >>> proc.system_under_test = ['C1']
+        >>> proc.compare_states(proc.initial)
+        False
+        >>> proc.transform_to_initial()
+        >>> c1.context.states[0].value
+        'True'
+        >>> c3.context.states[0].value
+        'False'
+        >>> proc.compare_states(proc.initial)
+        True
+        >>> proc.result = None
+        >>> proc._run_from_startpoint(proc.exchanges)
+        >>> proc.compare_states(proc.final)
+        True
+        >>> r.stop_test()
+
+    """
     a = application_class()
     a.start()
     a.get_initial_transitions()

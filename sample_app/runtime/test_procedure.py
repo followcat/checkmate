@@ -18,12 +18,6 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             'ARE'
             >>> proc.exchanges.nodes[1].nodes[0].root.action
             'AP'
-            >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
-            'RL'
-            >>> proc.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].root.action
-            'PP'
-            >>> proc.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].nodes[1].root.action
-            'PA'
 
             >>> proc(result=None, system_under_test=['C1'])
             Traceback (most recent call last):
@@ -45,12 +39,45 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
         for _e in c2.process([self.exchanges.nodes[1].root]):
             self.exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c1.process([self.exchanges.nodes[1].nodes[0].root]):
-            self.exchanges.nodes[1].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c3.process([self.exchanges.nodes[1].nodes[0].nodes[0].root]):
-            self.exchanges.nodes[1].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c1.process([self.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].root]):
-            self.exchanges.nodes[1].nodes[0].nodes[0].nodes[0].add_node(checkmate._tree.Tree(_e, []))
+        c1.process([self.exchanges.nodes[1].nodes[0].root])
+
+class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
+    """"""
+    def __init__(self, test=None):
+        """
+            >>> import checkmate.test_data
+            >>> import checkmate.runtime._runtime
+            >>> import checkmate.runtime.communication
+            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
+            >>> r.setup_environment(['C1'])
+            >>> r.start_test()
+            >>> proc = TestProcedureThreaded2()
+            >>> proc.exchanges.root.action
+            'PP'
+            >>> proc.exchanges.nodes[0].root.action
+            'PA'
+            >>> r.stop_test()
+        """
+        super(TestProcedureThreaded2, self).__init__(test)
+        a = checkmate.test_data.App()
+        c1 = a.components['C1']
+        c2 = a.components['C2']
+        c3 = a.components['C3']
+        a.start()
+        transition = c2.state_machine.transitions[0]
+        self.exchanges = checkmate._tree.Tree(c2.process(transition.generic_incoming(c2.states))[0], [])
+        for _e in c1.process([self.exchanges.root]):
+            self.exchanges.add_node(checkmate._tree.Tree(_e, []))
+        for _e in c3.process([self.exchanges.nodes[0].root]):
+            self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
+        for _e in c2.process([self.exchanges.nodes[1].root]):
+            self.exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
+        c1.process([self.exchanges.nodes[1].nodes[0].root])
+        ex = c3.state_machine.transitions[1].generic_incoming(c3.states)[0]
+        #ex.origin_destination('C2', 'C3')
+        self.exchanges = checkmate._tree.Tree(c3.process([ex])[0], [])
+        for _e in c1.process([self.exchanges.root]):
+            self.exchanges.add_node(checkmate._tree.Tree(_e, []))
 
 def build_procedure(exchanges, output):
     class TestProc(checkmate.runtime.procedure.Procedure):

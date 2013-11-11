@@ -1,3 +1,4 @@
+import time
 import copy
 
 import zope.interface
@@ -40,38 +41,57 @@ class Procedure(object):
 
         if hasattr(self, 'initial'):
             if not self.compare_states(self.initial):
-                application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-                while(len(list(self.unmatching_components.keys()))>0):
-                    c_name, target = self.unmatching_components.popitem()
-                    self.tran_dict[c_name] = self.state_initialize(application.components[c_name], target)
+                self.transform_to_initial() 
+            if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
         self._run_from_startpoint(self.exchanges)
 
+    def transform_to_initial(self):
+        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        components = list(application.components.keys())
+        while(len(list(self.unmatching_components.keys()))>0):
+            c_name, target = self.unmatching_components.popitem()
+            self.tran_dict[c_name] = self.state_initialize(application.components[c_name], target)
+            if c_name not in self.system_under_test:
+                continue
+            for tran in self.tran_dict[c_name]:
+                #if component is sut, can not simulate, go up 
+                while c_name in self.system_under_test:
+                    incoming_exchanges = tran.generic_incoming(application.components[c_name].states)
+                    for _comp in components:
+                        if incoming_exchanges[0].value in application.components[_comp].outgoings:
+                            c_name = _comp 
+                            tran = application.components[c_name].get_transition_by_output(incoming_exchanges)
+                            break
+                incoming_exchanges = tran.generic_incoming(application.components[c_name].states)
+                _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, c_name)
+                _component.generic_process(incoming_exchanges[0])
+                time.sleep(1)
+            if self.compare_states(self.initial):
+                return
+
     def state_initialize(self, component, target):
         """"""
         tran_list = []
-        state = target
         current = copy.deepcopy(component.states)
         transitions = list(component.state_machine.transitions)
-        tran_list.extend(self.get_transition(transitions, state, current))
+        tran_list.extend(self.get_transition(transitions, target, current))
         return tran_list
         
 
-    def get_transition(self, transitions, state, current):
+    def get_transition(self, transitions, target, current):
         tran_list = []
-        tran_copies = copy.deepcopy(transitions)
-        for _tran in tran_copies:
+        for _tran in transitions:
             if _tran.is_matching_initial(current):
-                tran_list.append(_tran)
-                tran_copies.remove(_tran)
                 states = copy.deepcopy(current)
                 _tran.generic_process(states)
-                _state = [_s for _s in states if state.interface.providedBy(_s)].pop(0)
-                if _state == state.factory():
+                _state = [_s for _s in states if target.interface.providedBy(_s)].pop(0)
+                if _state == target.factory():
+                    tran_list.append(_tran)
                     return tran_list
                 else:
-                    tran_list.extend(self.get_transtion(transitions, state, states))
+                    continue
             else:
                 continue
         return tran_list
