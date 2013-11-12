@@ -67,11 +67,13 @@ class Component(object):
             raise AttributeError('current state is not a proper state')
 
     def simulate(self, exchange):
-        transition = self.context.get_transition_by_output([exchange])
-        try:
-            return self.process(transition.generic_incoming(self.context.states))
-        except:
-            raise AttributeError('current state is not a proper state')
+        output = self.context.simulate(exchange)
+        for _o in output:
+            for client in self.external_client_list:
+                client.send(_o)
+            checkmate.logger.global_logger.log_exchange(_o)
+        time.sleep(SIMULATE_WAIT_SEC)
+        return output
 
 
 @zope.interface.implementer(ISut)
@@ -173,11 +175,10 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
 
     def simulate(self, exchange):
-        transition = self.context.get_transition_by_output([exchange])
-        try:
-            self.process(transition.generic_incoming(self.context.states))
-        except:
-            raise AttributeError('current state is not a proper state')
+        output = self.context.simulate(exchange)
+        for _o in output:
+            self.internal_client.send(_o)
+        checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
 
 
@@ -242,6 +243,15 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.validation_lock.release()
                     self.process([exchange])
 
+    def simulate(self, exchange):
+        output = self.context.simulate(exchange)
+        for _o in output:
+            self.internal_client.send(_o)
+            for client in self.external_client_list:
+                client.send(_o)
+        checkmate.logger.global_logger.log_exchange(_o)
+        time.sleep(SIMULATE_WAIT_SEC)
+            
     def validate(self, exchange):
         self._exchange_to_validate = exchange
         try:

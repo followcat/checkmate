@@ -36,14 +36,16 @@ def TestLogProcedureGenerator(application_class=checkmate.test_data.App):
             except EOFError:
                 continue
 
-def build_procedure_with_initial(exchanges, output, initial, final):
+def build_procedure_with_initial(components, exchanges, output, initial, final, itp_transitions):
     class TestProc(checkmate.runtime.procedure.Procedure):
         """"""
             
     proc = TestProc()
+    setattr(proc, 'components', components)
     setattr(proc, 'exchanges', checkmate._tree.Tree(exchanges[0], [checkmate._tree.Tree(_o, []) for _o in output]))
     setattr(proc, 'initial', initial)
     setattr(proc, 'final', final)
+    setattr(proc, 'itp_transitions', itp_transitions)
     return proc
 
 def get_origin_component(exchange, components):
@@ -53,6 +55,7 @@ def get_origin_component(exchange, components):
 
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     """
+        >>> import time
         >>> import checkmate.test_data
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime._pyzmq
@@ -66,18 +69,22 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
         >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
         >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
         >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
+        >>> time.sleep(1)
         >>> c1.context.states[0].value
         'False'
         >>> c3.context.states[0].value
         'True'
         >>> gen = checkmate.runtime.test_procedure.TestProcedureInitialGenerator(sample_app.application.TestData)
+        >>> procedures = []
         >>> for p in gen:
-        ...     proc = p[0]
+        ...     procedures.append(p[0])
 
+        >>> proc = procedures[0]
         >>> proc.system_under_test = ['C1']
         >>> proc.compare_states(proc.initial)
         False
         >>> proc.transform_to_initial()
+        >>> time.sleep(2)
         >>> c1.context.states[0].value
         'True'
         >>> c3.context.states[0].value
@@ -94,9 +101,11 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     a = application_class()
     a.start()
     a.get_initial_transitions()
-    _incoming = a.initial_transitions[0].incoming[0].factory()
-    origin = get_origin_component(_incoming, list(a.components.values()))
-    for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
-        _o = a.components[_e.destination].process([_e])
-        yield build_procedure_with_initial([_e], _o, a.initial_transitions[0].initial, a.initial_transitions[0].final), origin.name, _e.action, _e.destination
+    components = list(a.components.keys())
+    for _i in range(len(a.initial_transitions)):
+        _incoming = a.initial_transitions[_i].incoming[0].factory()
+        origin = get_origin_component(_incoming, list(a.components.values()))
+        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
+            _o = a.components[_e.destination].process([_e])
+            yield build_procedure_with_initial(components, [_e], _o, a.initial_transitions[_i].initial, a.initial_transitions[_i].final, a.initial_transitions), origin.name, _e.action, _e.destination
 

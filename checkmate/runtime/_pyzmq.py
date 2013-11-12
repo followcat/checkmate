@@ -146,7 +146,7 @@ class Registry(checkmate.runtime._threading.Thread):
             return
         for _s in sender:
             _s.send(msg[1])
-        self.logger.info("%s forward exchange %s to %s"%(self, msg[1], msg[0]))
+        self.logger.info("%s forward exchange to %s"%(self, msg[0]))
 
     def pickfreeport(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
