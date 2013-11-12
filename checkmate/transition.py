@@ -103,7 +103,7 @@ class Transition(object):
             False
 
             >>> c3 = a.components['C3']
-            >>> c3.states[0].value = 'True'
+            >>> c3.states[0].value = True
             >>> t3 = c3.state_machine.transitions[2]
             >>> t3.is_matching_initial(c3.states)
             True
