@@ -180,6 +180,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             self.internal_client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
+        return output
 
 
 @zope.component.adapter(checkmate.component.IComponent)
@@ -251,6 +252,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
+        return output
             
     def validate(self, exchange):
         self._exchange_to_validate = exchange
