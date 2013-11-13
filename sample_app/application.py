@@ -47,6 +47,8 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             []
             >>> c.states[0].value
             'False'
+            >>> sample_app.exchanges.ThirdAction # doctest: +ELLIPSIS
+            [<sample_app.exchanges.ThirdAction object at ...
             >>> i = sample_app.exchanges.PP()
             >>> t = c.state_machine.transitions[2]
             >>> t.is_matching_incoming([i])
