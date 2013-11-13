@@ -223,7 +223,7 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         if self.inside_table or self.inside_system_message:
             return
         paragraph = node.astext()
-        if self._low_level_flag == [1, 0, 0]:
+        if self._low_level_flag == [1, 0, 0] and self._classname == '':
             texts = paragraph.split('\n')
             self._classname = str(texts[0])
              
