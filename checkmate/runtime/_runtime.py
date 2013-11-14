@@ -21,6 +21,8 @@ class Runtime(object):
         for communication in self.application.communication_list:
             self.communication_list.append(communication())
 
+        if self.threaded:
+            checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
         checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
         if threaded:
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
@@ -81,9 +83,26 @@ class Runtime(object):
             _component.start()
 
 
+    def wait_till_not_busy(self):
+        if self.threaded == False:
+            return
+        busy = True
+        component_list = self.application.system_under_test + self.application.stubs
+        while busy:
+            for name in component_list:
+                _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+                if _component.is_busy():
+                    busy = True
+                    break
+                else:
+                    busy = False
+        return
+
     def stop_test(self):
         # Stop stubs last
         component_list = self.application.system_under_test + self.application.stubs
+        # Wait untill all the components are not busy
+        self.wait_till_not_busy()
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
