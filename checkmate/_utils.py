@@ -198,6 +198,8 @@ def method_arguments(signature):
                 # format the value
                 _kw_val = ArgumentStorage((tuple((item[1],)), {}))
             _kw_args[item[0]] = _kw_val
+    elif argument_value(signature):
+        _args.append(signature)
     return ArgumentStorage((tuple(_args), _kw_args))
 
 def argument_value(argument):
