@@ -45,6 +45,8 @@ class Procedure(object):
             if not self.compare_states(self.initial):
                 if hasattr(self, 'itp_transitions'):
                     self.transform_to_initial() 
+                    _runtime = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IRuntime) 
+                    _runtime.wait_till_not_busy()
             if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
@@ -147,8 +149,8 @@ class Procedure(object):
         self._follow_up(current_node)
 
         _runtime = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IRuntime) 
+        _runtime.wait_till_not_busy()
         if hasattr(self, 'final'):
-            _runtime.wait_till_not_busy()
             if not self.compare_states(self.final):
                 #need to modify A0() to A0(True) in line78 of sample_app/component_3/state_machine.rst to make final states fix
                 raise ValueError("Final states are not as expected")
