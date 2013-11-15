@@ -13,6 +13,39 @@ import checkmate.runtime.interfaces
 
 
 def _compatible_skip_test(procedure, message):
+    """
+        >>> import checkmate._tree
+        >>> import checkmate.test_data
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime.procedure
+        >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> sut = ['C1']
+        >>> r.setup_environment(sut)
+        >>> r.start_test()
+        >>> a = checkmate.test_data.App()
+        >>> c2 = a.components['C2']
+        >>> a.start()
+        >>> proc = checkmate.runtime.procedure.Procedure()
+        >>> transition = c2.state_machine.transitions[2]
+        >>> _i = c2.process(transition.generic_incoming(c2.states))[0]
+        >>> _i.value
+        'AC'
+        >>> _i = c2.simulate(transition.outgoing[0].factory())[0]
+        >>> _i.value
+        'RL'
+        >>> _o = a.components[_i.destination].process([_i])
+        >>> len(_o)
+        0
+        >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_i, [checkmate._tree.Tree(_output, []) for _output in _o]))
+        >>> proc(sut)
+        Traceback (most recent call last):
+        ...
+        Exception: Procedure components do not match SUT
+        >>> proc._components_match_sut(sut)
+        False
+        >>> r.stop_test()
+    """
     if hasattr(procedure.result, 'addSkip'):
         if procedure.result is not None:
             procedure.result.startTest(procedure)  
