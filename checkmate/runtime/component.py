@@ -1,5 +1,6 @@
 import copy
 import time
+import logging
 import socket
 import threading
 
@@ -38,6 +39,7 @@ class Component(object):
         self.context = component
         self.internal_client = checkmate.runtime.client.Client(component=self.context)
         self.external_client_list = []
+        self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
     def start(self):
         self.context.start()
@@ -53,6 +55,7 @@ class Component(object):
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
+        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             for client in self.external_client_list:
                 client.send(_o)
@@ -82,6 +85,7 @@ class Sut(Component):
     """"""
     def process(self, exchanges):
         output = self.context.process(exchanges)
+        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             self.internal_client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
@@ -93,6 +97,7 @@ class Sut(Component):
 class Stub(Component):
     def process(self, exchanges):
         output = self.context.process(exchanges)
+        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             self.internal_client.send(_o)
             for client in self.external_client_list:
@@ -166,7 +171,10 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def is_busy(self, timeout=0):
         if timeout != 0:
             time.sleep(timeout)
-        return self.isbusy
+        self.busy_lock.acquire()
+        isbusy = self.isbusy
+        self.busy_lock.release()
+        return isbusy
 
     def _set_busy(self, isbusy=True):
         self.busy_lock.acquire()
@@ -175,6 +183,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
 
     def simulate(self, exchange):
+        self._set_busy(True)
         output = self.context.simulate(exchange)
         for _o in output:
             self.internal_client.send(_o)
@@ -245,6 +254,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.process([exchange])
 
     def simulate(self, exchange):
+        self._set_busy(True)
         output = self.context.simulate(exchange)
         for _o in output:
             self.internal_client.send(_o)
