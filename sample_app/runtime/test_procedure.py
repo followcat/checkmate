@@ -53,8 +53,10 @@ class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> proc = TestProcedureThreaded2()
             >>> proc.exchanges.root.action
-            'PP'
+            'RL'
             >>> proc.exchanges.nodes[0].root.action
+            'PP'
+            >>> proc.exchanges.nodes[0].nodes[0].root.action
             'PA'
             >>> r.stop_test()
         """
@@ -65,7 +67,7 @@ class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
         c3 = a.components['C3']
         a.start()
         transition = c2.state_machine.transitions[0]
-        self.exchanges = checkmate._tree.Tree(c2.process(transition.generic_incoming(c2.states))[0], [])
+        self.exchanges = checkmate._tree.Tree(c2.simulate(transition.outgoing[0].factory())[0], [])
         for _e in c1.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
         for _e in c3.process([self.exchanges.nodes[0].root]):
@@ -73,11 +75,13 @@ class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
         for _e in c2.process([self.exchanges.nodes[1].root]):
             self.exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
         c1.process([self.exchanges.nodes[1].nodes[0].root])
-        ex = c3.state_machine.transitions[1].generic_incoming(c3.states)[0]
-        #ex.origin_destination('C2', 'C3')
-        self.exchanges = checkmate._tree.Tree(c3.process([ex])[0], [])
-        for _e in c1.process([self.exchanges.root]):
+
+        transition = c2.state_machine.transitions[2]
+        self.exchanges = checkmate._tree.Tree(c2.simulate(transition.outgoing[0].factory())[0], [])
+        for _e in c3.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
+        for _e in c1.process([self.exchanges.nodes[0].root]):
+            self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
 
 def build_procedure(exchanges, output):
     class TestProc(checkmate.runtime.procedure.Procedure):
