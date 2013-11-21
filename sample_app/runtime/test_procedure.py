@@ -97,8 +97,9 @@ def TestProcedureGenerator(application_class=checkmate.test_data.App):
     c2 = a.components['C2']
     c3 = a.components['C3']
     a.start()
-    #Skip the last transition as no outgoing sent to 'C1'
-    for _t in range(len(c2.state_machine.transitions)-1):
+    #Skip the last two transitions as no outgoing sent to 'C1'
+    #Skip the third transition from the last as 'C3' state does not match
+    for _t in range(len(c2.state_machine.transitions)-3):
         transition = c2.state_machine.transitions[_t]
         _i = c2.process(transition.generic_incoming(c2.states))
         _o = c1.process(_i)
