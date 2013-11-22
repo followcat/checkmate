@@ -42,7 +42,7 @@ def _compatible_skip_test(procedure, message):
         >>> proc(sut)
         Traceback (most recent call last):
         ...
-        Exception: Procedure components do not match SUT
+        unittest.case.SkipTest: Procedure components do not match SUT
         >>> proc._components_match_sut(sut)
         False
         >>> r.stop_test()
@@ -71,9 +71,7 @@ class Procedure(object):
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
         if not self._components_match_sut(self.system_under_test):
-            #return _compatible_skip_test(self, "Procedure components do not match SUT")
-            raise Exception("Procedure components do not match SUT")
-
+            return _compatible_skip_test(self, "Procedure components do not match SUT")
 
         if hasattr(self, 'initial'):
             if not self.compare_states(self.initial):
