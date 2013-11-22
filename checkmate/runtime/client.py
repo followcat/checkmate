@@ -76,13 +76,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         destination = exchange.destination
         with self.request_lock:
             self.connections.send(destination, exchange)
-        self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
+            self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
 
     def process_receive(self):
         with self.request_lock:
             exchange = self.connections.receive()
         if exchange is not None:
-            self.logger.info("%s receive exchange %s"%(self, exchange.value))
             if self.sender is not None:
                 self.sender.send_pyobj(exchange)
+                self.logger.info("%s receive exchange %s"%(self, exchange.value))
 
