@@ -53,7 +53,7 @@ def get_origin_component(exchange, components):
         if exchange.action in _c.outgoings:
             return _c
 
-def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
+def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
     """
         >>> import time
         >>> import checkmate.test_data
@@ -100,12 +100,14 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App):
     """
     a = application_class()
     a.start()
-    a.get_initial_transitions()
+    if transition_list is None:
+        a.get_initial_transitions()
+        transition_list = a.initial_transitions
     components = list(a.components.keys())
-    for _i in range(len(a.initial_transitions)):
-        _incoming = a.initial_transitions[_i].incoming[0].factory()
+    for _transition in transition_list:
+        _incoming = _transition.incoming[0].factory()
         origin = get_origin_component(_incoming, list(a.components.values()))
         for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
             _o = a.components[_e.destination].process([_e])
-            yield build_procedure_with_initial(components, [_e], _o, a.initial_transitions[_i].initial, a.initial_transitions[_i].final, a.initial_transitions), origin.name, _e.action, _e.destination
+            yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
 
