@@ -3,7 +3,7 @@ import checkmate.test_data
 import checkmate.runtime.procedure
 
 
-class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
+class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
     def __init__(self, test=None):
         """
@@ -13,7 +13,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> proc = TestProcedureThreaded()
+            >>> proc = TestProcedureRun1Threaded()
             >>> proc.exchanges.nodes[1].root.action
             'ARE'
             >>> proc.exchanges.nodes[1].nodes[0].root.action
@@ -27,7 +27,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             Exception: No exchange 'RE' received by component 'C3'
             >>> r.stop_test()
         """
-        super(TestProcedureThreaded, self).__init__(test)
+        super(TestProcedureRun1Threaded, self).__init__(test)
         a = checkmate.test_data.App()
         c1 = a.components['C1']
         c2 = a.components['C2']
@@ -47,7 +47,7 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
         for _e in c1.process([self.exchanges.nodes[1].nodes[0].root]):
             self.exchanges.nodes[1].nodes[0].add_node(checkmate._tree.Tree(_e, []))
 
-class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
+class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
     """"""
     def __init__(self, test=None):
         """
@@ -57,7 +57,7 @@ class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
             >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> proc = TestProcedureThreaded2()
+            >>> proc = TestProcedureRun2Threaded()
             >>> proc.exchanges.root.action
             'RL'
             >>> proc.exchanges.nodes[0].root.action
@@ -66,7 +66,7 @@ class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
             'PA'
             >>> r.stop_test()
         """
-        super(TestProcedureThreaded2, self).__init__(test)
+        super(TestProcedureRun2Threaded, self).__init__(test)
         a = checkmate.test_data.App()
         c1 = a.components['C1']
         c2 = a.components['C2']
