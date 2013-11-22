@@ -18,6 +18,8 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             'ARE'
             >>> proc.exchanges.nodes[1].nodes[0].root.action
             'AP'
+            >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
+            'DA'
 
             >>> proc(result=None, system_under_test=['C1'])
             Traceback (most recent call last):
@@ -39,7 +41,8 @@ class TestProcedureThreaded(checkmate.runtime.procedure.Procedure):
             self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
         for _e in c2.process([self.exchanges.nodes[1].root]):
             self.exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
-        c1.process([self.exchanges.nodes[1].nodes[0].root])
+        for _e in c1.process([self.exchanges.nodes[1].nodes[0].root]):
+            self.exchanges.nodes[1].nodes[0].add_node(checkmate._tree.Tree(_e, []))
 
 class TestProcedureThreaded2(checkmate.runtime.procedure.Procedure):
     """"""
