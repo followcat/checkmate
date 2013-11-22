@@ -8,6 +8,7 @@ import nose.plugins.skip
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
+import checkmate.runtime.test_plan
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
 
@@ -94,19 +95,15 @@ class Procedure(object):
             c_name, target = self.unmatching_components.popitem()
             states.extend(application.components[c_name].states)
         try:
-            exchange = self.get_exchange_from_itp(self.initial, states)[0].factory()
+            _transition = self.get_transition_from_itp(self.initial, states)
         except IndexError as e:
             raise e("no exchange found in itp to initialize the current")
-        _component = ''
-        for _name in list(application.components.keys()):
-            if exchange.value in application.components[_name].outgoings:
-                _component = _name
-                break
-        if _component != '':
-            component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _component)
-            component.simulate(exchange)
 
-    def get_exchange_from_itp(self, target, current):
+        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=[_transition]):
+            _procedure(system_under_test=self.system_under_test)
+
+
+    def get_transition_from_itp(self, target, current):
         matching = False
         for _t in self.itp_transitions:
             for _i in _t.initial:
@@ -130,7 +127,7 @@ class Procedure(object):
                 except IndexError:
                     continue
             if matching:
-                return _t.incoming
+                return _t
             else:
                 continue
             
