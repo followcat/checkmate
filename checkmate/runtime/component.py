@@ -20,7 +20,8 @@ import checkmate.runtime.interfaces
 
 
 SIMULATE_WAIT_SEC = 0.2
-VALIDATE_TIMEOUT_SEC = 0.1
+POLLING_TIMEOUT_SEC = 1
+VALIDATE_TIMEOUT_SEC = POLLING_TIMEOUT_SEC
 
 
 class ISut(zope.interface.Interface):
@@ -158,7 +159,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(1000))
+            s = dict(self.poller.poll(POLLING_TIMEOUT_SEC * 1000))
             if len(s.keys()) == 0:
                 self._set_busy(False)
             else:
@@ -240,7 +241,7 @@ class ThreadedStub(ThreadedComponent, Stub):
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(1000))
+            s = dict(self.poller.poll(POLLING_TIMEOUT_SEC * 1000))
             if len(s.keys()) == 0:
                 self._set_busy(False)
             else:
