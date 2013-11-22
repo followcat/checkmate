@@ -155,15 +155,16 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.stop(self)
         checkmate.runtime._threading.Thread.stop(self)
 
+    def process(self, exchanges):
+        self._set_busy(True)
+        Component.process(self, exchanges)
+        self._set_busy(False)
+
     def run(self):
         while True:
             if self.check_for_stop():
                 break
             s = dict(self.poller.poll(POLLING_TIMEOUT_SEC * 1000))
-            if len(s.keys()) == 0:
-                self._set_busy(False)
-            else:
-                self._set_busy(True)
             for socket in iter(s):
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
@@ -190,6 +191,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             self.internal_client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
+        self._set_busy(False)
         return output
 
 
@@ -211,7 +213,9 @@ class ThreadedSut(ThreadedComponent, Sut):
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 
     def process(self, exchanges):
+        self._set_busy(True)
         Sut.process(self, exchanges)
+        self._set_busy(False)
 
     def stop(self):
         self.launcher.end()
@@ -235,7 +239,9 @@ class ThreadedStub(ThreadedComponent, Stub):
         super(ThreadedStub, self).__init__(component)
 
     def process(self, exchanges):
+        self._set_busy(True)
         Stub.process(self, exchanges)
+        self._set_busy(False)
 
     def run(self):
         while True:
@@ -263,9 +269,11 @@ class ThreadedStub(ThreadedComponent, Stub):
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
+        self._set_busy(False)
         return output
             
     def validate(self, exchange):
+        self._set_busy(True)
         self._exchange_to_validate = exchange
         try:
             result = False
@@ -273,13 +281,16 @@ class ThreadedStub(ThreadedComponent, Stub):
             self.validation_list.remove(self._exchange_to_validate)
             result = True
             self.validation_lock.release()
+            self._set_busy(False)
             return result
         except ValueError:
             result = self.validation_condition.wait_for(self._validate_exchange, timeout=VALIDATE_TIMEOUT_SEC)
             self.validation_lock.release()
+            self._set_busy(False)
             return result
         except Exception as e:
             self.validation_lock.release()
+            self._set_busy(False)
             raise e
 
     def _validate_exchange(self):
