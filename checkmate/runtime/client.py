@@ -2,7 +2,6 @@ import time
 import copy
 import socket
 import logging
-import threading
 
 import zmq
 
@@ -45,7 +44,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         super(ThreadedClient, self).__init__(component)
         self.sender = None
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
-        self.request_lock = threading.Lock()
         self.name = component.name
         self.component = component
         self.logger.info("%s initial"%self)
@@ -72,15 +70,17 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
-        """"""
+        """Use connector to send exchange
+
+        It is up to the connector to manage the thread protection.
+        """
+        #no lock shared with process_receive() as POLLING timeout is too long
         destination = exchange.destination
-        with self.request_lock:
-            self.connections.send(destination, exchange)
-            self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
+        self.connections.send(destination, exchange)
+        self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
 
     def process_receive(self):
-        with self.request_lock:
-            exchange = self.connections.receive()
+        exchange = self.connections.receive()
         if exchange is not None:
             if self.sender is not None:
                 self.sender.send_pyobj(exchange)

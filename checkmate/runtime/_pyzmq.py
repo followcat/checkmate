@@ -65,6 +65,7 @@ class Connector(object):
 
     def send(self, destination, exchange):
         """"""
+        #no lock require to protect encoder (only pickle)
         msg = self.encoder.encode(exchange)
         self.sender.send(pickle.dumps((destination, msg)))
             
@@ -73,7 +74,8 @@ class Connector(object):
         if self.receiver in socks:
             msg = self.receiver.recv()
             if msg != None:
-                return self.encoder.decode(msg)
+                _exchange = self.encoder.decode(msg)
+                return _exchange
 
 
 class Registry(checkmate.runtime._threading.Thread):
