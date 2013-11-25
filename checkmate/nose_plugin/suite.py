@@ -1,3 +1,4 @@
+import random
 import unittest
 import collections
 
@@ -37,6 +38,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
 
 class ContextSuite(nose.suite.ContextSuite):
     """"""
+    randomized_run = False
+
     def _get_wrapped_tests(self):
         for test in self._get_tests():
             if isinstance(test, TestCase) or isinstance(test, unittest.TestSuite):
@@ -50,6 +53,12 @@ class ContextSuite(nose.suite.ContextSuite):
     _tests = property(_get_wrapped_tests, nose.suite.ContextSuite._set_tests, None,
                       "Access the tests in this suite. Access is through a "
                       "generator, so iteration may not be repeatable.")
+
+    def run(self, result):
+        if self.randomized_run:
+            _list = list(self._tests)
+            self._tests = random.sample(_list, len(_list))
+        super(ContextSuite, self).run(result)
 
 
 class ContextSuiteFactory(nose.suite.ContextSuiteFactory):

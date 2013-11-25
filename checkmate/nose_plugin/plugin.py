@@ -30,6 +30,9 @@ class Checkmate(nose.plugins.Plugin):
                           metavar="COMP1,COMP2",
                           default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
                           help="Specify the system under test.")
+        parser.add_option('--random', action='store_true', default=False,
+                          dest='randomized_run',
+                          help="Require the tests to be run in random order.")
         parser.add_option('--runlog', action='store_true',
                           dest='runlog',
                           default=False,
@@ -50,6 +53,7 @@ class Checkmate(nose.plugins.Plugin):
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
+        self.randomized_run = options.randomized_run
         self.application_class = self.get_option_value(options.app_class)
         self.communication_class = self.get_option_value(options.comm_class)
     
@@ -68,6 +72,7 @@ class Checkmate(nose.plugins.Plugin):
         config_as_dict = self.config.todict()
         config_as_dict['system_under_test'] = self.sut
         self.config.update(config_as_dict)
+        checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
         loader.suiteClass=checkmate.nose_plugin.ContextSuiteFactory(config=self.config,
                                         suiteClass=checkmate.nose_plugin.ContextSuite)
         self.suiteClass = loader.suiteClass
