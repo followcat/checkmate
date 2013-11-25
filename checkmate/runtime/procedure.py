@@ -177,11 +177,20 @@ class Procedure(object):
         self._follow_up(current_node)
 
         _runtime = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IRuntime) 
-        _runtime.wait_till_not_busy()
         if hasattr(self, 'final'):
-            if not self.compare_states(self.final):
-                #need to modify A0() to A0(True) in line78 of sample_app/component_3/state_machine.rst to make final states fix
+            count = 0
+            while count < 3:
+                if not self.compare_states(self.final):
+                    if _runtime.still_busy():
+                        count = 0
+                    else:
+                        count += 1
+                else:
+                    break
+            if count == 3:
                 raise ValueError("Final states are not as expected")
+
+        _runtime.wait_till_not_busy()
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
