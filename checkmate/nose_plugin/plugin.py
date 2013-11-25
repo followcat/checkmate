@@ -6,6 +6,7 @@ import importlib
 import collections
 
 import nose
+import nose.core
 import nose.util
 import nose.config
 import nose.failure
@@ -33,6 +34,9 @@ class Checkmate(nose.plugins.Plugin):
         parser.add_option('--random', action='store_true', default=False,
                           dest='randomized_run',
                           help="Require the tests to be run in random order.")
+        parser.add_option('--runs', action='store', default=1,
+                          dest='loop_runs', type='int', 
+                          help="Specify the number of loops to run [default: 1]"),
         parser.add_option('--runlog', action='store_true',
                           dest='runlog',
                           default=False,
@@ -53,6 +57,7 @@ class Checkmate(nose.plugins.Plugin):
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
+        self.loop_runs = options.loop_runs
         self.randomized_run = options.randomized_run
         self.application_class = self.get_option_value(options.app_class)
         self.communication_class = self.get_option_value(options.comm_class)
@@ -77,6 +82,11 @@ class Checkmate(nose.plugins.Plugin):
                                         suiteClass=checkmate.nose_plugin.ContextSuite)
         self.suiteClass = loader.suiteClass
         self.loader = loader
+
+    def prepareTestRunner(self, runner):
+        """Replace test runner with TestRunner.
+        """
+        TestRunner.loop_runs = self.loop_runs
 
     def wantClass(self, cls):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
@@ -133,6 +143,44 @@ class Checkmate(nose.plugins.Plugin):
         self.runtime.stop_test()
 
 
+class TestRunner(nose.core.TextTestRunner):
+    loop_runs = 1
+
+    def run(self, test):
+        """Overrides to provide plugin hooks and defer all output to
+        the test result class.
+        """
+        #from father class code
+        wrapper = self.config.plugins.prepareTest(test)
+        if wrapper is not None:
+            test = wrapper
+
+        wrapped = self.config.plugins.setOutputStream(self.stream)
+        if wrapped is not None:
+            self.stream = wrapped
+
+        result = self._makeResult()
+        start = time.time()
+
+        #specific code
+        for _loop in range(self.loop_runs):
+            test(result)
+
+        #from father class code
+        stop = time.time()
+        result.printErrors()
+        result.printSummary(start, stop)
+        self.config.plugins.finalize(result)
+        return result
+
+class TestProgram(nose.core.TestProgram):
+    def runTests(self):
+        self.testRunner = TestRunner(stream=self.config.stream,
+                                              verbosity=self.config.verbosity,
+                                              config=self.config)
+        super(TestProgram, self).runTests()
+
+
 if __name__ == '__main__':
-    nose.main(addplugins=[Checkmate()])
+    TestProgram(addplugins=[Checkmate()])
 
