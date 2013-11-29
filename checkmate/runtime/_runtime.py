@@ -21,6 +21,10 @@ class Runtime(object):
         self.communication_list = [(communication(), 'default')]
         for _communication in self.application.communication_list:
             self.communication_list.append((_communication(), ''))
+        for (_name, _component) in self.application.components.items():
+            if hasattr(_component, 'communication_list'):
+                for _communication in _component.communication_list:
+                    self.communication_list.append((_communication(), _name))
 
         if self.threaded:
             checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
