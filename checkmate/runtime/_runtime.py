@@ -1,5 +1,6 @@
 import zope.interface
 import zope.component
+import zope.component.interfaces
 
 import checkmate.logger
 import checkmate.component
@@ -17,9 +18,9 @@ class Runtime(object):
         """"""
         self.threaded = threaded
         self.application = application()
-        self.communication_list = [communication(default=True)]
-        for communication in self.application.communication_list:
-            self.communication_list.append(communication())
+        self.communication_list = [(communication(), 'default')]
+        for _communication in self.application.communication_list:
+            self.communication_list.append((_communication(), ''))
 
         if self.threaded:
             checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
@@ -38,8 +39,9 @@ class Runtime(object):
         self.application.sut(sut)
         self.application.build_test_plan()
 
-        for communication in self.communication_list:
+        for (communication, type) in self.communication_list:
             communication.initialize()
+            checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
 
         for component in self.application.stubs:
             stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
@@ -107,7 +109,7 @@ class Runtime(object):
             _component.stop()
             #if self.threaded:
             #    _component.join()
-        for communication in self.communication_list:
+        for (communication, type) in self.communication_list:
             communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 
