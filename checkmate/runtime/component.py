@@ -40,12 +40,15 @@ class Component(object):
         self.context = component
         self.internal_client = checkmate.runtime.client.Client(component=self.context)
         self.external_client_list = []
+        self.server_list = []
         self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
     def start(self):
         self.context.start()
         for client in self.external_client_list:
             client.start()
+        for client in self.server_list:
+            server.start()
         self.internal_client.start()
 
     def stop(self):
@@ -133,6 +136,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             if name == 'default':
                 if self.using_internal_client:
                     self.internal_client = self._create_client(component, factory, self.reading_internal_client)
+            elif name == component.name:
+                if self.using_external_client:
+                    self.server_list.append(self._create_client(component, factory))
             else:
                 if self.using_external_client:
                     self.external_client_list.append(self._create_client(component, factory, self.reading_external_client))
