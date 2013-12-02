@@ -89,25 +89,9 @@ class Runtime(object):
             _component.start()
 
 
-    def still_busy(self):
-        if self.threaded == False:
-            return False
-        component_list = self.application.system_under_test + self.application.stubs
-        for name in component_list:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
-            if _component.is_busy():
-                return True
-        return False
-
-    def wait_till_not_busy(self):
-        while self.still_busy():
-            pass
-
     def stop_test(self):
         # Stop stubs last
         component_list = self.application.system_under_test + self.application.stubs
-        # Wait untill all the components are not busy
-        self.wait_till_not_busy()
         for name in component_list:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()

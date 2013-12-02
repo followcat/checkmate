@@ -88,8 +88,7 @@ class Procedure(object):
             if not self.compare_states(self.initial):
                 if hasattr(self, 'itp_transitions'):
                     self.transform_to_initial() 
-                    _runtime = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IRuntime) 
-                    _runtime.wait_till_not_busy()
+                    self.wait_till_not_busy()
             if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
 
@@ -179,6 +178,19 @@ class Procedure(object):
                 return False
         return True
     
+    def still_busy(self):
+        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        component_list = application.system_under_test + application.stubs
+        for name in component_list:
+            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            if _component.is_busy():
+                return True
+        return False
+
+    def wait_till_not_busy(self):
+        while self.still_busy():
+            pass
+
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)  
@@ -187,12 +199,11 @@ class Procedure(object):
         stub.simulate(current_node.root)
         self._follow_up(current_node)
 
-        _runtime = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.IRuntime) 
         if hasattr(self, 'final'):
             count = 0
             while count < 3:
                 if not self.compare_states(self.final):
-                    if _runtime.still_busy():
+                    if self.still_busy():
                         count = 0
                     else:
                         count += 1
@@ -201,7 +212,7 @@ class Procedure(object):
             if count == 3:
                 raise ValueError("Final states are not as expected")
 
-        _runtime.wait_till_not_busy()
+        self.wait_till_not_busy()
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
