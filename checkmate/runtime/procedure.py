@@ -28,17 +28,28 @@ def _compatible_skip_test(procedure, message):
         >>> c2 = a.components['C2']
         >>> a.start()
         >>> proc = checkmate.runtime.procedure.Procedure()
+
+    If you exepct to output an exchange using generic_incoming(), strange things can happen:
+    You select the transition that outputs an 'RL':
         >>> transition = c2.state_machine.transitions[2]
-        >>> _i = c2.process(transition.generic_incoming(c2.states))[0]
-        >>> _i.value
+
+    You execute it:
+        >>> _incoming = c2.process(transition.generic_incoming(c2.states))[0]
+
+    But you get the wrong output (because it takes the first transition matching
+    the generic_incoming (here this is transition index 1)
+        >>> _incoming.value
         'AC'
-        >>> _i = c2.simulate(transition.outgoing[0].factory())[0]
-        >>> _i.value
+
+    You better use, the direct simulate() function with exepcted output:
+        >>> _incoming = c2.simulate(transition.outgoing[0].factory())[0]
+        >>> _incoming.value
         'RL'
-        >>> _o = a.components[_i.destination].process([_i])
-        >>> len(_o)
+
+        >>> _outgoing = a.components[_incoming.destination].process([_incoming])
+        >>> len(_outgoing)
         0
-        >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_i, [checkmate._tree.Tree(_output, []) for _output in _o]))
+        >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_incoming, [checkmate._tree.Tree(_output, []) for _output in _outgoing]))
         >>> proc(sut)
         Traceback (most recent call last):
         ...
