@@ -1,8 +1,13 @@
 import checkmate.application
 
+import sample_app.exchanges
+import sample_app.data_structure
 
-class Application(checkmate.application.Application):
+
+class Application(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
     #database = 'tango'
+    data_structure_module = sample_app.data_structure
+    exchange_module = sample_app.exchanges
 
     def __init__(self):
         super(Application, self).__init__()
