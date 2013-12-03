@@ -1,9 +1,8 @@
-import os.path
-
 import checkmate.component
 import checkmate.runtime._pyzmq
 
 import sample_app.exchanges
+import sample_app.data_structure
 import sample_app.component_2.states
 
         

@@ -1,7 +1,8 @@
-import sample_app.exchanges
-import sample_app.component_1.states
-
 import checkmate.component
+
+import sample_app.exchanges
+import sample_app.data_structure
+import sample_app.component_1.states
 
 import pytango.checkmate.runtime._pytango
 
