@@ -254,10 +254,6 @@ class ThreadedStub(ThreadedComponent, Stub):
             if self.check_for_stop():
                 break
             s = dict(self.poller.poll(POLLING_TIMEOUT_SEC * 1000))
-            if len(s.keys()) == 0:
-                self._set_busy(False)
-            else:
-                self._set_busy(True)
             for socket in s:
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
