@@ -45,10 +45,10 @@ class Component(object):
 
     def start(self):
         self.context.start()
-        for client in self.external_client_list:
-            client.start()
-        for client in self.server_list:
-            server.start()
+        for _client in self.external_client_list:
+            _client.start()
+        for _server in self.server_list:
+            _server.start()
         self.internal_client.start()
 
     def stop(self):
