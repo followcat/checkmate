@@ -53,8 +53,10 @@ class Component(object):
 
     def stop(self):
         self.context.stop()
-        for client in self.external_client_list:
-            client.stop()
+        for _client in self.external_client_list:
+            _client.stop()
+        for _server in self.server_list:
+            _server.stop()
         self.internal_client.stop()
 
     def process(self, exchanges):
