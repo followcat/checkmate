@@ -1,9 +1,10 @@
 import checkmate.component
-import checkmate.runtime._pyzmq
 
 import sample_app.exchanges
 import sample_app.data_structure
 import sample_app.component_2.states
+
+import pytango.checkmate.runtime.communication_2
 
         
 class Component_2(checkmate.component.Component, metaclass=checkmate.component.ComponentMeta):
@@ -11,5 +12,5 @@ class Component_2(checkmate.component.Component, metaclass=checkmate.component.C
     state_module = sample_app.component_2.states
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
-    communication_list = (checkmate.runtime._pyzmq.Communication,)
+    communication_list = (pytango.checkmate.runtime.communication_2.Communication,)
 

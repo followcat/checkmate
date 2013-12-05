@@ -2,10 +2,10 @@ import sys
 
 import PyTango
 
-class Device_2(PyTango.Device_4Impl):
+class Device_3(PyTango.Device_4Impl):
     def __init__(self, _class, name):
-        super(Device_2, self).__init__(_class, name)
-        Device_2.init_device(self)
+        super(Device_3, self).__init__(_class, name)
+        Device_3.init_device(self)
         self.received_exchange = []
 
     def init_device(self):
@@ -15,14 +15,14 @@ class Device_2(PyTango.Device_4Impl):
     def ARE(self):
         pass
 
+    def RL(self):
+        pass
+
     def PA(self):
         pass
 
-    def DA(self):
-        pass
 
-
-class C2Interface(PyTango.DeviceClass):
+class C3Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
         """"""
         for dev in dev_list:
@@ -34,9 +34,9 @@ class C2Interface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
  
 
-    cmd_list = {'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
+    cmd_list = {'RE': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }
@@ -44,7 +44,7 @@ class C2Interface(PyTango.DeviceClass):
 
 if __name__ == '__main__':
     py = PyTango.Util(sys.argv)
-    py.add_class(C2Interface, Device_2, 'Device_2')
+    py.add_class(C3Interface, Device_3, 'Device_3')
     U = PyTango.Util.instance()
     U.server_init()
     U.server_run()

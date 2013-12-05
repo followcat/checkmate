@@ -8,27 +8,30 @@ import checkmate.runtime._threading
 
 import sample_app.exchanges
 
-import pytango.component_1.component
+import pytango.component_2.component
 
 
-class Component_1(PyTango.Device_4Impl):
+class Device_2(PyTango.Device_4Impl):
     def __init__(self, _class, name):
         PyTango.Device_4Impl.__init__(self, _class, name)
-        Component_1.init_device(self)
+        Device_2.init_device(self)
 
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
         self.incoming = []
-        self.attr_a_state = True
 
-    def AC(self):
-        exchange = sample_app.exchanges.AC()
-        self.attr_a_state = not self.attr_a_state
+    def ARE(self):
+        exchange = sample_app.exchanges.ARE()
         self.incoming.append(exchange)
 
-    def read_a_state(self, attr):
-        attr.set_value(self.attr_a_state)
+    def PA(self):
+        exchange = sample_app.exchanges.PA()
+        self.incoming.append(exchange)
+
+    def DA(self):
+        exchange = sample_app.exchanges.DA()
+        self.incoming.append(exchange)
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -36,8 +39,8 @@ class Connector(checkmate.runtime.communication.Connector):
         super(Connector, self).__init__(component)
 
     def open(self):
-        self.device_client = PyTango.DeviceProxy('sys/component_1/C1')
-        self.device_server = self.registry.get_device_by_name('sys/component_1/C1')
+        self.device_client = PyTango.DeviceProxy('sys/component/C2')
+        self.device_server = self.registry.get_device_by_name('sys/component/C2')
 
     def receive(self):
         try:
@@ -46,8 +49,12 @@ class Connector(checkmate.runtime.communication.Connector):
             pass
 
     def send(self, destination, exchange):
-        if exchange.action == 'AC':
-            self.device_client.AC()
+        if exchange.action == 'ARE':
+            self.device_client.ARE()
+        elif exchange.action == 'PA':
+            self.device_client.PA()
+        elif exchange.action == 'DA':
+            self.device_client.DA()
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -68,19 +75,20 @@ class Registry(checkmate.runtime._threading.Thread):
 class Communication(checkmate.runtime.communication.Communication):
     def __init__(self):
         super(Communication, self).__init__()
-        pytango_server = PyTango.Util(shlex.split(__file__ + ' C1'))
+        pytango_server = PyTango.Util(shlex.split(__file__ + ' C2'))
         self.connector = Connector
-        pytango_server.add_class(pytango.component_1.component.C1Interface, Component_1, 'Component_1')
+        pytango_server.add_class(pytango.component_2.component.C2Interface, Device_2, 'Device_2')
         self.pytango_util = PyTango.Util.instance()
         self.connector.registry = self.pytango_util
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
-        self.registry = Registry(self.pytango_util)
-        self.registry.start()
+        #self.registry = Registry(self.pytango_util)
+        #self.registry.start()
 
     def close(self):
-        self.registry.stop()
-        self.pytango_util.unregister_server()
+        pass
+        #self.registry.stop()
+        #self.pytango_util.unregister_server()
 
