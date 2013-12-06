@@ -1,14 +1,18 @@
 import sys
 import shlex
 
+import zope.component
+
 import PyTango
 
-import checkmate.runtime.communication
+import checkmate.runtime.registry
 import checkmate.runtime._threading
+import checkmate.runtime.communication
 
 import sample_app.exchanges
 
 import pytango.component_2.component
+import pytango.checkmate.runtime.communication
 
 
 class Device_2(PyTango.Device_4Impl):
@@ -22,33 +26,18 @@ class Device_2(PyTango.Device_4Impl):
         self.incoming = []
 
     def ARE(self):
-        exchange = sample_app.exchanges.ARE()
-        self.incoming.append(exchange)
+        self.incoming.append('ARE')
 
     def PA(self):
-        exchange = sample_app.exchanges.PA()
-        self.incoming.append(exchange)
+        self.incoming.append('PA')
 
     def DA(self):
-        exchange = sample_app.exchanges.DA()
-        self.incoming.append(exchange)
+        self.incoming.append('DA')
 
 
-class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component):
-        super(Connector, self).__init__(component)
-
-    def open(self):
-        self.device_client = PyTango.DeviceProxy('sys/component/C2')
-        self.device_server = self.registry.get_device_by_name('sys/component/C2')
-
-    def receive(self):
-        try:
-            return self.device_server.incoming.pop(0)
-        except:
-            pass
-
-    def send(self, destination, exchange):
+class Encoder(object):
+    def encode(self, exchange):
+        return exchange.action
         if exchange.action == 'ARE':
             self.device_client.ARE()
         elif exchange.action == 'PA':
@@ -56,39 +45,37 @@ class Connector(checkmate.runtime.communication.Connector):
         elif exchange.action == 'DA':
             self.device_client.DA()
 
-
-class Registry(checkmate.runtime._threading.Thread):
-    def __init__(self, pytango_util):
-        super(Registry, self).__init__()
-        self.pytango_util = pytango_util
-
-    def check_for_shutdown(self):
-        if self.check_for_stop():
-            sys.exit(0)
-    
-    def run(self):
-        self.pytango_util.server_init()
-        self.pytango_util.server_set_event_loop(self.check_for_shutdown)
-        self.pytango_util.server_run()
+    def decode(self, message):
+        if message == 'ARE':
+            return sample_app.exchanges.ARE()
+        elif message == 'PA':
+            return sample_app.exchanges.PA()
+        elif message == 'DA':
+            return sample_app.exchanges.DA()
 
 
-class Communication(checkmate.runtime.communication.Communication):
-    def __init__(self):
-        super(Communication, self).__init__()
-        pytango_server = PyTango.Util(shlex.split(__file__ + ' C2'))
-        self.connector = Connector
-        pytango_server.add_class(pytango.component_2.component.C2Interface, Device_2, 'Device_2')
-        self.pytango_util = PyTango.Util.instance()
-        self.connector.registry = self.pytango_util
+class Connector(checkmate.runtime.communication.Connector):
+    communication = pytango.checkmate.runtime.communication.Communication
 
-    def initialize(self):
-        """"""
-        super(Communication, self).initialize()
-        #self.registry = Registry(self.pytango_util)
-        #self.registry.start()
+    def __init__(self, component):
+        super(Connector, self).__init__(component)
+        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+        if type(_communication) == self.communication:
+            _communication.pytango_server.add_class(pytango.component_2.component.C2Interface, Device_2, 'Device_2')
+        self.encoder = Encoder()
 
-    def close(self):
-        pass
-        #self.registry.stop()
-        #self.pytango_util.unregister_server()
+    def open(self):
+        self.registry = PyTango.Util.instance()
+        self.device_client = PyTango.DeviceProxy('sys/component/C2')
+        self.device_server = self.registry.get_device_by_name('sys/component/C2')
+
+    def receive(self):
+        try:
+            return self.encoder.decode(self.device_server.incoming.pop(0))
+        except:
+            pass
+
+    def send(self, destination, exchange):
+        call = getattr(self.device_client, self.encoder.encode(exchange))
+        call()
 
