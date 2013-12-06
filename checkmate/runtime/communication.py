@@ -11,10 +11,14 @@ class Connector(object):
     def __init__(self, component=None):
         self.component = component
 
+    def open(self):
+        """"""
+
     def close(self):
         """"""
 
 
+@zope.interface.implementer(checkmate.runtime.interfaces.ICommunication)
 class Communication(object):
     """"""
     def __init__(self):

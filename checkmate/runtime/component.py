@@ -63,7 +63,7 @@ class Component(object):
         output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
-            for client in self.external_client_list:
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         return output
@@ -78,7 +78,7 @@ class Component(object):
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
-            for client in self.external_client_list:
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
@@ -106,7 +106,7 @@ class Stub(Component):
         self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             self.internal_client.send(_o)
-            for client in self.external_client_list:
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         return output
@@ -144,6 +144,21 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             else:
                 if self.using_external_client:
                     self.external_client_list.append(self._create_client(component, factory, self.reading_external_client))
+        try:
+            #if self.using_external_client:
+            #    for connector in self.context.connector_list:
+            #        self.server_list.append(self._create_client(component, connector))
+            for connector in self.context.connector_list:
+                self.server_list.append(self._create_client(component, connector))
+            if self.using_external_client:
+                _application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+                for _component in [_c for _c in _application.components.keys() if _c != component.name]:
+                    for connector in _application.components[_component].connector_list:
+                        self.external_client_list.append(self._create_client(_application.components[_component], connector, self.reading_external_client))
+        except AttributeError:
+            pass
+        except Exception as e:
+            raise e
 
     def _create_client(self, component, connector_factory, reading_client=True):
         _socket = self.zmq_context.socket(zmq.PULL)
@@ -153,7 +168,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         _socket.connect("tcp://127.0.0.1:%i"%port)
         if reading_client:
             self.poller.register(_socket, zmq.POLLIN)
-        return checkmate.runtime.client.ThreadedClient(component=self.context, connector=connector_factory, address="tcp://127.0.0.1:%i"%port, sender_socket=reading_client)
+        return checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port, sender_socket=reading_client)
 
     def start(self):
         Component.start(self)
@@ -215,10 +230,10 @@ class ThreadedSut(ThreadedComponent, Sut):
         #Call ThreadedSut first ancestor: ThreadedComponent expected
         super(ThreadedSut, self).__init__(component)
 
-        if hasattr(component, 'launch_command'):
-            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
-        else:
-            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+        #if hasattr(component, 'launch_command'):
+        #    self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
+        #else:
+        #    self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 
     def process(self, exchanges):
         self._set_busy(True)
@@ -226,7 +241,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         self._set_busy(False)
 
     def stop(self):
-        self.launcher.end()
+        #self.launcher.end()
         super(ThreadedSut, self).stop()
 
 
@@ -269,7 +284,7 @@ class ThreadedStub(ThreadedComponent, Stub):
         output = self.context.simulate(exchange)
         for _o in output:
             self.internal_client.send(_o)
-            for client in self.external_client_list:
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)

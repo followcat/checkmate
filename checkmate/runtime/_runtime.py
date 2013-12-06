@@ -19,12 +19,10 @@ class Runtime(object):
         self.threaded = threaded
         self.application = application()
         self.communication_list = [(communication(), 'default')]
-        for _communication in self.application.communication_list:
-            self.communication_list.append((_communication(), ''))
-        for (_name, _component) in self.application.components.items():
-            if hasattr(_component, 'communication_list'):
-                for _communication in _component.communication_list:
-                    self.communication_list.append((_communication(), _name))
+        for _c in self.application.communication_list:
+            _communication = _c()
+            self.communication_list.append((_communication, ''))
+            checkmate.runtime.registry.global_registry.registerUtility(_communication, checkmate.runtime.interfaces.ICommunication)
 
         if self.threaded:
             checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
@@ -44,8 +42,9 @@ class Runtime(object):
         self.application.build_test_plan()
 
         for (communication, type) in self.communication_list:
-            communication.initialize()
-            checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
+            if type == 'default':
+                communication.initialize()
+                checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
 
         for component in self.application.stubs:
             stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
@@ -54,6 +53,10 @@ class Runtime(object):
         for component in self.application.system_under_test:
             sut = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
             checkmate.runtime.registry.global_registry.registerUtility(sut, checkmate.component.IComponent, component)
+
+        for (communication, type) in self.communication_list:
+            if type != 'default':
+                communication.initialize()
 
 
     def start_test(self):
