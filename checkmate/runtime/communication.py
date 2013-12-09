@@ -21,6 +21,12 @@ class Connector(object):
     def close(self):
         """"""
 
+    def send(self, destination, exchange):
+        """"""
+
+    def receive(self):
+        """"""
+
 
 @zope.interface.implementer(checkmate.runtime.interfaces.ICommunication)
 class Communication(object):

@@ -152,6 +152,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 if self.using_external_client:
                     self.server_list.append(self._create_client(component, factory, is_server=True))
             else:
+                #FIXME: this should not create an external_client for pytango.checkmate.runtime.communication.Communication
                 if self.using_external_client:
                     self.external_client_list.append(self._create_client(component, factory, self.reading_external_client))
         try:
