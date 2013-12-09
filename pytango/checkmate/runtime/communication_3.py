@@ -38,12 +38,6 @@ class Device_3(PyTango.Device_4Impl):
 class Encoder(object):
     def encode(self, exchange):
         return exchange.action
-        if exchange.action == 'RE':
-            self.device_client.RE()
-        elif exchange.action == 'RL':
-            self.device_client.RL()
-        elif exchange.action == 'PA':
-            self.device_client.PA()
 
     def decode(self, message):
         if message == 'RE':
@@ -57,17 +51,26 @@ class Encoder(object):
 class Connector(checkmate.runtime.communication.Connector):
     communication = pytango.checkmate.runtime.communication.Communication
 
-    def __init__(self, component):
-        super(Connector, self).__init__(component)
-        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
-        if type(_communication) == self.communication:
-            _communication.pytango_server.add_class(pytango.component_3.component.C3Interface, Device_3, 'Device_3')
+    def __init__(self, component, is_server=False):
+        super(Connector, self).__init__(component, is_server)
+        self.device_name = 'sys/component/' + self.component.name
+        if self.is_server:
+            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            if type(_communication) == self.communication:
+                self.device_name = _communication.create_tango_device('Device_3', self.component.name)
         self.encoder = Encoder()
+
+    def initialize(self):
+        if self.is_server:
+            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            if type(_communication) == self.communication:
+                _communication.pytango_server.add_class(pytango.component_3.component.C3Interface, Device_3, 'Device_3')
 
     def open(self):
         self.registry = PyTango.Util.instance()
-        self.device_client = PyTango.DeviceProxy('sys/component/C3')
-        self.device_server = self.registry.get_device_by_name('sys/component/C3')
+        self.device_client = PyTango.DeviceProxy(self.device_name)
+        if self.is_server:
+            self.device_server = self.registry.get_device_by_name(self.device_name)
 
     def receive(self):
         try:
@@ -78,5 +81,4 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, destination, exchange):
         call = getattr(self.device_client, self.encoder.encode(exchange))
         call()
-
 

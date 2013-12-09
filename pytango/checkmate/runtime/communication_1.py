@@ -38,12 +38,6 @@ class Device_1(PyTango.Device_4Impl):
 class Encoder(object):
     def encode(self, exchange):
         return exchange.action
-        if exchange.action == 'AC':
-            self.device_client.AC()
-        elif exchange.action == 'AP':
-            self.device_client.AP()
-        elif exchange.action == 'PP':
-            self.device_client.PP()
 
     def decode(self, message):
         if message == 'AC':
@@ -57,17 +51,26 @@ class Encoder(object):
 class Connector(checkmate.runtime.communication.Connector):
     communication = pytango.checkmate.runtime.communication.Communication
 
-    def __init__(self, component):
-        super(Connector, self).__init__(component)
-        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
-        if type(_communication) == self.communication:
-            _communication.pytango_server.add_class(pytango.component_1.component.C1Interface, Device_1, 'Device_1')
+    def __init__(self, component, is_server=False):
+        super(Connector, self).__init__(component, is_server)
+        self.device_name = 'sys/component/' + self.component.name
+        if self.is_server:
+            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            if type(_communication) == self.communication:
+                self.device_name = _communication.create_tango_device('Device_1', self.component.name)
         self.encoder = Encoder()
+
+    def initialize(self):
+        if self.is_server:
+            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            if type(_communication) == self.communication:
+                _communication.pytango_server.add_class(pytango.component_1.component.C1Interface, Device_1, 'Device_1')
 
     def open(self):
         self.registry = PyTango.Util.instance()
-        self.device_client = PyTango.DeviceProxy('sys/component/' + self.component.name)
-        self.device_server = self.registry.get_device_by_name('sys/component/' + self.component.name)
+        self.device_client = PyTango.DeviceProxy(self.device_name)
+        if self.is_server:
+            self.device_server = self.registry.get_device_by_name(self.device_name)
 
     def receive(self):
         try:

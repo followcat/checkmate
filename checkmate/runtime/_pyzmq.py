@@ -23,11 +23,10 @@ class Encoder(object):
     def decode(self, message):
         return pickle.loads(message)
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
-class Connector(object):
+class Connector(checkmate.runtime.communication.Connector):
     """"""
-    def __init__(self, component):
-        self.component = component
+    def __init__(self, component, is_server=False):
+        super(Connector, self).__init__(component, is_server)
         self._name = component.name
         self.ports = []
         self.sender = None

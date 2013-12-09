@@ -43,6 +43,13 @@ class Component(object):
         self.server_list = []
         self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
+    def initialize(self):
+        for _client in self.external_client_list:
+            _client.initialize()
+        for _server in self.server_list:
+            _server.initialize()
+        self.internal_client.initialize()
+
     def start(self):
         self.context.start()
         for _client in self.external_client_list:
@@ -140,16 +147,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     self.internal_client = self._create_client(component, factory, self.reading_internal_client)
             elif name == component.name:
                 if self.using_external_client:
-                    self.server_list.append(self._create_client(component, factory))
+                    self.server_list.append(self._create_client(component, factory, is_server=True))
             else:
                 if self.using_external_client:
                     self.external_client_list.append(self._create_client(component, factory, self.reading_external_client))
         try:
-            #if self.using_external_client:
-            #    for connector in self.context.connector_list:
-            #        self.server_list.append(self._create_client(component, connector))
-            for connector in self.context.connector_list:
-                self.server_list.append(self._create_client(component, connector))
+            if self.using_external_client:
+                for connector in self.context.connector_list:
+                    self.server_list.append(self._create_client(component, connector, is_server=True))
             if self.using_external_client:
                 _application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
                 for _component in [_c for _c in _application.components.keys() if _c != component.name]:
@@ -160,7 +165,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         except Exception as e:
             raise e
 
-    def _create_client(self, component, connector_factory, reading_client=True):
+    def _create_client(self, component, connector_factory, reading_client=True, is_server=False):
         _socket = self.zmq_context.socket(zmq.PULL)
         port = _socket.bind_to_random_port("tcp://127.0.0.1")
         _socket.close()
@@ -168,7 +173,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         _socket.connect("tcp://127.0.0.1:%i"%port)
         if reading_client:
             self.poller.register(_socket, zmq.POLLIN)
-        return checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port, sender_socket=reading_client)
+        return checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port,
+                                                       sender_socket=reading_client, is_server=is_server)
 
     def start(self):
         Component.start(self)
@@ -230,10 +236,18 @@ class ThreadedSut(ThreadedComponent, Sut):
         #Call ThreadedSut first ancestor: ThreadedComponent expected
         super(ThreadedSut, self).__init__(component)
 
-        #if hasattr(component, 'launch_command'):
-        #    self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
-        #else:
-        #    self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+        if hasattr(component, 'launch_command'):
+            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
+        else:
+            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+
+    def initialize(self):
+        self.launcher.initialize()
+        super(ThreadedSut, self).initialize()
+
+    def start(self):
+        self.launcher.start()
+        super(ThreadedSut, self).start()
 
     def process(self, exchanges):
         self._set_busy(True)
@@ -241,7 +255,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         self._set_busy(False)
 
     def stop(self):
-        #self.launcher.end()
+        self.launcher.end()
         super(ThreadedSut, self).stop()
 
 

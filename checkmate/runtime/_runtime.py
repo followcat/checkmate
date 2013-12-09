@@ -54,10 +54,17 @@ class Runtime(object):
             sut = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
             checkmate.runtime.registry.global_registry.registerUtility(sut, checkmate.component.IComponent, component)
 
+        import time; time.sleep(1)
         for (communication, type) in self.communication_list:
             if type != 'default':
                 communication.initialize()
 
+        for name in self.application.stubs:
+            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            _component.initialize()
+        for name in self.application.system_under_test:
+            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            _component.initialize()
 
     def start_test(self):
         """
@@ -85,6 +92,8 @@ class Runtime(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> r.stop_test()
         """
+        for (communication, type) in self.communication_list:
+            communication.start()
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
         for name in component_list:

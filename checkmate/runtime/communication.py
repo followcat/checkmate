@@ -8,8 +8,12 @@ import checkmate.runtime.interfaces
 @zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Connector(object):
     """"""
-    def __init__(self, component=None):
+    def __init__(self, component=None, is_server=False):
         self.component = component
+        self.is_server = is_server
+
+    def initialize(self):
+        """"""
 
     def open(self):
         """"""
@@ -26,6 +30,9 @@ class Communication(object):
 
     def initialize(self):
         assert self.connector
+
+    def start(self):
+        """"""
 
     def close(self):
         """"""
