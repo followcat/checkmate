@@ -34,6 +34,9 @@ class Connector(checkmate.runtime.communication.Connector):
         self.encoder = Encoder()
         self.poller = zmq.Poller()
         self.context = zmq.Context.instance()
+
+    def initialize(self):
+        super(Connector, self).initialize()
         self.request_ports()
         self.connect_ports()
 
@@ -179,12 +182,16 @@ class Communication(checkmate.runtime.communication.Communication):
         True
         >>> r.stop_test()
     """
-    def initialize(self):
+    def __init__(self):
         """"""
+        super(Communication, self).__init__()
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize"%self)
         self.registry = Registry()
         self.connector = type('Connector'+'%i'%self.registry._initport, (Connector,), {'_initport': self.registry._initport})
+
+    def initialize(self):
+        """"""
         super(Communication, self).initialize()
         self.registry.start()
 
