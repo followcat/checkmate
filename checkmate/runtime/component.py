@@ -70,7 +70,8 @@ class Component(object):
         output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
+            #TODO: hardness the condition not to rely on pytango connection with _c.name == self.context.name is in server_list
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination or _c.name == self.context.name]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         return output
@@ -85,7 +86,8 @@ class Component(object):
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
+            #TODO: hardness the condition not to rely on pytango connection with _c.name == self.context.name is in server_list
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination or _c.name == self.context.name]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
@@ -113,7 +115,8 @@ class Stub(Component):
         self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             self.internal_client.send(_o)
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
+            #TODO: hardness the condition not to rely on pytango connection with _c.name == self.context.name is in server_list
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination or _c.name == self.context.name]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
         return output
@@ -298,7 +301,8 @@ class ThreadedStub(ThreadedComponent, Stub):
         output = self.context.simulate(exchange)
         for _o in output:
             self.internal_client.send(_o)
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
+            #TODO: hardness the condition not to rely on pytango connection with _c.name == self.context.name is in server_list
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination or _c.name == self.context.name]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
         time.sleep(SIMULATE_WAIT_SEC)
