@@ -12,6 +12,7 @@ import zope.component
 import checkmate.logger
 import checkmate.component
 import checkmate.application
+import checkmate.runtime._pyzmq
 import checkmate.runtime.client
 import checkmate.runtime.registry
 import checkmate.runtime.launcher
@@ -141,9 +142,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self._set_busy(True)
 
         if self.using_internal_client:
-            for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
-                if name == 'default':
-                    self.internal_client = self._create_client(component, factory, internal=True, reading_client=self.reading_internal_client)
+            self.internal_client = self._create_client(component, checkmate.runtime._pyzmq.Connector, internal=True, reading_client=self.reading_internal_client)
         try:
             if self.using_external_client:
                 for connector in self.context.connector_list:

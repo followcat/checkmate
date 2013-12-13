@@ -5,7 +5,6 @@ import zope.component.interfaces
 import checkmate.logger
 import checkmate.component
 import checkmate.application
-import checkmate.runtime._pyzmq
 import checkmate.runtime.registry
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
@@ -22,8 +21,6 @@ class Runtime(object):
         checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
 
         self.communication_list = [(communication(), 'default')]
-        checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(checkmate.runtime._pyzmq.Connector),
-                                                                   zope.component.interfaces.IFactory, 'default')
 
         for _c in self.application.communication_list:
             _communication = _c()
