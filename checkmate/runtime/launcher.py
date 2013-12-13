@@ -21,9 +21,11 @@ class Launcher(object):
             raise Exception("No command nor component")
 
     def initialize(self):
+        if self.process is None:
             self.runtime_component.initialize()
 
     def start(self):
+        if self.process is None:
             self.runtime_component.start()
 
     def end(self):
