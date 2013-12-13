@@ -51,8 +51,8 @@ class Encoder(object):
 class Connector(checkmate.runtime.communication.Connector):
     communication = pytango.checkmate.runtime.communication.Communication
 
-    def __init__(self, component, is_server=False):
-        super(Connector, self).__init__(component, is_server)
+    def __init__(self, component, internal=False, is_server=False):
+        super(Connector, self).__init__(component, internal=internal, is_server=is_server)
         self.device_name = 'sys/component/' + self.component.name
         if self.is_server:
             _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)

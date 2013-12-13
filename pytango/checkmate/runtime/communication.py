@@ -31,7 +31,6 @@ class Connector(checkmate.runtime.communication.Connector):
 class Communication(checkmate.runtime.communication.Communication):
     def __init__(self):
         super(Communication, self).__init__()
-        self.connector = Connector
         self.server_name = self.create_tango_server()
 
     def initialize(self):
