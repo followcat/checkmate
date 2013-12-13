@@ -32,10 +32,10 @@ class Connector(object):
 class Communication(object):
     """"""
     def __init__(self):
-        self.connector = Connector()
+        """"""
 
     def initialize(self):
-        assert self.connector
+        """"""
 
     def start(self):
         """"""

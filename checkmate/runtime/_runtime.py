@@ -5,6 +5,7 @@ import zope.component.interfaces
 import checkmate.logger
 import checkmate.component
 import checkmate.application
+import checkmate.runtime._pyzmq
 import checkmate.runtime.registry
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
@@ -18,22 +19,26 @@ class Runtime(object):
         """"""
         self.threaded = threaded
         self.application = application()
+        checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
+
         self.communication_list = [(communication(), 'default')]
+        checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(checkmate.runtime._pyzmq.Connector),
+                                                                   zope.component.interfaces.IFactory, 'default')
+
         for _c in self.application.communication_list:
             _communication = _c()
             self.communication_list.append((_communication, ''))
 
         if self.threaded:
-            checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
-        checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
-        if threaded:
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
             checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
         else:
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub,
+                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut,
+                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
         checkmate.logger.global_logger.start_exchange_logger()
@@ -42,8 +47,6 @@ class Runtime(object):
 
         for (communication, type) in self.communication_list:
             checkmate.runtime.registry.global_registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
-            if type == 'default':
-                checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
 
         for component in self.application.stubs:
             stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
@@ -57,10 +60,7 @@ class Runtime(object):
         for (communication, type) in self.communication_list:
             communication.initialize()
 
-        for name in self.application.stubs:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
-            _component.initialize()
-        for name in self.application.system_under_test:
+        for name in self.application.stubs + self.application.system_under_test:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.initialize()
 
@@ -98,11 +98,9 @@ class Runtime(object):
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.start()
 
-
     def stop_test(self):
         # Stop stubs last
-        component_list = self.application.system_under_test + self.application.stubs
-        for name in component_list:
+        for name in self.application.system_under_test + self.application.stubs:
             _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
             #if self.threaded:

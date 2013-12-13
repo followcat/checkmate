@@ -45,8 +45,6 @@ class Communication(checkmate.runtime.communication.Communication):
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize"%self)
         self.registry = Registry()
-        #self.connector = type('Connector'+'%i'%self.registry._initport, (Connector,), {'_initport': self.registry._initport})
-        self.connector = Connector
 
     def initialize(self):
         """"""
@@ -67,6 +65,7 @@ class Encoder(object):
 
     def decode(self, message):
         return pickle.loads(message)
+
 
 class Connector(checkmate.runtime.communication.Connector):
     """"""
