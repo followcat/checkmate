@@ -10,15 +10,27 @@ class Device_1(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.attr_c_state = True
+        self.c2_dev = PyTango.DeviceProxy('sys/component/C2')
+        self.c3_dev = PyTango.DeviceProxy('sys/component/C3')
+
+    def toggle(self):
+        self.attr_c_state = not self.attr_c_state
 
     def AC(self):
-        pass
+        if self.attr_c_state == True:
+            self.toggle()
+            self.c3_dev.RE()
+            self.c2_dev.ARE()
 
     def AP(self):
-        pass
+        self.c2_dev.DA()
 
     def PP(self):
-        pass
+        if self.attr_c_state == False:
+            self.toggle()
+            self.c2_dev.PA()
+            self.c3_dev.PA()
 
 
 class C1Interface(PyTango.DeviceClass):
@@ -36,8 +48,14 @@ class C1Interface(PyTango.DeviceClass):
     cmd_list = {'AC': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'AP': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'PP': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'toggle': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
-    attr_list = {
+    attr_list = {'c_state': [[PyTango.ArgType.DevBoolean,
+                              PyTango.AttrDataFormat.SCALAR,
+                              PyTango.AttrWriteType.READ_WRITE],
+                              {
+                              'Polling period': "100",
+                              }]
                 }
 
 
