@@ -42,7 +42,8 @@ class Runtime(object):
 
         for (communication, type) in self.communication_list:
             checkmate.runtime.registry.global_registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
-            checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
+            if type == 'default':
+                checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
 
         for component in self.application.stubs:
             stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
