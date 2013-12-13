@@ -22,7 +22,6 @@ class Runtime(object):
         for _c in self.application.communication_list:
             _communication = _c()
             self.communication_list.append((_communication, ''))
-            checkmate.runtime.registry.global_registry.registerUtility(_communication, checkmate.runtime.interfaces.ICommunication)
 
         if self.threaded:
             checkmate.runtime.registry.global_registry.registerUtility(self, checkmate.runtime.interfaces.IRuntime)
@@ -42,6 +41,7 @@ class Runtime(object):
         self.application.build_test_plan()
 
         for (communication, type) in self.communication_list:
+            checkmate.runtime.registry.global_registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
             checkmate.runtime.registry.global_registry.registerUtility(zope.component.factory.Factory(communication.connector), zope.component.interfaces.IFactory, type)
 
         for component in self.application.stubs:
