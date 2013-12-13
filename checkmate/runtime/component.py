@@ -138,9 +138,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
         self.busy_lock = threading.Lock()
-        self.busy_lock.acquire()
-        self.isbusy = True
-        self.busy_lock.release()
+        self._set_busy(True)
+
         if self.using_internal_client:
             for (name, factory) in zope.component.getFactoriesFor(checkmate.runtime.interfaces.IProtocol, context=checkmate.runtime.registry.global_registry):
                 if name == 'default':
