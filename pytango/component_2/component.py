@@ -11,9 +11,11 @@ class Device_2(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
+
 
     def ARE(self):
-        pass
+        self.c1_dev.AP()
 
     def PA(self):
         pass
