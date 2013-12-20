@@ -61,10 +61,10 @@ class Connector(checkmate.runtime.communication.Connector):
         self.device_name = 'sys/component/' + self.component.name
         global is_device_added
         if self.is_server:
-            is_device_added = True
             _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
                 self.device_name = _communication.create_tango_device('Device_1', self.component.name)
+                is_device_added = True
         elif not is_device_added:
             self.create_tango_device()
         self.encoder = Encoder()
