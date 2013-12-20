@@ -69,7 +69,6 @@ class Component(object):
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
-        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
         for _o in output:
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)

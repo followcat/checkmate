@@ -1,10 +1,12 @@
 import time
 import copy
+import logging
 
 import zope.interface
 
 import nose.plugins.skip
 
+import checkmate.logger
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
@@ -77,6 +79,7 @@ class Procedure(object):
         
     def __call__(self, system_under_test, result=None, *args):
         """"""
+        self.logger = logging.getLogger('checkmate.runtime.procedure')
         self.result = result
         self.system_under_test = system_under_test
         if len(self.components) == 0:
@@ -210,9 +213,11 @@ class Procedure(object):
                 else:
                     break
             if count == 3:
+                self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
 
         self.wait_till_not_busy()
+        self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
