@@ -13,9 +13,9 @@ class Device_2(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
 
-
     def ARE(self):
-        self.c1_dev.AP()
+        #Execute asynchronously in case of nested called caused infinitely wait
+        self.c1_dev.command_inout_asynch('AP')
 
     def PA(self):
         pass
