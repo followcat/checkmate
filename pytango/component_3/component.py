@@ -43,15 +43,9 @@ class C3Interface(PyTango.DeviceClass):
 
     cmd_list = {'RE': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'RL': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'toggle': [[PyTango.DevVoid], [PyTango.DevVoid]]
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
-    attr_list = {'c_state': [[PyTango.ArgType.DevBoolean,
-                              PyTango.AttrDataFormat.SCALAR,
-                              PyTango.AttrWriteType.READ_WRITE],
-                              {
-                              'Polling period': "100",
-                              }]
+    attr_list = {
                 }
 
 

@@ -23,11 +23,7 @@ class Device_1(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
-        self.attr_c_state = True
         self.incoming = []
-
-    def toggle(self):
-        pass
 
     def AC(self):
         self.incoming.append('AC')

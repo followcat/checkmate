@@ -24,10 +24,6 @@ class Device_3(PyTango.Device_4Impl):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
         self.incoming = []
-        self.attr_c_state = False
-
-    def toggle(self):
-        pass
 
     def RE(self):
         self.incoming.append('RE')
