@@ -209,6 +209,8 @@ class Procedure(object):
                     if self.still_busy():
                         count = 0
                     else:
+                        #wait for application turning to idle
+                        time.sleep(0.1)
                         count += 1
                 else:
                     break
