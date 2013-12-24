@@ -1,6 +1,7 @@
 import sys
 
 import PyTango
+import pytango._database
 
 class Device_3(PyTango.Device_4Impl):
     def __init__(self, _class, name):
@@ -50,6 +51,7 @@ class C3Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
+    pytango._database.create_component_device('Device_3', 'C3')
     py = PyTango.Util(sys.argv)
     py.add_class(C3Interface, Device_3, 'Device_3')
     U = PyTango.Util.instance()

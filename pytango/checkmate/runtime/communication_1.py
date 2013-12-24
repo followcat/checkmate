@@ -47,31 +47,17 @@ class Encoder(object):
         elif message == 'PP':
             return sample_app.exchanges.PP()
 
-is_device_added = False
 class Connector(checkmate.runtime.communication.Connector):
     communication = pytango.checkmate.runtime.communication.Communication
-    
 
     def __init__(self, component, internal=False, is_server=False):
         super(Connector, self).__init__(component, internal=internal, is_server=is_server)
         self.device_name = 'sys/component/' + self.component.name
-        global is_device_added
         if self.is_server:
             _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
                 self.device_name = _communication.create_tango_device('Device_1', self.component.name)
-                is_device_added = True
-        elif not is_device_added:
-            self.create_tango_device()
         self.encoder = Encoder()
-
-    def create_tango_device(self):
-        db = PyTango.Database()
-        comp = PyTango.DbDevInfo()
-        comp._class = "Device_1"
-        comp.server = "component/" + self.component.name
-        comp.name = "sys/component/" + self.component.name
-        db.add_device(comp)
 
     def initialize(self):
         if self.is_server:

@@ -45,6 +45,7 @@ class C2Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
+    pytango._database.create_component_device('Device_2', 'C2')
     py = PyTango.Util(sys.argv)
     py.add_class(C2Interface, Device_2, 'Device_2')
     U = PyTango.Util.instance()
