@@ -1,7 +1,7 @@
 import sys
-import time
 import shlex
 import random
+import threading
 
 import PyTango
 
@@ -10,8 +10,9 @@ import checkmate.runtime._threading
 
 
 class Registry(checkmate.runtime._threading.Thread):
-    def __init__(self):
+    def __init__(self, event):
         super(Registry, self).__init__()
+        self.event = event
         self.pytango_util = PyTango.Util.instance()
 
     def check_for_shutdown(self):
@@ -20,6 +21,7 @@ class Registry(checkmate.runtime._threading.Thread):
     
     def run(self):
         self.pytango_util.server_init()
+        self.event.set()
         self.pytango_util.server_set_event_loop(self.check_for_shutdown)
         self.pytango_util.server_run()
 
@@ -32,6 +34,7 @@ class Communication(checkmate.runtime.communication.Communication):
     def __init__(self):
         super(Communication, self).__init__()
         self.server_name = self.create_tango_server()
+        self.event = threading.Event()
 
     def initialize(self):
         """"""
@@ -39,9 +42,10 @@ class Communication(checkmate.runtime.communication.Communication):
         self.pytango_server = PyTango.Util(shlex.split(__file__ + ' ' + self.server_name))
 
     def start(self):
-        self.registry = Registry()
+        self.registry = Registry(self.event)
         self.registry.start()
-        time.sleep(5)
+        #wait for server initialized
+        self.event.wait(timeout=2)
 
     def close(self):
         pytango_util = PyTango.Util.instance()
