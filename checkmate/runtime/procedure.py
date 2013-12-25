@@ -6,7 +6,6 @@ import zope.interface
 
 import nose.plugins.skip
 
-import checkmate.logger
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
@@ -76,10 +75,10 @@ class Procedure(object):
         self.components = []
         self.unmatching_components = {}
         self.tran_dict = {}
+        self.logger = logging.getLogger('checkmate.runtime.procedure')
         
     def __call__(self, system_under_test, result=None, *args):
         """"""
-        self.logger = logging.getLogger('checkmate.runtime.procedure')
         self.result = result
         self.system_under_test = system_under_test
         if len(self.components) == 0:
