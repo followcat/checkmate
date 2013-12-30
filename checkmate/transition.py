@@ -206,6 +206,9 @@ class Transition(object):
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
         """
+        _outgoing_list = []		
+        if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
+            return _outgoing_list
         for _state in states:
             for _interface in zope.interface.providedBy(_state):
                 for _final in self.final:
@@ -215,8 +218,6 @@ class Transition(object):
                     if _final_interface == _interface:
                         resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
                         _final.factory(args=[_state], kwargs=resolved_arguments)
-        _outgoing_list = []
-
         for outgoing_exchange in self.outgoing:
             resolved_arguments = self.resolve_arguments('outgoing', outgoing_exchange, states, _incoming)
             _outgoing_list.append(outgoing_exchange.factory(kwargs=resolved_arguments))
