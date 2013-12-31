@@ -97,11 +97,21 @@ class Component(object):
         return output
 
     def simulate(self, exchange):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.component_2.component
+            >>> c2 = sample_app.component_2.component.Component_2('C2')
+            >>> c2.start()
+            >>> out = c2.simulate(sample_app.exchanges.AC())
+            >>> out[0].action == 'AC'
+            True
+        """
         _transition = self.get_transition_by_output([exchange])
         if _transition is None:
             return []
         output = []
-        for _outgoing in _transition.process(self.states, exchange):
+        _incoming = _transition.generic_incoming(self.states)
+        for _outgoing in _transition.process(self.states, _incoming):
             for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
                 output.append(_e)
         return output
