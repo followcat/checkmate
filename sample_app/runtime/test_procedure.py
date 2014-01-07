@@ -2,7 +2,6 @@ import checkmate._tree
 import checkmate.test_data
 import checkmate.runtime.procedure
 
-
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
     def __init__(self, test=None):
@@ -10,6 +9,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
+            >>> import sample_app.runtime.test_procedure
             >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()

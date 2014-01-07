@@ -1,4 +1,6 @@
+import os
 import collections
+
 import docutils.core
 import docutils.nodes
 
@@ -235,7 +237,6 @@ class DocTreeVisitor(docutils.nodes.GenericNodeVisitor):
         component_incomings, component_transition =  self.declarator.new_transition(array_items, tran_titles)
         return (component_incomings, component_transition)
 
-
 def call_visitor(content):
     """
 
@@ -277,12 +278,15 @@ def main():
     component_state = visitor_output['states']
     component_exchange = visitor_output['exchanges']
     component_transitions = visitor_output['transitions']
+    component_data_structure = visitor_output['data_structure']
     print('c_state: ')
     print(component_state)
     print('c_exchanges: ')
     print(component_exchange)
     print('c_transitions: ')
     print(component_transitions)
+    print('data_structure: ')
+    print(component_data_structure)
 
 if __name__ == '__main__':
     main()
