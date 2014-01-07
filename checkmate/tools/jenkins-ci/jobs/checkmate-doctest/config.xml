@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Doctest for checkmate.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.TimerTrigger>
+      <spec>0,15,30,45 * * * *
+</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>. $CHECKMATE/cme-3.3.bashrc 
+rm -f $CHECKMATE_LOG/exchange*
+nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>sample_app-doctest</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+  </publishers>
+  <buildWrappers/>
+</project>

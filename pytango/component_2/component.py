@@ -1,6 +1,10 @@
 import sys
+import shlex
 
 import PyTango
+
+import pytango._database
+
 
 class Device_2(PyTango.Device_4Impl):
     def __init__(self, _class, name):
@@ -11,9 +15,11 @@ class Device_2(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
 
     def ARE(self):
-        pass
+        #Execute asynchronously in case of nested called caused infinitely wait
+        self.c1_dev.command_inout_asynch('AP')
 
     def PA(self):
         pass
@@ -43,7 +49,8 @@ class C2Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
-    py = PyTango.Util(sys.argv)
+    server_name = pytango._database.create_component_device('Device_2', 'C2')
+    py = PyTango.Util(shlex.split(__file__ + ' ' + server_name))
     py.add_class(C2Interface, Device_2, 'Device_2')
     U = PyTango.Util.instance()
     U.server_init()

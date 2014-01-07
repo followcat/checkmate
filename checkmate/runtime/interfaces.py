@@ -18,6 +18,10 @@ class IRuntime(zope.interface.Interface):
 
 class IProtocol(zope.interface.Interface):
     """"""
+
+
+class ICommunication(zope.interface.Interface):
+    """"""
     def initialize(self):
         """"""
 

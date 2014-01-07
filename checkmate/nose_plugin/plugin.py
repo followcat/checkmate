@@ -111,7 +111,7 @@ class Checkmate(nose.plugins.Plugin):
 
     def loadTestsFromTestCase(self, cls):
         """"""
-        return self.suiteClass(tests=[cls(),])
+        return self.suiteClass(tests=[cls(application_class=self.application_class),])
 
     def loadTestsFromGenerator(self, generator, module):
         """"""
