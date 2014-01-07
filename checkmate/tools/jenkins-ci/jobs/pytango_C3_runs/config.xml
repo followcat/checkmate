@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Sample application ITP with SUT=C1,C3 (once)</description>
+  <description>Pytango application ITP with SUT=C3</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -13,14 +13,14 @@
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command>sleep 5
-. $CHECKMATE/cme-3.3.bashrc 
-python checkmate/nose_plugin/plugin.py --with-checkmate --sut=C1,C3 checkmate/ sample_app/</command>
+      <command>sleep 10
+. $HOME/Projects/tango-controls/cme-tango-8.1.2.bashrc
+python checkmate/nose_plugin/plugin.py --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>sample_app_C1_C3_runs</childProjects>
+      <childProjects>pytango_C1_C3</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>

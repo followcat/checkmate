@@ -11,7 +11,7 @@
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
     <hudson.triggers.TimerTrigger>
-      <spec>0 * * * *
+      <spec>0,15,30,45 * * * *
 </spec>
     </hudson.triggers.TimerTrigger>
   </triggers>
