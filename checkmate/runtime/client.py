@@ -55,15 +55,18 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.connections = connector(self.component, internal=internal, is_server=is_server)
         if sender_socket:
             self.sender = self.zmq_context.socket(zmq.PUSH)
-            self.sender.bind(address)
+            self.sender.connect(address)
 
     def initialize(self):
         """"""
         self.connections.initialize()
 
+    def start(self):
+        self.connections.open()
+        super(ThreadedClient, self).start()
+
     def run(self):
         """"""
-        self.connections.open()
         self.logger.debug("%s startup"%self)
         while True:
             if self.check_for_stop():
