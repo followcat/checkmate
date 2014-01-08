@@ -1,6 +1,10 @@
 import sys
+import shlex
 
 import PyTango
+
+import pytango._database
+
 
 class Device_3(PyTango.Device_4Impl):
     def __init__(self, _class, name):
@@ -11,15 +15,22 @@ class Device_3(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.attr_c_state = False
+        self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
 
-    def ARE(self):
-        pass
+    def toggle(self):
+        self.attr_c_state = not self.attr_c_state
+
+    def RE(self):
+        if self.attr_c_state == False:
+            self.toggle()
 
     def RL(self):
-        pass
+        self.c1_dev.PP()
 
     def PA(self):
-        pass
+        if self.attr_c_state == True:
+            self.toggle()
 
 
 class C3Interface(PyTango.DeviceClass):
@@ -43,7 +54,8 @@ class C3Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
-    py = PyTango.Util(sys.argv)
+    server_name = pytango._database.create_component_device('Device_3', 'C3')
+    py = PyTango.Util(shlex.split(__file__ + ' ' + server_name))
     py.add_class(C3Interface, Device_3, 'Device_3')
     U = PyTango.Util.instance()
     U.server_init()

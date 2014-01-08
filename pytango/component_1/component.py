@@ -1,6 +1,10 @@
 import sys
+import shlex
 
 import PyTango
+
+import pytango._database
+
 
 class Device_1(PyTango.Device_4Impl):
     def __init__(self, _class, name):
@@ -10,15 +14,28 @@ class Device_1(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.attr_c_state = True
+        self.c2_dev = PyTango.DeviceProxy('sys/component/C2')
+        self.c3_dev = PyTango.DeviceProxy('sys/component/C3')
+
+    def toggle(self):
+        self.attr_c_state = not self.attr_c_state
 
     def AC(self):
-        pass
+        if self.attr_c_state == True:
+            self.toggle()
+            self.c3_dev.RE()
+            self.c2_dev.ARE()
 
     def AP(self):
-        pass
+        self.c2_dev.DA()
 
     def PP(self):
-        pass
+        if self.attr_c_state == False:
+            self.toggle()
+            self.c2_dev.PA()
+            #Execute asynchronously in case of nested called caused infinitely wait(run C3.RL() while C1,C3 as SUT)
+            self.c3_dev.command_inout_asynch('PA')
 
 
 class C1Interface(PyTango.DeviceClass):
@@ -35,14 +52,15 @@ class C1Interface(PyTango.DeviceClass):
 
     cmd_list = {'AC': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'AP': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PP': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PP': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }
 
 
 if __name__ == '__main__':
-    py = PyTango.Util(sys.argv)
+    server_name = pytango._database.create_component_device('Device_1', 'C1')
+    py = PyTango.Util(shlex.split(__file__ + ' ' + server_name))
     py.add_class(C1Interface, Device_1, 'Device_1')
     U = PyTango.Util.instance()
     U.server_init()

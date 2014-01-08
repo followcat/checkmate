@@ -1,5 +1,6 @@
 import time
 import copy
+import logging
 
 import zope.interface
 
@@ -74,6 +75,7 @@ class Procedure(object):
         self.components = []
         self.unmatching_components = {}
         self.tran_dict = {}
+        self.logger = logging.getLogger('checkmate.runtime.procedure')
         
     def __call__(self, system_under_test, result=None, *args):
         """"""
@@ -206,13 +208,17 @@ class Procedure(object):
                     if self.still_busy():
                         count = 0
                     else:
+                        #wait for application turning to idle
+                        time.sleep(0.1)
                         count += 1
                 else:
                     break
             if count == 3:
+                self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
 
         self.wait_till_not_busy()
+        self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:

@@ -2,14 +2,14 @@ import checkmate._tree
 import checkmate.test_data
 import checkmate.runtime.procedure
 
+
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, test=None):
+    def __init__(self, application_class=checkmate.test_data.App, test=None):
         """
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
-            >>> import sample_app.runtime.test_procedure
             >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
@@ -28,7 +28,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.stop_test()
         """
         super(TestProcedureRun1Threaded, self).__init__(test)
-        a = checkmate.test_data.App()
+        a = application_class()
         c1 = a.components['C1']
         c2 = a.components['C2']
         c3 = a.components['C3']
@@ -49,7 +49,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
 
 class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, test=None):
+    def __init__(self, application_class=checkmate.test_data.App, test=None):
         """
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
@@ -67,7 +67,7 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.stop_test()
         """
         super(TestProcedureRun2Threaded, self).__init__(test)
-        a = checkmate.test_data.App()
+        a = application_class()
         c1 = a.components['C1']
         c2 = a.components['C2']
         c3 = a.components['C3']
