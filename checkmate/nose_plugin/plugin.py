@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import shlex
 import inspect
 import importlib
 import collections
@@ -182,5 +183,6 @@ class TestProgram(nose.core.TestProgram):
 
 
 if __name__ == '__main__':
+    sys.argv = sys.argv + shlex.split('--nologcapture')
     TestProgram(addplugins=[Checkmate()])
 
