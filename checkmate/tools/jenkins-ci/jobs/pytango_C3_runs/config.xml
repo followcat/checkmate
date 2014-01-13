@@ -14,7 +14,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command>sleep 10
-. $HOME/Projects/tango-controls/cme-tango-8.1.2.bashrc
+cd $CHECKMATE_HOME
 python checkmate/nose_plugin/plugin.py --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>

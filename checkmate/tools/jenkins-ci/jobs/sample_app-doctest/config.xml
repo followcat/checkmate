@@ -13,7 +13,7 @@
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command>. $CHECKMATE/cme-3.3.bashrc 
+      <command>cd $CHECKMATE_HOME
 nosetests --with-doctest sample_app/ `find sample_app -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>
