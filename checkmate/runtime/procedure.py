@@ -85,21 +85,19 @@ class Procedure(object):
             self.components = self._extract_components(self.exchanges, [])
         if not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-
         if hasattr(self, 'initial'):
-            if not self.compare_states(self.initial):
-                if hasattr(self, 'itp_transitions'):
-                    self.transform_to_initial() 
-                    self.wait_till_not_busy()
+            self.transform_to_initial() 
             if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
-
         self._run_from_startpoint(self.exchanges)
 
     def transform_to_initial(self):
         if self.compare_states(self.initial):
             return
         application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        if not hasattr(self, 'itp_transitions'):
+            application.get_initial_transitions()
+            self.itp_transitions = application.initial_transitions
         states = []
         while(len(list(self.unmatching_components.keys()))>0):
             c_name, target = self.unmatching_components.popitem()
@@ -151,6 +149,7 @@ class Procedure(object):
                 try:
                     #Assume at most one state of component implements interface
                     _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
+                    print(_state)
                     if _state == _target.factory():
                         matching += 1
                         break
