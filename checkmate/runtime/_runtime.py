@@ -1,3 +1,6 @@
+import sys
+import logging
+
 import zope.interface
 import zope.component
 import zope.component.interfaces
@@ -39,6 +42,7 @@ class Runtime(object):
 
     def setup_environment(self, sut):
         checkmate.logger.global_logger.start_exchange_logger()
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s"%(sys.argv))
         self.application.sut(sut)
         self.application.build_test_plan()
 
