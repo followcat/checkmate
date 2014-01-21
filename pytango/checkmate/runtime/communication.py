@@ -50,17 +50,18 @@ class Communication(checkmate.runtime.communication.Communication):
     def close(self):
         pytango_util = PyTango.Util.instance()
         pytango_util.unregister_server()
+        self.delete_tango_device("dserver/communication/" + self.server_name)
         self.registry.stop()
 
     def create_tango_server(self):
-        server_name = "S%d" %(random.randint(0, 1000))
+        _server_name = "S%d" %(random.randint(0, 1000))
         db = PyTango.Database()
         comp = PyTango.DbDevInfo()
         comp._class = "DServer"
-        comp.server = "communication/" + server_name
-        comp.name = "dserver/communication/" + server_name
+        comp.server = "communication/" + _server_name
+        comp.name = "dserver/communication/" + _server_name
         db.add_device(comp)
-        return server_name
+        return _server_name
 
     def create_tango_device(self, component_class, component):
         db = PyTango.Database()
@@ -70,4 +71,8 @@ class Communication(checkmate.runtime.communication.Communication):
         comp.name = "sys/component/" + component
         db.add_device(comp)
         return comp.name
+
+    def delete_tango_device(self, device_name):
+        db = PyTango.Database()
+        db.delete_device(device_name)
 

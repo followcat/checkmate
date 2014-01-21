@@ -71,6 +71,10 @@ class Connector(checkmate.runtime.communication.Connector):
         if self.is_server:
             self.device_server = self.registry.get_device_by_name(self.device_name)
 
+    def close(self):
+        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+        _communication.delete_tango_device(self.device_name)
+
     def receive(self):
         try:
             return self.encoder.decode(self.device_server.incoming.pop(0))
