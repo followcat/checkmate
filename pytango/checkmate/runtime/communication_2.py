@@ -33,6 +33,9 @@ class Device_2(PyTango.Device_4Impl):
 
     def DA(self):
         self.incoming.append('DA')
+    
+    def DR(self):
+        self.incoming.append('DR')
 
 
 class Encoder(object):
@@ -46,6 +49,8 @@ class Encoder(object):
             return sample_app.exchanges.PA()
         elif message == 'DA':
             return sample_app.exchanges.DA()
+        elif message == 'DR':
+            return sample_app.exchanges.DR()
 
 
 class Connector(checkmate.runtime.communication.Connector):

@@ -112,6 +112,23 @@ Value partitions
 
 
 
+ThirdReaction
+****************
+Definition and accessibility
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ThirdReaction
+
+Value partitions
+^^^^^^^^^^^^^^^^^
+
++----------------+-----------------+----------------------+---------+
+| Partition      | Service         | Valid value          | Comment |
++================+=================+======================+=========+
+| X-THRDREACT-01 | DR()            | Valid thd-reaction   | Comment |
++----------------+-----------------+----------------------+---------+
+
+
+
 Pause
 ******
 Definition and accessibility

@@ -27,6 +27,9 @@ class Device_2(PyTango.Device_4Impl):
     def DA(self):
         pass
 
+    def DR(self):
+        pass
+
 
 class C2Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
@@ -42,6 +45,7 @@ class C2Interface(PyTango.DeviceClass):
 
     cmd_list = {'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {

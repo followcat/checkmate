@@ -2,7 +2,6 @@ import checkmate._tree
 import checkmate.test_data
 import checkmate.runtime.procedure
 
-
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
     def __init__(self, application_class=checkmate.test_data.App, test=None):
@@ -10,21 +9,18 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
-            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
+            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, True)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> proc = TestProcedureRun1Threaded()
+            >>> import sample_app.runtime.test_procedure
+            >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded()
             >>> proc.exchanges.nodes[1].root.action
             'ARE'
             >>> proc.exchanges.nodes[1].nodes[0].root.action
             'AP'
             >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
             'DA'
-
             >>> proc(result=None, system_under_test=['C1'])
-            Traceback (most recent call last):
-            ...
-            Exception: No exchange 'RE' received by component 'C3'
             >>> r.stop_test()
         """
         super(TestProcedureRun1Threaded, self).__init__(test)
@@ -34,9 +30,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
         c3 = a.components['C3']
         a.start()
         transition = c2.state_machine.transitions[0]
-        a.get_initial_transitions()
-        self.itp_transitions = a.initial_transitions
-        self.initial = [_s.storage[0] for (_i, _s) in c1.state_machine.states]
+        self.initial = [_s.storage[0] for (_i, _s) in c1.state_machine.states] + [_s.storage[0] for (_i, _s) in c3.state_machine.states]
         self.exchanges = checkmate._tree.Tree(c2.process(transition.generic_incoming(c2.states))[0], [])
         for _e in c1.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
@@ -61,9 +55,7 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> proc.exchanges.root.action
             'RL'
             >>> proc.exchanges.nodes[0].root.action
-            'PP'
-            >>> proc.exchanges.nodes[0].nodes[0].root.action
-            'PA'
+            'DR'
             >>> r.stop_test()
         """
         super(TestProcedureRun2Threaded, self).__init__(test)
@@ -84,12 +76,9 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
 
         transition = c2.state_machine.transitions[2]
         self.exchanges = checkmate._tree.Tree(c2.simulate(transition.outgoing[0].factory())[0], [])
-        a.get_initial_transitions()
-        self.itp_transitions = a.initial_transitions
         self.initial = c3.get_transition_by_input([self.exchanges.root]).initial
         for _e in c3.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        #self.initial.extend(c1.get_transition_by_input([self.exchanges.nodes[0].root]).initial)
         for _e in c1.process([self.exchanges.nodes[0].root]):
             self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
 
@@ -112,10 +101,10 @@ def TestProcedureGenerator(application_class=checkmate.test_data.App):
     a.get_initial_transitions()
     #Skip the last two transitions as no outgoing sent to 'C1'
     #Skip the third transition from the last as 'C3' state does not match
-    for _t in range(len(c2.state_machine.transitions)-3):
+    for _t in range(len(c2.state_machine.transitions)-5):
         transition = c2.state_machine.transitions[_t]
         _i = c2.process(transition.generic_incoming(c2.states))
-        initial = c1.get_transition_by_input(_i).initial
+        initial = a.initial_transitions[_t].initial
         _o = c1.process(_i)
         yield build_procedure(_i, _o, initial, a.initial_transitions), c2.name, _i[0].action
 
