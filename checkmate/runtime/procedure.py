@@ -86,7 +86,8 @@ class Procedure(object):
         if not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         if hasattr(self, 'initial'):
-            self.transform_to_initial() 
+            if not self.compare_states(self.initial):
+                self.transform_to_initial() 
             if not self.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
         self._run_from_startpoint(self.exchanges)
@@ -99,21 +100,24 @@ class Procedure(object):
             application.get_initial_transitions()
             self.itp_transitions = application.initial_transitions
         states = []
-        while(len(list(self.unmatching_components.keys()))>0):
-            c_name, target = self.unmatching_components.popitem()
-            states.extend(application.components[c_name].states)
+        for _component in list(application.components.values()):
+            states.extend(_component.states)
         try:
             _transition = self.get_transition_from_itp(self.initial, states)
         except IndexError as e:
             raise e("no exchange found in itp to initialize the current")
-
         for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=[_transition]):
             _procedure(system_under_test=self.system_under_test)
+        if not self.compare_states(self.initial):
+            self.transform_to_initial()
 
 
-    def get_transition_from_itp(self, target, current):
+    def get_transition_from_itp(self, target, current): #, transitions=[]):
         matching = False
         for _t in self.itp_transitions:
+            if len(_t.initial) == 1 and _t.initial[0].code == 'Q0':
+                #skipping the 'Always run' transition to avoid infinite recursive
+                continue
             for _i in _t.initial:
                 try:
                     _current = [_s for _s in current if _i.interface.providedBy(_s)].pop(0)
@@ -123,22 +127,13 @@ class Procedure(object):
                     else:
                         matching = True
                 except IndexError:
-                    continue
-            for _target in target:
-                try:
-                    _state = [_f for _f in _t.final if _target.interface == _f.interface].pop(0)
-                    if _state.factory() != _target.factory():
-                        matching = False
-                        break
-                    else:
-                        matching = True
-                except IndexError:
-                    continue
+                    matching == False
+                    break
             if matching:
-                return _t
+               return _t
             else:
                 continue
-            
+        
 
     def compare_states(self, target):
         """"""
@@ -149,7 +144,6 @@ class Procedure(object):
                 try:
                     #Assume at most one state of component implements interface
                     _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
-                    print(_state)
                     if _state == _target.factory():
                         matching += 1
                         break
@@ -195,7 +189,6 @@ class Procedure(object):
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)  
-
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
         stub.simulate(current_node.root)
         self._follow_up(current_node)
