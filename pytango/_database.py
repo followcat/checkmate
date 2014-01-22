@@ -12,7 +12,6 @@ def create_component_device(device_name, component_name):
         comp.name = "dserver/component/" + server_name
         db.add_device(comp)
 
-        db = PyTango.Database()
         dev_info = PyTango.DbDevInfo()
         dev_info._class = device_name
         dev_info.server = "component/" + server_name
