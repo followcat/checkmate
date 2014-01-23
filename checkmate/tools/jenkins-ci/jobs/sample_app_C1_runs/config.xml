@@ -15,7 +15,7 @@
     <hudson.tasks.Shell>
       <command>sleep 5
 cd $CHECKMATE_HOME
-python checkmate/nose_plugin/plugin.py --with-checkmate --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>

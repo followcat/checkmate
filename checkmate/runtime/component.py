@@ -166,16 +166,15 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             raise e
 
     def _create_client(self, component, connector_factory, internal=False, reading_client=True, is_server=False):
-        _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        _socket.bind(('127.0.0.1', 0))
-        addr, port = _socket.getsockname()
-        _socket.close()
-        if reading_client:
-            _socket = self.zmq_context.socket(zmq.PULL)
-            _socket.bind("tcp://127.0.0.1:%i"%port)
-            self.poller.register(_socket, zmq.POLLIN)
-        return checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port,
+        _socket = self.zmq_context.socket(zmq.PULL)
+        port = _socket.bind_to_random_port("tcp://127.0.0.1")
+        _client = checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port,
                                                        internal=internal, sender_socket=reading_client, is_server=is_server)
+        if reading_client:
+            self.poller.register(_socket, zmq.POLLIN)
+        else:
+            _socket.close()
+        return _client
 
     def start(self):
         Component.start(self)

@@ -105,18 +105,47 @@ class Procedure(object):
             _transition = self.get_transition_from_itp(self.initial, states)
         except IndexError as e:
             raise e("no exchange found in itp to initialize the current")
-        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=[_transition]):
+        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=_transition):
             _procedure(system_under_test=self.system_under_test)
+        _transition.clear()
         if not self.compare_states(self.initial):
             self.transform_to_initial()
 
+    def check_alwaysrun_transition(self,transition):
+        match = False
+        if len(transition.initial) != len(transition.final):
+            return match
+        for _i in range(len(transition.initial)):
+            if transition.initial[_i].factory() != transition.final[_i].factory():
+                match = False
+                break
+            else:
+                match = True
+        return match
 
-    def get_transition_from_itp(self, target, current): #, transitions=[]):
-        matching = False
+    def get_transition_from_itp(self, target, current,correct_way = []):
+        final_match = False
+        for _t in target:
+            for _c in current:
+                try:
+                    _current = [_c for _c in current if _t.interface.providedBy(_c)].pop(0)
+                    if _current != _t.factory():
+                        final_match = False
+                    else:
+                        final_match = True
+                    break
+                except IndexError:
+                    continue
+            if not final_match:
+                break
+
+        if final_match:
+            return True
+
         for _t in self.itp_transitions:
-            if len(_t.initial) == 1 and _t.initial[0].code == 'Q0':
-                #skipping the 'Always run' transition to avoid infinite recursive
+            if self.check_alwaysrun_transition(_t):
                 continue
+            matching = False
             for _i in _t.initial:
                 try:
                     _current = [_s for _s in current if _i.interface.providedBy(_s)].pop(0)
@@ -126,12 +155,20 @@ class Procedure(object):
                     else:
                         matching = True
                 except IndexError:
-                    matching == False
-                    break
+                    continue    
             if matching:
-               return _t
-            else:
-                continue
+                for _f in _t.final:
+                    try:
+                        _s = [_s for _s in range(len(current)) if _f.interface.providedBy(current[_s])].pop(0)
+                        if current[_s] != _f.factory():
+                            current[_s] = _f.factory()
+                    except IndexError:
+                        continue
+                correct_way.append(_t)
+                if self.get_transition_from_itp(target,current,correct_way):
+                    return correct_way
+                else:
+                    correct_way.pop()
         
 
     def compare_states(self, target):

@@ -90,26 +90,29 @@ class Connector(checkmate.runtime.communication.Connector):
             self.request_ports()
 
     def request_ports(self):
+        self.socket = self.zmq_context.socket(zmq.PULL)
+        self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
+        self.poller.register(self.socket, zmq.POLLIN)
+
         _socket = self.zmq_context.socket(zmq.REQ)
         _socket.connect("tcp://127.0.0.1:%i"%self._initport)
-        port_output = []
-        _socket.send(pickle.dumps((self._name, self.is_server)))
-        self.port = pickle.loads(_socket.recv())
+        _socket.send(pickle.dumps((self._name, self.port)))
+        return_code = pickle.loads(_socket.recv())
         _socket.close()
 
     def connect_ports(self):
-        if self.is_server:
-            self.socket = self.zmq_context.socket(zmq.PULL)
-            self.socket.bind("tcp://127.0.0.1:%i"%self.port)
-            self.poller.register(self.socket, zmq.POLLIN)
-        else:
+        if not self.is_server:
+            _socket = self.zmq_context.socket(zmq.REQ)
+            _socket.connect("tcp://127.0.0.1:%i"%self._initport)
+            _socket.send(pickle.dumps((self._name,)))
+            self.port = pickle.loads(_socket.recv())
+            _socket.close()
+
             self.socket = self.zmq_context.socket(zmq.PUSH)
             self.socket.connect("tcp://127.0.0.1:%i"%self.port)
 
     def open(self):
         """"""
-        if not self.is_server:
-            self.request_ports()
         self.connect_ports()
 
     def close(self):
@@ -162,17 +165,16 @@ class Registry(checkmate.runtime._threading.Thread):
 
     def assign_ports(self):
         """""" 
-        (name, is_server) = pickle.loads(self.socket.recv())
-        if is_server:
-            port = self.pickfreeport()
-            if name in self.comp_sender.keys():
-                self.comp_sender[name].append(port)
-            else:
-                self.comp_sender[name] = [port]
+        _list = pickle.loads(self.socket.recv())
+        if len(_list) == 2:
+            (name, port) = _list
+            self.comp_sender[name] = port
             self.logger.info("%s bind port %i to send exchange to %s"%(self, port, name))
+            self.socket.send(pickle.dumps(0))
         else:
-            port = self.comp_sender[name][0]
-        self.socket.send(pickle.dumps(port))
+            (name,) = _list
+            port = self.comp_sender[name]
+            self.socket.send(pickle.dumps(port))
 
     def stop(self):
         self.logger.info("%s stop"%self)

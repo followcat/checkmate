@@ -33,6 +33,7 @@ class Connector(checkmate.runtime.communication.Connector):
 class Communication(checkmate.runtime.communication.Communication):
     def __init__(self):
         super(Communication, self).__init__()
+        self.tango_database = PyTango.Database()
         self.server_name = self.create_tango_server()
         self.event = threading.Event()
 
@@ -50,24 +51,28 @@ class Communication(checkmate.runtime.communication.Communication):
     def close(self):
         pytango_util = PyTango.Util.instance()
         pytango_util.unregister_server()
+        self.delete_tango_device("dserver/communication/" + self.server_name)
         self.registry.stop()
 
     def create_tango_server(self):
-        server_name = "S%d" %(random.randint(0, 1000))
-        db = PyTango.Database()
+        _server_name = "S%d" %(random.randint(0, 1000))
         comp = PyTango.DbDevInfo()
         comp._class = "DServer"
-        comp.server = "communication/" + server_name
-        comp.name = "dserver/communication/" + server_name
-        db.add_device(comp)
-        return server_name
+        comp.server = "communication/" + _server_name
+        comp.name = "dserver/communication/" + _server_name
+        self.tango_database.add_device(comp)
+        return _server_name
 
     def create_tango_device(self, component_class, component):
-        db = PyTango.Database()
         comp = PyTango.DbDevInfo()
         comp._class = component_class
         comp.server = "communication/" + self.server_name
         comp.name = "sys/component/" + component
-        db.add_device(comp)
+        self.tango_database.add_device(comp)
         return comp.name
+
+    def delete_tango_device(self, device_name):
+        #Use a new database connection in case the existing one was shut down
+        db = PyTango.Database()
+        db.delete_device(device_name)
 
