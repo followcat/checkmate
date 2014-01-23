@@ -73,7 +73,6 @@ class Procedure(object):
     def __init__(self, test=None):
         self.test = test
         self.components = []
-        self.unmatching_components = {}
         self.tran_dict = {}
         self.logger = logging.getLogger('checkmate.runtime.procedure')
         
@@ -148,7 +147,6 @@ class Procedure(object):
                         matching += 1
                         break
                     else:
-                        self.unmatching_components[_component.name] = _target
                         break
                 except IndexError:
                         continue
