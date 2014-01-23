@@ -190,6 +190,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self._set_busy(False)
 
     def run(self):
+        self._set_busy(False)
         while True:
             if self.check_for_stop():
                 break
@@ -200,6 +201,28 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     self.process([exchange])
 
     def is_busy(self, timeout=0):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.exchanges
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
+            >>> r.setup_environment(['C1'])
+            >>> r.start_test()
+
+        From the moment is started a component is not busy as long as is does not receive exchanges.
+            >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+            >>> c3.is_busy()
+            False
+
+        A component is back to not busy state after processing of an exchange.
+            >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+            >>> c1.process([sample_app.exchanges.AP()])
+            >>> c1.is_busy()
+            False
+            >>> r.stop_test()
+            
+        """
         if timeout != 0:
             time.sleep(timeout)
         self.busy_lock.acquire()
@@ -282,6 +305,7 @@ class ThreadedStub(ThreadedComponent, Stub):
         self._set_busy(False)
 
     def run(self):
+        self._set_busy(False)
         while True:
             if self.check_for_stop():
                 break
