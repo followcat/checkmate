@@ -79,8 +79,6 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         self.initial = c3.get_transition_by_input([self.exchanges.root]).initial
         for _e in c3.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        for _e in c1.process([self.exchanges.nodes[0].root]):
-            self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
 
 def build_procedure(exchanges, output, initial, initial_transitions):
     class TestProc(checkmate.runtime.procedure.Procedure):
