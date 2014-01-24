@@ -31,8 +31,8 @@ class Device_3(PyTango.Device_4Impl):
             self.toggle()
             self.c2_dev.DR()
     def PA(self):
-        if self.attr_c_state == True:
-            self.toggle()
+        if self.attr_c_state == False:
+            pass
 
 
 class C3Interface(PyTango.DeviceClass):
