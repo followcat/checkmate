@@ -128,7 +128,8 @@ class Procedure(object):
         #Default parameter values are evaluated when the function definition is executed.
         #This means that the expression is evaluated once, when the function is defined, and that that same “pre-computed” value is used for each call.
         #This is especially important to understand when a default parameter is a mutable object, such as a list or a dictionary:
-        #if the function modifies the object (e.g. by appending an item to a list), the default value is in effect modified. This is generally not what was intended. A way around this is to use None as the default, and explicitly test for it in the body of the function
+        #if the function modifies the object (e.g. by appending an item to a list), the default value is in effect modified.
+        #This is generally not what was intended. A way around this is to use None as the default, and explicitly test for it in the body of the function
         if correct_way is None:
             correct_way = []
 
@@ -147,7 +148,7 @@ class Procedure(object):
                 break
 
         if final_match:
-            return True
+            return correct_way
 
         for _t in self.itp_transitions:
             if self.check_alwaysrun_transition(_t):
@@ -172,7 +173,7 @@ class Procedure(object):
                     except IndexError:
                         continue
                 correct_way.append(_t)
-                if self.get_transition_from_itp(target,current,correct_way):
+                if self.get_transition_from_itp(target,current,correct_way) is not None:
                     return correct_way
                 else:
                     correct_way.pop()
