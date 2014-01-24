@@ -124,6 +124,52 @@ class Procedure(object):
         return match
 
     def get_transition_from_itp(self, target, current,correct_way = []):
+        """
+        >>> import checkmate.test_data
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime.test_plan
+        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> r.setup_environment(['C1'])
+        >>> r.start_test()
+        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+        >>> procedures = []
+        >>> for p in gen: procedures.append(p[0])
+        >>> p11 = procedures[0]
+        >>> p22 = procedures[1]
+        >>> p33 = procedures[2]
+        >>> p44 = procedures[3]
+        >>> states = []
+        >>> states.extend(c1.context.states)
+        >>> states.extend(c3.context.states)
+        >>> states
+        [<sample_app.component_1.states.State object at 0x7f9c1d1ebc90>, <sample_app.component_1.states.AnotherState object at 0x7f9c1d1ebdd0>, <sample_app.component_3.states.Acknowledge object at 0x7f9c1d1f8410>]
+        >>> p44.get_transition_from_itp(p44.initial, states)
+        [<checkmate._storage.TransitionStorage object at 0x7f9c1c16e9d0>, <checkmate._storage.TransitionStorage object at 0x7f9c1c16ec90>]
+        >>> p44.get_transition_from_itp(p44.initial, states)
+        True
+        >>> p33.get_transition_from_itp(p33.initial, states)
+        [<checkmate._storage.TransitionStorage object at 0x7f9c1c16e9d0>, <checkmate._storage.TransitionStorage object at 0x7f9c1c16ec90>, <checkmate._storage.TransitionStorage object at 0x7f9c1c18df50>, <checkmate._storage.TransitionStorage object at 0x7f9c1c16e9d0>]
+        >>> p33.get_transition_from_itp(p33.initial, states)
+        True
+        >>> _transition = p44.get_transition_from_itp(p44.initial, states)
+        >>> for _t in _transition:
+        ...         print(_t.incoming[0].code, end=',')
+        ...     
+        AC,RL,PP,AC,RL,
+        >>> _transition = p33.get_transition_from_itp(p33.initial, states)
+        >>> for _t in _transition:
+        ...     print(_t.incoming[0].code, end=',')
+        ...     
+        AC,RL,PP,AC,RL,PP,AC,
+        >>> p33(r.application.system_under_test)
+        ...
+        RuntimeError: maximum recursion depth exceeded while calling a Python object
+        """
         final_match = False
         for _t in target:
             for _c in current:
