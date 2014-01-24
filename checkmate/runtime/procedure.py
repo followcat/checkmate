@@ -123,6 +123,37 @@ class Procedure(object):
         return match
 
     def get_transition_from_itp(self, target, current,correct_way = None):
+        """
+        >>> import checkmate.test_data
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime.test_plan
+        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> r.setup_environment(['C1'])
+        >>> r.start_test()
+        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+        >>> procedures = []
+        >>> for p in gen: procedures.append(p[0])
+        >>> p11 = procedures[0]
+        >>> p22 = procedures[1]
+        >>> p33 = procedures[2]
+        >>> p44 = procedures[3]
+        >>> states = []
+        >>> states.extend(c1.context.states)
+        >>> states.extend(c3.context.states)
+        >>> states[0].value, states[1].value, states[2].value
+        ('True', [], 'False')
+        >>> _transitions = p44.get_transition_from_itp(p44.initial, states)
+        >>> for _t in _transitions:
+        ...     print(_t.incoming[0].code, end=',')
+        ...     
+        AC,RL,
+        >>> p44(r.application.system_under_test)
+        """
         final_match = False
         #Default parameter values are evaluated when the function definition is executed.
         #This means that the expression is evaluated once, when the function is defined, and that that same “pre-computed” value is used for each call.
