@@ -1,4 +1,5 @@
 import time
+import shlex
 import argparse
 import importlib
 import subprocess
@@ -12,7 +13,7 @@ import checkmate.runtime.component
 class Launcher(object):
     def __init__(self, command=None, args=[''], component=None, wait_sec=0):
         if command is not None:
-            self.process = subprocess.Popen(command)
+            self.process = subprocess.Popen(shlex.split(command))
             time.sleep(wait_sec)
         elif component is not None:
             self.process = None
