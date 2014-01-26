@@ -153,6 +153,7 @@ class Procedure(object):
         ...     
         AC,RL,
         >>> p44(r.application.system_under_test)
+        >>> r.stop_test()
         """
         final_match = False
         #Default parameter values are evaluated when the function definition is executed.
