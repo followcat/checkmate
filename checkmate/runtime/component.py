@@ -261,7 +261,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).__init__(component)
 
         if hasattr(component, 'launch_command'):
-            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command)
+            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 
