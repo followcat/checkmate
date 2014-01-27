@@ -1,5 +1,4 @@
 import sys
-import shlex
 
 import PyTango
 
@@ -60,7 +59,7 @@ class C1Interface(PyTango.DeviceClass):
 
 if __name__ == '__main__':
     server_name = pytango._database.create_component_device('Device_1', 'C1')
-    py = PyTango.Util(shlex.split(__file__ + ' ' + server_name))
+    py = PyTango.Util(sys.argv)
     py.add_class(C1Interface, Device_1, 'Device_1')
     U = PyTango.Util.instance()
     U.server_init()

@@ -4,7 +4,7 @@ import PyTango
 
 
 def create_component_device(device_name, component_name):
-        server_name = "S%d" %(random.randint(0, 1000))
+        server_name = component_name
         db = PyTango.Database()
         comp = PyTango.DbDevInfo()
         comp._class = "DServer"
