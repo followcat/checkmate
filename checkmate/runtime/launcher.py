@@ -11,26 +11,28 @@ import checkmate.runtime.component
 
 
 class Launcher(object):
-    def __init__(self, command=None, args=[''], wait_sec=0, **kwargs):
-        if command is not None:
-            self.process = subprocess.Popen(shlex.split(command.format(**kwargs)))
-            time.sleep(wait_sec)
-        elif 'component' in kwargs.keys():
-            self.process = None
-            self.runtime_component = checkmate.runtime.component.ThreadedComponent(kwargs['component'])
+    def __init__(self, component=None, command=None, *args):
+        self.command = command
+        self.component = component
+        if self.command is not None:
+            pass
+        elif self.component is not None:
+            self.runtime_component = checkmate.runtime.component.ThreadedComponent(self.component)
         else:
             raise Exception("No command nor component")
 
     def initialize(self):
-        if self.process is None:
+        if self.command is not None:
+            self.process = subprocess.Popen(shlex.split(self.command.format(component=self.component)))
+        else:
             self.runtime_component.initialize()
 
     def start(self):
-        if self.process is None:
+        if self.command is None:
             self.runtime_component.start()
 
     def end(self):
-        if self.process is not None:
+        if self.command is not None:
             self.process.terminate()
             self.process.communicate()
         else:
