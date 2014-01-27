@@ -31,7 +31,7 @@ class Connector(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.ICommunication)
 class Communication(object):
     """"""
-    def __init__(self):
+    def __init__(self, component=None):
         """"""
 
     def initialize(self):

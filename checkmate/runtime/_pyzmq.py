@@ -37,9 +37,9 @@ class Communication(checkmate.runtime.communication.Communication):
         True
         >>> r.stop_test()
     """
-    def __init__(self):
+    def __init__(self, component=None):
         """"""
-        super(Communication, self).__init__()
+        super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize"%self)
         self.registry = Registry()

@@ -261,11 +261,14 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).__init__(component)
 
         if hasattr(component, 'launch_command'):
-            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
+            for connector in self.context.connector_list:
+                connector.communication(self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 
     def initialize(self):
+        if hasattr(self.context, 'launch_command'):
+            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 

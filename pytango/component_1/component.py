@@ -2,13 +2,11 @@ import sys
 
 import PyTango
 
-import pytango._database
 
-
-class Device_1(PyTango.Device_4Impl):
+class Component_1(PyTango.Device_4Impl):
     def __init__(self, _class, name):
-        super(Device_1, self).__init__(_class, name)
-        Device_1.init_device(self)
+        super(Component_1, self).__init__(_class, name)
+        Component_1.init_device(self)
 
     def init_device(self):
         self.get_device_properties(self.get_device_class())
@@ -58,9 +56,8 @@ class C1Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
-    server_name = pytango._database.create_component_device('Device_1', 'C1')
     py = PyTango.Util(sys.argv)
-    py.add_class(C1Interface, Device_1, 'Device_1')
+    py.add_class(C1Interface, Component_1, 'Component_1')
     U = PyTango.Util.instance()
     U.server_init()
     U.server_run()

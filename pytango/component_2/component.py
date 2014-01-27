@@ -2,13 +2,11 @@ import sys
 
 import PyTango
 
-import pytango._database
 
-
-class Device_2(PyTango.Device_4Impl):
+class Component_2(PyTango.Device_4Impl):
     def __init__(self, _class, name):
-        super(Device_2, self).__init__(_class, name)
-        Device_2.init_device(self)
+        super(Component_2, self).__init__(_class, name)
+        Component_2.init_device(self)
         self.received_exchange = []
 
     def init_device(self):
@@ -52,9 +50,8 @@ class C2Interface(PyTango.DeviceClass):
 
 
 if __name__ == '__main__':
-    server_name = pytango._database.create_component_device('Device_2', 'C2')
     py = PyTango.Util(sys.argv)
-    py.add_class(C2Interface, Device_2, 'Device_2')
+    py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
     U.server_init()
     U.server_run()
