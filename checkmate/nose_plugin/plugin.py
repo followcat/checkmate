@@ -60,6 +60,7 @@ class Checkmate(nose.plugins.Plugin):
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.randomized_run = options.randomized_run
+        self.application_class_name = options.app_class
         self.application_class = self.get_option_value(options.app_class)
         self.communication_class = self.get_option_value(options.comm_class)
     
@@ -133,6 +134,13 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
+        # if a test try to run with pytango application class, it has to verify if the database is being using by other test
+        # if the database is being used, the test will exit
+        if 'pytango' in self.application_class_name:
+            port = os.getenv('TANGO_HOST').split(':')[-1]
+            if os.popen("netstat -na|grep {}|grep ESTABLISHED".format(port)).readline() != '':
+                sys.exit(0)
+            
         self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
