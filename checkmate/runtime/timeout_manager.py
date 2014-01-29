@@ -23,7 +23,7 @@ class TimeoutManager():
 		'TestThread' object has no attribute 'after_run_have_num'
 		>>> tt2 = TestThread()
 		>>> tt2.start()
-		>>> checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(func=tt2.get_after_run_have_num)
+		>>> checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(func=tt2.get_after_run_have_num,timeout=1)
 		0
 	"""
 	timeout_value = None
@@ -33,17 +33,16 @@ class TimeoutManager():
 			TimeoutManager.machine_benmark()
 		if timeout is None:
 			timeout = TimeoutManager.timeout_value
-		while(times>0):
+		while(times):
 			try:
-				func(*args,**kwargs)
-				break
-			except Exception as e:
-				times-=1
+				return func(*args,**kwargs)
+			except:
 				time.sleep(timeout)
+				times-=1
 				timeout*=1.25
 		if not times:
 			raise ValueError("I sleep %d s at TimeoutManager!"%(timeout))
 
 	@staticmethod
 	def machine_benmark():
-		TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=20000)
+		TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=2000)

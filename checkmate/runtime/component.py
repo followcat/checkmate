@@ -18,6 +18,7 @@ import checkmate.runtime.registry
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+import checkmate.runtime.timeout_manager
 
 
 SIMULATE_WAIT_SEC = 0.2
@@ -86,12 +87,12 @@ class Component(object):
             raise AttributeError('current state is not a proper state')
 
     def simulate(self, exchange):
-        output = self.context.simulate(exchange)
+        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
+        #output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-        time.sleep(SIMULATE_WAIT_SEC)
         return output
 
 
@@ -238,12 +239,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
     def simulate(self, exchange):
         self._set_busy(True)
-        output = self.context.simulate(exchange)
+        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
+        #output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
-        time.sleep(SIMULATE_WAIT_SEC)
         self._set_busy(False)
         return output
 
@@ -323,14 +324,14 @@ class ThreadedStub(ThreadedComponent, Stub):
 
     def simulate(self, exchange):
         self._set_busy(True)
-        output = self.context.simulate(exchange)
+        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
+        #output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
-        time.sleep(SIMULATE_WAIT_SEC)
         self._set_busy(False)
         return output
             
