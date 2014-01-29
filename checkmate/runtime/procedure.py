@@ -12,6 +12,7 @@ import checkmate.runtime.registry
 import checkmate.runtime.test_plan
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
+import checkmate.runtime.timeout_manager
 
 
 def _compatible_skip_test(procedure, message):
@@ -264,7 +265,8 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)  
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
-        stub.simulate(current_node.root)
+        
+        checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[current_node.root],func=stub.simulate)
         self._follow_up(current_node)
 
         if hasattr(self, 'final'):
