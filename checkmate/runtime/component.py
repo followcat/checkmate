@@ -86,9 +86,9 @@ class Component(object):
         except:
             raise AttributeError('current state is not a proper state')
 
+    @checkmate.runtime.timeout_manager.functionwaiter
     def simulate(self, exchange):
-        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
-        #output = self.context.simulate(exchange)
+        output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
@@ -236,11 +236,10 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.isbusy = isbusy
         self.busy_lock.release()
 
-
+    @checkmate.runtime.timeout_manager.functionwaiter
     def simulate(self, exchange):
         self._set_busy(True)
-        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
-        #output = self.context.simulate(exchange)
+        output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
@@ -322,10 +321,10 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.validation_lock.release()
                     self.process([exchange])
 
+    @checkmate.runtime.timeout_manager.functionwaiter
     def simulate(self, exchange):
         self._set_busy(True)
-        output = checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[exchange],func=self.context.simulate)
-        #output = self.context.simulate(exchange)
+        output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
