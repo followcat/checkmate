@@ -12,17 +12,16 @@ def functionwaiter(func=None,usetime=None):
 			times = TimeoutManager.times
 			if timeout is None:
 				timeout = TimeoutManager.timeout_value
-			while(times > 0):
+			while(True):
 				try:
 					return_value = func(*args,**kwargs)
 					time.sleep(timeout)
 					break
-				except:
+				except Exception as e:
 					time.sleep(timeout)
 					times-=1
-					timeout*=1.25
-			if times == 0:
-				raise ValueError("I sleep %d s at TimeoutManager!"%(timeout))
+					if not times:
+						raise ValueError(e,"Has Been Sleep %f"%(TimeoutManager.times*timeout))
 			return return_value
 		return new_f
 
@@ -47,7 +46,7 @@ class TimeoutManager():
 		...         self.after_run_have_num = 0
 		...     def get_after_run_have_num(self):
 		...         print(self.after_run_have_num)
-		...     @checkmate.runtime.timeout_manager.functionwaiter(usetime=1)
+		...     @checkmate.runtime.timeout_manager.functionwaiter(usetime=0.5)
 		...     def get_after_run_have_num_with_function_waiter(self):
 		...         print(self.after_run_have_num)
 		>>> tt = TestThread()
@@ -63,23 +62,7 @@ class TimeoutManager():
 		0
 	"""
 	timeout_value = None
-	times = 5
-	@staticmethod
-	def function_waiter(args=(),kwargs={},func=None,timeout=None,times=5,watch_error=None):
-		if TimeoutManager.timeout_value is None:
-			TimeoutManager.machine_benmark()
-		if timeout is None:
-			timeout = TimeoutManager.timeout_value
-		while(times):
-			try:
-				return func(*args,**kwargs)
-			except:
-				time.sleep(timeout)
-				times-=1
-				timeout*=1.25
-		if not times:
-			raise ValueError("I sleep %d s at TimeoutManager!"%(timeout))
-
+	times = 10
 	@staticmethod
 	def machine_benmark():
 		TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=2000)
