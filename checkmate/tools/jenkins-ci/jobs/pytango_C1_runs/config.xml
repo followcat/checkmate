@@ -25,9 +25,8 @@ cd /home/jeff/Projects/tango-8.1.2/cppserver/database
 make
 cd -
 export TANGO_HOST='localhost:10102'
-sudo /etc/init.d/mysql.server start
 $TANGO_INSTALL_DIR/bin/DataBaseds 2 -ORBendPoint giop:tcp::10102&amp;
-sleep 5
+sleep 10
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
