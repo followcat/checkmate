@@ -68,4 +68,4 @@ class TimeoutManager():
 	times = 10
 	@staticmethod
 	def machine_benmark():
-		TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=2000)
+		TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=5000)
