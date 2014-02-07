@@ -19,8 +19,15 @@
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command>sleep 10
-cd $CHECKMATE_HOME
+      <command>cd $CHECKMATE_HOME
+export TANGO_DB_NAME='jenkins_pytango_C1_C3'
+cd /home/jeff/Projects/tango-8.1.2/cppserver/database
+make
+cd -
+export TANGO_HOST='localhost:10105'
+sudo /etc/init.d/mysql.server start
+$TANGO_INSTALL_DIR/bin/DataBaseds 2 -ORBendPoint giop:tcp::10105&amp;
+sleep 5
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C1,C3 checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
