@@ -15,7 +15,7 @@
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
 export TANGO_DB_NAME='jenkins_pytango_C3_runs'
-cd /home/jeff/Projects/tango-8.1.2/cppserver/database
+cd $TANGO_SOURCE/cppserver/database
 make
 cd -
 export TANGO_HOST='localhost:10104'
