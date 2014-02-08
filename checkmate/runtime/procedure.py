@@ -265,7 +265,8 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)  
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
-        stub.simulate(current_node.root)
+        
+        checkmate.runtime.timeout_manager.TimeoutManager.function_waiter(args=[current_node.root],func=stub.simulate)
         self._follow_up(current_node)
 
         if hasattr(self, 'final'):
