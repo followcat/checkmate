@@ -20,12 +20,8 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
-export TANGO_DB_NAME='jenkins_pytango_C1_C3_runs'
-cd $TANGO_SOURCE/cppserver/database
-flock -w 20 /tmp/jenkins-lock -c make
-cd -
 export TANGO_HOST='localhost:10106'
-$TANGO_INSTALL_DIR/bin/DataBaseds 2 -ORBendPoint giop:tcp::10106&amp;
+DataBaseds 2 -ORBendPoint giop:tcp::10106&amp;
 sleep 10
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C1,C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>

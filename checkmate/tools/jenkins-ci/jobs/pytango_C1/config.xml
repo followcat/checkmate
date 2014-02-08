@@ -20,10 +20,6 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
-export TANGO_DB_NAME='jenkins_pytango_C1'
-cd $TANGO_SOURCE/cppserver/database
-flock -w 20 /tmp/jenkins-lock -c make
-cd -
 export TANGO_HOST='localhost:10101'
 $TANGO_INSTALL_DIR/bin/DataBaseds 2 -ORBendPoint giop:tcp::10101&amp;
 sleep 10
