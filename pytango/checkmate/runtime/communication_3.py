@@ -83,6 +83,7 @@ class Connector(checkmate.runtime.communication.Connector):
             pass
 
     def send(self, destination, exchange):
+        code = self.encoder.encode(exchange)
         call = getattr(self.device_client, self.encoder.encode(exchange))
         call()
 
