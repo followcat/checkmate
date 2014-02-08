@@ -6,7 +6,6 @@ def functionwaiter(func=None,usetime=None):
 	def call_(func):
 		@wraps(func)
 		def new_f(*args,**kwargs):
-			sleep_totaltime = 0
 			timeout = usetime
 			if TimeoutManager.timeout_value is None:
 				TimeoutManager.machine_benmark()
@@ -17,14 +16,12 @@ def functionwaiter(func=None,usetime=None):
 				try:
 					return_value = func(*args,**kwargs)
 					time.sleep(timeout)
-					sleep_totaltime += timeout
 					break
 				except Exception as e:
 					time.sleep(timeout)
-					sleep_totaltime += timeout
 					times-=1
 					if not times:
-						raise ValueError(e,"Has Been Sleep %f"%(sleep_totaltime))
+						raise ValueError(e,"Has Been Sleep %f"%(TimeoutManager.times*timeout))
 			return return_value
 		return new_f
 
