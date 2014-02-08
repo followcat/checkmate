@@ -24,7 +24,7 @@ def functionwaiter(func=None,usetime=None):
 					sleep_totaltime += timeout
 					times-=1
 					if not times:
-						raise ValueError(e,"Has Been Sleep %f"%(sleep_totaltime))
+						raise ValueError(e,func,"Has Been Sleep %f"%(sleep_totaltime))
 			return return_value
 		return new_f
 
