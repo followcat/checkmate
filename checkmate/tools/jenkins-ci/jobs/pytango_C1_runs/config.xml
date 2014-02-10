@@ -20,6 +20,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
+export TANGO_DB_NAME=jenkins_pytango_C1_runs
 export TANGO_HOST='localhost:10102'
 DataBaseds 2 -ORBendPoint giop:tcp::10102&amp;
 sleep 10
