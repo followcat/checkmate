@@ -101,4 +101,21 @@ We see that CHECKMATE_HOME is now pointing to $CHECKMATE_CI_HOME for the shell f
 This allow to use the original CHECKMATE_HOME for interactive testing while jenkins CI is running.
 
 
+Using continuous integration with pytango
+-----------------------------------------
+Jenkins CI has the ability to run different jobs in parallel.
+If we want to support this feature with pytango application, we have to make sure jobs are not conflicting.
+This is done by having each job to use a specific database and connect through a specific DataBaseds.
+
+That database must be created prior to jeankins CI startup.
+
+::
+
+    export TANGO_SOURCE=/opt/tango-controls/cme-tango-8.1.2/pytango
+
+    cd $TANGO_SOURCE/cppserver/database
+    for database in 'pytango_C1' 'pytango_C1_runs' 'pytango_C3' 'pytango_C3_runs' 'pytango_C1_C3' 'pytango_C1_C3_runs'; do (export TANGO_DB_NAME=$database; make); done
+
+    
+
 .. _tango related documentation: training_pytango_app.html 
