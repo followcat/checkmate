@@ -15,7 +15,7 @@
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
 export TANGO_HOST='localhost:10103'
-export TANGO_DB_NAME=jenkins_pytango_C3
+export TANGO_DB_NAME=pytango_C3
 DataBaseds 2 -ORBendPoint giop:tcp::10103&amp;
 sleep 10
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 checkmate/ sample_app/</command>
