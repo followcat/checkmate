@@ -72,8 +72,12 @@ class Connector(checkmate.runtime.communication.Connector):
                 _communication.pytango_server.add_class(pytango.component_2.component.C2Interface, Device_2, 'Device_2')
 
     def open(self):
+        @checkmate.runtime.timeout_manager.functiontryer(usetime=1)
+        def check():
+            self.device_client.attribute_list_query()
         self.registry = PyTango.Util.instance()
         self.device_client = PyTango.DeviceProxy(self.device_name)
+        check()
         if self.is_server:
             self.device_server = self.registry.get_device_by_name(self.device_name)
 
