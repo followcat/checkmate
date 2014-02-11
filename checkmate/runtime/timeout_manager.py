@@ -1,10 +1,11 @@
 import time
 import timeit
-from functools import wraps
+import functools
+
 
 def functionwaiter(func=None,usetime=None):
     def call_(func):
-        @wraps(func)
+        @functools.wraps(func)
         def new_f(*args,**kwargs):
             timeout = usetime
             if TimeoutManager.timeout_value is None:
@@ -25,7 +26,7 @@ def functionwaiter(func=None,usetime=None):
 
 def functiontryer(func=None,usetime=None):
     def call_(func):
-        @wraps(func)
+        @functools.wraps(func)
         def new_f(*args,**kwargs):
             sleep_totaltime = 0
             timeout = usetime
@@ -88,4 +89,36 @@ class TimeoutManager():
     times = 10
     @staticmethod
     def machine_benmark():
-        TimeoutManager.timeout_value = timeit.timeit('"-".join(str(n) for n in range(100))', number=5000)
+        TimeoutManager.timeout_value = timeit.timeit("""import checkmate.exchange
+import checkmate.component
+import checkmate.application
+import checkmate.state_machine
+import checkmate.runtime._pyzmq
+import checkmate.runtime.registry
+import checkmate.runtime.component
+import checkmate.runtime.interfaces
+
+setattr(checkmate.component.Component, 'state_machine', checkmate.state_machine.StateMachine())
+setattr(checkmate.component.Component, 'services', [])
+
+c = checkmate.runtime._pyzmq.Communication()
+gr = checkmate.runtime.registry.global_registry
+r = checkmate.runtime.registry.RuntimeGlobalRegistry()
+checkmate.runtime.registry.global_registry = r
+
+r.registerAdapter(checkmate.runtime.component.ThreadedStub,(checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+r.registerAdapter(checkmate.runtime.component.ThreadedSut,(checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+
+r.registerUtility(checkmate.application.Application(), checkmate.application.IApplication)
+
+r.registerUtility(c, checkmate.runtime.interfaces.ICommunication, 'default')
+sa = r.getAdapter(checkmate.component.Component('a'),checkmate.runtime.component.IStub)
+sb = r.getAdapter(checkmate.component.Component('b'),checkmate.runtime.component.ISut)
+c.initialize(); sa.initialize(); sb.initialize()
+c.start(); sa.start(); sb.start()
+
+e = checkmate.exchange.Exchange()
+e.origin_destination('a', 'b')
+sa.internal_client_list[0].send(e)
+sb.stop(); sa.stop(); c.close()
+checkmate.runtime.registry.global_registry = gr""", number=1)/25
