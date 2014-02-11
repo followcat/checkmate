@@ -86,7 +86,7 @@ class Component(object):
         except:
             raise AttributeError('current state is not a proper state')
 
-    @checkmate.runtime.timeout_manager.functionwaiter
+    @checkmate.runtime.timeout_manager.sleep_after_call
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
@@ -236,7 +236,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.isbusy = isbusy
         self.busy_lock.release()
 
-    @checkmate.runtime.timeout_manager.functionwaiter
+    @checkmate.runtime.timeout_manager.sleep_after_call
     def simulate(self, exchange):
         self._set_busy(True)
         output = self.context.simulate(exchange)
@@ -321,7 +321,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.validation_lock.release()
                     self.process([exchange])
 
-    @checkmate.runtime.timeout_manager.functionwaiter
+    @checkmate.runtime.timeout_manager.sleep_after_call
     def simulate(self, exchange):
         self._set_busy(True)
         output = self.context.simulate(exchange)

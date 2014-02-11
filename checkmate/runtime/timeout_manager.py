@@ -3,13 +3,13 @@ import timeit
 import functools
 
 
-def functionwaiter(func=None,usetime=None):
+def sleep_after_call(func=None,usetime=None):
     def call_(func):
         @functools.wraps(func)
         def new_f(*args,**kwargs):
             timeout = usetime
             if TimeoutManager.timeout_value is None:
-                TimeoutManager.machine_benmark()
+                TimeoutManager.machine_benchmark()
             if timeout is None:
                 timeout = TimeoutManager.timeout_value
             return_value = func(*args,**kwargs)
@@ -24,14 +24,15 @@ def functionwaiter(func=None,usetime=None):
     else:
         return call_(func)
 
-def functiontryer(func=None,usetime=None):
+
+def wait_on_exception(func=None,usetime=None):
     def call_(func):
         @functools.wraps(func)
         def new_f(*args,**kwargs):
             sleep_totaltime = 0
             timeout = usetime
             if TimeoutManager.timeout_value is None:
-                TimeoutManager.machine_benmark()
+                TimeoutManager.machine_benchmark()
             times = TimeoutManager.times
             if timeout is None:
                 timeout = TimeoutManager.timeout_value
@@ -70,7 +71,7 @@ class TimeoutManager():
         ...         self.after_run_have_num = 0
         ...     def get_after_run_have_num(self):
         ...         print(self.after_run_have_num)
-        ...     @checkmate.runtime.timeout_manager.functiontryer(usetime=0.5)
+        ...     @checkmate.runtime.timeout_manager.wait_on_exception(usetime=0.5)
         ...     def get_after_run_have_num_with_function_waiter(self):
         ...         print(self.after_run_have_num)
         >>> tt = TestThread()
@@ -87,9 +88,11 @@ class TimeoutManager():
     """
     timeout_value = None
     times = 10
+
     @staticmethod
-    def machine_benmark():
-        TimeoutManager.timeout_value = timeit.timeit("""import checkmate.exchange
+    def machine_benchmark():
+        TimeoutManager.timeout_value = timeit.timeit("""
+import checkmate.exchange
 import checkmate.component
 import checkmate.application
 import checkmate.state_machine
@@ -121,4 +124,6 @@ e = checkmate.exchange.Exchange()
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 sb.stop(); sa.stop(); c.close()
-checkmate.runtime.registry.global_registry = gr""", number=2)/50
+checkmate.runtime.registry.global_registry = gr
+""", number=2)/50
+

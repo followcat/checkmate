@@ -67,7 +67,7 @@ class Connector(checkmate.runtime.communication.Connector):
                 _communication.pytango_server.add_class(pytango.component_3.component.C3Interface, Device_3, 'Device_3')
 
     def open(self):
-        @checkmate.runtime.timeout_manager.functiontryer(usetime=1)
+        @checkmate.runtime.timeout_manager.wait_on_exception(usetime=1)
         def check():
             self.device_client.attribute_list_query()
         self.registry = PyTango.Util.instance()
