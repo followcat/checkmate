@@ -121,4 +121,4 @@ e = checkmate.exchange.Exchange()
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 sb.stop(); sa.stop(); c.close()
-checkmate.runtime.registry.global_registry = gr""", number=1)/25
+checkmate.runtime.registry.global_registry = gr""", number=2)/50
