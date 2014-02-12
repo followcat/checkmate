@@ -1,5 +1,6 @@
 import time
 import timeit
+import logging
 import functools
 
 
@@ -39,14 +40,14 @@ def wait_on_exception(func=None,usetime=None):
             while(True):
                 try:
                     return_value = func(*args,**kwargs)
-                    sleep_totaltime += timeout
                     break
                 except Exception as e:
                     time.sleep(timeout)
                     sleep_totaltime += timeout
                     times-=1
-                    if not times:
-                        raise ValueError(e,func,"Has Been Sleep %f"%(sleep_totaltime))
+                    if times < 0:
+                        TimeoutManager.logger.error("Functiontryer,At %s,Has Been Sleep %f"%(func,sleep_totaltime))
+                        break
             return return_value
         return new_f
 
@@ -88,6 +89,7 @@ class TimeoutManager():
     """
     timeout_value = None
     times = 10
+    logger = logging.getLogger('checkmate.runtime.timeout_manager')
 
     @staticmethod
     def machine_benchmark():
@@ -126,4 +128,5 @@ sa.internal_client_list[0].send(e)
 sb.stop(); sa.stop(); c.close()
 checkmate.runtime.registry.global_registry = gr
 """, number=2)/50
+        TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
