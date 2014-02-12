@@ -37,6 +37,7 @@ def wait_on_exception(func=None,usetime=None):
             times = TimeoutManager.times
             if timeout is None:
                 timeout = TimeoutManager.timeout_value
+            return_value = func
             while(True):
                 try:
                     return_value = func(*args,**kwargs)
@@ -46,7 +47,7 @@ def wait_on_exception(func=None,usetime=None):
                     sleep_totaltime += timeout
                     times-=1
                     if times < 0:
-                        TimeoutManager.logger.error("Functiontryer,At %s,Has Been Sleep %f"%(func,sleep_totaltime))
+                        TimeoutManager.logger.error("Wait_on_exception,%s,At %s,Has Been Sleep %f"%(e,func,sleep_totaltime))
                         break
             return return_value
         return new_f
