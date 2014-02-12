@@ -12,6 +12,7 @@ import checkmate.runtime.registry
 import checkmate.runtime.test_plan
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
+import checkmate.runtime.timeout_manager
 
 
 def _compatible_skip_test(procedure, message):
@@ -290,7 +291,7 @@ class Procedure(object):
         if self.result is not None:
             self.result.stopTest(self)
 
-
+    @checkmate.runtime.timeout_manager.wait_on_exception(usetime=1)
     def _follow_up(self, node):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:
