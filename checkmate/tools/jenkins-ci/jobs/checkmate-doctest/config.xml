@@ -21,8 +21,6 @@
     <hudson.tasks.Shell>
       <command> cd $CHECKMATE_CI_HOME
 hg pull -u
-cd $CHECKMATE_HOME
-rm -f $CHECKMATE_LOG/exchange*
 nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>
