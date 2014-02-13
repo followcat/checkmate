@@ -20,7 +20,7 @@ class Runtime(object):
     def __init__(self, application, communication, threaded=False, full_python=True):
         """"""
         self.threaded = threaded
-        self.application = application(full_python)
+        self.application = application(full_python=full_python)
         checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
 
         self.communication_list = [(communication(), 'default')]
