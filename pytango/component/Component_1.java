@@ -1,9 +1,9 @@
-/*----- PROTECTED REGION ID(Component.java) ENABLED START -----*/
+/*----- PROTECTED REGION ID(Component_1.java) ENABLED START -----*/
 //=============================================================================
 //
-// file :        Component.java
+// file :        Component_1.java
 //
-// description : Java source for the Component class and its commands.
+// description : Java source for the Component_1 class and its commands.
 //               The class is derived from Device. It represents the
 //               CORBA servant object which will be accessed from the
 //               network. All commands which can be executed on the
@@ -38,11 +38,11 @@
 //        (Program Obviously used to Generate tango Object)
 //=============================================================================
 
-/*----- PROTECTED REGION END -----*/    //    Component.java
+/*----- PROTECTED REGION END -----*/    //    Component_1.java
 
 package pytango.component_1;
 
-/*----- PROTECTED REGION ID(Component.imports) ENABLED START -----*/
+/*----- PROTECTED REGION ID(Component_1.imports) ENABLED START -----*/
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -72,7 +72,7 @@ import fr.esrf.TangoApi.DeviceProxy;
 
 //import pytango._database;
 
-/*----- PROTECTED REGION END -----*/    //    Component.imports
+/*----- PROTECTED REGION END -----*/    //    Component_1.imports
 
 /**
  *  Component class description:
@@ -80,23 +80,23 @@ import fr.esrf.TangoApi.DeviceProxy;
  */
 
 @Device
-public class Component {
+public class Component_1 {
 
-    private static final Logger logger = LoggerFactory.getLogger(Component.class);
-    private static final XLogger xlogger = XLoggerFactory.getXLogger(Component.class);
+    private static final Logger logger = LoggerFactory.getLogger(Component_1.class);
+    private static final XLogger xlogger = XLoggerFactory.getXLogger(Component_1.class);
     //========================================================
     //    Programmer's data members
     //========================================================
-    /*----- PROTECTED REGION ID(Component.variables) ENABLED START -----*/
+    /*----- PROTECTED REGION ID(Component_1.variables) ENABLED START -----*/
     
     //    Put static variables here
     
-    /*----- PROTECTED REGION END -----*/    //    Component.variables
-    /*----- PROTECTED REGION ID(Component.private) ENABLED START -----*/
+    /*----- PROTECTED REGION END -----*/    //    Component_1.variables
+    /*----- PROTECTED REGION ID(Component_1.private) ENABLED START -----*/
     
     //    Put private variables here
     
-    /*----- PROTECTED REGION END -----*/    //    Component.private
+    /*----- PROTECTED REGION END -----*/    //    Component_1.private
 
     //========================================================
     //    Property data members and related methods
@@ -118,13 +118,13 @@ public class Component {
     public final void initDevice() throws DevFailed {
         xlogger.entry();
         logger.debug("init");
-        /*----- PROTECTED REGION ID(Component.initDevice) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.initDevice) ENABLED START -----*/
         
         //    Put your device initialization code here
-        c2_dev = new DeviceProxy("sys/component/C2");
-        c3_dev = new DeviceProxy("sys/component/C3");
+        c2_dev = new DeviceProxy("sys/component_2/C2");
+        c3_dev = new DeviceProxy("sys/component_3/C3");
         
-        /*----- PROTECTED REGION END -----*/    //    Component.initDevice
+        /*----- PROTECTED REGION END -----*/    //    Component_1.initDevice
         xlogger.exit();
     }
 
@@ -136,11 +136,11 @@ public class Component {
     @Delete
     public final void deleteDevice() throws DevFailed {
         xlogger.entry();
-        /*----- PROTECTED REGION ID(Component.deleteDevice) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.deleteDevice) ENABLED START -----*/
         
         //    Put your device clearing code here
         
-        /*----- PROTECTED REGION END -----*/    //    Component.deleteDevice
+        /*----- PROTECTED REGION END -----*/    //    Component_1.deleteDevice
         xlogger.exit();
     }
 
@@ -152,11 +152,11 @@ public class Component {
     @AroundInvoke
     public final void aroundInvoke(final InvocationContext ctx) throws DevFailed {
         xlogger.entry(ctx);
-        /*----- PROTECTED REGION ID(Component.aroundInvoke) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.aroundInvoke) ENABLED START -----*/
         
         //    Put aroundInvoke code here
         
-        /*----- PROTECTED REGION END -----*/    //    Component.aroundInvoke
+        /*----- PROTECTED REGION END -----*/    //    Component_1.aroundInvoke
         xlogger.exit();
     }
 
@@ -171,11 +171,11 @@ public class Component {
      */
     public void setDynamicManager(final DynamicManager dynamicManager) {
         this.dynamicManager = dynamicManager;
-        /*----- PROTECTED REGION ID(Component.setDynamicManager) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.setDynamicManager) ENABLED START -----*/
         
         //    Put your code here
         
-        /*----- PROTECTED REGION END -----*/    //    Component.setDynamicManager
+        /*----- PROTECTED REGION END -----*/    //    Component_1.setDynamicManager
     }
 
 
@@ -195,11 +195,11 @@ public class Component {
      * @throws DevFailed if command execution failed.
      */
     public final DevState getState() throws DevFailed {
-        /*----- PROTECTED REGION ID(Component.getState) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.getState) ENABLED START -----*/
         
         //    Put state code here
         
-        /*----- PROTECTED REGION END -----*/    //    Component.getState
+        /*----- PROTECTED REGION END -----*/    //    Component_1.getState
         return state;
     }
     /**
@@ -222,11 +222,11 @@ public class Component {
      * @throws DevFailed if command execution failed.
      */
     public final String getStatus() throws DevFailed {
-        /*----- PROTECTED REGION ID(Component.getStatus) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.getStatus) ENABLED START -----*/
         
         //    Put status code here
         
-        /*----- PROTECTED REGION END -----*/    //    Component.getStatus
+        /*----- PROTECTED REGION END -----*/    //    Component_1.getStatus
         return status;
     }
     /**
@@ -255,7 +255,7 @@ public class Component {
     @Command(name="AC", inTypeDesc="", outTypeDesc="")
     public void AC() throws DevFailed {
         xlogger.entry();
-        /*----- PROTECTED REGION ID(Component.aC) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.aC) ENABLED START -----*/
         
         //    Put command code here
         //DeviceProxy c2_dev = new DeviceProxy("sys/component/C2"); 
@@ -266,7 +266,7 @@ public class Component {
             c2_dev.command_inout("ARE");
         }
         
-        /*----- PROTECTED REGION END -----*/    //    Component.aC
+        /*----- PROTECTED REGION END -----*/    //    Component_1.aC
         xlogger.exit();
     }
     
@@ -278,12 +278,12 @@ public class Component {
     @Command(name="AP", inTypeDesc="", outTypeDesc="")
     public void AP() throws DevFailed {
         xlogger.entry();
-        /*----- PROTECTED REGION ID(Component.aP) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.aP) ENABLED START -----*/
         
         //    Put command code here
         c2_dev.command_inout("DA");
         
-        /*----- PROTECTED REGION END -----*/    //    Component.aP
+        /*----- PROTECTED REGION END -----*/    //    Component_1.aP
         xlogger.exit();
     }
     
@@ -295,7 +295,7 @@ public class Component {
     @Command(name="PP", inTypeDesc="", outTypeDesc="")
     public void PP() throws DevFailed {
         xlogger.entry();
-        /*----- PROTECTED REGION ID(Component.pP) ENABLED START -----*/
+        /*----- PROTECTED REGION ID(Component_1.pP) ENABLED START -----*/
         
         //    Put command code here
         if (c_state == false) {
@@ -304,7 +304,7 @@ public class Component {
             c3_dev.command_inout_asynch("PA");
         }
         
-        /*----- PROTECTED REGION END -----*/    //    Component.pP
+        /*----- PROTECTED REGION END -----*/    //    Component_1.pP
         xlogger.exit();
     }
     
@@ -312,14 +312,14 @@ public class Component {
     //========================================================
     //    Programmer's methods
     //========================================================
-    /*----- PROTECTED REGION ID(Component.methods) ENABLED START -----*/
+    /*----- PROTECTED REGION ID(Component_1.methods) ENABLED START -----*/
     
     //    Put your own methods here
     private void toggle(){
            c_state = !c_state;
     }
     
-    /*----- PROTECTED REGION END -----*/    //    Component.methods
+    /*----- PROTECTED REGION END -----*/    //    Component_1.methods
 
 
     /**
@@ -327,7 +327,7 @@ public class Component {
      * @param args program arguments (instance_name [-v[trace level]]  [-nodb [-dlist <device name list>] [-file=fileName]])
      */
     public static void main(final String[] args) {
-        ServerManager.getInstance().start(args, Component.class);
+        ServerManager.getInstance().start(args, Component_1.class);
         System.out.println("------- Started -------------");
     }
 }

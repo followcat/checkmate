@@ -1,3 +1,4 @@
+import os
 import sys
 import shlex
 import random
@@ -38,9 +39,9 @@ class Communication(checkmate.runtime.communication.Communication):
             self.device_family = 'communication'
             self.server_name = self.create_tango_server('S%d' %(random.randint(0, 1000)))
         else:
-            self.device_family = 'component'
+            self.device_family = type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
-            _device_name = self.create_tango_device(component.__class__.__name__, component.name)
+            _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
 
     def initialize(self):
         """"""
@@ -68,11 +69,11 @@ class Communication(checkmate.runtime.communication.Communication):
         self.tango_database.add_device(comp)
         return server_name
 
-    def create_tango_device(self, component_class, component):
+    def create_tango_device(self, component_class, component, device_family):
         comp = PyTango.DbDevInfo()
         comp._class = component_class
         comp.server = '/'.join((self.device_family, self.server_name))
-        comp.name = "sys/component/" + component
+        comp.name = '/'.join(('sys', device_family, component))
         self.tango_database.add_device(comp)
         return comp.name
 

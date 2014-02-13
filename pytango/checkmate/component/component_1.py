@@ -16,7 +16,7 @@ class Component_1(checkmate.component.Component, metaclass=checkmate.component.C
     def __init__(self, name, full_python=False):
         super(Component_1, self).__init__(name, full_python)
         if full_python:
-            self.launch_command = "python ./pytango/component_1/component.py {component.name}"
+            self.launch_command = "python ./pytango/component/component_1.py {component.name}"
         else:
-            self.launch_command = "java -classpath {classpath}:. pytango.jclient.component_1.Component {component.name}"
+            self.launch_command = "java -classpath {classpath}:. pytango.component.Component_1 {component.name}"
 

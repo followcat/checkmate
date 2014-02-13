@@ -1,3 +1,4 @@
+import os
 import sys
 import shlex
 
@@ -11,7 +12,7 @@ import checkmate.runtime.communication
 
 import sample_app.exchanges
 
-import pytango.component_2.component
+import pytango.component.component_2
 import pytango.checkmate.runtime.communication
 
 
@@ -58,18 +59,18 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def __init__(self, component, internal=False, is_server=False):
         super(Connector, self).__init__(component, internal=internal, is_server=is_server)
-        self.device_name = 'sys/component/' + self.component.name
+        self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
-                self.device_name = _communication.create_tango_device('Device_2', self.component.name)
+                self.device_name = _communication.create_tango_device('Device_2', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
     def initialize(self):
         if self.is_server:
             _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
-                _communication.pytango_server.add_class(pytango.component_2.component.C2Interface, Device_2, 'Device_2')
+                _communication.pytango_server.add_class(pytango.component.component_2.C2Interface, Device_2, 'Device_2')
 
     def open(self):
         @checkmate.runtime.timeout_manager.wait_on_exception(usetime=1)

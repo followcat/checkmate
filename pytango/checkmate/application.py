@@ -36,12 +36,12 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
     def __init__(self, full_python=False):
         super(Application, self).__init__(full_python)
 
-        import pytango.checkmate.component_1.component
-        import pytango.checkmate.component_2.component
-        import pytango.checkmate.component_3.component
-        self.components = {'C1': pytango.checkmate.component_1.component.Component_1,
-                           'C2': pytango.checkmate.component_2.component.Component_2,
-                           'C3': pytango.checkmate.component_3.component.Component_3,
+        import pytango.checkmate.component.component_1
+        import pytango.checkmate.component.component_2
+        import pytango.checkmate.component.component_3
+        self.components = {'C1': pytango.checkmate.component.component_1.Component_1,
+                           'C2': pytango.checkmate.component.component_2.Component_2,
+                           'C3': pytango.checkmate.component.component_3.Component_3,
                           }
 
         for name in list(self.components.keys()):
