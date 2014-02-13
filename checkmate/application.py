@@ -38,7 +38,7 @@ class IApplication(zope.interface.Interface):
 
 @zope.interface.implementer(IApplication)
 class Application(object):
-    def __init__(self):
+    def __init__(self, full_python=False):
         """
         """
         self.components = {}

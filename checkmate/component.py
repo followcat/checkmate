@@ -36,7 +36,7 @@ class IComponent(zope.interface.Interface):
 
 @zope.interface.implementer(IComponent)
 class Component(object):
-    def __init__(self, name):
+    def __init__(self, name, full_python=False):
         self.states = []
         self.name = name
 

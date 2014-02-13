@@ -42,6 +42,10 @@ class Checkmate(nose.plugins.Plugin):
                           dest='runlog',
                           default=False,
                           help="if run from the log file")
+        parser.add_option('--full-python', action='store_true',
+                          dest='full_python',
+                          default=False,
+                          help="if all SUT must be run from python code")
         parser.add_option('--application', action='store',
                           dest='app_class',
                           default=os.getenv('CHECKMATE_RUNTIME_APPLICATION', "sample_app.application.TestData"),
@@ -59,6 +63,7 @@ class Checkmate(nose.plugins.Plugin):
             self.sut = options.sut.split(',')
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
+        self.full_python = options.full_python
         self.randomized_run = options.randomized_run
         self.application_class = self.get_option_value(options.app_class)
         self.communication_class = self.get_option_value(options.comm_class)
@@ -133,7 +138,7 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
-        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True)
+        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
         time.sleep(3)

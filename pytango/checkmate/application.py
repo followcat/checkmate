@@ -33,19 +33,19 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
-    def __init__(self):
-        super(Application, self).__init__()
+    def __init__(self, full_python=False):
+        super(Application, self).__init__(full_python)
 
         import pytango.checkmate.component_1.component
         import pytango.checkmate.component_2.component
         import pytango.checkmate.component_3.component
-        self.components = {'C1': pytango.checkmate.component_1.component.Component,
+        self.components = {'C1': pytango.checkmate.component_1.component.Component_1,
                            'C2': pytango.checkmate.component_2.component.Component_2,
                            'C3': pytango.checkmate.component_3.component.Component_3,
                           }
 
         for name in list(self.components.keys()):
-            self.components[name] = self.components[name](name)
+            self.components[name] = self.components[name](name, full_python)
 
         self.communication_list = (pytango.checkmate.runtime.communication.Communication,)
 
