@@ -79,5 +79,5 @@ class Communication(checkmate.runtime.communication.Communication):
     def delete_tango_device(self, device_name):
         #Use a new database connection in case the existing one was shut down
         db = PyTango.Database()
-        #db.delete_device(device_name)
+        db.delete_device(device_name)
 

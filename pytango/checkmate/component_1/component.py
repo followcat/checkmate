@@ -12,5 +12,5 @@ class Component(checkmate.component.Component, metaclass=checkmate.component.Com
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
     connector_list = (pytango.checkmate.runtime.communication_1.Connector,)
-    launch_command = "java -classpath {classpath}:. pytango.jclient.component_1.Component {component.name}"
+    launch_command = "java -classpath {classpath}:. pytango.component_1.Component {component.name}"
 
