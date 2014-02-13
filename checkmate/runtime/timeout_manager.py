@@ -76,6 +76,16 @@ class SleepAfterCall():
         else:
             return call_(func)
 
+def RaiseOnFalse(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        func_return_value = func(*args, **kwargs)
+        if func_return_value is False:
+            raise ValueError(func,"Return False")
+        else:
+            return func_return_value
+    return wrapper
+
 class WaitOnException():
     """
         >>> import time
@@ -120,10 +130,11 @@ class WaitOnException():
                     self.timeout = TimeoutManager.get_timeout_value()
                 self.sleep_totaltime = self.timeout
                 self.sleep_time = self.sleep_totaltime / self.loop_times
-                return_value = func
+                _exception = True
                 while(self.already_loop_times < self.loop_times):
                     try:
                         return_value = func(*args,**kwargs)
+                        _exception = False
                         break
                     except Exception as e:
                         time.sleep(self.sleep_time)
@@ -131,8 +142,9 @@ class WaitOnException():
                         self.already_loop_times += 1
                         self.exception_saver = e
                         self.logger.debug("%s,At %s,Has Been Sleep %f"%(self,func,self.already_sleep_time))
-                if self.already_loop_times >= self.loop_times:
+                if _exception:
                     self.logger.info("%s,%s,At %s,Use %d Loop,Sleep %f,But Not Enough."%(self,self.exception_saver,func,self.already_loop_times,self.already_sleep_time))
+                    return func(*args,**kwargs)
                 return return_value
             return new_f
 
@@ -142,4 +154,3 @@ class WaitOnException():
             return go_without_args
         else:
             return call_(func)
-
