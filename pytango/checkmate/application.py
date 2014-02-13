@@ -39,7 +39,7 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
         import pytango.checkmate.component_1.component
         import pytango.checkmate.component_2.component
         import pytango.checkmate.component_3.component
-        self.components = {'C1': pytango.checkmate.component_1.component.Component_1,
+        self.components = {'C1': pytango.checkmate.component_1.component.Component,
                            'C2': pytango.checkmate.component_2.component.Component_2,
                            'C3': pytango.checkmate.component_3.component.Component_3,
                           }

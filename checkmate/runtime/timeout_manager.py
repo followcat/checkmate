@@ -48,7 +48,8 @@ def wait_on_exception(func=None,usetime=None):
                     if times < 0:
                         TimeoutManager.logger.error("Functiontryer,At %s,Has Been Sleep %f"%(func,sleep_totaltime))
                         break
-            return return_value
+            if return_value is not None:
+                return return_value
         return new_f
 
     if not func:
