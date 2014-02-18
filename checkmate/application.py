@@ -9,6 +9,7 @@ import checkmate.test_plan
 import checkmate.data_structure
 import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
+import checkmate.parser.feature_visitor
 
 
 class ApplicationMeta(type):
@@ -97,3 +98,12 @@ class Application(object):
         for data in _output['transitions']:
             array_items = data['array_items']
             self.initial_transitions.append(checkmate.partition_declarator.new_procedure(array_items, self.exchange_module, state_modules))
+
+    def get_freshen_initial_transitions(self):
+        itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(['/home/followcat/Projects/checkmate/sample_app/itp'])
+        state_modules = []
+        for name in list(self.components.keys()):
+            state_modules.append(self.components[name].state_module)
+        self.initial_transitions = []
+        for data in itp_list:
+            self.initial_transitions.append(checkmate.parser.feature_visitor.feature_new_produce(data, self.exchange_module, state_modules))
