@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>sample_app doctest</description>
+  <description>Pytango application ITP with SUT=C3(cpp)</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -14,12 +14,16 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
-nosetests --with-doctest sample_app/ `find sample_app -name &quot;_[a-z]*.py&quot; -print`</command>
+export TANGO_HOST='localhost:10202'
+export TANGO_DB_NAME=pytango_C3_cpp_runs
+DataBaseds 2 -ORBendPoint giop:tcp::10202&amp;
+sleep 10
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>sample_app_C1, pytango_C3_cpp</childProjects>
+      <childProjects>pytango_C1</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
