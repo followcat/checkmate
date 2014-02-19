@@ -111,7 +111,10 @@ class Application(object):
             >>> len(a.initial_transitions)
             4
         """
-        itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(['/home/followcat/Projects/checkmate/sample_app/itp'])
+        language = 'en' 
+        itp_path = 'sample_app/itp'
+        itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
+        itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(language,[itp_absolute_path])
         state_modules = []
         for name in list(self.components.keys()):
             state_modules.append(self.components[name].state_module)

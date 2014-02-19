@@ -48,8 +48,11 @@ def new_run_features(step_registry, features, handler):
 
 def get_itp_from_feature(language,paths):
     """
+        >>> import os
         >>> import checkmate.parser.feature_visitor
-        >>> len(checkmate.parser.feature_visitor.get_itp_from_feature('en',['/home/followcat/Projects/checkmate/sample_app/itp']))
+        >>> itp_path = 'sample_app/itp'
+        >>> itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
+        >>> len(checkmate.parser.feature_visitor.get_itp_from_feature('en',[itp_absolute_path]))
         4
     """
     #logging.basicConfig(level=logging.DEBUG)
