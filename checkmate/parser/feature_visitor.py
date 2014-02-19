@@ -17,39 +17,6 @@ import checkmate._storage
 import checkmate.partition_declarator
 
 
-class FreshenHandler(object):
-    
-    def before_feature(self, feature):
-        pass
-    
-    def after_feature(self, feature):
-        pass
-    
-    def before_scenario(self, scenario):
-        pass
-    
-    def after_scenario(self, scenario):
-        pass
-
-    def before_step(self, step):
-        pass
-    
-    def step_failed(self, step, e):
-        pass
-    
-    def step_ambiguous(self, step, e):
-        pass
-        
-    def step_undefined(self, step, e):
-        pass
-    
-    def step_exception(self, step, e):
-        pass
-    
-    def after_step(self, step):
-        pass
-
-
 class FreshenHandlerProxy(object):
     """ Acts as a handler and proxies callback events to a list of actual handlers. """
         
