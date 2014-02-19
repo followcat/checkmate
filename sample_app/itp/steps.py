@@ -1,8 +1,8 @@
 import time
 import unittest.case
 
-from freshen import *
-from freshen.checks import *
+from fresher import *
+from fresher.checks import *
 
 import checkmate.component
 import checkmate.runtime._pyzmq
