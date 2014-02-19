@@ -100,6 +100,17 @@ class Application(object):
             self.initial_transitions.append(checkmate.partition_declarator.new_procedure(array_items, self.exchange_module, state_modules))
 
     def get_freshen_initial_transitions(self):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.component
+            >>> import checkmate.parser.feature_visitor
+            >>> import os
+            >>> a = sample_app.application.TestData()
+            >>> a.start()
+            >>> a.get_freshen_initial_transitions()
+            >>> len(a.initial_transitions)
+            4
+        """
         itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(['/home/followcat/Projects/checkmate/sample_app/itp'])
         state_modules = []
         for name in list(self.components.keys()):

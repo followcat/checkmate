@@ -7,10 +7,10 @@ import os
 import sys
 import logging
 
-import freshen.handlers
 import freshen.core
-import freshen.stepregistry
 import freshen.context
+import freshen.handlers
+import freshen.stepregistry
 
 import checkmate._utils
 import checkmate._storage
@@ -166,22 +166,3 @@ def feature_new_produce(array_items, exchange_module, state_modules=[]):
 
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final_state, []))
     return ts
-
-def get_feature_initial_transitions(array_items,application):
-    """
-        >>> import sample_app.application
-        >>> import checkmate.component
-        >>> import checkmate.parser.feature_visitor
-        >>> import os
-        >>> a = sample_app.application.TestData()
-        >>> a.start()
-        >>> itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(['/home/followcat/Projects/checkmate/sample_app/itp'])
-        >>> initial_transitions = checkmate.parser.feature_visitor.get_feature_initial_transitions(itp_list,a)
-    """
-    state_modules = []
-    for name in list(application.components.keys()):
-        state_modules.append(application.components[name].state_module)
-    initial_transitions = []
-    for data in array_items:
-        initial_transitions.append(feature_new_produce(data, application.exchange_module, state_modules))
-
