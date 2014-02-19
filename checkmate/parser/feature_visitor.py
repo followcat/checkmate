@@ -17,6 +17,22 @@ import checkmate.partition_declarator
 
 
 def new_load_step_definitions(paths):
+    """
+        the load_steps_impl function at load_step_definitions in fresher.cuke only has 2 arguments,has problem:
+
+        >>> import fresher.cuke
+        >>> import fresher.core
+        >>> import fresher.context
+        >>> import fresher.stepregistry
+        >>> paths = sys.argv[1:] or ["features"]
+        >>> fresher.context.glc.clear() 
+        >>> language = fresher.core.load_language('en')
+        >>> registry = fresher.cuke.load_step_definitions(paths)
+        Traceback (most recent call last):
+        ...
+        TypeError: load_steps_impl() missing 1 required positional argument: 'path'
+        >>> registry = new_load_step_definitions(paths)
+    """
     loader = fresher.stepregistry.StepImplLoader()
     sr = fresher.stepregistry.StepImplRegistry(fresher.core.TagMatcher)
     for path in paths:
@@ -32,20 +48,6 @@ def new_run_features(step_registry, features, handler):
 
 def get_itp_from_feature(language,paths):
     """
-        the load_steps_impl function at load_step_definitions in fresher.cuke only has 2 arguments,has problem:
-
-        >>> import fresher.cuke
-        >>> import fresher.core
-        >>> import fresher.context
-        >>> import fresher.stepregistry
-        >>> paths = sys.argv[1:] or ["features"]
-        >>> fresher.context.glc.clear() 
-        >>> language = fresher.core.load_language('en')
-        >>> registry = fresher.cuke.load_step_definitions(paths)
-        Traceback (most recent call last):
-        ...
-        TypeError: load_steps_impl() missing 1 required positional argument: 'path'
-
         >>> import checkmate.parser.feature_visitor
         >>> len(checkmate.parser.feature_visitor.get_itp_from_feature('en',['/home/followcat/Projects/checkmate/sample_app/itp']))
         4
