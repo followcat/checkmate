@@ -19,7 +19,7 @@ nosetests --with-doctest sample_app/ `find sample_app -name &quot;_[a-z]*.py&quo
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>sample_app_C1, pytango_C3_cpp</childProjects>
+      <childProjects>pytango_C1, sample_app_C1</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
