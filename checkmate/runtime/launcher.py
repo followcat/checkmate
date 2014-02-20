@@ -1,3 +1,4 @@
+import os
 import shlex
 import argparse
 import importlib
@@ -22,7 +23,8 @@ class Launcher(object):
 
     def initialize(self):
         if self.command is not None:
-            self.process = subprocess.Popen(shlex.split(self.command.format(component=self.component)))
+            CLASSPATH = os.getenv('CLASSPATH')
+            self.process = subprocess.Popen(shlex.split(self.command.format(classpath=CLASSPATH, component=self.component)))
         else:
             self.runtime_component.initialize()
 

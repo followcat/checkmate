@@ -13,8 +13,8 @@ class Component_3(PyTango.Device_4Impl):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
         self.attr_c_state = False
-        self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
-        self.c2_dev = PyTango.DeviceProxy('sys/component/C2')
+        self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
+        self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state

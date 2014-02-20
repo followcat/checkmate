@@ -13,5 +13,10 @@ class Component_3(checkmate.component.Component, metaclass=checkmate.component.C
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
     connector_list = (pytango.checkmate.runtime.communication_3.Connector,)
-    launch_command = "python ./pytango/component_3/component.py {component.name}"
 
+    def __init__(self, name, full_python=False):
+        super(Component_3, self).__init__(name, full_python)
+        if full_python:
+            self.launch_command = "python ./pytango/component/component_3.py {component.name}"
+        else:
+            self.launch_command = "./pytango/component/Component_3 {component.name}"

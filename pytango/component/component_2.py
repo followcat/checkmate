@@ -12,7 +12,7 @@ class Component_2(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
-        self.c1_dev = PyTango.DeviceProxy('sys/component/C1')
+        self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
 
     def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
