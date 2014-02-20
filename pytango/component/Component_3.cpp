@@ -41,8 +41,8 @@ void Component_3::init_device()
 
 	set_state(Tango::ON);
 	attr_c_state = false;
-	c1_dev = new Tango::DeviceProxy("sys/component/C1");
-	c2_dev = new Tango::DeviceProxy("sys/component/C2");
+	c1_dev = new Tango::DeviceProxy("sys/component_1/C1");
+	c2_dev = new Tango::DeviceProxy("sys/component_2/C2");
 }
 
 

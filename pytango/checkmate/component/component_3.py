@@ -19,5 +19,4 @@ class Component_3(checkmate.component.Component, metaclass=checkmate.component.C
         if full_python:
             self.launch_command = "python ./pytango/component/component_3.py {component.name}"
         else:
-            launch_command = "./pytango/component/Component_3 {component.name}"
-
+            self.launch_command = "./pytango/component/Component_3 {component.name}"
