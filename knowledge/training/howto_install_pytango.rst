@@ -60,6 +60,13 @@ The following software need extra care.
 Up to this point, the operation must be done using the checkmate virtual environment.
 
     5. install Tango (8.1.2b)
+
+        YOU MUST DO THIS BEFORE INSTALLING TANGO !This `page <https://www.tango-controls.org/howtos/binary_deb>`_ show Why and How to.
+
+            Disable IPv6
+
+            Set system /etc/hosts file
+
         The default tango database device server is connecting to a DB whose name is set at configuration time (--with-tango-db-name=...)
         However in order to be able to run different instances of checkmate runtime at the same time, we need to have a database server that
         links dynamically to the database set in TANGO_DB_NAME variable environment.
