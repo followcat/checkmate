@@ -1,0 +1,18 @@
+JObject = Component_1.class
+JFLAGS = -g
+JC = javac
+RM = -rm -f
+
+all: myall
+
+myall: $(JObject)
+
+$(JObject): %.class: %.java
+	@echo Compiling $< ...
+	$(JC) $(JFLAGS) $<
+
+clean: myclean
+
+myclean:
+	@echo Cleaning $(JObject) ...
+	$(RM) $(JObject)
