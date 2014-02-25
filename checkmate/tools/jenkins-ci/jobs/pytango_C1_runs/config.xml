@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Pytango application ITP with SUT=C1 (full python)</description>
+  <description>Pytango application ITP with SUT=C1</description>
   <logRotator>
     <daysToKeep>-1</daysToKeep>
     <numToKeep>-1</numToKeep>
@@ -21,7 +21,7 @@
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
 export CHECKMATE_CLASSPATH=$TANGO_CLASSPATH
-export TANGO_DB_NAME=pytango_C1_python_runs
+export TANGO_DB_NAME=pytango_C1_runs
 export TANGO_HOST='localhost:10102'
 DataBaseds 2 -ORBendPoint giop:tcp::10102&amp;
 sleep 10
@@ -30,7 +30,7 @@ python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --applicatio
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>pytango_C3_python</childProjects>
+      <childProjects>pytango_C3</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
