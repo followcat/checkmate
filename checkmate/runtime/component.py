@@ -86,7 +86,7 @@ class Component(object):
         except:
             raise AttributeError('current state is not a proper state')
 
-    @checkmate.runtime.timeout_manager.sleep_after_call
+    @checkmate.runtime.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
@@ -144,8 +144,6 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
-        self.busy_lock = threading.Lock()
-        self._set_busy(True)
 
         _application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if self.using_internal_client:
@@ -186,12 +184,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def process(self, exchanges):
-        self._set_busy(True)
         Component.process(self, exchanges)
-        self._set_busy(False)
 
     def run(self):
-        self._set_busy(False)
         while True:
             if self.check_for_stop():
                 break
@@ -201,50 +196,13 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 if exchange is not None:
                     self.process([exchange])
 
-    def is_busy(self, timeout=0):
-        """
-            >>> import sample_app.application
-            >>> import sample_app.exchanges
-            >>> import checkmate.runtime._pyzmq
-            >>> import checkmate.runtime._runtime
-            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
-            >>> r.setup_environment(['C1'])
-            >>> r.start_test()
-
-        From the moment is started a component is not busy as long as is does not receive exchanges.
-            >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
-            >>> c3.is_busy()
-            False
-
-        A component is back to not busy state after processing of an exchange.
-            >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-            >>> c1.process([sample_app.exchanges.AP()])
-            >>> c1.is_busy()
-            False
-            >>> r.stop_test()
-            
-        """
-        if timeout != 0:
-            time.sleep(timeout)
-        self.busy_lock.acquire()
-        isbusy = self.isbusy
-        self.busy_lock.release()
-        return isbusy
-
-    def _set_busy(self, isbusy=True):
-        self.busy_lock.acquire()
-        self.isbusy = isbusy
-        self.busy_lock.release()
-
-    @checkmate.runtime.timeout_manager.sleep_after_call
+    @checkmate.runtime.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
-        self._set_busy(True)
         output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
-        self._set_busy(False)
         return output
 
 
@@ -277,9 +235,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).start()
 
     def process(self, exchanges):
-        self._set_busy(True)
         Sut.process(self, exchanges)
-        self._set_busy(False)
 
     def stop(self):
         self.launcher.end()
@@ -303,12 +259,9 @@ class ThreadedStub(ThreadedComponent, Stub):
         super(ThreadedStub, self).__init__(component)
 
     def process(self, exchanges):
-        self._set_busy(True)
         Stub.process(self, exchanges)
-        self._set_busy(False)
 
     def run(self):
-        self._set_busy(False)
         while True:
             if self.check_for_stop():
                 break
@@ -321,9 +274,8 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.validation_lock.release()
                     self.process([exchange])
 
-    @checkmate.runtime.timeout_manager.sleep_after_call
+    @checkmate.runtime.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
-        self._set_busy(True)
         output = self.context.simulate(exchange)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
@@ -331,11 +283,9 @@ class ThreadedStub(ThreadedComponent, Stub):
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
         checkmate.logger.global_logger.log_exchange(_o)
-        self._set_busy(False)
         return output
             
     def validate(self, exchange):
-        self._set_busy(True)
         self._exchange_to_validate = exchange
         try:
             result = False
@@ -343,16 +293,13 @@ class ThreadedStub(ThreadedComponent, Stub):
             self.validation_list.remove(self._exchange_to_validate)
             result = True
             self.validation_lock.release()
-            self._set_busy(False)
             return result
         except ValueError:
             result = self.validation_condition.wait_for(self._validate_exchange, timeout=VALIDATE_TIMEOUT_SEC)
             self.validation_lock.release()
-            self._set_busy(False)
             return result
         except Exception as e:
             self.validation_lock.release()
-            self._set_busy(False)
             raise e
 
     def _validate_exchange(self):

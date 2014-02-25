@@ -210,7 +210,6 @@ class Procedure(object):
                 else:
                     correct_way.pop()
         
-
     def compare_states(self, target):
         """"""
         matching = 0
@@ -247,19 +246,6 @@ class Procedure(object):
             if _sut not in self.components:
                 return False
         return True
-    
-    def still_busy(self):
-        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-        component_list = application.system_under_test + application.stubs
-        for name in component_list:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
-            if _component.is_busy():
-                return True
-        return False
-
-    def wait_till_not_busy(self):
-        while self.still_busy():
-            pass
 
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
@@ -267,31 +253,24 @@ class Procedure(object):
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
         stub.simulate(current_node.root)
         self._follow_up(current_node)
-
+        
         if hasattr(self, 'final'):
-            count = 0
-            while count < 3:
-                if not self.compare_states(self.final):
-                    if self.still_busy():
-                        count = 0
-                    else:
-                        #wait for application turning to idle
-                        time.sleep(0.1)
-                        count += 1
-                else:
-                    break
-            if count == 3:
+            @checkmate.runtime.timeout_manager.WaitOnException(1)
+            @checkmate.runtime.timeout_manager.RaiseOnFalse
+            def check_compare_states():
+                return self.compare_states(self.final)
+            try:
+                check_compare_states()
+            except ValueError:
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
-
-        self.wait_till_not_busy()
         self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
             self.result.stopTest(self)
 
-    @checkmate.runtime.timeout_manager.wait_on_exception(usetime=1)
+    @checkmate.runtime.timeout_manager.WaitOnException(timeout=3)
     def _follow_up(self, node):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:

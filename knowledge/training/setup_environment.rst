@@ -31,4 +31,8 @@ Python related dependencies
     zope.component==4.1.0
     zope.interface==4.0.5
     sphinx==1.2
+    six==1.5.2
+    PyYAML==3.10
+    pyparsing==2.0.1
+    fresher==0.4.0
 

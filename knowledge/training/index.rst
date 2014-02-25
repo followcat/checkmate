@@ -33,6 +33,7 @@ Contents:
    Analyzing python memory use <howto_memory_use>
    Install pytango and dependencies <howto_install_pytango>
    Setup continuous integration <howto_jenkins_ci>
+   Install and Knowledge fresher <howto_fresher>
 
 
 Indices and tables
