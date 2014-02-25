@@ -14,11 +14,11 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
-export TANGO_HOST='localhost:10103'
+export TANGO_HOST='localhost:10201'
 export TANGO_DB_NAME=pytango_C3
-DataBaseds 2 -ORBendPoint giop:tcp::10103&amp;
+DataBaseds 2 -ORBendPoint giop:tcp::10201&amp;
 sleep 10
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --full-python --sut=C3 checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
