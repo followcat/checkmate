@@ -232,7 +232,7 @@ class Declarator(object):
             self.get_transitions()
             return self.output
         
-def new_procedure(array_items, exchange_module, state_modules=[]):
+def get_procedure_transition(array_items, exchange_module, state_modules=[]):
     initial_state = []
     initial_state_id = []
     row_count = len(array_items)
@@ -264,7 +264,7 @@ def new_procedure(array_items, exchange_module, state_modules=[]):
                 if hasattr(s_module, _to_interface(array_items[j][0])):
                     interface = getattr(s_module, _to_interface(array_items[j][0]))
                     final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
-            ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
+    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
     return ts
 
 
