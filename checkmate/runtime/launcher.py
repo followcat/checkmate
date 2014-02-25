@@ -23,7 +23,7 @@ class Launcher(object):
 
     def initialize(self):
         if self.command is not None:
-            CLASSPATH = os.getenv('CLASSPATH')
+            CLASSPATH = os.getenv('CHECKMATE_CLASSPATH', os.getenv('CLASSPATH'))
             self.process = subprocess.Popen(shlex.split(self.command.format(classpath=CLASSPATH, component=self.component)))
         else:
             self.runtime_component.initialize()
