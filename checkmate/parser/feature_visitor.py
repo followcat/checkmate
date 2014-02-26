@@ -50,7 +50,7 @@ def get_itp_from_feature(language,paths):
     """
         >>> import os
         >>> import checkmate.parser.feature_visitor
-        >>> itp_path = 'sample_app/itp'
+        >>> itp_path = 'sample_app/itp/itp_features'
         >>> itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
         >>> len(checkmate.parser.feature_visitor.get_itp_from_feature('en',[itp_absolute_path]))
         4
