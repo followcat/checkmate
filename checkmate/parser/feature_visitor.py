@@ -82,8 +82,8 @@ def get_transitions_from_features(exchange_module, state_modules):
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate._storage.TransitionStorage object at ...
         """
-    language = 'en'
-    itp_path = 'sample_app/itp'
+    language = 'zh-CN'
+    itp_path = 'sample_app/itp/itp_zh_features'
     itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
     array_list = get_array_list(language,[itp_absolute_path])
     initial_transitions = []
