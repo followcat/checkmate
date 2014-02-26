@@ -9,7 +9,6 @@ import checkmate.test_plan
 import checkmate.data_structure
 import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
-import checkmate.parser.feature_visitor
 
 
 class ApplicationMeta(type):
@@ -97,27 +96,5 @@ class Application(object):
         self.initial_transitions = []
         for data in _output['transitions']:
             array_items = data['array_items']
-            self.initial_transitions.append(checkmate.partition_declarator.new_procedure(array_items, self.exchange_module, state_modules))
+            self.initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, self.exchange_module, state_modules))
 
-    def get_freshen_initial_transitions(self):
-        """
-            >>> import sample_app.application
-            >>> import checkmate.component
-            >>> import checkmate.parser.feature_visitor
-            >>> import os
-            >>> a = sample_app.application.TestData()
-            >>> a.start()
-            >>> a.get_freshen_initial_transitions()
-            >>> len(a.initial_transitions)
-            4
-        """
-        language = 'en' 
-        itp_path = 'sample_app/itp'
-        itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
-        itp_list = checkmate.parser.feature_visitor.get_itp_from_feature(language,[itp_absolute_path])
-        state_modules = []
-        for name in list(self.components.keys()):
-            state_modules.append(self.components[name].state_module)
-        self.initial_transitions = []
-        for data in itp_list:
-            self.initial_transitions.append(checkmate.parser.feature_visitor.feature_new_produce(data, self.exchange_module, state_modules))
