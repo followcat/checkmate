@@ -22,10 +22,10 @@ class RunsFinder(object):
             >>> import checkmate._storage
             >>> import checkmate.transition
             >>> import checkmate.test_data
-            >>> import checkmate.runs_finder
+            >>> import checkmate.paths_finder
             >>> import sample_app.data_structure
             >>> a = checkmate.test_data.App()
-            >>> r = checkmate.runs_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.RunsFinder(a)
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority),checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list,outgoing = outgoing_list)
@@ -48,10 +48,10 @@ class RunsFinder(object):
     def get_root_parent(self,tree,root_nid):
         """
             >>> import treelib
-            >>> import checkmate.runs_finder
+            >>> import checkmate.paths_finder
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> r = checkmate.runs_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.RunsFinder(a)
             >>> test_tree = treelib.Tree()
             >>> test_tree.create_node('AC','ac') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
@@ -71,10 +71,10 @@ class RunsFinder(object):
     def paste_tree_replace_node(self,tree,pasted_tree,node_tag):
         """
             >>> import treelib
-            >>> import checkmate.runs_finder
+            >>> import checkmate.paths_finder
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> r = checkmate.runs_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.RunsFinder(a)
             >>> tree_father = treelib.Tree()
             >>> tree_father.create_node('AC','ac') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
@@ -98,10 +98,10 @@ class RunsFinder(object):
     def merge_tree(self,des_tree):
         """
             >>> import treelib
-            >>> import checkmate.runs_finder
+            >>> import checkmate.paths_finder
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> r = checkmate.runs_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.RunsFinder(a)
             >>> tree_one = treelib.Tree()
             >>> tree_one.create_node('AC','ac') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
@@ -149,7 +149,6 @@ class RunsFinder(object):
             self.trees.append(des_tree)
             self.merge_tree(des_tree)
         return found
-                    self.make_path(unprocessed,_path)
 
 class ImportentExchangeFinder(object):
     def __init__(self,application):
