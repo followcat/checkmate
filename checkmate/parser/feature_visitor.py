@@ -34,8 +34,9 @@ def new_load_step_definitions(paths):
     """
     loader = fresher.stepregistry.StepImplLoader()
     sr = fresher.stepregistry.StepImplRegistry(fresher.core.TagMatcher)
+    cwd = os.getcwd()
     for path in paths:
-        loader.load_steps_impl(sr, path, path)
+        loader.load_steps_impl(sr, cwd, path)
     return sr
 
 def new_run_features(step_registry, features, handler):
