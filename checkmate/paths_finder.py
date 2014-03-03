@@ -1,7 +1,53 @@
 import treelib
 
+class NewTree(treelib.Tree):
+    def __init__(self, *args, **kwargs):
+        super(NewTree,self).__init__(*args, **kwargs)
+
+    def get_root_parent(self, root_nid):
+        """
+            >>> import checkmate.paths_finder
+            >>> test_tree = checkmate.paths_finder.NewTree()
+            >>> test_tree.create_node('AC','ac') # doctest: +ELLIPSIS
+            <treelib.node.Node object at ...
+            >>> test_tree.add_node(treelib.Node('RE','re'),parent='ac')
+            >>> test_tree.add_node(treelib.Node('ARE','are'),parent='ac')
+            >>> print(test_tree.get_root_parent('ap'))
+            None
+            >>> test_tree.get_root_parent('are')
+            'are'
+        """
+        son_node = self.get_node(root_nid)
+        if son_node and son_node.is_leaf():
+            return son_node.identifier
+        else:
+            return None
+
+    def paste_tree_replace_node(self, pasted_tree, node_tag):
+        """
+            >>> import checkmate.paths_finder
+            >>> tree_father = checkmate.paths_finder.NewTree()
+            >>> tree_father.create_node('AC','ac') # doctest: +ELLIPSIS
+            <treelib.node.Node object at ...
+            >>> tree_father.add_node(treelib.Node('RE','re'),parent='ac')
+            >>> tree_father.add_node(treelib.Node('ARE','are'),parent='ac')
+            >>> tree_child = NewTree()
+            >>> tree_child.create_node('ARE','are') # doctest: +ELLIPSIS
+            <treelib.node.Node object at ...
+            >>> tree_child.add_node(treelib.Node('AP','ap'),parent='are')
+            >>> tree_father.paste_tree_replace_node(tree_child,node_tag='are')
+            >>> tree_father.show()
+            AC
+            |___ ARE
+            |    |___ AP
+            |___ RE
+        """
+        parent_tag = self.parent(node_tag).identifier
+        self.remove_node(node_tag)
+        self.paste(parent_tag, pasted_tree)
+
 class RunsFinder(object):
-    def __init__(self,application):
+    def __init__(self, application):
         self.trees = []
         self.application = application
         self.build_trees_from_application()
@@ -17,7 +63,7 @@ class RunsFinder(object):
             if self.merge_tree(temp_tree) == False:
                 self.trees.append(temp_tree)
 
-    def get_transition_tree(self,transition):
+    def get_transition_tree(self, transition):
         """
             >>> import checkmate._storage
             >>> import checkmate.transition
@@ -38,71 +84,20 @@ class RunsFinder(object):
         outgoing_list = transition.outgoing
         if len(incomming_list) == 0 or len(outgoing_list) == 0:
             return None
-        build_tree = treelib.Tree()
+        build_tree = NewTree()
         build_tree.create_node(incomming_list[0].code,incomming_list[0].code)
         for outgoing in outgoing_list:
             outgoing_node = treelib.Node(outgoing.code, outgoing.code)
             build_tree.add_node(outgoing_node,parent=incomming_list[0].code)
         return build_tree
 
-    def get_root_parent(self,tree,root_nid):
+    def merge_tree(self, des_tree):
         """
-            >>> import treelib
-            >>> import checkmate.paths_finder
             >>> import sample_app.application
+            >>> import checkmate.paths_finder
             >>> a = sample_app.application.TestData()
             >>> r = checkmate.paths_finder.RunsFinder(a)
-            >>> test_tree = treelib.Tree()
-            >>> test_tree.create_node('AC','ac') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
-            >>> test_tree.add_node(treelib.Node('RE','re'),parent='ac')
-            >>> test_tree.add_node(treelib.Node('ARE','are'),parent='ac')
-            >>> print(r.get_root_parent(test_tree,'ap'))
-            None
-            >>> r.get_root_parent(test_tree,'are')
-            'are'
-        """
-        son_node = tree.get_node(root_nid)
-        if son_node and son_node.is_leaf():
-            return son_node.identifier
-        else:
-            return None
-
-    def paste_tree_replace_node(self,tree,pasted_tree,node_tag):
-        """
-            >>> import treelib
-            >>> import checkmate.paths_finder
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> r = checkmate.paths_finder.RunsFinder(a)
-            >>> tree_father = treelib.Tree()
-            >>> tree_father.create_node('AC','ac') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
-            >>> tree_father.add_node(treelib.Node('RE','re'),parent='ac')
-            >>> tree_father.add_node(treelib.Node('ARE','are'),parent='ac')
-            >>> tree_child = treelib.Tree()
-            >>> tree_child.create_node('ARE','are') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
-            >>> tree_child.add_node(treelib.Node('AP','ap'),parent='are')
-            >>> r.paste_tree_replace_node(tree_father,tree_child,node_tag='are')
-            >>> tree_father.show()
-            AC
-            |___ ARE
-            |    |___ AP
-            |___ RE
-        """
-        parent_tag = tree.parent(node_tag).identifier
-        tree.remove_node(node_tag)
-        tree.paste(parent_tag, pasted_tree)
-
-    def merge_tree(self,des_tree):
-        """
-            >>> import treelib
-            >>> import checkmate.paths_finder
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> r = checkmate.paths_finder.RunsFinder(a)
-            >>> tree_one = treelib.Tree()
+            >>> tree_one = checkmate.paths_finder.NewTree()
             >>> tree_one.create_node('AC','ac') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
             >>> tree_one.add_node(treelib.Node('RE','re'),parent='ac')
@@ -114,7 +109,7 @@ class RunsFinder(object):
             AC
             |___ ARE
             |___ RE
-            >>> tree_two = treelib.Tree()
+            >>> tree_two = checkmate.paths_finder.NewTree()
             >>> tree_two.create_node('ARE','are') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
             >>> tree_two.add_node(treelib.Node('AP','ap'),parent='are')
@@ -134,16 +129,16 @@ class RunsFinder(object):
         #get_root_parent is check one incoming is someone's outgoing,and return that one incoming code
         found = False
         for _tree in self.trees[:]:
-            leaf_nid = self.get_root_parent(_tree,des_tree.root)
+            leaf_nid = _tree.get_root_parent(des_tree.root)
             if leaf_nid is not None:
                 found = True
-                self.paste_tree_replace_node(_tree,des_tree,leaf_nid)
+                _tree.paste_tree_replace_node(des_tree,leaf_nid)
                 self.trees.remove(_tree)
                 des_tree = _tree
-            leaf_nid = self.get_root_parent(des_tree,_tree.root)
+            leaf_nid = des_tree.get_root_parent(_tree.root)
             if leaf_nid is not None:
                 found = True
-                self.paste_tree_replace_node(des_tree,_tree,leaf_nid)
+                des_tree.paste_tree_replace_node(_tree,leaf_nid)
                 self.trees.remove(_tree)
         if found:
             self.trees.append(des_tree)
@@ -151,7 +146,7 @@ class RunsFinder(object):
         return found
 
 class ImportentExchangeFinder(object):
-    def __init__(self,application):
+    def __init__(self, application):
         self.application = application
         self.transition_list = []
         self.human_interface_exchange_code_list = []
@@ -163,7 +158,7 @@ class ImportentExchangeFinder(object):
         for _t in self.transition_list:
             if len(_t.incoming) == 0 and len(_t.outgoing) > 0:
                 for _outgoing in _t.outgoing:
-                    self.importent_exchange_code_list.append(_outgoing.code)
+                    self.human_interface_exchange_code_list.append(_outgoing.code)
 
 def main():
     import sample_app.application
