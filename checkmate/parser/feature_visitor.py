@@ -79,14 +79,16 @@ def get_transitions_from_features(exchange_module, state_modules):
             ...     state_modules.append(a.components[name].state_module)
             >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
             >>> len(transitions)
-            4
+            8
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate._storage.TransitionStorage object at ...
         """
-    language = 'zh-CN'
-    itp_path = 'sample_app/itp/itp_zh_features'
-    itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
-    array_list = get_array_list(language,[itp_absolute_path])
+    languages = ['en', 'zh-CN']
+    feature_paths = {'en':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_features')], 
+                        'zh-CN':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_zh_features')]}
+    array_list = []
+    for language in languages:
+        array_list.extend(get_array_list(language, feature_paths[language]))
     initial_transitions = []
     for array_items in array_list:
         initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
