@@ -46,8 +46,16 @@ class NewTree(treelib.Tree):
         self.remove_node(node_tag)
         self.paste(parent_tag, pasted_tree)
 
-class RunsFinder(object):
+class ExchangeTreesFinder(object):
     def __init__(self, application):
+        """
+            >>> import checkmate.paths_finder
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> len(etf.trees)
+            3
+        """
         self.trees = []
         self.application = application
         self.build_trees_from_application()
@@ -71,7 +79,7 @@ class RunsFinder(object):
             >>> import checkmate.paths_finder
             >>> import sample_app.data_structure
             >>> a = checkmate.test_data.App()
-            >>> r = checkmate.paths_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority),checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list,outgoing = outgoing_list)
@@ -96,7 +104,7 @@ class RunsFinder(object):
             >>> import sample_app.application
             >>> import checkmate.paths_finder
             >>> a = sample_app.application.TestData()
-            >>> r = checkmate.paths_finder.RunsFinder(a)
+            >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
             >>> tree_one = checkmate.paths_finder.NewTree()
             >>> tree_one.create_node('AC','ac') # doctest: +ELLIPSIS
             <treelib.node.Node object at ...
@@ -126,7 +134,6 @@ class RunsFinder(object):
         """
         #root always incoming
         #node always outgoing
-        #get_root_parent is check one incoming is someone's outgoing,and return that one incoming code
         found = False
         for _tree in self.trees[:]:
             leaf_nid = _tree.get_root_parent(des_tree.root)
@@ -145,8 +152,17 @@ class RunsFinder(object):
             self.merge_tree(des_tree)
         return found
 
-class ImportentExchangeFinder(object):
+class HumanInterfaceExchangesFinder(object):
     def __init__(self, application):
+        """
+            >>> import checkmate.component
+            >>> import checkmate.paths_finder
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> hi = checkmate.paths_finder.HumanInterfaceExchangesFinder(a)
+            >>> hi.human_interface_exchange_code_list
+            ['AC', 'RL', 'PP']
+        """
         self.application = application
         self.transition_list = []
         self.human_interface_exchange_code_list = []
@@ -159,21 +175,3 @@ class ImportentExchangeFinder(object):
             if len(_t.incoming) == 0 and len(_t.outgoing) > 0:
                 for _outgoing in _t.outgoing:
                     self.human_interface_exchange_code_list.append(_outgoing.code)
-
-def main():
-    import sample_app.application
-    import checkmate.component
-
-    a = sample_app.application.TestData()
-    r = RunsFinder(a)
-    for each in r.trees:
-        each.show()
-        for node in each.expand_tree(mode=treelib.Tree.WIDTH):
-            print(each[node].identifier)
-        print('---------------')
-
-    a2 = sample_app.application.TestData()
-    i = ImportentExchangeFinder(a2)
-
-if __name__ == '__main__':
-    main()
