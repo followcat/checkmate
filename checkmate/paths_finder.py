@@ -14,19 +14,31 @@ class ExchangeTreesFinder(object):
             3
         """
         self.trees = []
+        self.trees_initial_list = []
+        self.transition_list = []
         self.application = application
         self.build_trees_from_application()
+        self.build_trees_initial_state_list()
 
     def build_trees_from_application(self):
-        transition_list = []
+        self.transition_list = []
         for _k,_v in self.application.components.items(): 
-            transition_list.extend(_v.state_machine.transitions)
-        for _t in transition_list:
+            self.transition_list .extend(_v.state_machine.transitions)
+        for _t in self.transition_list :
             temp_tree = self.get_transition_tree(_t)
             if temp_tree is None:
                 continue
             if self.merge_tree(temp_tree) == False:
                 self.trees.append(temp_tree)
+
+    def build_trees_initial_state_list(self):
+        for _tree in self.trees:
+            temp_initial_state_list = []
+            for _nodeid in _tree.expand_tree(mode=treelib.Tree.WIDTH):
+                for _t_init in [_t.initial for _t in self.transition_list if len(_t.incoming) > 0 and  _t.incoming[0].code == _nodeid][0]:
+                    if _t_init.code not in [_temp_init.code for _temp_init in temp_initial_state_list] :
+                        temp_initial_state_list.append(_t_init)
+            self.trees_initial_list.append(temp_initial_state_list)
 
     def get_transition_tree(self, transition):
         """
@@ -45,15 +57,15 @@ class ExchangeTreesFinder(object):
             |___ ARE
             |___ RE
         """
-        incomming_list = transition.incoming
+        incoming_list = transition.incoming
         outgoing_list = transition.outgoing
-        if len(incomming_list) == 0 or len(outgoing_list) == 0:
+        if len(incoming_list) == 0 or len(outgoing_list) == 0:
             return None
         build_tree = checkmate._newtree.NewTree()
-        build_tree.create_node(incomming_list[0].code,incomming_list[0].code)
+        build_tree.create_node(incoming_list[0].code,incoming_list[0].code)
         for outgoing in outgoing_list:
             outgoing_node = treelib.Node(outgoing.code, outgoing.code)
-            build_tree.add_node(outgoing_node,parent=incomming_list[0].code)
+            build_tree.add_node(outgoing_node,parent=incoming_list[0].code)
         return build_tree
 
     def merge_tree(self, des_tree):
