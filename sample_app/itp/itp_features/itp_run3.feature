@@ -9,4 +9,4 @@ Feature: Third run PP
         When Component C2 sends exchange Action PP()
         Then Component state C1.State should change to value M0(True)
         And Component state C1.AnotherState should change to value Q0(None)
-        Then Component state C3.Acknowledge should change to value A0(False)
+        And Component state C3.Acknowledge should change to value A0(False)
