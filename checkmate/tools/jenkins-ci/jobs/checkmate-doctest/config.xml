@@ -20,7 +20,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command> cd $CHECKMATE_CI_HOME
-hg pull -u
+hg up -C
 nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>
