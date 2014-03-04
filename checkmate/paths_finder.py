@@ -1,6 +1,8 @@
 import treelib
 
 import checkmate._newtree
+import checkmate.run_transition
+import checkmate.application
 
 
 class ExchangeTreesFinder(object):
@@ -144,3 +146,35 @@ class HumanInterfaceExchangesFinder(object):
             if len(_t.incoming) == 0 and len(_t.outgoing) > 0:
                 for _outgoing in _t.outgoing:
                     self.human_interface_exchange_code_list.append(_outgoing.code)
+
+class PathBuilder(object):
+    """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> etf = ExchangeTreesFinder(a)
+        >>> pb = PathBuilder(etf)
+    """
+    def __init__(self, exchangetreesfinder):
+        self.treelist = exchangetreesfinder.trees
+        self.init_state_list = exchangetreesfinder.trees_initial_list
+        self.application = checkmate.application.Application
+        self.pathlist = []
+        self.make_path()
+
+    def make_path(self, unprocessed = None, unprocessed_initial_state = None, init_transition_list = None):
+        if unprocessed is None:
+            unprocessed = self.treelist
+        if unprocessed_initial_state is None:
+            unprocessed_initial_state = self.init_state_list
+        if init_transition_list is None:
+            init_transition_list = []
+        for _i in range(len(unprocessed)):
+            process_exchange_list = unprocessed[_i].expand_tree(mode=treelib.Tree.WIDTH)
+            temp_transition = checkmate.run_transition.get_transition_list(self.application,process_exchange_list,unprocessed_initial_state[_i],init_transition_list)
+            if temp_transition is not None:
+                self.pathlist.append([temp_transition])
+                unprocessed.remove(unprocessed[_i])
+                unprocessed_initial_state.remove(unprocessed_initial_state[_i])
+            else:
+                for _path in self.pathlist:
+                    self.make_path(unprocessed,unprocessed_initial_state,init_transition_list)
