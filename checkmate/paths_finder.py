@@ -1,5 +1,3 @@
-import treelib
-
 import checkmate._newtree
 import checkmate.run_transition
 import checkmate.application
@@ -36,7 +34,7 @@ class ExchangeTreesFinder(object):
     def build_trees_initial_state_list(self):
         for _tree in self.trees:
             temp_initial_state_list = []
-            for _nodeid in _tree.expand_tree(mode=treelib.Tree.WIDTH):
+            for _nodeid in _tree.expand_tree(mode=checkmate._newtree.NewTree.WIDTH):
                 for _t_init in [_t.initial for _t in self.transition_list if len(_t.incoming) > 0 and  _t.incoming[0].code == _nodeid][0]:
                     if _t_init.code not in [_temp_init.code for _temp_init in temp_initial_state_list] :
                         temp_initial_state_list.append(_t_init)
@@ -66,8 +64,7 @@ class ExchangeTreesFinder(object):
         build_tree = checkmate._newtree.NewTree()
         build_tree.create_node(incoming_list[0].code,incoming_list[0].code)
         for outgoing in outgoing_list:
-            outgoing_node = treelib.Node(outgoing.code, outgoing.code)
-            build_tree.add_node(outgoing_node,parent=incoming_list[0].code)
+            build_tree.create_node(outgoing.code, outgoing.code,parent=incoming_list[0].code)
         return build_tree
 
     def merge_tree(self, des_tree):
@@ -78,9 +75,9 @@ class ExchangeTreesFinder(object):
             >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
             >>> tree_one = checkmate._newtree.NewTree()
             >>> tree_one.create_node('AC','ac') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
-            >>> tree_one.add_node(treelib.Node('RE','re'),parent='ac')
-            >>> tree_one.add_node(treelib.Node('ARE','are'),parent='ac')
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_one.add_node(checkmate._newtree.NewNode('RE','re'),parent='ac')
+            >>> tree_one.add_node(checkmate._newtree.NewNode('ARE','are'),parent='ac')
             >>> r.trees = []
             >>> if r.merge_tree(tree_one) == False:
             ...        r.trees.append(tree_one)
@@ -90,8 +87,8 @@ class ExchangeTreesFinder(object):
             |___ RE
             >>> tree_two = checkmate._newtree.NewTree()
             >>> tree_two.create_node('ARE','are') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
-            >>> tree_two.add_node(treelib.Node('AP','ap'),parent='are')
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_two.add_node(checkmate._newtree.NewNode('AP','ap'),parent='are')
             >>> tree_two.show()
             ARE
             |___ AP
@@ -169,7 +166,7 @@ class PathBuilder(object):
         if init_transition_list is None:
             init_transition_list = []
         for _i in range(len(unprocessed)):
-            process_exchange_list = unprocessed[_i].expand_tree(mode=treelib.Tree.WIDTH)
+            process_exchange_list = unprocessed[_i].expand_tree(mode=checkmate._newtree.NewTree.WIDTH)
             temp_transition = checkmate.run_transition.get_transition_list(self.application,process_exchange_list,unprocessed_initial_state[_i],init_transition_list)
             if temp_transition is not None:
                 self.pathlist.append([temp_transition])

@@ -10,7 +10,7 @@ class NewTree(treelib.Tree):
             >>> import checkmate._newtree
             >>> test_tree = checkmate._newtree.NewTree()
             >>> test_tree.create_node('AC','ac') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
+            <checkmate._newtree.NewNode object at ...
             >>> test_tree.add_node(treelib.Node('RE','re'),parent='ac')
             >>> test_tree.add_node(treelib.Node('ARE','are'),parent='ac')
             >>> print(test_tree.get_root_parent('ap'))
@@ -29,12 +29,12 @@ class NewTree(treelib.Tree):
             >>> import checkmate._newtree
             >>> tree_father = checkmate._newtree.NewTree()
             >>> tree_father.create_node('AC','ac') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
+            <checkmate._newtree.NewNode object at ...
             >>> tree_father.add_node(treelib.Node('RE','re'),parent='ac')
             >>> tree_father.add_node(treelib.Node('ARE','are'),parent='ac')
             >>> tree_child = checkmate._newtree.NewTree()
             >>> tree_child.create_node('ARE','are') # doctest: +ELLIPSIS
-            <treelib.node.Node object at ...
+            <checkmate._newtree.NewNode object at ...
             >>> tree_child.add_node(treelib.Node('AP','ap'),parent='are')
             >>> tree_father.paste_tree_replace_node(tree_child,node_tag='are')
             >>> tree_father.show()
@@ -46,3 +46,13 @@ class NewTree(treelib.Tree):
         parent_tag = self.parent(node_tag).identifier
         self.remove_node(node_tag)
         self.paste(parent_tag, pasted_tree)
+
+    def create_node(self, tag=None, identifier=None, parent=None):
+        node = NewNode(tag, identifier)
+        self.add_node(node, parent)
+        return node
+
+class NewNode(treelib.Node):
+    """"""
+    def __init__(self, tag=None, identifier=None, expanded=True):
+        super(NewNode,self).__init__(tag=tag,identifier=identifier,expanded=expanded)
