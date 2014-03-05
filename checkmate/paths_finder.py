@@ -34,7 +34,7 @@ class ExchangeTreesFinder(object):
     def build_trees_initial_state_list(self):
         for _tree in self.trees:
             temp_initial_state_list = []
-            for _nodeid in _tree.expand_tree(mode=checkmate._newtree.NewTree.WIDTH):
+            for _nodeid in _tree.expand_tree(mode=checkmate._newtree.NewTree.ZIGZAG):
                 for _t_init in [_t.initial for _t in self.transition_list if len(_t.incoming) > 0 and  _t.incoming[0].code == _nodeid][0]:
                     if _t_init.code not in [_temp_init.code for _temp_init in temp_initial_state_list] :
                         temp_initial_state_list.append(_t_init)
@@ -52,7 +52,7 @@ class ExchangeTreesFinder(object):
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority),checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list,outgoing = outgoing_list)
-            >>> r.get_transition_tree(test_transition).show()
+            >>> r.get_transition_tree(test_transition).showid()
             AC
             |___ ARE
             |___ RE
@@ -62,9 +62,9 @@ class ExchangeTreesFinder(object):
         if len(incoming_list) == 0 or len(outgoing_list) == 0:
             return None
         build_tree = checkmate._newtree.NewTree()
-        build_tree.create_node(incoming_list[0].code,incoming_list[0].code)
+        build_tree.create_node(getattr(self.application.exchange_module, incoming_list[0].code)(),incoming_list[0].code)
         for outgoing in outgoing_list:
-            build_tree.create_node(outgoing.code, outgoing.code,parent=incoming_list[0].code)
+            build_tree.create_node(getattr(self.application.exchange_module, outgoing.code)(), outgoing.code,parent=incoming_list[0].code)
         return build_tree
 
     def merge_tree(self, des_tree):
@@ -74,27 +74,27 @@ class ExchangeTreesFinder(object):
             >>> a = sample_app.application.TestData()
             >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
             >>> tree_one = checkmate._newtree.NewTree()
-            >>> tree_one.create_node('AC','ac') # doctest: +ELLIPSIS
+            >>> tree_one.create_node('exchange(AC)','AC') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
-            >>> tree_one.add_node(checkmate._newtree.NewNode('RE','re'),parent='ac')
-            >>> tree_one.add_node(checkmate._newtree.NewNode('ARE','are'),parent='ac')
+            >>> tree_one.add_node(checkmate._newtree.NewNode('exchange(RE)','RE'),parent='AC')
+            >>> tree_one.add_node(checkmate._newtree.NewNode('exchange(ARE)','ARE'),parent='AC')
             >>> r.trees = []
             >>> if r.merge_tree(tree_one) == False:
             ...        r.trees.append(tree_one)
-            >>> r.trees[0].show()
+            >>> r.trees[0].showid()
             AC
             |___ ARE
             |___ RE
             >>> tree_two = checkmate._newtree.NewTree()
-            >>> tree_two.create_node('ARE','are') # doctest: +ELLIPSIS
+            >>> tree_two.create_node('exchange(ARE)','ARE') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
-            >>> tree_two.add_node(checkmate._newtree.NewNode('AP','ap'),parent='are')
-            >>> tree_two.show()
+            >>> tree_two.add_node(checkmate._newtree.NewNode('exchange(AP)','AP'),parent='ARE')
+            >>> tree_two.showid()
             ARE
             |___ AP
             >>> r.merge_tree(tree_two)
             True
-            >>> r.trees[0].show()
+            >>> r.trees[0].showid()
             AC
             |___ ARE
             |    |___ AP

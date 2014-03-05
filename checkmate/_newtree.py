@@ -9,14 +9,16 @@ class NewTree(treelib.Tree):
         """
             >>> import checkmate._newtree
             >>> test_tree = checkmate._newtree.NewTree()
-            >>> test_tree.create_node('AC','ac') # doctest: +ELLIPSIS
+            >>> test_tree.create_node('exchange(AC)','AC') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
-            >>> test_tree.add_node(treelib.Node('RE','re'),parent='ac')
-            >>> test_tree.add_node(treelib.Node('ARE','are'),parent='ac')
-            >>> print(test_tree.get_root_parent('ap'))
+            >>> test_tree.create_node('exchange(RE)','RE',parent='AC') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> test_tree.create_node('exchange(ARE)','ARE',parent='AC') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> print(test_tree.get_root_parent('AP'))
             None
-            >>> test_tree.get_root_parent('are')
-            'are'
+            >>> test_tree.get_root_parent('ARE')
+            'ARE'
         """
         son_node = self.get_node(root_nid)
         if son_node and son_node.is_leaf():
@@ -28,16 +30,19 @@ class NewTree(treelib.Tree):
         """
             >>> import checkmate._newtree
             >>> tree_father = checkmate._newtree.NewTree()
-            >>> tree_father.create_node('AC','ac') # doctest: +ELLIPSIS
+            >>> tree_father.create_node('exchange(AC)','AC') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
-            >>> tree_father.add_node(treelib.Node('RE','re'),parent='ac')
-            >>> tree_father.add_node(treelib.Node('ARE','are'),parent='ac')
+            >>> tree_father.create_node('exchange(RE)','RE',parent='AC') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_father.create_node('exchange(ARE)','ARE',parent='AC') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
             >>> tree_child = checkmate._newtree.NewTree()
-            >>> tree_child.create_node('ARE','are') # doctest: +ELLIPSIS
+            >>> tree_child.create_node('exchange(ARE)','ARE') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
-            >>> tree_child.add_node(treelib.Node('AP','ap'),parent='are')
-            >>> tree_father.paste_tree_replace_node(tree_child,node_tag='are')
-            >>> tree_father.show()
+            >>> tree_child.create_node('exchange(AP)','AP',parent='ARE') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_father.paste_tree_replace_node(tree_child,node_tag='ARE')
+            >>> tree_father.showid()
             AC
             |___ ARE
             |    |___ AP
@@ -74,3 +79,6 @@ class NewNode(treelib.Node):
 
     def get_tag(self):
         return self._tag
+
+    def __lt__(self, other):
+        return True
