@@ -52,7 +52,25 @@ class NewTree(treelib.Tree):
         self.add_node(node, parent)
         return node
 
+    def showid(self, nid=None, level=treelib.Tree.ROOT, idhidden=True, filter=None, key=None, reverse=False):
+        save_get_tag = NewNode.get_tag
+        NewNode.get_tag = NewNode.identifier
+        self.show(nid, level, idhidden, filter, key, reverse)
+        NewNode.get_tag = save_get_tag
+
 class NewNode(treelib.Node):
     """"""
     def __init__(self, tag=None, identifier=None, expanded=True):
         super(NewNode,self).__init__(tag=tag,identifier=identifier,expanded=expanded)
+        if tag is not None:
+            self._tag = tag
+
+    @property
+    def tag(self):
+        if callable(self.get_tag):
+            return self.get_tag()
+        else:
+            return self.get_tag
+
+    def get_tag(self):
+        return self._tag
