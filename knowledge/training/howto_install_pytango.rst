@@ -50,6 +50,16 @@ Some source file should be add to CPLUS_INCLUDE_PATH if you don't instll in chec
 
 
     3. install zmq (3.2.4)
+        It is best to install zeromq in the virtual environment in case different versions need to be supported.
+
+            ./configure --prefix=$VIRTUAL_ENV
+
+        In order to fully support the installation of zeromq in virtual environment, it is required to set the following variables:
+
+            export INCLUDE_PATH=$VIRTUAL_ENV/include:$INCLUDE_PATH
+            export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
+            export PKG_CONFIG_PATH=$VIRTUAL_ENV/lib/pkgconfig:$PKG_CONFIG_PATH
+
 
     4. install omniORB (4.1.7)
         This might require to install python dev package.
@@ -71,14 +81,14 @@ Up to this point, the operation must be done using the checkmate virtual environ
         However in order to be able to run different instances of checkmate runtime at the same time, we need to have a database server that
         links dynamically to the database set in TANGO_DB_NAME variable environment.
 
-        This is done by applying a set of change in the source file of tango to support dynamic setting of DB name.
+        This is done by applying a set of change in the source file of tango to support dynamic setting of DB name (see patch_ file).
 
         The TANGO_DB_NAME must be set when configuring the tango compilation chain.
 
         Given that checkmate use a patched version of tango, it is advised to install it in the virtual environment.
         This is done by using the command:
 
-            ./configure --prefix=$VIRTUAL_ENV --with-tango-db-name=$TANGO_DB_NAME --with-mysql-ho=localhost --with-mysql-admin=root
+            ./configure --prefix=$VIRTUAL_ENV --with-mysql-admin=$MYSQL_USER --with-zmq=$VIRTUAL_ENV
 
     6. install boost (1.54.0)
         The installation step should have been as follows (read the offical doc first): 
@@ -108,11 +118,11 @@ Up to this point, the operation must be done using the checkmate virtual environ
 
 
 
-    7. install PyTango (8.0.3)
+    7. install PyTango (8.1.1)
         Just follow the offical installation guidance.
             http://www.tango-controls.org/static/PyTango/latest/doc/html/start.html
 
-        Use $python setup.py build; sudo python setup.py install to compile and install. 
+        Use 'python setup.py build; python setup.py install' to compile and install. 
         The problem met when building is -lboost_python-py33 did not exist.
         But if boost was installed successfully, there should be a a library like "libboost_python-py3.3.so".
         Make a symbolic link to it through "libboost_python-py33.so".
@@ -120,6 +130,18 @@ Up to this point, the operation must be done using the checkmate virtual environ
         Solve this problem by adding a line to the $VIRTUALENV/bin/activate:
 
                 export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
+
+
+    8. install JtangoServer (1.11.1)
+
+        This is done by copying the downloaded jar (from http://www2.synchrotron-soleil.fr/controle/maven2/soleil/org/tango/JTangoServer/) file in a directory in classpath:
+
+                cp /Download/JTangoServer-1.1.1-all.jar $VIRTUAL_ENV/share/java
+                (cd $VIRTUAL_ENV/share/java; ln -s JTangoServer-1.1.1-all.jar JTangoServer.jar)
+                export TANGO_CLASSPATH=$VIRTUAL_ENV/share/java/JTangoServer.jar:$CHECKMATE_HOME
+                export CHECKMATE_CLASSPATH=$TANGO_CLASSPATH
+                export CLASSPATH=$TANGO_CLASSPATH
+
     
 Three steps to start tango on my computer before using checkmate pytango:
 
@@ -156,3 +178,7 @@ Three steps to start tango on my computer before using checkmate pytango:
             [client]
                 user=mysql_user_name
                 password=mysql_user_password
+
+
+.. _patch: ./_static/checkmate-tango-8.1.2-patch.diff
+   

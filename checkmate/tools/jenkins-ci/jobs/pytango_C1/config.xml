@@ -20,11 +20,12 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
+export CHECKMATE_CLASSPATH=$TANGO_CLASSPATH
 export TANGO_DB_NAME=pytango_C1
 export TANGO_HOST='localhost:10101'
 DataBaseds 2 -ORBendPoint giop:tcp::10101&amp;
 sleep 10
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --full-python --sut=C1 checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C1 checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>

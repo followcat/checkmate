@@ -17,6 +17,7 @@ General dependencies
 ::
 
     dot==2.34.0
+    zmq==3.2.4
 
 
 Python related dependencies

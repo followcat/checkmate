@@ -89,6 +89,7 @@ The script to setup the jenkins-ci will look like this::
 
     rm -Rf $CHECKMATE_CI_HOME
     hg clone -b default $CHECKMATE_HG_HOME $CHECKMATE_CI_HOME
+    (cd $CHECKMATE_HOME/pytango/component; make)
 
     java -jar $JENKINS_WAR_DIR/jenkins.war > /dev/null &
 
@@ -114,7 +115,7 @@ That database must be created prior to jeankins CI startup.
     export TANGO_SOURCE=/opt/tango-controls/cme-tango-8.1.2/pytango
 
     cd $TANGO_SOURCE/cppserver/database
-    for database in 'pytango_C1' 'pytango_C1_runs' 'pytango_C3' 'pytango_C3_runs' 'pytango_C1_C3' 'pytango_C1_C3_runs'; do (export TANGO_DB_NAME=$database; make); done
+    for database in 'pytango_C1' 'pytango_C1_runs' 'pytango_C3' 'pytango_C3_runs' 'pytango_C1_C3' 'pytango_C1_C3_runs' 'pytango_C1_python' 'pytango_C1_python_runs' 'pytango_C3_python' 'pytango_C3_python_runs' 'pytango_C1_C3_python' 'pytango_C1_C3_python_runs' ; do (export TANGO_DB_NAME=$database; make); done
 
     
 

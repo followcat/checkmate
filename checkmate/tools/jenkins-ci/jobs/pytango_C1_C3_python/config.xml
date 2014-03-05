@@ -1,7 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Pytango application ITP with SUT=C3(cpp) (once)</description>
+  <description>Pytango application ITP with SUT=C1,C3 (once, full python)</description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>3</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -14,16 +20,16 @@
   <builders>
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
-export TANGO_HOST='localhost:10201'
-export TANGO_DB_NAME=pytango_C3_cpp
-DataBaseds 2 -ORBendPoint giop:tcp::10201&amp;
+export TANGO_HOST='localhost:10205'
+export TANGO_DB_NAME=pytango_C1_C3_python
+DataBaseds 2 -ORBendPoint giop:tcp::10205&amp;
 sleep 10
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C3 checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --full-python --sut=C1,C3 checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>pytango_C3_cpp_runs</childProjects>
+      <childProjects>pytango_C1_C3_python_runs</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
