@@ -1,0 +1,150 @@
+diff -Naur tango-8.1.2//configure cme-tango-8.1.2//configure
+--- tango-8.1.2//configure	2013-07-19 15:21:18.000000000 +0800
++++ cme-tango-8.1.2//configure	2014-02-24 20:48:58.000000000 +0800
+@@ -18615,14 +18615,19 @@
+ if test "${with_tango_db_name+set}" = set; then :
+   withval=$with_tango_db_name; TANGO_DB_NAME=${with_tango_db_name}
+ else
+-  TANGO_DB_NAME=tango
++  if test "x$TANGO_DB_NAME" = "x"; then :
++    TANGO_DB_NAME=tango
++  else
++    TANGO_DB_NAME=$TANGO_DB_NAME
++  fi
+ fi
+ 
+ 
+ # Here we define these constants so that they're reachable from c programs
+ 
+ cat >>confdefs.h <<_ACEOF
+-#define TANGO_DB_NAME "$TANGO_DB_NAME"
++#include <stdlib.h>
++#define TANGO_DB_NAME getenv("TANGO_DB_NAME")
+ _ACEOF
+ 
+ 
+diff -Naur tango-8.1.2//cppserver/database/create_db.sh.in cme-tango-8.1.2//cppserver/database/create_db.sh.in
+--- tango-8.1.2//cppserver/database/create_db.sh.in	2013-07-19 15:20:33.000000000 +0800
++++ cme-tango-8.1.2//cppserver/database/create_db.sh.in	2014-02-24 20:48:58.000000000 +0800
+@@ -1,8 +1,8 @@
+ mysql=@MYSQL@
+-mysql_admin=@MYSQL_ADMIN@
+-mysql_admin_passwd=@MYSQL_ADMIN_PASSWD@
+-mysql_host=@MYSQL_HOST@
+-db_name=@TANGO_DB_NAME@
++mysql_admin=$MYSQL_USER
++mysql_admin_passwd=$MYSQL_PASSWORD
++mysql_host=
++db_name=$TANGO_DB_NAME
+ srcdir=@srcdir@
+ 
+ 
+@@ -38,6 +38,8 @@
+    echo "Please run "
+    echo "$connect < ./update_db.sql"
+    echo "manually to force a db update"
++   echo "Drop existing database "
++   $mysql $user_switch $passwd_switch $host_switch < ./new_create_db.sql > /dev/null
+ else
+-  $mysql $user_switch $passwd_switch $host_switch < ./create_db.sql > /dev/null
++  $mysql $user_switch $passwd_switch $host_switch < ./new_create_db.sql > /dev/null
+ fi
+diff -Naur tango-8.1.2//cppserver/database/create_db.sql.in cme-tango-8.1.2//cppserver/database/create_db.sql.in
+--- tango-8.1.2//cppserver/database/create_db.sql.in	2013-07-19 15:20:33.000000000 +0800
++++ cme-tango-8.1.2//cppserver/database/create_db.sql.in	2014-02-24 20:48:58.000000000 +0800
+@@ -1,4 +1,6 @@
+ 
++DROP DATABASE IF EXISTS @TANGO_DB_NAME@;
++
+ CREATE DATABASE @TANGO_DB_NAME@;
+ USE @TANGO_DB_NAME@;
+ 
+@@ -22,22 +24,22 @@
+ # Create entry for database device server in device table
+ #
+ 
+-INSERT INTO device VALUES ('sys/database/2',NULL,'sys','database','2','nada','nada','nada','DataBaseds/2','nada','DataBase','nada','nada','nada','nada');
+-INSERT INTO device VALUES ('dserver/DataBaseds/2',NULL,'dserver','DataBaseds','2','nada','nada','nada','DataBaseds/2','nada','DServer','nada','nada','nada','nada');
++INSERT INTO device VALUES ('sys/database/2',NULL,'sys','database','2',0,'nada','nada','DataBaseds/2',NULL,'DataBase','nada',NULL,NULL,'nada');
++INSERT INTO device VALUES ('dserver/DataBaseds/2',NULL,'dserver','DataBaseds','2',0,'nada','nada','DataBaseds/2',NULL,'DServer','nada',NULL,NULL,'nada');
+ 
+ #
+ # Create entry for test device server in device table
+ #
+ 
+-INSERT INTO device VALUES ('sys/tg_test/1',NULL,'sys','tg_test','1','nada','nada','nada','TangoTest/test','nada','TangoTest','nada','nada','nada','nada');
+-INSERT INTO device VALUES ('dserver/TangoTest/test',NULL,'dserver','TangoTest','test','nada','nada','nada','TangoTest/test','nada','DServer','nada','nada','nada','nada');
++INSERT INTO device VALUES ('sys/tg_test/1',NULL,'sys','tg_test','1',0,'nada','nada','TangoTest/test',NULL,'TangoTest','nada',NULL,NULL,'nada');
++INSERT INTO device VALUES ('dserver/TangoTest/test',NULL,'dserver','TangoTest','test',0,'nada','nada','TangoTest/test',NULL,'DServer','nada',NULL,NULL,'nada');
+ 
+ #
+ # Create entry for Tango Control Access in device table
+ #
+ 
+-INSERT INTO device VALUES ('sys/access_control/1',NULL,'sys','access_control','1','nada','nada','nada','TangoAccessControl/1','nada','TangoAccessControl','nada','nada','nada','nada');
+-INSERT INTO device VALUES ('dserver/TangoAccessControl/1',NULL,'dserver','TangoAccessControl','1','nada','nada','nada','TangoAccessControl/1','nada','DServer','nada','nada','nada','nada');
++INSERT INTO device VALUES ('sys/access_control/1',NULL,'sys','access_control','1',0,'nada','nada','TangoAccessControl/1',NULL,'TangoAccessControl','nada',NULL,NULL,'nada');
++INSERT INTO device VALUES ('dserver/TangoAccessControl/1',NULL,'dserver','TangoAccessControl','1',0,'nada','nada','TangoAccessControl/1',NULL,'DServer','nada',NULL,NULL,'nada');
+ INSERT INTO server VALUES ('tangoaccesscontrol/1','',0,0);
+ 
+ #
+@@ -126,5 +128,5 @@
+ # Load the stored procedures
+ #
+ 
+-source stored_proc.sql
++source new_stored_proc.sql
+ 
+diff -Naur tango-8.1.2//cppserver/database/DataBase.cpp cme-tango-8.1.2//cppserver/database/DataBase.cpp
+--- tango-8.1.2//cppserver/database/DataBase.cpp	2013-07-19 15:20:33.000000000 +0800
++++ cme-tango-8.1.2//cppserver/database/DataBase.cpp	2014-02-24 20:50:31.000000000 +0800
+@@ -45,6 +45,10 @@
+ //=============================================================================
+ 
+ 
++#if HAVE_CONFIG_H
++#include <ac_config.h>
++#endif
++
+ #include <tango.h>
+ #include <DataBase.h>
+ #include <DataBaseClass.h>
+@@ -7104,7 +7108,13 @@
+ // interested in
+ //
+ 
+-	sql_query = "CALL tango.ds_start('" + svc + "','" + host + "'," + tmp_var_name + ")";
++#ifndef HAVE_CONFIG_H
++    string database = "tango";
++#else
++    string database = TANGO_DB_NAME;
++#endif
++
++    sql_query = "CALL " + database + ".ds_start('" + svc + "','" + host + "'," + tmp_var_name + ")";
+ 	sql_query = sql_query + ";SELECT " + tmp_var_name;
+ //	cout << "Query = " << sql_query << endl;
+ 
+diff -Naur tango-8.1.2//cppserver/database/Makefile.in cme-tango-8.1.2//cppserver/database/Makefile.in
+--- tango-8.1.2//cppserver/database/Makefile.in	2013-07-19 15:21:17.000000000 +0800
++++ cme-tango-8.1.2//cppserver/database/Makefile.in	2014-02-24 20:48:58.000000000 +0800
+@@ -251,7 +251,6 @@
+ SET_MAKE = @SET_MAKE@
+ SHELL = @SHELL@
+ STRIP = @STRIP@
+-TANGO_DB_NAME = @TANGO_DB_NAME@
+ TANGO_RC_FILE = @TANGO_RC_FILE@
+ VERSION = @VERSION@
+ VERSION_INFO = @VERSION_INFO@
+@@ -713,8 +712,10 @@
+ 	uninstall-dbDATA
+ 
+ 
+-@TANGO_DB_CREATE_ENABLED_TRUE@all-local: .force
+-@TANGO_DB_CREATE_ENABLED_TRUE@	$(SHELL) ${top_builddir}/cppserver/database/create_db.sh < ${top_builddir}/cppserver/database/create_db.sql
++all-local: .force
++	sed "s/@TANGO_DB_NAME@\./${TANGO_DB_NAME}\./" ${top_builddir}/cppserver/database/stored_proc.sql > ${top_builddir}/cppserver/database/new_stored_proc.sql
++	sed "s/@TANGO_DB_NAME@;/${TANGO_DB_NAME};/" ${top_builddir}/cppserver/database/create_db.sql > ${top_builddir}/cppserver/database/new_create_db.sql
++	$(SHELL) ${top_builddir}/cppserver/database/create_db.sh < ${top_builddir}/cppserver/database/new_create_db.sql
+ 
+ .force:
+ 
