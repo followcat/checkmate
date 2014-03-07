@@ -23,8 +23,8 @@ def get_feature_language(feature_dirname):
                 return _language    
 
 feature_dirname = 'itp_zh_features'
-lang_en = gettext.translation("steps_en", languages=["en_US"])
-lang_cn = gettext.translation("steps_cn", languages=["en_US"])
+lang_en = gettext.translation("steps_en", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
+lang_cn = gettext.translation("steps_cn", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
 if get_feature_language(feature_dirname) == 'en':
     lang_en.install()
 elif get_feature_language(feature_dirname) == 'zh-CN':
