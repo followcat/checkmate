@@ -8,20 +8,19 @@ import checkmate.application
 
 def get_transition_list(application_class, exchanges, initial, transitions=None):
     """
-        >>> import sample_app.exchanges
+        >>> import checkmate._storage
         >>> import checkmate.transition
         >>> import checkmate.application
-        >>> import checkmate.test_data
-        >>> import sample_app.application
         >>> import checkmate.run_transition
-        >>> import checkmate._storage
+        >>> import sample_app.exchanges
+        >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.start()
         >>> ex = sample_app.exchanges.AC()
         >>> states = []
         >>> for name in ['C1', 'C2', 'C3']:
         ...     states.extend(a.components[name].states)
-        >>> transition_list = checkmate.run_transition.get_transition_list(checkmate.test_data.App, [ex], states, [])
+        >>> transition_list = checkmate.run_transition.get_transition_list(sample_app.application.TestData, [ex], states, [])
         >>> (transition_list[0][0][0].value, transition_list[0][2][0].value)  # doctest: +ELLIPSIS
         ('True', ...
     """

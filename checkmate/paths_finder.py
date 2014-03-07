@@ -1,23 +1,21 @@
 import checkmate._newtree
 import checkmate.run_transition
-import checkmate.application
-import sample_app.application
 
 
 class ExchangeTreesFinder(object):
-    def __init__(self, application):
+    def __init__(self, application_class):
         """
-            >>> import checkmate.paths_finder
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> import checkmate.paths_finder
+            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(sample_app.application.TestData)
             >>> len(etf.trees)
             3
         """
         self.trees = []
-        self.trees_initial_list = []
         self.transition_list = []
-        self.application = application
+        self.trees_initial_list = []
+        self.application = application_class()
+        self.application_class = application_class
         self.build_trees_from_application()
         self.build_trees_initial_state_list()
 
@@ -49,8 +47,7 @@ class ExchangeTreesFinder(object):
             >>> import checkmate.test_data
             >>> import checkmate.paths_finder
             >>> import sample_app.data_structure
-            >>> a = checkmate.test_data.App()
-            >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> r = checkmate.paths_finder.ExchangeTreesFinder(checkmate.test_data.App)
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority),checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list,outgoing = outgoing_list)
@@ -73,8 +70,7 @@ class ExchangeTreesFinder(object):
         """
             >>> import sample_app.application
             >>> import checkmate.paths_finder
-            >>> a = sample_app.application.TestData()
-            >>> r = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> r = checkmate.paths_finder.ExchangeTreesFinder(sample_app.application.TestData)
             >>> tree_one = checkmate._newtree.NewTree()
             >>> tree_one.create_node('exchange(AC)','AC') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
@@ -123,19 +119,17 @@ class ExchangeTreesFinder(object):
         return found
 
 class HumanInterfaceExchangesFinder(object):
-    def __init__(self, application):
+    def __init__(self, application_class):
         """
-            >>> import checkmate.component
-            >>> import checkmate.paths_finder
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> hi = checkmate.paths_finder.HumanInterfaceExchangesFinder(a)
+            >>> import checkmate.paths_finder
+            >>> hi = checkmate.paths_finder.HumanInterfaceExchangesFinder(sample_app.application.TestData)
             >>> hi.human_interface_exchange_code_list
             ['AC', 'RL', 'PP']
         """
-        self.application = application
         self.transition_list = []
         self.human_interface_exchange_code_list = []
+        self.application = application_class()
         self.get_Importent_Exchange_from_application()
 
     def get_Importent_Exchange_from_application(self):
@@ -147,18 +141,17 @@ class HumanInterfaceExchangesFinder(object):
                     self.human_interface_exchange_code_list.append(_outgoing.code)
 
 class PathBuilder(object):
-    def __init__(self, exchangetreesfinder):
-        self.tree_list = exchangetreesfinder.trees
-        self.init_state_list = exchangetreesfinder.trees_initial_list
-        self.application_class = sample_app.application.TestData
+    def __init__(self, exchange_trees_finder):
+        self.tree_list = exchange_trees_finder.trees
+        self.init_state_list = exchange_trees_finder.trees_initial_list
+        self.application_class = exchange_trees_finder.application_class
         self.path_list = []
 
     def make_path(self, unprocessed = None, unprocessed_initial_state = None):
         """
-            >>> import checkmate.paths_finder
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> import checkmate.paths_finder
+            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(sample_app.application.TestData)
             >>> pb = checkmate.paths_finder.PathBuilder(etf)
             >>> pb.make_path()
             >>> for _path in pb.path_list:
