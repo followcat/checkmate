@@ -1,3 +1,5 @@
+Using step definitions from: '../steps'
+
 Feature: First run AC
     In order to control component C1,C3
     User should be able to toggle C1.State,C1.AnotherState,C3.Acknowledge

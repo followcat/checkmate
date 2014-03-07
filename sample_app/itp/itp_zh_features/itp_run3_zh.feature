@@ -1,3 +1,5 @@
+Using step definitions from: '../steps'
+
 功能:第三运行PP
     为了能够控制组件C1, C3
     用户需要能切换C1, C3的状态

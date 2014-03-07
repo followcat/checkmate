@@ -58,7 +58,7 @@ def get_array_list(language,paths):
     #logging.basicConfig(level=logging.DEBUG)
     fresher.glc.clear() 
     language_set = fresher.core.load_language(language)
-    registry = new_load_step_definitions(paths)
+    registry = new_load_step_definitions([os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp')])
     features = fresher.cuke.load_features(paths, language_set)
     handler = fresher.cuke.FresherHandlerProxy([fresher.cuke.FresherHandler()])
     new_run_features(registry, features, handler)
@@ -83,7 +83,7 @@ def get_transitions_from_features(exchange_module, state_modules):
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate._storage.TransitionStorage object at ...
         """
-    languages = ['en', 'zh-CN']
+    languages = ['zh-CN']
     feature_paths = {'en':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_features')], 
                         'zh-CN':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_zh_features')]}
     array_list = []

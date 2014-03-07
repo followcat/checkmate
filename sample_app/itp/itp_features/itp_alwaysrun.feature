@@ -1,3 +1,5 @@
+Using step definitions from: '../steps'
+
 Feature: Always run AP(R)
     In order to control component C1
     User should be able to toggle C1.State

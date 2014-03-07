@@ -1,3 +1,5 @@
+Using step definitions from: '../steps'
+
 功能:总是运行AP(R)
     为了能够控制组件C1
     用户需要能切换C1的状态
