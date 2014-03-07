@@ -21,13 +21,14 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         >>> states = []
         >>> for name in ['C1', 'C2', 'C3']:
         ...     states.extend(a.components[name].states)
-        >>> transition = checkmate.run_transition.get_transition_list(checkmate.test_data.App, [ex], states, [])
-        >>> (transition[0][0].value, transition[2][0].value)  # doctest: +ELLIPSIS
+        >>> transition_list = checkmate.run_transition.get_transition_list(checkmate.test_data.App, [ex], states, [])
+        >>> (transition_list[0][0][0].value, transition_list[0][2][0].value)  # doctest: +ELLIPSIS
         ('True', ...
     """
     a = application_class()
     a.start()
     a.states = []
+    return_transitions = []
     for component in list(a.components.values()):
         a.states.extend(component.states)
     init_states = []
@@ -42,6 +43,7 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
             return None
         for transition in transitions:
             if compare_states(a, transition[0]):
+                return_transitions.append(transition)
                 exchange = transition[1][0]
                 simulate_exchange(a, exchange)
             if compare_states(a, init_states):
@@ -52,7 +54,8 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         #test exchange
         result = []
         simulate_exchange(a, exchanges[0])
-        return [init_states, exchanges, a.states, []]
+        return_transitions.append([init_states, exchanges, a.states, []])
+        return return_transitions
     else:
         return None
              
@@ -85,8 +88,5 @@ def compare_states(application, target):
                     else:
                         break
                 except IndexError:
-                        continue
+                    continue
         return matching == len(target)
-
-                
-

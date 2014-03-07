@@ -1,6 +1,7 @@
 import checkmate._newtree
 import checkmate.run_transition
 import checkmate.application
+import sample_app.application
 
 
 class ExchangeTreesFinder(object):
@@ -35,9 +36,10 @@ class ExchangeTreesFinder(object):
         for _tree in self.trees:
             temp_initial_state_list = []
             for _nodeid in _tree.expand_tree(mode=checkmate._newtree.NewTree.ZIGZAG):
-                for _t_init in [_t.initial for _t in self.transition_list if len(_t.incoming) > 0 and  _t.incoming[0].code == _nodeid][0]:
-                    if _t_init.code not in [_temp_init.code for _temp_init in temp_initial_state_list] :
-                        temp_initial_state_list.append(_t_init)
+                for _t_init in [_t.initial for _t in self.transition_list if len(_t.incoming) > 0 and  _t.incoming[0].code == _nodeid]:
+                    for _each_t_init in _t_init: 
+                        if _each_t_init.code not in [_temp_init.code for _temp_init in temp_initial_state_list] :
+                            temp_initial_state_list.append(_each_t_init)
             self.trees_initial_list.append(temp_initial_state_list)
 
     def get_transition_tree(self, transition):
@@ -145,33 +147,69 @@ class HumanInterfaceExchangesFinder(object):
                     self.human_interface_exchange_code_list.append(_outgoing.code)
 
 class PathBuilder(object):
-    """
-        >>> import sample_app.application
-        >>> a = sample_app.application.TestData()
-        >>> etf = ExchangeTreesFinder(a)
-        >>> pb = PathBuilder(etf)
-    """
     def __init__(self, exchangetreesfinder):
-        self.treelist = exchangetreesfinder.trees
+        self.tree_list = exchangetreesfinder.trees
         self.init_state_list = exchangetreesfinder.trees_initial_list
-        self.application = checkmate.application.Application
-        self.pathlist = []
-        self.make_path()
+        self.application_class = sample_app.application.TestData
+        self.path_list = []
 
-    def make_path(self, unprocessed = None, unprocessed_initial_state = None, init_transition_list = None):
+    def make_path(self, unprocessed = None, unprocessed_initial_state = None):
+        """
+            >>> import checkmate.paths_finder
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> etf = checkmate.paths_finder.ExchangeTreesFinder(a)
+            >>> pb = checkmate.paths_finder.PathBuilder(etf)
+            >>> pb.make_path()
+            >>> for _path in pb.path_list:
+            ...      for _step in _path:
+            ...         for _initstate in _step[0]:
+            ...             if _initstate.partition_id == "S-ACK-01" or _initstate.partition_id == "S-ACK-02":
+            ...                 print(_initstate.partition_id,_initstate.value)
+            ...         print("|")
+            ...         for _finalstate in _step[2]:
+            ...             if _finalstate.partition_id == "S-ACK-01" or _finalstate.partition_id == "S-ACK-02":
+            ...                 print(_finalstate.partition_id,_finalstate.value)
+            ...         print("-------------------------")
+            S-ACK-01 False
+            |
+            S-ACK-02 True
+            -------------------------
+            S-ACK-02 True
+            |
+            S-ACK-01 False
+            -------------------------
+            S-ACK-01 False
+            |
+            S-ACK-01 False
+            -------------------------
+        """
         if unprocessed is None:
-            unprocessed = self.treelist
+            unprocessed = self.tree_list
         if unprocessed_initial_state is None:
             unprocessed_initial_state = self.init_state_list
-        if init_transition_list is None:
-            init_transition_list = []
+        found = False
         for _i in range(len(unprocessed)):
-            process_exchange_list = unprocessed[_i].expand_tree(mode=checkmate._newtree.NewTree.WIDTH)
-            temp_transition = checkmate.run_transition.get_transition_list(self.application,process_exchange_list,unprocessed_initial_state[_i],init_transition_list)
-            if temp_transition is not None:
-                self.pathlist.append([temp_transition])
+            found = False
+            process_exchange_list = [unprocessed[_i][_node].tag for _node in unprocessed[_i].expand_tree(mode=checkmate._newtree.NewTree.ZIGZAG)]
+            temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i])
+            if temp_transitions is not None:
                 unprocessed.remove(unprocessed[_i])
                 unprocessed_initial_state.remove(unprocessed_initial_state[_i])
+                self.path_list.append(temp_transitions)
+                found = True
             else:
-                for _path in self.pathlist:
-                    self.make_path(unprocessed,unprocessed_initial_state,init_transition_list)
+                for _path in self.path_list:
+                    if len(unprocessed) <= 0:
+                        break
+                    temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i],_path)
+                    if temp_transitions is not None:
+                        unprocessed.remove(unprocessed[_i])
+                        unprocessed_initial_state.remove(unprocessed_initial_state[_i])
+                        if len(temp_transitions) > len(_path):
+                            self.path_list.remove(_path)
+                        self.path_list.append(temp_transitions)
+                        found = True
+            if found is True:
+                self.make_path(unprocessed,unprocessed_initial_state)
+                break 
