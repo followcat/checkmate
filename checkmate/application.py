@@ -5,7 +5,6 @@ import zope.interface
 
 import checkmate._utils
 import checkmate.exchange
-import checkmate.test_plan
 import checkmate.data_structure
 import checkmate.parser.dtvisitor
 import checkmate.partition_declarator
@@ -61,13 +60,6 @@ class Application(object):
                 self.system_under_test.pop(system_under_test.index(name))
             else:
                 self.stubs.pop(self.stubs.index(name))
-
-    def build_test_plan(self):
-        """"""
-        # Take 2 sec
-        #self.start()
-
-        self.test_plan = checkmate.test_plan.TestPlan(self.components)
 
     def get_initial_transitions(self):
         """

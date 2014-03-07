@@ -44,7 +44,6 @@ class Runtime(object):
         checkmate.logger.global_logger.start_exchange_logger()
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s"%(sys.argv))
         self.application.sut(sut)
-        self.application.build_test_plan()
 
         for (communication, type) in self.communication_list:
             checkmate.runtime.registry.global_registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
