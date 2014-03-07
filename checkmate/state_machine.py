@@ -1,7 +1,3 @@
-import copy
-
-import checkmate.run
-
 
 class StateMachine(object):
     def __init__(self, states=[], transitions=[]):
