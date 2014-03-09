@@ -50,7 +50,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.name = component.name
         self.internal = internal
         self.component = component
-        self.logger.info("%s initial"%self)
+        self.logger.debug("%s initial"%self)
         self.zmq_context = zmq.Context.instance()
         self.connections = connector(self.component, internal=internal, is_server=is_server)
         if sender_socket:
@@ -77,7 +77,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
     def stop(self):
         """"""
-        self.logger.info("%s stop request"%self)
+        self.logger.debug("%s stop request"%self)
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
@@ -88,12 +88,12 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         #no lock shared with process_receive() as POLLING timeout is too long
         destination = exchange.destination
         self.connections.send(destination, exchange)
-        self.logger.info("%s send exchange %s to %s"%(self, exchange.value, destination))
+        self.logger.debug("%s send exchange %s to %s"%(self, exchange.value, destination))
 
     def process_receive(self):
         exchange = self.connections.receive()
         if exchange is not None:
             if self.sender is not None:
                 self.sender.send_pyobj(exchange)
-                self.logger.info("%s receive exchange %s"%(self, exchange.value))
+                self.logger.debug("%s receive exchange %s"%(self, exchange.value))
 

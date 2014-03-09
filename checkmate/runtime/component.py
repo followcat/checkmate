@@ -95,7 +95,7 @@ class Sut(Component):
     """"""
     def process(self, exchanges):
         output = self.context.process(exchanges)
-        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
+        self.logger.debug("%s process exchange %s"%(self.context.name, exchanges[0].value))
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
@@ -108,13 +108,14 @@ class Sut(Component):
 class Stub(Component):
     def process(self, exchanges):
         output = self.context.process(exchanges)
-        self.logger.info("%s process exchange %s"%(self, exchanges[0].value))
+        self.logger.info("%s process exchange %s"%(self.context.name, exchanges[0].value))
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
+            self.logger.info("%s send exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
 
     def validate(self, exchange):
@@ -275,7 +276,8 @@ class ThreadedStub(ThreadedComponent, Stub):
                 client.send(_o)
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
-        checkmate.logger.global_logger.log_exchange(_o)
+            checkmate.logger.global_logger.log_exchange(_o)
+            self.logger.info("%s simulate exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
             
     def validate(self, exchange):

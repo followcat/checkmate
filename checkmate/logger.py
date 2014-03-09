@@ -15,11 +15,11 @@ def exchange_log_name():
 
 def start_runtime_logger():
     logger = logging.getLogger("checkmate")  
-    logger.setLevel(logging.DEBUG)  
+    logger.setLevel(logging.INFO)  
 
     # add a general file log handler to handle DEBUG level log message
     fhandler=logging.FileHandler(runtime_log_name())
-    fhandler.setLevel(logging.DEBUG)
+    fhandler.setLevel(logging.INFO)
     formatter = logging.Formatter("[%(asctime)s] - [%(name)s] - %(levelname)s: %(message)s")
     fhandler.setFormatter(formatter)
     logger.addHandler(fhandler)

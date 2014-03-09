@@ -143,18 +143,18 @@ class Registry(checkmate.runtime._threading.Thread):
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.socket = self.zmq_context.socket(zmq.REP)
-        self.logger.info("%s init"%self)
+        self.logger.debug("%s init"%self)
         self.get_assign_port_lock = threading.Lock()
 
         self._initport = self.pickfreeport()
         self.socket.bind("tcp://127.0.0.1:%i"%self._initport)
-        self.logger.info("%s bind port %i to listen port request"%(self, self._initport))
+        self.logger.debug("%s bind port %i to listen port request"%(self, self._initport))
         self.poller.register(self.socket, zmq.POLLIN)
 
 
     def run(self):
         """"""
-        self.logger.info("%s startup"%self)
+        self.logger.debug("%s startup"%self)
         while True:
             if self.check_for_stop():
                 break
@@ -169,7 +169,7 @@ class Registry(checkmate.runtime._threading.Thread):
         if len(_list) == 2:
             (name, port) = _list
             self.comp_sender[name] = port
-            self.logger.info("%s bind port %i to send exchange to %s"%(self, port, name))
+            self.logger.debug("%s bind port %i to send exchange to %s"%(self, port, name))
             self.socket.send(pickle.dumps(0))
         else:
             (name,) = _list
@@ -177,7 +177,7 @@ class Registry(checkmate.runtime._threading.Thread):
             self.socket.send(pickle.dumps(port))
 
     def stop(self):
-        self.logger.info("%s stop"%self)
+        self.logger.debug("%s stop"%self)
         super(Registry, self).stop()
 
     def pickfreeport(self):
