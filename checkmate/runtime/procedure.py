@@ -71,8 +71,9 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, test=None):
+    def __init__(self, test=None, is_setup=False):
         self.test = test
+        self.is_setup = is_setup
         self.components = []
         self.tran_dict = {}
         self.logger = logging.getLogger('checkmate.runtime.procedure')
@@ -107,6 +108,7 @@ class Procedure(object):
         except IndexError as e:
             raise e("no exchange found in itp to initialize the current")
         for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=_transition):
+            _procedure.is_setup = True
             _procedure(system_under_test=self.system_under_test)
         if not self.compare_states(self.initial):
             self.transform_to_initial()
@@ -264,7 +266,8 @@ class Procedure(object):
             except ValueError:
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
-        self.logger.info('Procedure Done')
+        if not self.is_setup:
+            self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
