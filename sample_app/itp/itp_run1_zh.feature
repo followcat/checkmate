@@ -1,5 +1,3 @@
-Using step definitions from: '../steps'
-
 功能:首先运行AC
     为了能够控制组件C1, C3
     用户需要能切换C1, C3的状态

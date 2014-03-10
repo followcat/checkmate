@@ -1,5 +1,3 @@
-Using step definitions from: '../steps'
-
 功能:其次运行RL
     为了能够控制组件C3
     用户需要能切换C3的状态

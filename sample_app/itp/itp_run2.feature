@@ -1,5 +1,3 @@
-Using step definitions from: '../steps'
-
 Feature: Second run RL
     In order to control component C3
     User should be able to toggle C3.Acknowledge
