@@ -8,6 +8,7 @@ import sys
 import logging
 
 import fresher
+import pyparsing
 import fresher.cuke
 import fresher.core
 import fresher.stepregistry
@@ -39,6 +40,29 @@ def new_load_step_definitions(paths):
         loader.load_steps_impl(sr, cwd, path)
     return sr
 
+def new_load_features(paths, language=None):
+    """
+        >>> import os
+        >>> import checkmate.parser.feature_visitor
+        >>> itp_paths = os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp')
+        >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths])
+        >>> features # doctest: +ELLIPSIS
+        [<Feature "第三运行PP": 1 scenario(s)>, ...
+        >>> len(features)
+        8
+    """
+    result = []
+    for path in paths:
+        for (dirpath, dirnames, filenames) in os.walk(path):
+            for feature_file in filenames:
+                if feature_file.endswith(".feature"):
+                    feature_file = os.path.join(dirpath, feature_file)
+                    try:
+                        result.append(fresher.core.load_feature(feature_file, fresher.core.load_language('zh-CN')))
+                    except pyparsing.ParseException:
+                        result.append(fresher.core.load_feature(feature_file, fresher.core.load_language('en')))
+    return result
+
 def new_run_features(step_registry, features, handler):
     if fresher.glc.array_list is None:
         fresher.glc.array_list = []
@@ -59,7 +83,7 @@ def get_array_list(language,paths):
     fresher.glc.clear() 
     language_set = fresher.core.load_language(language)
     registry = new_load_step_definitions([os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp')])
-    features = fresher.cuke.load_features(paths, language_set)
+    features = new_load_features(paths, language_set)
     handler = fresher.cuke.FresherHandlerProxy([fresher.cuke.FresherHandler()])
     new_run_features(registry, features, handler)
     return fresher.glc.array_list
