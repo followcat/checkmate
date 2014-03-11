@@ -1,3 +1,4 @@
+import copy
 import zope.interface
 
 import checkmate.path_transition
@@ -14,8 +15,10 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         >>> for name in ['C1', 'C2', 'C3']:
         ...     states.extend(a.components[name].states)
         >>> transition_list = checkmate.run_transition.get_transition_list(sample_app.application.TestData, exchanges, states, [])
-        >>> (transition_list[0].initial[0].value, transition_list[0].final[0].value)  # doctest: +ELLIPSIS
-        ('True', ...
+        >>> len(transition_list)
+        1
+        >>> transition_list[0].incoming[0].action
+        'AC'
     """
     a = application_class()
     a.start()
@@ -39,8 +42,9 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
                 simulate_exchange(a, return_transitions[i].incoming[0])
     #verify the exchange list
     if compare_states(a, init_states):
+        copy_states = copy.deepcopy(states)
         simulate_exchange(a, exchanges[0], exchanges, validate=True)
-        transition = checkmate.path_transition.Path_Transition(initial=init_states, incoming=exchanges, final=states, outgoing=[])
+        transition = checkmate.path_transition.Path_Transition(initial=copy_states, incoming=exchanges, final=states, outgoing=[])
         if transitions is not None:
             for _t in transitions:
                 if transition.is_matching_initial(_t.final):
