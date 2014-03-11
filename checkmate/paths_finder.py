@@ -156,11 +156,11 @@ class PathBuilder(object):
             >>> pb.make_path()
             >>> for _path in pb.path_list:
             ...      for _step in _path:
-            ...         for _initstate in _step[0]:
+            ...         for _initstate in _step.initial:
             ...             if _initstate.partition_id == "S-ACK-01" or _initstate.partition_id == "S-ACK-02":
             ...                 print(_initstate.partition_id,_initstate.value)
             ...         print("|")
-            ...         for _finalstate in _step[2]:
+            ...         for _finalstate in _step.final:
             ...             if _finalstate.partition_id == "S-ACK-01" or _finalstate.partition_id == "S-ACK-02":
             ...                 print(_finalstate.partition_id,_finalstate.value)
             ...         print("-------------------------")
@@ -199,6 +199,7 @@ class PathBuilder(object):
                     if temp_transitions is not None:
                         unprocessed.remove(unprocessed[_i])
                         unprocessed_initial_state.remove(unprocessed_initial_state[_i])
+                        #replace the current path with newer longer one
                         if len(temp_transitions) > len(_path):
                             self.path_list.remove(_path)
                         self.path_list.append(temp_transitions)

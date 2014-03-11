@@ -1,35 +1,28 @@
 import zope.interface
 
-import checkmate.exchange
-
-import checkmate.transition
-import checkmate.component
-import checkmate.application
+import checkmate.path_transition
 
 def get_transition_list(application_class, exchanges, initial, transitions=None):
     """
-        >>> import checkmate._storage
-        >>> import checkmate.transition
-        >>> import checkmate.application
-        >>> import checkmate.run_transition
         >>> import sample_app.exchanges
         >>> import sample_app.application
+        >>> import checkmate.run_transition
         >>> a = sample_app.application.TestData()
         >>> a.start()
-        >>> ex = sample_app.exchanges.AC()
+        >>> exchanges = [sample_app.exchanges.AC(), sample_app.exchanges.RE(), sample_app.exchanges.ARE(), sample_app.exchanges.AP(), sample_app.exchanges.DA()]
         >>> states = []
         >>> for name in ['C1', 'C2', 'C3']:
         ...     states.extend(a.components[name].states)
-        >>> transition_list = checkmate.run_transition.get_transition_list(sample_app.application.TestData, [ex], states, [])
-        >>> (transition_list[0][0][0].value, transition_list[0][2][0].value)  # doctest: +ELLIPSIS
+        >>> transition_list = checkmate.run_transition.get_transition_list(sample_app.application.TestData, exchanges, states, [])
+        >>> (transition_list[0].initial[0].value, transition_list[0].final[0].value)  # doctest: +ELLIPSIS
         ('True', ...
     """
     a = application_class()
     a.start()
-    a.states = []
+    states = []
     return_transitions = []
     for component in list(a.components.values()):
-        a.states.extend(component.states)
+        states.extend(component.states)
     init_states = []
     for state in initial:
         if type(state) == checkmate._storage.InternalStorage:
@@ -40,23 +33,40 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         #transform to initial
         if transitions is None:
             return None
-        for transition in transitions:
-            if compare_states(a, transition[0]):
-                return_transitions.append(transition)
-                exchange = transition[1][0]
-                simulate_exchange(a, exchange)
-            if compare_states(a, init_states):
-                break
+        previous = []
+        found = False
+        current = init_states
+        for i in (range(-1, -1-len(transitions), -1)):
+            transition = transitions[i]
+            if transition.is_matching_final(current):
+                previous.append(transition)
+                return_transitions.insert(0, transition)
+                current = transition.initial
+                if transition.is_matching_initial(states):
+                    found = True
+                    break
             else:
                 continue
+        if found:
+            for i in range(len(return_transitions)):
+                transition = return_transitions[i]
+                simulate_exchange(a, transition.incoming[0])
+        else:
+            return None
     if compare_states(a, init_states):
-        #test exchange
-        result = []
         simulate_exchange(a, exchanges[0])
-        return_transitions.append([init_states, exchanges, a.states, []])
+        transition = checkmate.path_transition.Path_Transition(initial=init_states, incoming=exchanges, final=states, outgoing=[])
+        if transitions is not None:
+            for _t in transitions:
+                if transition.is_matching_initial(_t.final):
+                    transition.previous_transitions.append(_t)
+                if transition.is_matching_final(_t.initial):
+                    transition.next_transitions.append(_t)
+        return_transitions.append(transition)
         return return_transitions
     else:
         return None
+                
              
 def simulate_exchange(application, exchange):
     for component in list(application.components.values()):
