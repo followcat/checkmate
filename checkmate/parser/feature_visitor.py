@@ -5,9 +5,9 @@
 
 import os
 import sys
-import logging
+import copy
+import gettext
 
-import fresher
 import pyparsing
 import fresher.cuke
 import fresher.core
@@ -20,7 +20,6 @@ def new_load_step_definitions(paths):
     """
         the load_steps_impl function at load_step_definitions in fresher.cuke only has 2 arguments,has problem:
 
-        >>> import fresher
         >>> import fresher.cuke
         >>> import fresher.core
         >>> import fresher.stepregistry
@@ -40,16 +39,23 @@ def new_load_step_definitions(paths):
         loader.load_steps_impl(sr, cwd, path)
     return sr
 
-def new_load_features(paths, language=None):
+def new_load_features(paths, language):
     """
         >>> import os
         >>> import checkmate.parser.feature_visitor
         >>> itp_paths = os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp')
-        >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths])
+        >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
+        ...                     fresher.core.load_language('en'))
+        >>> features # doctest: +ELLIPSIS
+        [<Feature "Third run PP": 1 scenario(s)>, ...
+        >>> len(features)
+        4
+        >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
+        ...                     fresher.core.load_language('zh-CN'))
         >>> features # doctest: +ELLIPSIS
         [<Feature "第三运行PP": 1 scenario(s)>, ...
         >>> len(features)
-        8
+        4
     """
     result = []
     for path in paths:
@@ -58,9 +64,9 @@ def new_load_features(paths, language=None):
                 if feature_file.endswith(".feature"):
                     feature_file = os.path.join(dirpath, feature_file)
                     try:
-                        result.append(fresher.core.load_feature(feature_file, fresher.core.load_language('zh-CN')))
+                        result.append(fresher.core.load_feature(feature_file, language))
                     except pyparsing.ParseException:
-                        result.append(fresher.core.load_feature(feature_file, fresher.core.load_language('en')))
+                        continue
     return result
 
 def new_run_features(step_registry, features, handler):
@@ -70,22 +76,43 @@ def new_run_features(step_registry, features, handler):
         fresher.cuke.run_feature(step_registry, feature, handler)
         fresher.glc.array_list.extend(fresher.ftc.scenarios)
 
-def get_array_list(language,paths):
+def translate_registry(registry, lang):
+    local_registry = copy.deepcopy(registry)
+    if lang == 'zh-CN':
+        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["zh_CN"])
+    else:
+        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
+    _locale.install()
+
+    for keyword in ['given', 'when', 'then']:
+        for step in local_registry.steps[keyword]:
+            step.spec = _(step.spec)
+            if hasattr(step, 're_spec'):
+                del step.re_spec
+            local_registry.add_step(keyword, step)
+    return local_registry
+
+
+def get_array_list(paths):
     """
         >>> import os
         >>> import checkmate.parser.feature_visitor
-        >>> itp_path = 'sample_app/itp/itp_features'
+        >>> itp_path = 'sample_app/itp'
         >>> itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'),itp_path)
-        >>> len(checkmate.parser.feature_visitor.get_array_list('en',[itp_absolute_path]))
-        4
+        >>> len(checkmate.parser.feature_visitor.get_array_list([itp_absolute_path]))
+        8
     """
-    #logging.basicConfig(level=logging.DEBUG)
+    _languages = ['en', 'zh-CN']
     fresher.glc.clear() 
-    language_set = fresher.core.load_language(language)
-    registry = new_load_step_definitions([os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp')])
-    features = new_load_features(paths, language_set)
-    handler = fresher.cuke.FresherHandlerProxy([fresher.cuke.FresherHandler()])
-    new_run_features(registry, features, handler)
+    for _lang in _languages:
+        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
+        _locale.install()
+        language_set = fresher.core.load_language(_lang)
+        registry = new_load_step_definitions(paths)
+        lang_registry = translate_registry(registry, _lang)
+        features = new_load_features(paths, language_set)
+        handler = fresher.cuke.FresherHandlerProxy([fresher.cuke.FresherHandler()])
+        new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
 def get_transitions_from_features(exchange_module, state_modules):
@@ -107,12 +134,7 @@ def get_transitions_from_features(exchange_module, state_modules):
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate._storage.TransitionStorage object at ...
         """
-    languages = ['zh-CN']
-    feature_paths = {'en':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_features')], 
-                        'zh-CN':[os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/itp_zh_features')]}
-    array_list = []
-    for language in languages:
-        array_list.extend(get_array_list(language, feature_paths[language]))
+    array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/')])
     initial_transitions = []
     for array_items in array_list:
         initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
