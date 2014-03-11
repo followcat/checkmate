@@ -17,14 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: steps.py:37
+#: steps.py:8
 msgid "^Component state (?:(\\w+).(\\w+)) at value ([\\w\\(\\)]+)$"
 msgstr ""
 
-#: steps.py:41
+#: steps.py:12
 msgid "^Component (\\w+) sends exchange (\\w+) ([\\w\\(\\)]+)$"
 msgstr ""
 
-#: steps.py:45
+#: steps.py:16
 msgid "^Component state (?:(\\w+).(\\w+)) should change to value ([\\w\\(\\)]+)$"
 msgstr ""
