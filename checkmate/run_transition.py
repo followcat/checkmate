@@ -54,7 +54,7 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         else:
             return None
     if compare_states(a, init_states):
-        simulate_exchange(a, exchanges[0])
+        simulate_exchange(a, exchanges[0], exchanges, validate=True)
         transition = checkmate.path_transition.Path_Transition(initial=init_states, incoming=exchanges, final=states, outgoing=[])
         if transitions is not None:
             for _t in transitions:
@@ -68,19 +68,23 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         return None
                 
              
-def simulate_exchange(application, exchange):
+def simulate_exchange(application, exchange, exchanges=None, validate=False):
     for component in list(application.components.values()):
         if exchange.action in component.outgoings:
             for output in component.simulate(exchange):
-                run(application, output)
+                if validate and (output not in exchanges):
+                    raise ValueError("outgoing %s is not as expected" %output.action) 
+                run(application, output, exchanges, validate)
 
-def run(application, incoming):
+def run(application, incoming, exchanges=None, validate=False):
     try:
         component = application.components[incoming.destination]
     except AttributeError as e:
         raise e("no component %s found in application" %incoming.destination)
     for output in component.process([incoming]):
-        run(application, output)
+        if validate and (output not in exchanges):
+            raise ValueError("outgoing %s is not as expected" %output.action)
+        run(application, output, exchanges, validate)
     return
             
 def compare_states(application, target):
