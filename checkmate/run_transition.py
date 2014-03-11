@@ -33,13 +33,11 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         #transform to initial
         if transitions is None:
             return None
-        previous = []
         found = False
         current = init_states
         for i in (range(-1, -1-len(transitions), -1)):
             transition = transitions[i]
             if transition.is_matching_final(current):
-                previous.append(transition)
                 return_transitions.insert(0, transition)
                 current = transition.initial
                 if transition.is_matching_initial(states):
@@ -85,16 +83,16 @@ def run(application, incoming, exchanges=None, validate=False):
         if validate and (output not in exchanges):
             raise ValueError("outgoing %s is not as expected" %output.action)
         run(application, output, exchanges, validate)
-    return
             
 def compare_states(application, target):
         """"""
         matching = 0
         for _target in target:
+            _interface = zope.interface.implementedBy(_target.__class__)
             for _component in list(application.components.values()):
                 try:
                     #Assume at most one state of component implements interface
-                    _state = [_s for _s in _component.states if zope.interface.implementedBy(_target.__class__) == zope.interface.implementedBy(_s.__class__)].pop(0)
+                    _state = [_s for _s in _component.states if _interface.providedBy(_s)].pop(0)
                     if _state == _target:
                         matching += 1
                         break
