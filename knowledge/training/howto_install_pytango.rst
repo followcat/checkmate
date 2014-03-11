@@ -180,5 +180,5 @@ Three steps to start tango on my computer before using checkmate pytango:
                 password=mysql_user_password
 
 
-.. _patch: ./_static/checkmate-tango-8.1.2-patch.diff
+.. _patch: ./_static/patch-tango-8.1.2.diff
    
