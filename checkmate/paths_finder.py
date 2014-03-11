@@ -187,8 +187,6 @@ class PathBuilder(object):
             process_exchange_list = [unprocessed[_i][_node].tag for _node in unprocessed[_i].expand_tree(mode=checkmate._newtree.NewTree.ZIGZAG)]
             temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i])
             if temp_transitions is not None:
-                unprocessed.remove(unprocessed[_i])
-                unprocessed_initial_state.remove(unprocessed_initial_state[_i])
                 self.path_list.append(temp_transitions)
                 found = True
             else:
@@ -197,13 +195,13 @@ class PathBuilder(object):
                         break
                     temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i],_path)
                     if temp_transitions is not None:
-                        unprocessed.remove(unprocessed[_i])
-                        unprocessed_initial_state.remove(unprocessed_initial_state[_i])
                         #replace the current path with newer longer one
                         if len(temp_transitions) > len(_path):
                             self.path_list.remove(_path)
                         self.path_list.append(temp_transitions)
                         found = True
-            if found is True:
+            if found:
+                unprocessed.remove(unprocessed[_i])
+                unprocessed_initial_state.remove(unprocessed_initial_state[_i])
                 self.make_path(unprocessed,unprocessed_initial_state)
                 break 

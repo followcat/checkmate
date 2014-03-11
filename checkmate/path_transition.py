@@ -35,7 +35,6 @@ class Path_Transition(object):
         return compare_state(self.final, state_list)
 
 
-
 def compare_state(states, target):
     if len(states) == 0 or len(target) == 0: 
         return True

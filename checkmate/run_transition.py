@@ -47,7 +47,8 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
                     transition.previous_transitions.append(_t)
                 if transition.is_matching_final(_t.initial):
                     transition.next_transitions.append(_t)
-        return return_transitions.append(transition)
+        return_transitions.append(transition)
+        return return_transitions
     else:
         return None
                 
@@ -65,7 +66,6 @@ def find_path_to_initial(transitions, initial, target):
             continue
     return None
 
-             
 def simulate_exchange(application, exchange, exchanges=None, validate=False):
     for component in list(application.components.values()):
         if exchange.action in component.outgoings:
