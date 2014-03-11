@@ -33,24 +33,11 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         #transform to initial
         if transitions is None:
             return None
-        found = False
-        current = init_states
-        for i in (range(-1, -1-len(transitions), -1)):
-            transition = transitions[i]
-            if transition.is_matching_final(current):
-                return_transitions.insert(0, transition)
-                current = transition.initial
-                if transition.is_matching_initial(states):
-                    found = True
-                    break
-            else:
-                continue
-        if found:
+        return_transitions = find_path_to_initial(transitions, states, init_states)
+        if return_transitions is not None and len(return_transitions) > 0:
             for i in range(len(return_transitions)):
-                transition = return_transitions[i]
-                simulate_exchange(a, transition.incoming[0])
-        else:
-            return None
+                simulate_exchange(a, return_transitions[i].incoming[0])
+    #verify the exchange list
     if compare_states(a, init_states):
         simulate_exchange(a, exchanges[0], exchanges, validate=True)
         transition = checkmate.path_transition.Path_Transition(initial=init_states, incoming=exchanges, final=states, outgoing=[])
@@ -60,11 +47,24 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
                     transition.previous_transitions.append(_t)
                 if transition.is_matching_final(_t.initial):
                     transition.next_transitions.append(_t)
-        return_transitions.append(transition)
-        return return_transitions
+        return return_transitions.append(transition)
     else:
         return None
                 
+def find_path_to_initial(transitions, initial, target):
+    path = []
+    current = target
+    for i in (range(-1, -1-len(transitions), -1)):
+        transition = transitions[i]
+        if transition.is_matching_final(current):
+            path.insert(0, transition)
+            current = transition.initial
+            if transition.is_matching_initial(initial):
+                return path
+        else:
+            continue
+    return None
+
              
 def simulate_exchange(application, exchange, exchanges=None, validate=False):
     for component in list(application.components.values()):
