@@ -57,6 +57,21 @@ class NewTree(treelib.Tree):
         self.add_node(node, parent)
         return node
 
+    def merge(self, des_tree):
+        #root always incoming
+        #node always outgoing
+        found = False
+        leaf_nid = self.get_root_parent(des_tree.root)
+        if leaf_nid is not None:
+            found = True
+            self.paste_tree_replace_node(des_tree,leaf_nid)
+            des_tree = self
+        elif des_tree.get_root_parent(self.root) is not None:
+            leaf_nid = des_tree.get_root_parent(self.root)
+            found = True
+            des_tree.paste_tree_replace_node(self,leaf_nid)
+        return found, des_tree
+
     def showid(self, nid=None, level=treelib.Tree.ROOT, idhidden=True, filter=None, key=None, reverse=False):
         save_get_tag = NewNode.get_tag
         NewNode.get_tag = NewNode.identifier
