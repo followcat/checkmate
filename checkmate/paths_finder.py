@@ -98,20 +98,10 @@ class ExchangeTreesFinder(object):
             |    |___ AP
             |___ RE
         """
-        #root always incoming
-        #node always outgoing
         found = False
         for _tree in self.trees[:]:
-            leaf_nid = _tree.get_root_parent(des_tree.root)
-            if leaf_nid is not None:
-                found = True
-                _tree.paste_tree_replace_node(des_tree,leaf_nid)
-                self.trees.remove(_tree)
-                des_tree = _tree
-            leaf_nid = des_tree.get_root_parent(_tree.root)
-            if leaf_nid is not None:
-                found = True
-                des_tree.paste_tree_replace_node(_tree,leaf_nid)
+            found, des_tree = _tree.merge(des_tree)
+            if found:
                 self.trees.remove(_tree)
         if found:
             self.trees.append(des_tree)
