@@ -175,21 +175,29 @@ class PathBuilder(object):
         for _i in range(len(unprocessed)):
             found = False
             process_exchange_list = [unprocessed[_i][_node].tag for _node in unprocessed[_i].expand_tree(mode=checkmate._newtree.NewTree.ZIGZAG)]
-            temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i])
-            if temp_transitions is not None:
-                self.path_list.append(temp_transitions)
+            temp_transition = checkmate.run_transition.get_transition(self.application_class,process_exchange_list,unprocessed_initial_state[_i])
+            if temp_transition is not None:
+                self.path_list.append([temp_transition])
                 found = True
             else:
                 for _path in self.path_list:
                     if len(unprocessed) <= 0:
                         break
-                    temp_transitions = checkmate.run_transition.get_transition_list(self.application_class,process_exchange_list,unprocessed_initial_state[_i],_path)
-                    if temp_transitions is not None:
+                    temp_transition = checkmate.run_transition.get_transition(self.application_class,process_exchange_list,unprocessed_initial_state[_i],_path)
+                    if temp_transition is not None:
+                        new_path = _path[0:_path.index(temp_transition.previous_transitions[0])+1]
+                        new_path.append(temp_transition)
                         #replace the current path with newer longer one
-                        if len(temp_transitions) > len(_path):
+                        if len(new_path) > len(_path):
                             self.path_list.remove(_path)
-                        self.path_list.append(temp_transitions)
+                        self.path_list.append(new_path)
                         found = True
+                for _p in self.path_list:
+                    for _s in _p:
+                        if _s.is_matching_final(temp_transition.initial) and temp_transition not in _s.previous_transitions:
+                            _s.next_transitions.append(temp_transition)
+                        if _s.is_matching_initial(temp_transition.final) and temp_transition not in _s.next_transitions:
+                            _s.previous_transitions.append(temp_transition)
             if found:
                 unprocessed.remove(unprocessed[_i])
                 unprocessed_initial_state.remove(unprocessed_initial_state[_i])

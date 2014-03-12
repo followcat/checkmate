@@ -3,7 +3,7 @@ import zope.interface
 
 import checkmate.path_transition
 
-def get_transition_list(application_class, exchanges, initial, transitions=None):
+def get_transition(application_class, exchanges, initial, transitions=None):
     """
         >>> import sample_app.exchanges
         >>> import sample_app.application
@@ -14,10 +14,8 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         >>> states = []
         >>> for name in ['C1', 'C2', 'C3']:
         ...     states.extend(a.components[name].states)
-        >>> transition_list = checkmate.run_transition.get_transition_list(sample_app.application.TestData, exchanges, states, [])
-        >>> len(transition_list)
-        1
-        >>> transition_list[0].incoming[0].action
+        >>> transition = checkmate.run_transition.get_transition(sample_app.application.TestData, exchanges, states, [])
+        >>> transition.incoming[0].action
         'AC'
     """
     a = application_class()
@@ -36,23 +34,22 @@ def get_transition_list(application_class, exchanges, initial, transitions=None)
         #transform to initial
         if transitions is None:
             return None
-        return_transitions = find_path_to_initial(transitions, states, init_states)
-        if return_transitions is not None and len(return_transitions) > 0:
-            for i in range(len(return_transitions)):
-                simulate_exchange(a, return_transitions[i].incoming[0])
+        path = find_path_to_initial(transitions, states, init_states)
+        if path is not None and len(path) > 0:
+            for i in range(len(path)):
+                simulate_exchange(a, path[i].incoming[0])
     #verify the exchange list
     if compare_states(a, init_states):
         copy_states = copy.deepcopy(states)
         simulate_exchange(a, exchanges[0], exchanges, validate=True)
-        transition = checkmate.path_transition.Path_Transition(initial=copy_states, incoming=exchanges, final=states, outgoing=[])
+        path_transition = checkmate.path_transition.Path_Transition(initial=copy_states, incoming=exchanges, final=states, outgoing=[])
         if transitions is not None:
             for _t in transitions:
-                if transition.is_matching_initial(_t.final):
-                    transition.previous_transitions.append(_t)
-                if transition.is_matching_final(_t.initial):
-                    transition.next_transitions.append(_t)
-        return_transitions.append(transition)
-        return return_transitions
+                if path_transition.is_matching_initial(_t.final):
+                    path_transition.previous_transitions.append(_t)
+                if path_transition.is_matching_final(_t.initial):
+                    path_transition.next_transitions.append(_t)
+        return path_transition
     else:
         return None
                 
