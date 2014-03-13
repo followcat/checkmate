@@ -14,7 +14,8 @@ def get_path_from_pathfinder(application_class, application, target):
         >>> import sample_app.runtime.test_procedure
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
-        >>> runs = checkmate.paths_finder.RunCollection(_class)
+        >>> runs = checkmate.paths_finder.RunCollection()
+        >>> runs.build_trees_from_application(_class)
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class)
         >>> ex1 = sample_app.exchanges.AC()

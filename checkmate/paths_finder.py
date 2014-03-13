@@ -2,32 +2,26 @@ import checkmate.sandbox
 import checkmate._newtree
 
 
-class RunCollection(object):
-    def __init__(self, application_class):
+class RunCollection(list):
+    def build_trees_from_application(self, application_class):
         """
             >>> import sample_app.application
             >>> import checkmate.paths_finder
-            >>> etf = checkmate.paths_finder.RunCollection(sample_app.application.TestData)
-            >>> len(etf.trees)
+            >>> runs = checkmate.paths_finder.RunCollection()
+            >>> runs.build_trees_from_application(sample_app.application.TestData)
+            >>> len(runs)
             3
         """
-        self.trees = []
-        self.transition_list = []
-        self.trees_initial_list = []
-        self.application = application_class()
-        self.application_class = application_class
-        self.build_trees_from_application()
-
-    def build_trees_from_application(self):
-        self.transition_list = []
-        for _k, _v in self.application.components.items():
-            self.transition_list .extend(_v.state_machine.transitions)
-        for _t in self.transition_list:
+        application = application_class()
+        transition_list = []
+        for _k, _v in application.components.items():
+            transition_list.extend(_v.state_machine.transitions)
+        for _t in transition_list:
             temp_tree = self.get_transition_tree(_t)
             if temp_tree is None:
                 continue
             if self.merge_tree(temp_tree) == False:
-                self.trees.append(temp_tree)
+                self.append(temp_tree)
 
     def get_transition_tree(self, transition):
         """
@@ -36,7 +30,8 @@ class RunCollection(object):
             >>> import checkmate.test_data
             >>> import checkmate.paths_finder
             >>> import sample_app.data_structure
-            >>> r = checkmate.paths_finder.RunCollection(checkmate.test_data.App)
+            >>> r = checkmate.paths_finder.RunCollection()
+            >>> r.build_trees_from_application(checkmate.test_data.App)
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
@@ -59,16 +54,15 @@ class RunCollection(object):
         """
             >>> import sample_app.application
             >>> import checkmate.paths_finder
-            >>> r = checkmate.paths_finder.RunCollection(sample_app.application.TestData)
+            >>> r = checkmate.paths_finder.RunCollection()
             >>> tree_one = checkmate._newtree.NewTree()
             >>> tree_one.create_node(sample_app.application.TestData().components['C1'].state_machine.transitions[0], 'AC') # doctest: +ELLIPSIS
             <checkmate._newtree.NewNode object at ...
             >>> tree_one.add_node(checkmate._newtree.NewNode(None, 'RE'), parent='AC')
             >>> tree_one.add_node(checkmate._newtree.NewNode(None, 'ARE'), parent='AC')
-            >>> r.trees = []
             >>> if r.merge_tree(tree_one) == False:
-            ...        r.trees.append(tree_one)
-            >>> r.trees[0].showid()
+            ...        r.append(tree_one)
+            >>> r[0].showid()
             AC
             |___ ARE
             |___ RE
@@ -81,22 +75,22 @@ class RunCollection(object):
             |___ AP
             >>> r.merge_tree(tree_two)
             True
-            >>> r.trees[0].showid()
+            >>> r[0].showid()
             AC
             |___ ARE
             |    |___ AP
             |___ RE
-            >>> tree = r.trees[0]
+            >>> tree = r[0]
             >>> [tree.get_node(n)._tag for n in tree.get_node(tree.root).fpointer] # doctest: +ELLIPSIS
             ['RE', <checkmate.transition.Transition object at ...
         """
         found = False
-        for _tree in self.trees[:]:
+        for _tree in self[:]:
             found, des_tree = _tree.merge(des_tree)
             if found:
-                self.trees.remove(_tree)
+                self.remove(_tree)
         if found:
-            self.trees.append(des_tree)
+            self.append(des_tree)
             self.merge_tree(des_tree)
         return found
 
@@ -123,17 +117,17 @@ class HumanInterfaceExchangesFinder(object):
                     self.human_interface_exchange_code_list.append(_outgoing.code)
 
 class PathBuilder(object):
-    def __init__(self, exchange_trees_finder):
-        self.tree_list = exchange_trees_finder.trees
-        self.application_class = exchange_trees_finder.application_class
+    def __init__(self, application_class):
         self.path_list = []
+        self.application_class = application_class
+        self.tree_list = RunCollection()
+        self.tree_list.build_trees_from_application(application_class)
 
     def make_path(self, unprocessed = None, unprocessed_initial_state = None):
         """
             >>> import sample_app.application
             >>> import checkmate.paths_finder
-            >>> etf = checkmate.paths_finder.RunCollection(sample_app.application.TestData)
-            >>> pb = checkmate.paths_finder.PathBuilder(etf)
+            >>> pb = checkmate.paths_finder.PathBuilder(sample_app.application.TestData)
         """
         if unprocessed is None:
             unprocessed = self.tree_list
