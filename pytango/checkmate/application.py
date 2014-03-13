@@ -33,8 +33,8 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
-    def __init__(self):
-        super(Application, self).__init__()
+    def __init__(self, feature_language):
+        super(Application, self).__init__(feature_language)
 
         import pytango.checkmate.component_1.component
         import pytango.checkmate.component_2.component

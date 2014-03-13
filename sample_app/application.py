@@ -13,7 +13,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
-    def __init__(self):
+    def __init__(self, feature_language=None):
         """
             >>> import sample_app.application
             >>> import checkmate.component
@@ -57,7 +57,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             []
 
         """
-        super(TestData, self).__init__()
+        super(TestData, self).__init__(feature_language)
 
         #can only be loaded after application exchanges.rst is parsed by metaclass
         import sample_app.component_1.component

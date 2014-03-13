@@ -50,6 +50,10 @@ class Checkmate(nose.plugins.Plugin):
                           dest='comm_class',
                           default=os.getenv('CHECKMATE_RUNTIME_COMMUNICATION', "checkmate.runtime._pyzmq.Communication"),
                           help="Specify the communication class in runtime")
+        parser.add_option('--feature-language', action='store',
+                          dest='feature_language',
+                          default='en,zh-CN',
+                          help="Specify the language of the feature files to be loaded.")
         return parser
 
     def configure(self, options, config):
@@ -60,6 +64,7 @@ class Checkmate(nose.plugins.Plugin):
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.randomized_run = options.randomized_run
+        self.feature_language = options.feature_language.split(',')
         self.application_class = self.get_option_value(options.app_class)
         self.communication_class = self.get_option_value(options.comm_class)
     
@@ -133,7 +138,7 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
-        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True)
+        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, feature_language=self.feature_language)
         self.runtime.setup_environment(self.sut)
         self.runtime.start_test()
         time.sleep(3)
