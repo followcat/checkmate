@@ -1,5 +1,5 @@
-import checkmate.sandbox
 import checkmate._newtree
+import checkmate.run_transition
 
 
 class RunCollection(list):
