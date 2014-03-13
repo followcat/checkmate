@@ -72,11 +72,33 @@ class NewTree(treelib.Tree):
             des_tree.paste_tree_replace_node(self,leaf_nid)
         return found, des_tree
 
-    def showid(self, nid=None, level=treelib.Tree.ROOT, idhidden=True, filter=None, key=None, reverse=False):
-        save_get_tag = NewNode.get_tag
-        NewNode.get_tag = NewNode.identifier
-        self.show(nid, level, idhidden, filter, key, reverse)
-        NewNode.get_tag = save_get_tag
+    def showid(self, nid=None, level=treelib.Tree.ROOT, taghidden=True, filter=None, key=None, reverse=False):
+        leading = ''
+        lasting = '|___ '
+
+        nid = self.root if (nid is None) else nid
+        if not self.contains(nid):
+            raise NodeIDAbsentError("Node '%s' is not in the tree" % nid)
+
+        label = ("{0}".format(self[nid].identifier)) if taghidden else ("{0}[{1}]".format(self[nid].identifier, self[nid].tag))
+        filter = (self._real_true) if (filter is None) else filter
+
+        if level == self.ROOT:
+            print(label)
+        else:
+            if level <= 1:
+                leading += ('|' + ' ' * 4) * (level - 1)
+            else:
+                leading += ('|' + ' ' * 4) + (' ' * 5 * (level - 2))
+            print("{0}{1}{2}".format(leading, lasting, label))
+
+        if filter(self[nid]) and self[nid].expanded:
+            queue = [self[i] for i in self[nid].fpointer if filter(self[i])]
+            key = (lambda x: x) if (key is None) else key
+            queue.sort(key=key, reverse=reverse)
+            level += 1
+            for element in queue:
+                self.showid(element.identifier, level, taghidden, filter, key, reverse)
 
 class NewNode(treelib.Node):
     """"""
@@ -84,16 +106,6 @@ class NewNode(treelib.Node):
         super(NewNode,self).__init__(tag=tag,identifier=identifier,expanded=expanded)
         if tag is not None:
             self._tag = tag
-
-    @property
-    def tag(self):
-        if callable(self.get_tag):
-            return self.get_tag()
-        else:
-            return self.get_tag
-
-    def get_tag(self):
-        return self._tag
 
     def __lt__(self, other):
         return True
