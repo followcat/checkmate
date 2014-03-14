@@ -104,8 +104,11 @@ class NewNode(treelib.Node):
     """"""
     def __init__(self, tag=None, identifier=None, expanded=True):
         super(NewNode,self).__init__(tag=tag,identifier=identifier,expanded=expanded)
-        if tag is not None:
-            self._tag = tag
+        self._tag = tag
+
+    @treelib.Node.tag.setter
+    def tag(self, value):
+        self._tag = value
 
     def __lt__(self, other):
         return True

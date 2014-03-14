@@ -80,7 +80,7 @@ class RunCollection(list):
             |___ RE
             >>> tree = r[0]
             >>> [tree.get_node(n)._tag for n in tree.get_node(tree.root).fpointer] # doctest: +ELLIPSIS
-            ['RE', <checkmate.transition.Transition object at ...
+            [None, <checkmate.transition.Transition object at ...
         """
         found = False
         for _tree in self[:]:
