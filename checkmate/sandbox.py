@@ -71,19 +71,26 @@ class Sandbox(object):
             >>> import checkmate.sandbox
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData)
             >>> box.start()
+            >>> box.application.components['C1'].states[0].value
+            'True'
             >>> box([sample_app.application.TestData().components['C1'].state_machine.transitions[0],
             ...      sample_app.application.TestData().components['C3'].state_machine.transitions[1]])
+            True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> box.application.components['C3'].states[0].value
             'False'
         """
+        is_run = False
         for _transition in transitions:
             for component in list(self.application.components.values()):
                 if not _transition in component.state_machine.transitions:
                     continue
                 outgoings = component.process([incoming.factory() for incoming in _transition.incoming])
+                if len(outgoings) > 0:
+                    is_run = True
                 self.generate(outgoings)
+        return is_run
 
     def generate(self, exchanges):
         """
