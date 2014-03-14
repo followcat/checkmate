@@ -83,14 +83,16 @@ class RunCollection(list):
             [None, <checkmate.transition.Transition object at ...
         """
         found = False
+        once_found = False
         for _tree in self[:]:
             found, des_tree = _tree.merge(des_tree)
             if found:
+                once_found = True
                 self.remove(_tree)
-        if found:
+        if once_found:
             self.append(des_tree)
             self.merge_tree(des_tree)
-        return found
+        return once_found
 
 class HumanInterfaceExchangesFinder(object):
     def __init__(self, application_class):
