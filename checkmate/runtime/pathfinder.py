@@ -18,7 +18,7 @@ def get_path_from_pathfinder(application_class, application, target):
         >>> runs = checkmate.paths_finder.RunCollection()
         >>> runs.build_trees_from_application(_class)
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
-        >>> box = checkmate.sandbox.Sandbox(_class)
+        >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.AC()
         >>> ex1.origin_destination('C2', 'C1')
         >>> box.generate([ex1])
@@ -51,14 +51,14 @@ def get_transition_from_pathfinder(application, initial, runs):
         >>> a.components['C3'].states[0].value
         'False'
         >>> runs = [[a.components['C1'].state_machine.transitions[0]], [a.components['C3'].state_machine.transitions[1]], [a.components['C1'].state_machine.transitions[2]]]
-        >>> box = checkmate.sandbox.Sandbox(type(a), initial_application=a)
+        >>> box = checkmate.sandbox.Sandbox(a)
         >>> transitions = checkmate.runtime.pathfinder.get_transition_from_pathfinder(a, initial_states, runs)
         >>> len(transitions)
         2
         >>> (transitions[0][0].incoming[0].factory().action, transitions[1][0].incoming[0].factory().action)
         ('AC', 'RL')
     """
-    box = checkmate.sandbox.Sandbox(type(application), initial_application=application)
+    box = checkmate.sandbox.Sandbox(application)
     path = []
     for _run in runs:
         if box(_run) == False:
