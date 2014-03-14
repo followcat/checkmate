@@ -2,6 +2,33 @@ import checkmate._newtree
 import checkmate.run_transition
 
 
+class TransitionTree(checkmate._newtree.NewTree):
+    """"""
+    def __init__(self, transition):
+        """
+            >>> import checkmate._storage
+            >>> import checkmate.transition
+            >>> import checkmate.test_data
+            >>> import checkmate.paths_finder
+            >>> import sample_app.data_structure
+            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
+            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
+            >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
+            >>> checkmate.paths_finder.TransitionTree(test_transition).showid()
+            AC
+            |___ ARE
+            |___ RE
+        """
+        super().__init__()
+        incoming_list = transition.incoming
+        outgoing_list = transition.outgoing
+        if len(incoming_list) == 0 or len(outgoing_list) == 0:
+            return
+        self.create_node(transition, incoming_list[0].code)
+        for _outgoing in outgoing_list:
+            self.create_node(None, _outgoing.code, parent=incoming_list[0].code)
+
+
 class RunCollection(list):
     def build_trees_from_application(self, application_class):
         """
@@ -13,42 +40,13 @@ class RunCollection(list):
             3
         """
         application = application_class()
-        transition_list = []
         for _k, _v in application.components.items():
-            transition_list.extend(_v.state_machine.transitions)
-        for _t in transition_list:
-            temp_tree = self.get_transition_tree(_t)
-            if temp_tree is None:
-                continue
-            if self.merge_tree(temp_tree) == False:
-                self.append(temp_tree)
-
-    def get_transition_tree(self, transition):
-        """
-            >>> import checkmate._storage
-            >>> import checkmate.transition
-            >>> import checkmate.test_data
-            >>> import checkmate.paths_finder
-            >>> import sample_app.data_structure
-            >>> r = checkmate.paths_finder.RunCollection()
-            >>> r.build_trees_from_application(checkmate.test_data.App)
-            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
-            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
-            >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
-            >>> r.get_transition_tree(test_transition).showid()
-            AC
-            |___ ARE
-            |___ RE
-        """
-        incoming_list = transition.incoming
-        outgoing_list = transition.outgoing
-        if len(incoming_list) == 0 or len(outgoing_list) == 0:
-            return None
-        build_tree = checkmate._newtree.NewTree()
-        build_tree.create_node(transition, incoming_list[0].code)
-        for outgoing in outgoing_list:
-            build_tree.create_node(None, outgoing.code, parent=incoming_list[0].code)
-        return build_tree
+            for _t in _v.state_machine.transitions:
+                if (len(_t.incoming) == 0 or len(_t.outgoing) == 0):
+                    continue
+                temp_tree = TransitionTree(_t)
+                if self.merge_tree(temp_tree) == False:
+                    self.append(temp_tree)
 
     def merge_tree(self, des_tree):
         """
