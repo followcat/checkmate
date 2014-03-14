@@ -61,20 +61,18 @@ def get_transition_from_pathfinder(application, initial, runs):
     box = checkmate.sandbox.Sandbox(type(application), initial_application=application)
     path = []
     for _run in runs:
-        if box(_run):
-            if compare_states(box.application, initial):
-                path.append(_run)
-            index = runs.index(_run)
-            if index < len(runs)-1:
-                new_runs = runs[:index] + runs[index+1:]
-                tmp_path = get_transition_from_pathfinder(box.application, initial, new_runs)
-                if tmp_path is not None and len(tmp_path) > 0:
-                    path += [_run] + tmp_path
-                    break
-            else:
-                break
-        else:
+        if box(_run) == False:
             continue
+        if compare_states(box.application, initial):
+            path.append(_run)
+            break
+        index = runs.index(_run)
+        if index < len(runs)-1:
+            new_runs = runs[:index] + runs[index+1:]
+            tmp_path = get_transition_from_pathfinder(box.application, initial, new_runs)
+            if tmp_path is not None and len(tmp_path) > 0:
+                path.extend([_run] + tmp_path)
+                break
     if len(path) > 0:
         return path
 
