@@ -47,7 +47,7 @@ def new_load_features(paths, language):
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('en'))
         >>> features # doctest: +ELLIPSIS
-        [..., <Feature "Third run PP": 1 scenario(s)>, ...
+        [<Feature "Third run PP": 1 scenario(s)>, ...
         >>> len(features)
         4
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
@@ -79,9 +79,9 @@ def new_run_features(step_registry, features, handler):
 def translate_registry(registry, lang):
     local_registry = copy.deepcopy(registry)
     if lang == 'zh-CN':
-        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["zh_CN"])
+        _locale = gettext.translation("checkmate-features", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/translations'), languages=["zh_CN"])
     else:
-        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
+        _locale = gettext.translation("checkmate-features", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/translations'), languages=["en_US"])
     _locale.install()
 
     for keyword in ['given', 'when', 'then']:
@@ -105,7 +105,7 @@ def get_array_list(paths):
     _languages = ['en', 'zh-CN']
     fresher.glc.clear() 
     for _lang in _languages:
-        _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
+        _locale = gettext.translation("checkmate-features", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/translations'), languages=["en_US"])
         _locale.install()
         language_set = fresher.core.load_language(_lang)
         registry = new_load_step_definitions(paths)

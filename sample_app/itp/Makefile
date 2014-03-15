@@ -1,15 +1,49 @@
-all:
-	xgettext -o ref.pot steps.py --from-code=utf-8
-	msgmerge -o tmp_en.po steps_en.po ref.pot
-	msgmerge -o tmp_cn.po steps_cn.po ref.pot
-	@echo .po file generated. Now you need to edit the translation in tmp*.po files to be right if steps changed in steps.py. If not, move on.
-	@echo And then run "make install" to compile the .po files into .mo files.
-install:
-	mkdir -pv locale/en_US/LC_MESSAGES
-	mkdir -pv locale/zh_CN/LC_MESSAGES
-	msgfmt -o locale/en_US/LC_MESSAGES/checkmate.mo tmp_en.po
-	msgfmt -o locale/zh_CN/LC_MESSAGES/checkmate.mo tmp_cn.po
+#------------------------------------------------------
+
+LANG = en_US zh_CN
+
+DOMAIN = checkmate-features
+
+PY_SRCS = $(shell ls [A-Za-z]*.py)
+
+GETTEXT = xgettext --from-code=utf-8
+
+POT_FILE = $(DOMAIN).pot
+
+PO_FILES = $(foreach lang, $(LANG), po/$(lang).po)
+MO_FILES = $(foreach lang, $(LANG), translations/$(lang)/LC_MESSAGES/$(DOMAIN).mo)
+
+RIGHT_HOLDER  = "willendare"
+E_MAIL = "vincent.croisier@willendare.com"
+VERSION = "0.0.4"
+PACKAGE = "checkmate features"
+
+GETTEXT_OPT = --language=Python --package-name=$(PACKAGE) \
+              --package-version=$(VERSION) \
+              --msgid-bugs-address=$(E_MAIL) \
+              --copyright-holder=$(RIGHT_HOLDER)
+
+#------------------------------------------------------
+
+all: $(MO_FILES)
 	@echo Compilation done.
+
+$(POT_FILE):
+	@$(GETTEXT) -o $(POT_FILE) $(GETTEXT_OPT) steps.py
+
+po/en_US.po: $(POT_FILE)
+	@msgmerge -o $@ $(POT_FILE) $(POT_FILE)
+
+po/%.po: $(POT_FILE)
+	@msgmerge -o $@ $@ $(POT_FILE)
+
+translations/%/LC_MESSAGES/$(DOMAIN).mo: po/%.po
+	mkdir -p $(subst $(DOMAIN).mo, ,$@)
+	msgfmt -o $@ $(filter po%, $^)
+
+#------------------------------------------------------
+
 clean:
-	-rm -r locale/
-	-rm tmp*.po ref.pot
+	@rm -Rf translations/
+	@rm -f $(POT_FILE)
+
