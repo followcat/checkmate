@@ -1,3 +1,5 @@
+import checkmate._tree
+
 
 class Sandbox(object):
     def __init__(self, application):
@@ -54,17 +56,31 @@ class Sandbox(object):
             'False'
         """
         is_run = False
+        self.final = []
+        self.initial = []
         for _transition in transitions:
             for component in list(self.application.components.values()):
                 if not _transition in component.state_machine.transitions:
                     continue
-                outgoings = component.process([incoming.factory() for incoming in _transition.incoming])
-                if len(outgoings) > 0:
+                _incoming = _transition.generic_incoming(component.states)
+                outgoings = component.process(_incoming)
+                self.exchanges = checkmate._tree.Tree(_incoming[0], [])
+                if (not is_run and len(outgoings) > 0):
                     is_run = True
                 self.generate(outgoings)
+                self.exchanges = self.generate(outgoings, self.exchanges)
+
+            if is_run:
+                for _initial in _transition.initial:
+                    index = _transition.initial.index(_initial)
+                    if _initial.code not in [_temp_init.code for _temp_init in self.initial]:
+                        self.initial.append(_initial)
+                    _final = _transition.final[index]
+                    if _final.code not in [_temp_final.code for _temp_final in self.final]:
+                        self.final.append(_final)
         return is_run
 
-    def generate(self, exchanges):
+    def generate(self, exchanges, tree=None):
         """
             >>> import sample_app.application
             >>> import checkmate.sandbox
