@@ -4,6 +4,7 @@
 # with Cucumber commandline
 
 import os
+import re
 import sys
 import copy
 import gettext
@@ -14,6 +15,9 @@ import fresher.core
 import fresher.stepregistry
 
 import checkmate.partition_declarator
+
+
+MAKEFILE_LANG = re.compile("LANG\s*=\s*([ \w]*)\n")
 
 
 def new_load_step_definitions(paths):
@@ -93,6 +97,24 @@ def translate_registry(registry, lang):
     return local_registry
 
 
+def _compatible_fresher_language(languages):
+    fresher_languages = list(languages)
+    conversion = {'en_US': 'en', 'zh_CN': 'zh-CN'}
+    for _id in range(len(languages)):
+        if languages[_id] in conversion.keys():
+            fresher_languages[_id] = conversion[languages[_id]]
+    return fresher_languages
+            
+def _get_languages(makefile_path):
+    makefile = open(os.path.join(makefile_path, 'Makefile'), 'r')
+    text = makefile.read()
+    makefile.close()
+    matching = MAKEFILE_LANG.search(text)
+    if matching is None:
+        return ['en_US']
+    else:
+        return _compatible_fresher_language(matching.group(1).split(' '))
+
 def get_array_list(paths):
     """
         >>> import os
@@ -102,10 +124,11 @@ def get_array_list(paths):
         >>> len(checkmate.parser.feature_visitor.get_array_list([itp_absolute_path]))
         8
     """
-    _languages = ['en', 'zh-CN']
+    localization_path = os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp')
+    _languages = _get_languages(localization_path)
     fresher.glc.clear() 
     for _lang in _languages:
-        _locale = gettext.translation("checkmate-features", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/translations'), languages=["en_US"])
+        _locale = gettext.translation("checkmate-features", localedir=os.path.join(localization_path, 'translations'), languages=["en_US"])
         _locale.install()
         language_set = fresher.core.load_language(_lang)
         registry = new_load_step_definitions(paths)
