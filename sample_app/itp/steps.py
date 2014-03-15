@@ -1,4 +1,9 @@
+import builtins
+
 import fresher
+
+
+setattr(builtins, '_', lambda x: x)
 
 
 @fresher.Before
