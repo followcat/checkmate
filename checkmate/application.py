@@ -38,14 +38,13 @@ class IApplication(zope.interface.Interface):
 
 @zope.interface.implementer(IApplication)
 class Application(object):
-    def __init__(self, feature_language=None):
+    def __init__(self):
         """
         """
         self.components = {}
         self.procedure_list = []
         self.name = self.__module__.split('.')[-2]
         self.communication_list = ()
-        self.feature_language = feature_language
 
     def start(self):
         """

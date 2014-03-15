@@ -93,7 +93,7 @@ def translate_registry(registry, lang):
     return local_registry
 
 
-def get_array_list(paths, languages):
+def get_array_list(paths):
     """
         >>> import os
         >>> import checkmate.parser.feature_visitor
@@ -102,8 +102,9 @@ def get_array_list(paths, languages):
         >>> len(checkmate.parser.feature_visitor.get_array_list([itp_absolute_path]))
         8
     """
+    _languages = ['en', 'zh-CN']
     fresher.glc.clear() 
-    for _lang in languages:
+    for _lang in _languages:
         _locale = gettext.translation("checkmate", localedir=os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp/locale'), languages=["en_US"])
         _locale.install()
         language_set = fresher.core.load_language(_lang)
@@ -114,7 +115,7 @@ def get_array_list(paths, languages):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_transitions_from_features(exchange_module, state_modules, feature_language=None):
+def get_transitions_from_features(exchange_module, state_modules):
     """
             >>> import sample_app.application
             >>> import checkmate.component
@@ -133,9 +134,7 @@ def get_transitions_from_features(exchange_module, state_modules, feature_langua
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate._storage.TransitionStorage object at ...
         """
-    if feature_language is None:
-        feature_language = ['en', 'zh-CN']
-    array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/')], feature_language)
+    array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp/')])
     initial_transitions = []
     for array_items in array_list:
         initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))

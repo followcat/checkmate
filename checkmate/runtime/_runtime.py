@@ -17,10 +17,10 @@ import checkmate.runtime.interfaces
 @zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.interfaces.IProtocol))
 class Runtime(object):
     """"""
-    def __init__(self, application, communication, threaded=False, feature_language=None):
+    def __init__(self, application, communication, threaded=False):
         """"""
         self.threaded = threaded
-        self.application = application(feature_language)
+        self.application = application()
         checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
 
         self.communication_list = [(communication(), 'default')]

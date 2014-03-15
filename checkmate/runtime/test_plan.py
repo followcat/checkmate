@@ -83,14 +83,12 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
 def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App, transition_list=None):
     a = application_class()
     a.start()
-    application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-    feature_language = application.feature_language
     components = list(a.components.keys())
     state_modules = []
     for name in components:
         state_modules.append(a.components[name].state_module)
     if transition_list is None:
-        transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules, feature_language)
+        transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
     for _transition in transition_list:
         _incoming = _transition.incoming[0].factory()
         origin = get_origin_component(_incoming, list(a.components.values()))
