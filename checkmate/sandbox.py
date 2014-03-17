@@ -62,13 +62,19 @@ class Sandbox(object):
             for component in list(self.application.components.values()):
                 if not _transition in component.state_machine.transitions:
                     continue
-                _incoming = _transition.generic_incoming(component.states)
-                outgoings = component.process(_incoming)
-                self.exchanges = checkmate._tree.Tree(_incoming[0], [])
-                if (not is_run and len(outgoings) > 0):
+                if len(_transition.incoming) > 0:
                     is_run = True
-                self.generate(outgoings)
-                self.exchanges = self.generate(outgoings, self.exchanges)
+                    _incoming = _transition.generic_incoming(component.states)
+                    _outgoing = component.process(_incoming)
+                    self.exchanges = checkmate._tree.Tree(_incoming[0], [])
+                elif len(_transition.outgoing) > 0:
+                    is_run = True
+                    _outgoing = component.simulate(_transition.outgoing[0].factory())
+                    self.exchanges = checkmate._tree.Tree(_outgoing[0], [])
+                else:
+                    return False
+                self.generate(_outgoing)
+                self.exchanges = self.generate(_outgoing, self.exchanges)
 
             if is_run:
                 for _initial in _transition.initial:
@@ -93,5 +99,8 @@ class Sandbox(object):
         """
         for _exchange in exchanges:
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
-            self.generate(_outgoings)
+            if tree is not None:
+                tree.add_node(checkmate._tree.Tree(_exchange, []))
+            tree = self.generate(_outgoings, tree)
+        return tree
 
