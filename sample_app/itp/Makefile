@@ -31,13 +31,10 @@ all: $(MO_FILES)
 $(POT_FILE):
 	@$(GETTEXT) -o $(POT_FILE) $(GETTEXT_OPT) steps.py
 
-po/en_US.po: $(POT_FILE)
-	@msgmerge -o $@ $(POT_FILE) $(POT_FILE)
+po/%.tmp.po: po/%.po $(POT_FILE)
+	@msgmerge -o $@ $< $(POT_FILE)
 
-po/%.po: $(POT_FILE)
-	@msgmerge -o $@ $@ $(POT_FILE)
-
-translations/%/LC_MESSAGES/$(DOMAIN).mo: po/%.po
+translations/%/LC_MESSAGES/$(DOMAIN).mo: po/%.tmp.po
 	mkdir -p $(subst $(DOMAIN).mo, ,$@)
 	msgfmt -o $@ $(filter po%, $^)
 
