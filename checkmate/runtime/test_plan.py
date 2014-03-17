@@ -76,7 +76,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
     for _transition in transition_list:
         _incoming = _transition.incoming[0].factory()
         origin = get_origin_component(_incoming, list(a.components.values()))
-        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
+        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin.name):
             _o = a.components[_e.destination].process([_e])
             yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
 
@@ -92,7 +92,7 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App, tr
     for _transition in transition_list:
         _incoming = _transition.incoming[0].factory()
         origin = get_origin_component(_incoming, list(a.components.values()))
-        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin):
+        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin.name):
             _o = a.components[_e.destination].process([_e])
             yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
 

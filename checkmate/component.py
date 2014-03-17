@@ -92,7 +92,7 @@ class Component(object):
             return []
         output = []
         for _outgoing in _transition.process(self.states, exchange):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
 
@@ -112,7 +112,7 @@ class Component(object):
         output = []
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
 
