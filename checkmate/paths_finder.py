@@ -22,11 +22,14 @@ class TransitionTree(checkmate._newtree.NewTree):
         super().__init__()
         incoming_list = transition.incoming
         outgoing_list = transition.outgoing
-        if len(incoming_list) == 0:
-            return
-        self.create_node(transition, incoming_list[0].code)
+        if incoming_list is None or len(incoming_list) == 0:
+            _identifier = "~" + outgoing_list[0].code
+        else:
+            _identifier = incoming_list[0].code
+        self.create_node(transition, _identifier)
+        # add following transitions as children
         for _outgoing in outgoing_list:
-            self.create_node(None, _outgoing.code, parent=incoming_list[0].code)
+            self.create_node(None, _outgoing.code, parent=_identifier)
 
 
 class RunCollection(list):
@@ -42,8 +45,6 @@ class RunCollection(list):
         application = application_class()
         for _k, _v in application.components.items():
             for _t in _v.state_machine.transitions:
-                if len(_t.incoming) == 0:
-                    continue
                 temp_tree = TransitionTree(_t)
                 if self.merge_tree(temp_tree) == False:
                     self.append(temp_tree)
