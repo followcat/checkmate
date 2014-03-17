@@ -1,6 +1,8 @@
 import checkmate._tree
+import checkmate.sandbox
 import checkmate.test_data
 import checkmate.runtime.procedure
+
 
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
@@ -80,29 +82,21 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         for _e in c3.process([self.exchanges.root]):
             self.exchanges.add_node(checkmate._tree.Tree(_e, []))
 
-def build_procedure(exchanges, output, initial, initial_transitions):
+def build_procedure(sandbox):
     class TestProc(checkmate.runtime.procedure.Procedure):
         """"""
             
     proc = TestProc()
-    setattr(proc, 'initial', initial)
-    setattr(proc, 'itp_transitions', initial_transitions)
-    setattr(proc, 'exchanges', checkmate._tree.Tree(exchanges[0], [checkmate._tree.Tree(_o, []) for _o in output]))
+    setattr(proc, 'initial', sandbox.initial)
+    setattr(proc, 'exchanges', sandbox.exchanges)
     return proc
 
 def TestProcedureGenerator(application_class=checkmate.test_data.App):
-    a = application_class()
-    c1 = a.components['C1']
-    c2 = a.components['C2']
-    c3 = a.components['C3']
-    a.start()
-    a.get_initial_transitions()
+    box = checkmate.sandbox.Sandbox(application_class())
+    c2 = box.application.components['C2']
     #Skip the last two transitions as no outgoing sent to 'C1'
     #Skip the third transition from the last as 'C3' state does not match
     for _t in range(len(c2.state_machine.transitions)-5):
-        transition = c2.state_machine.transitions[_t]
-        _i = c2.process(transition.generic_incoming(c2.states))
-        initial = a.initial_transitions[_t].initial
-        _o = c1.process(_i)
-        yield build_procedure(_i, _o, initial, a.initial_transitions), c2.name, _i[0].action
+        box([c2.state_machine.transitions[_t]])
+        yield build_procedure(box), box.exchanges.root.destination, box.exchanges.root.action
 
