@@ -50,14 +50,10 @@ def new_load_features(paths, language):
         >>> itp_paths = os.path.join(os.getenv('CHECKMATE_HOME'), 'sample_app/itp')
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('en'))
-        >>> features # doctest: +ELLIPSIS
-        [<Feature "Third run PP": 1 scenario(s)>, ...
         >>> len(features)
         4
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('zh-CN'))
-        >>> features # doctest: +ELLIPSIS
-        [<Feature "第三运行PP": 1 scenario(s)>, ...
         >>> len(features)
         4
     """
