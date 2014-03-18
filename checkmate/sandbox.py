@@ -92,7 +92,7 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.AC()
             >>> ex.origin_destination('C2', 'C1')
-            >>> box.generate([ex])
+            >>> exchanges = box.generate([ex])
             >>> box.application.components['C3'].states[0].value
             'True'
         """
