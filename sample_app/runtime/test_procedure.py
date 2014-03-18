@@ -9,8 +9,8 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     def __init__(self, application_class=checkmate.test_data.App, test=None):
         """
             >>> import checkmate.test_data
+            >>> import checkmate.runtime._pyzmq
             >>> import checkmate.runtime._runtime
-            >>> import checkmate.runtime.communication
             >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, True)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
@@ -26,22 +26,10 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.stop_test()
         """
         super(TestProcedureRun1Threaded, self).__init__(test)
-        a = application_class()
-        c1 = a.components['C1']
-        c2 = a.components['C2']
-        c3 = a.components['C3']
-        a.start()
-        transition = c2.state_machine.transitions[0]
-        self.initial = [_s.storage[0] for (_i, _s) in c1.state_machine.states] + [_s.storage[0] for (_i, _s) in c3.state_machine.states]
-        self.exchanges = checkmate._tree.Tree(c2.process(transition.generic_incoming(c2.states))[0], [])
-        for _e in c1.process([self.exchanges.root]):
-            self.exchanges.add_node(checkmate._tree.Tree(_e, []))
-        for _e in c3.process([self.exchanges.nodes[0].root]):
-            self.exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c2.process([self.exchanges.nodes[1].root]):
-            self.exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c1.process([self.exchanges.nodes[1].nodes[0].root]):
-            self.exchanges.nodes[1].nodes[0].add_node(checkmate._tree.Tree(_e, []))
+        box = checkmate.sandbox.Sandbox(application_class())
+        c2 = box.application.components['C2']
+        box([c2.state_machine.transitions[0]])
+        box.fill_procedure(self)
 
 class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
     """"""
@@ -61,26 +49,12 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.stop_test()
         """
         super(TestProcedureRun2Threaded, self).__init__(test)
-        a = application_class()
-        c1 = a.components['C1']
-        c2 = a.components['C2']
-        c3 = a.components['C3']
-        a.start()
-        transition = c2.state_machine.transitions[0]
-        local_exchanges = checkmate._tree.Tree(c2.simulate(transition.outgoing[0].factory())[0], [])
-        for _e in c1.process([local_exchanges.root]):
-            local_exchanges.add_node(checkmate._tree.Tree(_e, []))
-        for _e in c3.process([local_exchanges.nodes[0].root]):
-            local_exchanges.nodes[0].add_node(checkmate._tree.Tree(_e, []))
-        for _e in c2.process([local_exchanges.nodes[1].root]):
-            local_exchanges.nodes[1].add_node(checkmate._tree.Tree(_e, []))
-        c1.process([local_exchanges.nodes[1].nodes[0].root])
-
-        transition = c2.state_machine.transitions[2]
-        self.exchanges = checkmate._tree.Tree(c2.simulate(transition.outgoing[0].factory())[0], [])
-        self.initial = c3.get_transition_by_input([self.exchanges.root]).initial
-        for _e in c3.process([self.exchanges.root]):
-            self.exchanges.add_node(checkmate._tree.Tree(_e, []))
+        box = checkmate.sandbox.Sandbox(application_class())
+        c2 = box.application.components['C2']
+        box([c2.state_machine.transitions[0]])
+        new_box = checkmate.sandbox.Sandbox(box.application)
+        new_box([c2.state_machine.transitions[2]])
+        new_box.fill_procedure(self)
 
 def build_procedure(sandbox):
     class TestProc(checkmate.runtime.procedure.Procedure):
