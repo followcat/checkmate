@@ -55,7 +55,7 @@ class Sandbox(object):
             >>> box.application.components['C3'].states[0].value
             'False'
         """
-        is_run = False
+        self.is_run = False
         self.final = []
         self.initial = []
         for _transition in transitions:
@@ -63,20 +63,19 @@ class Sandbox(object):
                 if not _transition in component.state_machine.transitions:
                     continue
                 if len(_transition.incoming) > 0:
-                    is_run = True
+                    self.is_run = True
                     _incoming = _transition.generic_incoming(component.states)
                     _outgoing = component.process(_incoming)
                     self.exchanges = checkmate._tree.Tree(_incoming[0], [])
                 elif len(_transition.outgoing) > 0:
-                    is_run = True
+                    self.is_run = True
                     _outgoing = component.simulate(_transition.outgoing[0].factory())
-                    self.exchanges = checkmate._tree.Tree(_outgoing[0], [])
+                    self.exchanges = None
                 else:
                     return False
-                self.generate(_outgoing)
                 self.exchanges = self.generate(_outgoing, self.exchanges)
 
-            if is_run:
+            if self.is_run:
                 for _initial in _transition.initial:
                     index = _transition.initial.index(_initial)
                     if _initial.code not in [_temp_init.code for _temp_init in self.initial]:
@@ -84,7 +83,7 @@ class Sandbox(object):
                     _final = _transition.final[index]
                     if _final.code not in [_temp_final.code for _temp_final in self.final]:
                         self.final.append(_final)
-        return is_run
+        return self.is_run
 
     def generate(self, exchanges, tree=None):
         """
@@ -97,10 +96,20 @@ class Sandbox(object):
             >>> box.application.components['C3'].states[0].value
             'True'
         """
+        i = 0
         for _exchange in exchanges:
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
-            if tree is not None:
+            if tree is None:
+                tree = checkmate._tree.Tree(_exchange, [])
+                tree = self.generate(_outgoings, tree)
+            else:
                 tree.add_node(checkmate._tree.Tree(_exchange, []))
-            tree = self.generate(_outgoings, tree)
+                tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
+                i += 1
         return tree
+
+    def fill_procedure(self, procedure):
+        if self.is_run:
+            procedure.initial = self.initial
+            procedure.exchanges = self.exchanges
 

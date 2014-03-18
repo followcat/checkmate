@@ -250,9 +250,6 @@ class Procedure(object):
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)  
-        if len(current_node.root.origin) == 0:
-            #this must be the output of a simulate(), we can skip
-            current_node = current_node.nodes[0]
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
         stub.simulate(current_node.root)
         self._follow_up(current_node)
