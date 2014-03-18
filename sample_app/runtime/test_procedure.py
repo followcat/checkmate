@@ -61,8 +61,7 @@ def build_procedure(sandbox):
         """"""
             
     proc = TestProc()
-    setattr(proc, 'initial', sandbox.initial)
-    setattr(proc, 'exchanges', sandbox.exchanges)
+    sandbox.fill_procedure(proc)
     return proc
 
 def TestProcedureGenerator(application_class=checkmate.test_data.App):

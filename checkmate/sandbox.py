@@ -20,6 +20,8 @@ class Sandbox(object):
             >>> box.application.components['C1'].states[0].value
             'False'
         """
+        self.final = []
+        self.initial = []
         self.application = type(self.initial_application)()
         self.application.start()
 
@@ -56,8 +58,6 @@ class Sandbox(object):
             'False'
         """
         self.is_run = False
-        self.final = []
-        self.initial = []
         for _transition in transitions:
             for component in list(self.application.components.values()):
                 if not _transition in component.state_machine.transitions:
@@ -76,13 +76,7 @@ class Sandbox(object):
                 self.exchanges = self.generate(_outgoing, self.exchanges)
 
             if self.is_run:
-                for _initial in _transition.initial:
-                    index = _transition.initial.index(_initial)
-                    if _initial.code not in [_temp_init.code for _temp_init in self.initial]:
-                        self.initial.append(_initial)
-                    _final = _transition.final[index]
-                    if _final.code not in [_temp_final.code for _temp_final in self.final]:
-                        self.final.append(_final)
+                self.update_required_states(_transition)
         return self.is_run
 
     def generate(self, exchanges, tree=None):
@@ -98,7 +92,9 @@ class Sandbox(object):
         """
         i = 0
         for _exchange in exchanges:
+            _transition = self.application.components[_exchange.destination].get_transition_by_input([_exchange])
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
+            self.update_required_states(_transition)
             if tree is None:
                 tree = checkmate._tree.Tree(_exchange, [])
                 tree = self.generate(_outgoings, tree)
@@ -113,3 +109,11 @@ class Sandbox(object):
             procedure.initial = self.initial
             procedure.exchanges = self.exchanges
 
+    def update_required_states(self, transition):
+        for _initial in transition.initial:
+            index = transition.initial.index(_initial)
+            if _initial.code not in [_temp_init.code for _temp_init in self.initial]:
+                self.initial.append(_initial)
+            _final = transition.final[index]
+            if _final.code not in [_temp_final.code for _temp_final in self.final]:
+                self.final.append(_final)
