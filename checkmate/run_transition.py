@@ -56,12 +56,11 @@ def get_transition(application_class, exchanges, initial, transitions=None):
 def find_path_to_initial(transitions, initial, target):
     path = []
     current = target
-    for i in (range(-1, -1-len(transitions), -1)):
-        transition = transitions[i]
-        if transition.is_matching_final(current):
-            path.insert(0, transition)
-            current = transition.initial
-            if transition.is_matching_initial(initial):
+    for _t in reversed(transitions):
+        if _t.is_matching_final(current):
+            path.insert(0, _t)
+            current = _t.initial
+            if _t.is_matching_initial(initial):
                 return path
         else:
             continue
