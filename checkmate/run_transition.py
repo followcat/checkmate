@@ -36,8 +36,8 @@ def get_transition(application_class, exchanges, initial, transitions=None):
             return None
         path = find_path_to_initial(transitions, states, init_states)
         if path is not None and len(path) > 0:
-            for i in range(len(path)):
-                simulate_exchange(a, path[i].incoming[0])
+            for _p in path:
+                simulate_exchange(a, _p.incoming[0])
     #verify the exchange list
     if compare_states(a, init_states):
         copy_states = copy.deepcopy(states)

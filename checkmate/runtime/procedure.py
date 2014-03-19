@@ -115,8 +115,8 @@ class Procedure(object):
         match = False
         if len(transition.initial) != len(transition.final):
             return match
-        for _i in range(len(transition.initial)):
-            if transition.initial[_i].factory() != transition.final[_i].factory():
+        for _i, _initial in enumerate(transition.initial):
+            if _initial.factory() != transition.final[_i].factory():
                 match = False
                 break
             else:
@@ -188,7 +188,7 @@ class Procedure(object):
             matching = False
             for _i in _t.initial:
                 try:
-                    _current = [_s for _s in current if _i.interface.providedBy(_s)].pop(0)
+                    _current = [_c for _c in current if _i.interface.providedBy(_c)].pop(0)
                     if _current != _i.factory():
                         matching = False
                         break
