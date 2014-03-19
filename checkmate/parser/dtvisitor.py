@@ -270,9 +270,8 @@ def call_visitor(content):
     
 def main():
     input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
-    f1 = open(input_file)
-    content = f1.read()
-    f1.close()
+    with open(input_file) as f1:
+        content = f1.read()
     visitor_output = call_visitor(content)
     component_state = visitor_output['states']
     component_exchange = visitor_output['exchanges']

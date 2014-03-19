@@ -18,9 +18,8 @@ class ApplicationMeta(type):
 
         path = os.path.dirname(exchange_module.__file__)
         filename = 'exchanges.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         try:
             global checkmate
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
@@ -86,9 +85,8 @@ class Application(object):
         """
         path = os.path.dirname(self.exchange_module.__file__)
         filename = 'itp.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         _output = checkmate.parser.dtvisitor.call_visitor(matrix)
         state_modules = []
         for name in list(self.components.keys()):

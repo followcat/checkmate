@@ -15,9 +15,8 @@ class ComponentMeta(type):
 
         path = os.path.dirname(state_module.__file__)
         filename = 'state_machine.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
             declarator_output = declarator.get_output()
