@@ -181,11 +181,10 @@ class Registry(checkmate.runtime._threading.Thread):
         super(Registry, self).stop()
 
     def pickfreeport(self):
-        self.get_assign_port_lock.acquire()
-        _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        _socket.bind(('127.0.0.1', 0))
-        addr, port = _socket.getsockname()
-        _socket.close()
-        self.get_assign_port_lock.release()
+        with self.get_assign_port_lock:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.bind(('127.0.0.1', 0))
+            addr, port = _socket.getsockname()
+            _socket.close()
         return port
 

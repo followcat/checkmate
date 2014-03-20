@@ -269,9 +269,8 @@ class ThreadedStub(ThreadedComponent, Stub):
             for socket in s:
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
-                    self.validation_lock.acquire()
-                    self.validation_list.append(exchange)
-                    self.validation_lock.release()
+                    with self.validation_lock:
+                        self.validation_list.append(exchange)
                     self.process([exchange])
 
     @checkmate.runtime.timeout_manager.SleepAfterCall()
@@ -289,17 +288,15 @@ class ThreadedStub(ThreadedComponent, Stub):
         self._exchange_to_validate = exchange
         try:
             result = False
-            self.validation_lock.acquire()
-            self.validation_list.remove(self._exchange_to_validate)
-            result = True
-            self.validation_lock.release()
+            with self.validation_lock:
+                self.validation_list.remove(self._exchange_to_validate)
+                result = True
             return result
         except ValueError:
-            result = self.validation_condition.wait_for(self._validate_exchange, timeout=VALIDATE_TIMEOUT_SEC)
-            self.validation_lock.release()
+            with self.validation_lock:
+                result = self.validation_condition.wait_for(self._validate_exchange, timeout=VALIDATE_TIMEOUT_SEC)
             return result
         except Exception as e:
-            self.validation_lock.release()
             raise e
 
     def _validate_exchange(self):
@@ -311,7 +308,6 @@ class ThreadedStub(ThreadedComponent, Stub):
             return result
 
     def beforeTest(self, result):
-        self.validation_lock.acquire()
-        self.validation_list = []
-        self.validation_lock.release()
+        with self.validation_lock:
+            self.validation_list = []
 
