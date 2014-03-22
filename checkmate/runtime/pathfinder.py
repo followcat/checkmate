@@ -29,7 +29,7 @@ def get_path_from_pathfinder(application_class, application, target):
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> generator = checkmate.runtime.pathfinder.get_path_from_pathfinder(_class, app, proc.initial)
         >>> for setup in generator:
-        ...     print(setup[0].exchanges.root.action, setup[0].compare_states(setup[0].initial))
+        ...     print(setup[0].exchanges.root.action, app.compare_states(setup[0].initial))
         RL True
         PP False
     """
@@ -63,7 +63,7 @@ def get_transition_from_pathfinder(application, initial, runs):
     for _run in runs:
         if box(_run) == False:
             continue
-        if compare_states(box.application, initial):
+        if box.application.compare_states(initial):
             path.append(_run)
             break
         index = runs.index(_run)
@@ -75,21 +75,4 @@ def get_transition_from_pathfinder(application, initial, runs):
                 break
     if len(path) > 0:
         return path
-
-def compare_states(application, target):
-    """"""
-    matching = 0
-    for _target in target:
-        for _component in list(application.components.values()):
-            try:
-                #Assume at most one state of component implements interface
-                _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
-                if _state == _target.factory():
-                    matching += 1
-                    break
-                else:
-                    break
-            except IndexError:
-                continue
-    return matching == len(target)
 

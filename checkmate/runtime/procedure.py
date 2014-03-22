@@ -85,30 +85,32 @@ class Procedure(object):
             self.components = self._extract_components(self.exchanges, [])
         if not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
+
+        self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
-            if not self.compare_states(self.initial):
+            if not self.application.compare_states(self.initial):
                 self.transform_to_initial() 
-            if not self.compare_states(self.initial):
+            if not self.application.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
         self._run_from_startpoint(self.exchanges)
 
+
     def transform_to_initial(self):
-        if self.compare_states(self.initial):
+        if self.application.compare_states(self.initial):
             return
-        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if not hasattr(self, 'itp_transitions'):
-            application.get_initial_transitions()
-            self.itp_transitions = application.initial_transitions
+            self.application.get_initial_transitions()
+            self.itp_transitions = self.application.initial_transitions
         states = []
-        for _component in list(application.components.values()):
+        for _component in list(self.application.components.values()):
             states.extend(_component.states)
         try:
             _transition = self.get_transition_from_itp(self.initial, states)
         except IndexError as e:
             raise e("no exchange found in itp to initialize the current")
-        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(application), transition_list=_transition):
+        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(self.application), transition_list=_transition):
             _procedure(system_under_test=self.system_under_test)
-        if not self.compare_states(self.initial):
+        if not self.application.compare_states(self.initial):
             self.transform_to_initial()
 
     def check_alwaysrun_transition(self,transition):
@@ -210,24 +212,6 @@ class Procedure(object):
                 else:
                     correct_way.pop()
         
-    def compare_states(self, target):
-        """"""
-        matching = 0
-        application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
-        for _target in target:
-            for _component in list(application.components.values()):
-                try:
-                    #Assume at most one state of component implements interface
-                    _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
-                    if _state == _target.factory():
-                        matching += 1
-                        break
-                    else:
-                        break
-                except IndexError:
-                        continue
-        return matching == len(target)
-
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and
             node.root.origin != '' and
@@ -258,7 +242,7 @@ class Procedure(object):
             @checkmate.runtime.timeout_manager.WaitOnException(1)
             @checkmate.runtime.timeout_manager.RaiseOnFalse
             def check_compare_states():
-                return self.compare_states(self.final)
+                return self.application.compare_states(self.final)
             try:
                 check_compare_states()
             except ValueError:
