@@ -40,6 +40,63 @@ def get_path_from_pathfinder(application_class, application, target):
     for proc in setup[2:]:
         yield proc
 
+def _find_runs(application, target):
+    """
+        >>> import checkmate.sandbox
+        >>> import sample_app.application
+        >>> import checkmate.paths_finder
+        >>> import checkmate.runtime.test_plan
+        >>> import checkmate.runtime.pathfinder
+        >>> runs = checkmate.paths_finder.RunCollection()
+        >>> a = sample_app.application.TestData()
+
+        >>> runs.build_trees_from_application(type(a))
+        >>> ac_run = [r for r in runs if r.get_node(r.root)._tag.outgoing[0].code == 'AC'][0]
+        >>> rl_run = [r for r in runs if r.get_node(r.root)._tag.outgoing[0].code == 'RL'][0]
+
+        >>> box = checkmate.sandbox.Sandbox(a)
+        >>> box([ac_run.get_node(ac_run.root)._tag, rl_run.get_node(rl_run.root)._tag,])
+        True
+        >>> proc = []
+        >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator():
+        ...     proc.append(p)
+        ...     
+
+        >>> nbox = checkmate.sandbox.Sandbox(box.application)
+        >>> proc[0][0].exchanges.root.action
+        'AC'
+        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
+        1
+        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[2][0].initial))
+        2
+        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[3][0].initial))
+        3
+
+    """
+    runs = checkmate.paths_finder.RunCollection()
+    runs.build_trees_from_application(type(application))
+    used_runs = _next_run(application, target, runs, [])
+    return used_runs
+
+def _next_run(application, target, runs, used_runs):
+    box = checkmate.sandbox.Sandbox(application)
+    for _run in runs:
+        if _run in used_runs:
+            continue
+        box([_run.get_node(_run.root)._tag])
+        if box.is_run:
+            if box.application.compare_states(target):
+                used_runs.append(_run)
+                return used_runs
+            else:
+                returned_runs = _next_run(box.application, target, runs, used_runs[:]+[_run])
+                if len(returned_runs) == 0:
+                    box = checkmate.sandbox.Sandbox(application)
+                    continue
+                else:
+                    return returned_runs
+    return []
+
 def get_transition_from_pathfinder(application, initial, runs):
     """
         >>> import checkmate.runtime.pathfinder
