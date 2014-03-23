@@ -52,7 +52,9 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_incoming(exchange)):
+                self._transition_found = True
                 return _t
+        self._transition_found = False
         return None
 
             
@@ -73,7 +75,9 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_outgoing(exchange)):
+                self._transition_found = True
                 return _t
+        self._transition_found = False
         return None
 
             
@@ -114,4 +118,8 @@ class Component(object):
             for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
+
+    @property
+    def transition_not_found(self):
+        return not self._transition_found
 
