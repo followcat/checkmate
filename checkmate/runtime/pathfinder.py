@@ -1,5 +1,7 @@
 import copy
-import checkmate.runtime.test_plan
+import collections
+
+import checkmate.runtime.procedure
 
 
 def get_path_from_pathfinder(application_class, application, target):
@@ -33,12 +35,10 @@ def get_path_from_pathfinder(application_class, application, target):
         RL True
         PP False
     """
-    setup = []
-    for proc in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class):
-        setup.append(proc)
-
-    for proc in setup[2:]:
-        yield proc
+    for _run, _app in _find_runs(application, target).items():
+        proc = checkmate.runtime.procedure.Procedure()
+        _app.fill_procedure(proc)
+        yield (proc, )
 
 def _find_runs(application, target):
     """
@@ -75,7 +75,7 @@ def _find_runs(application, target):
     """
     runs = checkmate.paths_finder.RunCollection()
     runs.build_trees_from_application(type(application))
-    used_runs = _next_run(application, target, runs, [])
+    used_runs = _next_run(application, target, runs, collections.OrderedDict())
     return used_runs
 
 def _next_run(application, target, runs, used_runs):
@@ -86,16 +86,18 @@ def _next_run(application, target, runs, used_runs):
         box([_run.get_node(_run.root)._tag])
         if box.is_run:
             if box.application.compare_states(target):
-                used_runs.append(_run)
+                used_runs[_run] = box
                 return used_runs
             else:
-                returned_runs = _next_run(box.application, target, runs, used_runs[:]+[_run])
+                used_runs.update({_run: box})
+                returned_runs = _next_run(box.application, target, runs, used_runs)
                 if len(returned_runs) == 0:
+                    del used_runs[_run]
                     box = checkmate.sandbox.Sandbox(application)
                     continue
                 else:
                     return returned_runs
-    return []
+    return collections.OrderedDict()
 
 def get_transition_from_pathfinder(application, initial, runs):
     """
