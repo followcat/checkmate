@@ -1,10 +1,10 @@
-import copy
 import collections
 
+import checkmate.paths_finder
 import checkmate.runtime.procedure
 
 
-def get_path_from_pathfinder(application_class, application, target):
+def get_path_from_pathfinder(application, target):
     """
         >>> import zope.interface
         >>> import checkmate.sandbox
@@ -29,7 +29,7 @@ def get_path_from_pathfinder(application_class, application, target):
         'True'
         >>> checkmate.runtime.registry.global_registry.registerUtility(app, checkmate.application.IApplication)
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
-        >>> generator = checkmate.runtime.pathfinder.get_path_from_pathfinder(_class, app, proc.initial)
+        >>> generator = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for setup in generator:
         ...     print(setup[0].exchanges.root.action, app.compare_states(setup[0].initial))
         RL True

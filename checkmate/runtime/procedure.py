@@ -1,5 +1,3 @@
-import time
-import copy
 import logging
 
 import zope.interface
@@ -9,9 +7,9 @@ import nose.plugins.skip
 import checkmate.component
 import checkmate.application
 import checkmate.runtime.registry
-import checkmate.runtime.test_plan
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
+import checkmate.runtime.pathfinder
 import checkmate.runtime.timeout_manager
 
 
@@ -98,17 +96,7 @@ class Procedure(object):
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
             return
-        if not hasattr(self, 'itp_transitions'):
-            self.application.get_initial_transitions()
-            self.itp_transitions = self.application.initial_transitions
-        states = []
-        for _component in list(self.application.components.values()):
-            states.extend(_component.states)
-        try:
-            _transition = self.get_transition_from_itp(self.initial, states)
-        except IndexError as e:
-            raise e("no exchange found in itp to initialize the current")
-        for (_procedure, *others) in checkmate.runtime.test_plan.TestProcedureInitialGenerator(application_class=type(self.application), transition_list=_transition):
+        for (_procedure, *others) in checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial):
             _procedure(system_under_test=self.system_under_test)
         if not self.application.compare_states(self.initial):
             self.transform_to_initial()
