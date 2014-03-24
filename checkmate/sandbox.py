@@ -110,6 +110,7 @@ class Sandbox(object):
         if self.is_run:
             procedure.initial = self.initial
             procedure.exchanges = self.exchanges
+            procedure.components = list(self.application.components.keys())
 
     def update_required_states(self, transition):
         for _initial in transition.initial:
