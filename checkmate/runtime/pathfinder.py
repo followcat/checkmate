@@ -1,15 +1,104 @@
 import collections
 
 import checkmate.sandbox
-import checkmate.paths_finder
+import checkmate._newtree
 import checkmate.runtime.procedure
 
+
+class TransitionTree(checkmate._newtree.NewTree):
+    """"""
+    def __init__(self, transition):
+        """
+            >>> import checkmate._storage
+            >>> import checkmate.transition
+            >>> import checkmate.test_data
+            >>> import sample_app.data_structure
+            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
+            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
+            >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
+            >>> checkmate.runtime.pathfinder.TransitionTree(test_transition).showid()
+            AC
+            |___ ARE
+            |___ RE
+        """
+        super().__init__()
+        incoming_list = transition.incoming
+        outgoing_list = transition.outgoing
+        if incoming_list is None or len(incoming_list) == 0:
+            _identifier = "~" + outgoing_list[0].code
+        else:
+            _identifier = incoming_list[0].code
+        self.create_node(transition, _identifier)
+        # add following transitions as children
+        for _outgoing in outgoing_list:
+            self.create_node(None, _outgoing.code, parent=_identifier)
+
+
+class RunCollection(list):
+    def build_trees_from_application(self, application_class):
+        """
+            >>> import sample_app.application
+            >>> runs = checkmate.runtime.pathfinder.RunCollection()
+            >>> runs.build_trees_from_application(sample_app.application.TestData)
+            >>> len(runs)
+            3
+        """
+        application = application_class()
+        for _k, _v in application.components.items():
+            for _t in _v.state_machine.transitions:
+                temp_tree = TransitionTree(_t)
+                if self.merge_tree(temp_tree) == False:
+                    self.append(temp_tree)
+
+    def merge_tree(self, des_tree):
+        """
+            >>> import sample_app.application
+            >>> r = checkmate.runtime.pathfinder.RunCollection()
+            >>> tree_one = checkmate._newtree.NewTree()
+            >>> tree_one.create_node(sample_app.application.TestData().components['C1'].state_machine.transitions[0], 'AC') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_one.add_node(checkmate._newtree.NewNode(None, 'RE'), parent='AC')
+            >>> tree_one.add_node(checkmate._newtree.NewNode(None, 'ARE'), parent='AC')
+            >>> if r.merge_tree(tree_one) == False:
+            ...        r.append(tree_one)
+            >>> r[0].showid()
+            AC
+            |___ ARE
+            |___ RE
+            >>> tree_two = checkmate._newtree.NewTree()
+            >>> tree_two.create_node(sample_app.application.TestData().components['C2'].state_machine.transitions[1], 'ARE') # doctest: +ELLIPSIS
+            <checkmate._newtree.NewNode object at ...
+            >>> tree_two.add_node(checkmate._newtree.NewNode(None, 'AP'), parent='ARE')
+            >>> tree_two.showid()
+            ARE
+            |___ AP
+            >>> r.merge_tree(tree_two)
+            True
+            >>> r[0].showid()
+            AC
+            |___ ARE
+            |    |___ AP
+            |___ RE
+            >>> tree = r[0]
+            >>> [tree.get_node(n)._tag for n in tree.get_node(tree.root).fpointer] # doctest: +ELLIPSIS
+            [None, <checkmate.transition.Transition object at ...
+        """
+        found = False
+        once_found = False
+        for _tree in self[:]:
+            found, des_tree = _tree.merge(des_tree)
+            if found:
+                once_found = True
+                self.remove(_tree)
+        if once_found:
+            self.append(des_tree)
+            self.merge_tree(des_tree)
+        return once_found
 
 def get_path_from_pathfinder(application, target):
     """
         >>> import zope.interface
         >>> import checkmate.sandbox
-        >>> import checkmate.paths_finder
         >>> import checkmate.runtime.registry    
         >>> import checkmate.runtime.pathfinder
         >>> import checkmate.runtime.communication
@@ -18,7 +107,7 @@ def get_path_from_pathfinder(application, target):
         >>> import sample_app.runtime.test_procedure
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
-        >>> runs = checkmate.paths_finder.RunCollection()
+        >>> runs = checkmate.runtime.pathfinder.RunCollection()
         >>> runs.build_trees_from_application(_class)
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
@@ -45,12 +134,10 @@ def _find_runs(application, target):
     """
         >>> import checkmate.sandbox
         >>> import sample_app.application
-        >>> import checkmate.paths_finder
         >>> import checkmate.runtime.test_plan
         >>> import checkmate.runtime.pathfinder
-        >>> runs = checkmate.paths_finder.RunCollection()
         >>> a = sample_app.application.TestData()
-
+        >>> runs = checkmate.runtime.pathfinder.RunCollection()
         >>> runs.build_trees_from_application(type(a))
         >>> ac_run = [r for r in runs if r.get_node(r.root)._tag.outgoing[0].code == 'AC'][0]
         >>> rl_run = [r for r in runs if r.get_node(r.root)._tag.outgoing[0].code == 'RL'][0]
@@ -74,7 +161,7 @@ def _find_runs(application, target):
         3
 
     """
-    runs = checkmate.paths_finder.RunCollection()
+    runs = RunCollection()
     runs.build_trees_from_application(type(application))
     used_runs = _next_run(application, target, runs, collections.OrderedDict())
     return used_runs
