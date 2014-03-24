@@ -148,3 +148,15 @@ diff -Naur tango-8.1.2//cppserver/database/Makefile.in cme-tango-8.1.2//cppserve
  
  .force:
  
+diff -Naur tango-8.1.2//cppserver/database/stored_proc.sql.in cme-tango-8.1.2//cppserver/database/stored_proc.sql.in
+--- tango-8.1.2//cppserver/database/stored_proc.sql.in	2013-07-19 14:20:33.000000000 +0700
++++ cme-tango-8.1.2//cppserver/database/stored_proc.sql.in	2014-03-19 19:18:46.168108566 +0700
+@@ -263,7 +263,7 @@
+ 
+ 			SELECT exported,ior,version,pid,host
+ 			INTO tmp_exp,tmp_ior,tmp_version,tmp_pid,tmp_host
+-			FROM tango.event
++			FROM @TANGO_DB_NAME@.event
+ 			WHERE name = tmp_ev_name_canon;
+ 	
+ 			IF not_found = 1 THEN
