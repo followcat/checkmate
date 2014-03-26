@@ -17,9 +17,8 @@ class ApplicationMeta(type):
 
         path = os.path.dirname(exchange_module.__file__)
         filename = 'exchanges.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         try:
             global checkmate
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
@@ -78,9 +77,8 @@ class Application(object):
         """
         path = os.path.dirname(self.exchange_module.__file__)
         filename = 'itp.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         _output = checkmate.parser.dtvisitor.call_visitor(matrix)
         state_modules = []
         for name in list(self.components.keys()):
@@ -89,4 +87,21 @@ class Application(object):
         for data in _output['transitions']:
             array_items = data['array_items']
             self.initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, self.exchange_module, state_modules))
+
+    def compare_states(self, target):
+        """"""
+        matching = 0
+        for _target in target:
+            for _component in list(self.components.values()):
+                try:
+                    #Assume at most one state of component implements interface
+                    _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
+                    if _state == _target.factory():
+                        matching += 1
+                        break
+                    else:
+                        break
+                except IndexError:
+                        continue
+        return matching == len(target)
 

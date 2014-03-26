@@ -15,9 +15,8 @@ class ComponentMeta(type):
 
         path = os.path.dirname(state_module.__file__)
         filename = 'state_machine.rst'
-        _file = open(os.sep.join([path, filename]), 'r')
-        matrix = _file.read()
-        _file.close()
+        with open(os.sep.join([path, filename]), 'r') as _file:
+            matrix = _file.read()
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
             declarator_output = declarator.get_output()
@@ -53,7 +52,9 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_incoming(exchange)):
+                self._transition_found = True
                 return _t
+        self._transition_found = False
         return None
 
             
@@ -74,7 +75,9 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_outgoing(exchange)):
+                self._transition_found = True
                 return _t
+        self._transition_found = False
         return None
 
             
@@ -92,7 +95,7 @@ class Component(object):
             return []
         output = []
         for _outgoing in _transition.process(self.states, exchange):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
 
@@ -112,7 +115,11 @@ class Component(object):
         output = []
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
+
+    @property
+    def transition_not_found(self):
+        return not self._transition_found
 

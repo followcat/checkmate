@@ -1,5 +1,7 @@
 import zope.interface
 
+import checkmate.service_registry
+
 
 class Transition(object):
     """Driving a change of state inside a state machine
@@ -161,7 +163,9 @@ class Transition(object):
         incoming_exchanges = []
         for incoming in self.incoming:
             arguments = self.resolve_arguments('incoming', incoming, states)
-            incoming_exchanges.append(incoming.factory(kwargs=arguments))
+            _i = incoming.factory(kwargs=arguments)
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_i, ''):
+                incoming_exchanges.append(_e)
         return incoming_exchanges
             
 

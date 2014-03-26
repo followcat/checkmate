@@ -53,7 +53,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             else:
                 self._registry[_service] = [component.name]
 
-    def server_exchanges(self, exchange, component):
+    def server_exchanges(self, exchange, component_name=''):
         """
             >>> import checkmate.test_data
             >>> a = checkmate.test_data.App()
@@ -64,14 +64,14 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> _service = c1.state_machine.transitions[0].outgoing[0].interface
             >>> r.register(c3, (_service,))
             >>> e = c1.state_machine.transitions[0].outgoing[0].factory()
-            >>> for _e in r.server_exchanges(e, c1):
+            >>> for _e in r.server_exchanges(e, 'C1'):
             ...     print(_e.destination)
             C3
         """
         _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
-                return _factory(component.name, _servers)
-        return _factory(component.name, [])
+                return _factory(component_name, _servers)
+        return _factory(component_name, [])
 
 global_registry = ServiceRegistry()
