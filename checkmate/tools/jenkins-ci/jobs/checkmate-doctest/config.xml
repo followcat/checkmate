@@ -20,7 +20,9 @@
   <builders>
     <hudson.tasks.Shell>
       <command> cd $CHECKMATE_CI_HOME
-hg up -C
+if [ -z "$CHECKMATE_CI_REV" ];
+    then (hg pull; hg up -C);
+fi
 nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>
