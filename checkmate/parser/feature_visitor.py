@@ -52,10 +52,21 @@ def new_load_features(paths, language):
         ...                     fresher.core.load_language('en'))
         >>> len(features)
         4
+        >>> feature_names = []
+        >>> for _f in features:
+        ...     feature_names.append(_f.name)
+        >>> 'Third run PP' in feature_names
+        True
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('zh-CN'))
         >>> len(features)
         4
+        >>> feature_names.clear()
+        >>> for _f in features:
+        ...     feature_names.append(_f.name)
+        >>> '第三运行PP' in feature_names
+        True
+
     """
     result = []
     for path in paths:
