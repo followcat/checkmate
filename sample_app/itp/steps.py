@@ -1,21 +1,24 @@
-import collections
+import builtins
 
 import fresher
+
+
+setattr(builtins, '_', lambda x: x)
 
 
 @fresher.Before
 def before(sc):
     fresher.scc.array_items = []
 
-@fresher.Given("^组件的状态(?:(\w+).(\w+))的值是([\w\(\)]+)$")
+@fresher.Given(_("^Component state (?:(\w+).(\w+)) at value ([\w\(\)]+)$"))
 def set_initial(component_name, state, value):
     fresher.scc.array_items.append([state, value, 'x'])
 
-@fresher.When("^组件(\w+)发出信号(\w+) ([\w\(\)]+)$")
+@fresher.When(_("^Component (\w+) sends exchange (\w+) ([\w\(\)]+)$"))
 def set_incoming(component, exchange, action):
     fresher.scc.array_items.insert(0, [exchange, 'x', action])
 
-@fresher.Then("^组件的状态(?:(\w+).(\w+))的值变成([\w\(\)]+)$")
+@fresher.Then(_("^Component state (?:(\w+).(\w+)) should change to value ([\w\(\)]+)$"))
 def set_final(component_name, state, value):
     for i in range(len(fresher.scc.array_items)):
         if fresher.scc.array_items[i][0] == state:
