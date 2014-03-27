@@ -242,7 +242,6 @@ class Procedure(object):
         if self.result is not None:
             self.result.stopTest(self)
 
-    @checkmate.runtime.timeout_manager.WaitOnException(timeout=3)
     def _follow_up(self, node):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:
