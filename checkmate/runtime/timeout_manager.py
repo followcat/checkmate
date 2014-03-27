@@ -118,8 +118,6 @@ class WaitOnException():
     
     def __init__(self, timeout = None):
         self.timeout = timeout
-        self.already_sleep_time = 0
-        self.already_loop_times = 0
         self.exception_saver = None
         self.logger = logging.getLogger('checkmate.runtime.timeout_manager.WaitOnException')
     def __call__(self, func):
@@ -128,6 +126,8 @@ class WaitOnException():
             def new_f(*args, **kwargs):
                 if self.timeout is None:
                     self.timeout = TimeoutManager.get_timeout_value()
+                self.already_sleep_time = 0
+                self.already_loop_times = 0
                 self.sleep_totaltime = self.timeout
                 self.sleep_time = self.sleep_totaltime / self.loop_times
                 _exception = True
