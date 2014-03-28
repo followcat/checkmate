@@ -15,7 +15,7 @@ class TimeoutManager():
 
     @staticmethod
     def machine_benchmark():
-        TimeoutManager.timeout_value = timeit.timeit("""
+        test_code = timeit.Timer("""
 import checkmate.exchange
 import checkmate.component
 import checkmate.application
@@ -33,14 +33,14 @@ gr = checkmate.runtime.registry.global_registry
 r = checkmate.runtime.registry.RuntimeGlobalRegistry()
 checkmate.runtime.registry.global_registry = r
 
-r.registerAdapter(checkmate.runtime.component.ThreadedStub,(checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-r.registerAdapter(checkmate.runtime.component.ThreadedSut,(checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+r.registerAdapter(checkmate.runtime.component.ThreadedStub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+r.registerAdapter(checkmate.runtime.component.ThreadedSut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
 r.registerUtility(checkmate.application.Application(), checkmate.application.IApplication)
 
 r.registerUtility(c, checkmate.runtime.interfaces.ICommunication, 'default')
-sa = r.getAdapter(checkmate.component.Component('a'),checkmate.runtime.component.IStub)
-sb = r.getAdapter(checkmate.component.Component('b'),checkmate.runtime.component.ISut)
+sa = r.getAdapter(checkmate.component.Component('a'), checkmate.runtime.component.IStub)
+sb = r.getAdapter(checkmate.component.Component('b'), checkmate.runtime.component.ISut)
 c.initialize(); sa.initialize(); sb.initialize()
 c.start(); sa.start(); sb.start()
 
@@ -49,24 +49,21 @@ e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 sb.stop(); sa.stop(); c.close()
 checkmate.runtime.registry.global_registry = gr
-""", number=2)/5
-        TimeoutManager.logger.debug("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
+""")
+        TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/1.2, 2)
+        TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
 class SleepAfterCall():
-    loop_times = 10
+    def __init__(self, timeout=0.06):
+        self.timeout = timeout
 
-    def __init__(self, timeout = None):
-        self.sleep_time =  timeout
     def __call__(self, func):
         def call_(func):
             @functools.wraps(func)
             def new_f(*args, **kwargs):
-                return_value = func
-                if self.sleep_time is None:
-                    self.sleep_time = TimeoutManager.get_timeout_value() / self.loop_times
-                return_value = func(*args,**kwargs)
-                time.sleep(self.sleep_time)
-                return return_value
+                sleep_time = self.timeout * TimeoutManager.get_timeout_value()
+                time.sleep(sleep_time)
+                return func(*args, **kwargs)
             return new_f
 
         if not func:
@@ -81,7 +78,7 @@ def RaiseOnFalse(func):
     def wrapper(*args, **kwargs):
         func_return_value = func(*args, **kwargs)
         if func_return_value is False:
-            raise ValueError(func,"Return False")
+            raise ValueError(func, "Return False")
         else:
             return func_return_value
     return wrapper
@@ -114,37 +111,30 @@ class WaitOnException():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
-    loop_times = 10
-    
-    def __init__(self, timeout = None):
+    def __init__(self, timeout=1):
+        self.loops = 10
         self.timeout = timeout
-        self.exception_saver = None
         self.logger = logging.getLogger('checkmate.runtime.timeout_manager.WaitOnException')
+
     def __call__(self, func):
         def call_(func):
             @functools.wraps(func)
             def new_f(*args, **kwargs):
-                if self.timeout is None:
-                    self.timeout = TimeoutManager.get_timeout_value()
-                self.already_sleep_time = 0
-                self.already_loop_times = 0
-                self.sleep_totaltime = self.timeout
-                self.sleep_time = self.sleep_totaltime / self.loop_times
-                _exception = True
-                while(self.already_loop_times < self.loop_times):
+                raised_exception = None
+                sleep_time = self.timeout * TimeoutManager.get_timeout_value() / self.loops
+
+                for loop_times in range(self.loops):
                     try:
-                        return_value = func(*args,**kwargs)
-                        _exception = False
+                        return_value = func(*args, **kwargs)
                         break
                     except Exception as e:
-                        time.sleep(self.sleep_time)
-                        self.already_sleep_time += self.sleep_time
-                        self.already_loop_times += 1
-                        self.exception_saver = e
-                        self.logger.debug("%s,At %s,Has Been Sleep %f"%(self,func,self.already_sleep_time))
-                if _exception:
-                    self.logger.info("%s,%s,At %s,Use %d Loop,Sleep %f,But Not Enough."%(self,self.exception_saver,func,self.already_loop_times,self.already_sleep_time))
-                    return func(*args,**kwargs)
+                        raised_exception = e
+
+                    time.sleep(sleep_time)
+                    self.logger.debug("%s, At %s, Has Been Sleep %f"%(self, func, ((loop_times+1) * sleep_time)))
+                else:
+                    self.logger.info("%s, %s, At %s, Use %d Loop, Sleep %f, But Not Enough."%(self, raised_exception, func, loop_times, ((loop_times+1) * sleep_time)))
+                    return func(*args, **kwargs)
                 return return_value
             return new_f
 

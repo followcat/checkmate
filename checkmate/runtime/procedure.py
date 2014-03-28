@@ -227,7 +227,7 @@ class Procedure(object):
         self._follow_up(current_node)
         
         if hasattr(self, 'final'):
-            @checkmate.runtime.timeout_manager.WaitOnException(1)
+            @checkmate.runtime.timeout_manager.WaitOnException()
             @checkmate.runtime.timeout_manager.RaiseOnFalse
             def check_compare_states():
                 return self.application.compare_states(self.final)
