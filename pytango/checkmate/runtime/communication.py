@@ -57,7 +57,11 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def close(self):
         pytango_util = PyTango.Util.instance()
-        pytango_util.unregister_server()
+        try:
+            pytango_util.unregister_server()
+        except PyTango.DevFailed as e:
+            #Bypass any exception as no failure can be reported at this stage
+            pass
         self.delete_tango_device('/'.join(('dserver', self.device_family, self.server_name)))
         self.registry.stop()
 
@@ -78,7 +82,12 @@ class Communication(checkmate.runtime.communication.Communication):
         return comp.name
 
     def delete_tango_device(self, device_name):
-        #Use a new database connection in case the existing one was shut down
-        db = PyTango.Database()
-        db.delete_device(device_name)
+        try:
+            #Use a new database connection in case the existing one was shut down
+            db = PyTango.Database()
+            db.delete_device(device_name)
+        except PyTango.DevFailed as e:
+            pass
+        except PyTango.ConnectionFailed as e:
+            pass
 
