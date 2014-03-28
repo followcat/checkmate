@@ -4,6 +4,8 @@ import logging
 import functools
 
 
+(EXCEPTION, FALSE) = list(range(2))
+
 class TimeoutManager():
     timeout_value = None
     logger = logging.getLogger('checkmate.runtime.timeout_manager.TimeoutManager')
@@ -73,17 +75,7 @@ class SleepAfterCall():
         else:
             return call_(func)
 
-def RaiseOnFalse(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        func_return_value = func(*args, **kwargs)
-        if func_return_value is False:
-            raise ValueError(func, "Return False")
-        else:
-            return func_return_value
-    return wrapper
-
-class WaitOnException():
+class WaitOn():
     """
         >>> import time
         >>> import threading
@@ -111,12 +103,14 @@ class WaitOnException():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
+    rule = EXCEPTION
     def __init__(self, timeout=1):
         self.loops = 10
         self.timeout = timeout
         self.logger = logging.getLogger('checkmate.runtime.timeout_manager.WaitOnException')
 
     def __call__(self, func):
+        global EXCEPTION, FALSE
         def call_(func):
             @functools.wraps(func)
             def new_f(*args, **kwargs):
@@ -125,7 +119,12 @@ class WaitOnException():
 
                 for loop_times in range(self.loops):
                     try:
-                        return_value = func(*args, **kwargs)
+                        if self.rule is EXCEPTION:
+                            return_value = func(*args, **kwargs)
+                        elif self.rule is FALSE:
+                            return_value = func(*args, **kwargs)
+                            if return_value is False:
+                                raise Exception("return False")
                         break
                     except Exception as e:
                         raised_exception = e
@@ -144,3 +143,9 @@ class WaitOnException():
             return go_without_args
         else:
             return call_(func)
+
+class WaitOnException(WaitOn):
+    rule = EXCEPTION
+
+class WaitOnFalse(WaitOn):
+    rule = FALSE

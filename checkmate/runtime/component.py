@@ -279,12 +279,15 @@ class ThreadedStub(ThreadedComponent, Stub):
             self.logger.info("%s simulate exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
             
-    @checkmate.runtime.timeout_manager.WaitOnException(3)
+    @checkmate.runtime.timeout_manager.WaitOnFalse()
     def validate(self, exchange):
         result = False
         with self.validation_lock:
-            self.validation_list.remove(exchange)
-            result = True
+            try:
+                self.validation_list.remove(exchange)
+                result = True
+            except:
+                result = False
         return result
 
     def beforeTest(self, result):
