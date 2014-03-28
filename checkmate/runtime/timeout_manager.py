@@ -64,8 +64,9 @@ class SleepAfterCall():
             @functools.wraps(func)
             def new_f(*args, **kwargs):
                 sleep_time = self.timeout * TimeoutManager.get_timeout_value()
+                return_value = func(*args, **kwargs)
                 time.sleep(sleep_time)
-                return func(*args, **kwargs)
+                return return_value
             return new_f
 
         if not func:
