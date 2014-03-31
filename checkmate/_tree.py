@@ -7,7 +7,7 @@ class ITree(zope.interface.Interface):
 
 @zope.interface.implementer(ITree)
 class Tree(object):
-    def __init__(self, root, _nodes):
+    def __init__(self, root, _nodes=[]):
         """
             >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
             >>> t.nodes[0].nodes[0].root
@@ -43,4 +43,18 @@ class Tree(object):
         """
         assert ITree.providedBy(tree)
         self.nodes.append(tree)
+
+    def remove_node(self, tree):
+        """
+            >>> t = Tree('archer', [])
+            >>> t2 = Tree('captain', [Tree('marshal', [])])
+            >>> t.add_node(t2)
+            >>> t.nodes[0].nodes[0].root
+            'marshal'
+            >>> t.remove_node(t2)
+            >>> len(t.nodes)
+            0
+        """
+        assert ITree.providedBy(tree)
+        self.nodes.remove(tree)
 

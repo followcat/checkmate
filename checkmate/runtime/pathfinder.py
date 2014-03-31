@@ -1,7 +1,9 @@
 import collections
 
+import checkmate._tree
 import checkmate.sandbox
 import checkmate._newtree
+import checkmate.transition
 import checkmate.runtime.procedure
 
 
@@ -33,6 +35,91 @@ class TransitionTree(checkmate._newtree.NewTree):
         for _outgoing in outgoing_list:
             self.create_node(None, _outgoing.code, parent=_identifier)
 
+class NewTransitionTree(checkmate._tree.Tree):
+    """"""
+    def __init__(self, transition):
+        """
+            >>> import checkmate.test_data
+            >>> tt = checkmate.runtime.pathfinder.NewTransitionTree(checkmate.test_data.App().components['C1'].state_machine.transitions[0])
+            >>> tt.root #doctest: +ELLIPSIS
+            <checkmate.transition.Transition object at ...
+        """
+        assert type(transition) == checkmate.transition.Transition
+        super(NewTransitionTree, self).__init__(transition)
+
+    def merge(self, tree):
+        """
+            >>> import checkmate._storage
+            >>> import checkmate.transition
+            >>> import checkmate.test_data
+            >>> a = checkmate.test_data.App()
+            >>> t1 = a.components['C1'].state_machine.transitions[0]
+            >>> t2 = a.components['C3'].state_machine.transitions[0]
+            >>> t1.outgoing[0].code == t2.incoming[0].code
+            True
+            >>> tree1 = checkmate.runtime.pathfinder.NewTransitionTree(t1)
+            >>> tree2 = checkmate.runtime.pathfinder.NewTransitionTree(t2)
+            >>> tree1.match_parent(tree2)
+            True
+            >>> tree2.match_parent(tree1)
+            False
+            >>> tree2.merge(tree1)
+            False
+            >>> tree1.merge(tree2)
+            True
+        """
+        if self.match_parent(tree):
+            self.add_node(tree)
+            return True
+        for node in self.nodes:
+            if node.merge(tree):
+                return True
+        return False
+
+    def match_parent(self, tree):
+        """
+        """
+        if len(self.root.outgoing) == 0 or len(tree.root.incoming) == 0:
+            return False
+        action_code = tree.root.incoming[0].code
+        for _o in self.root.outgoing:
+            if _o.code == action_code:
+                return True
+        return False
+
+class NewRunCollection(list):
+    def build_trees_from_application(self, application_class):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime.pathfinder
+            >>> runs = checkmate.runtime.pathfinder.NewRunCollection()
+            >>> runs.build_trees_from_application(sample_app.application.TestData)
+            >>> len(runs)
+            3
+        """
+        application = application_class()
+        for _component in list(application.components.values()):
+            for _transition in _component.state_machine.transitions:
+                _tree = NewTransitionTree(_transition)
+                self._add_tree(_tree)
+
+    def _add_tree(self, des_tree):
+        """
+            >>> import sample_app.application
+            >>> r = checkmate.runtime.pathfinder.NewRunCollection()
+            >>> a = sample_app.application.TestData()
+            >>> tree1 = checkmate._tree.Tree(a.components['C1'].state_machine.transitions[0])
+            >>> tree2 = checkmate._tree.Tree(a.components['C3'].state_machine.transitions[0])
+            >>> tree3 = checkmate._tree.Tree(a.components['C2'].state_machine.transitions[1])
+        """
+        for _tree in self:
+            if  _tree.merge(des_tree):
+                return
+            if des_tree.merge(_tree):
+                self.remove(_tree)
+                self.append(des_tree)
+                return
+        self.append(des_tree)
 
 class RunCollection(list):
     def build_trees_from_application(self, application_class):
