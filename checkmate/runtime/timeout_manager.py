@@ -4,8 +4,6 @@ import logging
 import functools
 
 
-(EXCEPTION, FALSE) = list(range(2))
-
 class TimeoutManager():
     timeout_value = None
     logger = logging.getLogger('checkmate.runtime.timeout_manager.TimeoutManager')
@@ -104,7 +102,6 @@ class WaitOn():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
-    rule = EXCEPTION
     def __init__(self, timeout=1):
         self.loops = 10
         self.timeout = timeout
@@ -120,12 +117,7 @@ class WaitOn():
 
                 for loop_times in range(self.loops):
                     try:
-                        if self.rule is EXCEPTION:
-                            return_value = func(*args, **kwargs)
-                        elif self.rule is FALSE:
-                            return_value = func(*args, **kwargs)
-                            if return_value is False:
-                                raise Exception("return False")
+                        return_value = self.run_rule(func, *args, **kwargs)
                         break
                     except Exception as e:
                         raised_exception = e
@@ -145,8 +137,16 @@ class WaitOn():
         else:
             return call_(func)
 
+    def run_rule(self, func, *args, **kwargs):
+        """"""
+
 class WaitOnException(WaitOn):
-    rule = EXCEPTION
+    def run_rule(self, func, *args, **kwargs):
+        return func(*args, **kwargs)
 
 class WaitOnFalse(WaitOn):
-    rule = FALSE
+    def run_rule(self, func, *args, **kwargs):
+        return_value = func(*args, **kwargs)
+        if return_value is False:
+            raise Exception("return False")
+        return return_value
