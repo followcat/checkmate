@@ -7,7 +7,7 @@ class ITree(zope.interface.Interface):
 
 @zope.interface.implementer(ITree)
 class Tree(object):
-    def __init__(self, root, _nodes=[]):
+    def __init__(self, root, _nodes):
         """
             >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
             >>> t.nodes[0].nodes[0].root
