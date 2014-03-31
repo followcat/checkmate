@@ -12,7 +12,7 @@ import checkmate.runtime.registry
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
 import checkmate.runtime.pathfinder
-import checkmate.runtime.timeout_manager
+import checkmate.timeout_manager
 
 
 def _compatible_skip_test(procedure, message):
@@ -227,7 +227,7 @@ class Procedure(object):
         self._follow_up(current_node)
         
         if hasattr(self, 'final'):
-            @checkmate.runtime.timeout_manager.WaitOnFalse()
+            @checkmate.timeout_manager.WaitOnFalse()
             def check_compare_states():
                 return self.application.compare_states(self.final)
             try:

@@ -18,7 +18,7 @@ import checkmate.runtime.registry
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
-import checkmate.runtime.timeout_manager
+import checkmate.timeout_manager
 
 
 SIMULATE_WAIT_SEC = 0.2
@@ -79,7 +79,7 @@ class Component(object):
             checkmate.logger.global_logger.log_exchange(_o)
         return output
 
-    @checkmate.runtime.timeout_manager.SleepAfterCall()
+    @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
@@ -190,7 +190,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 if exchange is not None:
                     self.process([exchange])
 
-    @checkmate.runtime.timeout_manager.SleepAfterCall()
+    @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
@@ -267,7 +267,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                         self.validation_list.append(exchange)
                     self.process([exchange])
 
-    @checkmate.runtime.timeout_manager.SleepAfterCall()
+    @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, exchange):
         output = self.context.simulate(exchange)
         for _o in output:
@@ -279,7 +279,7 @@ class ThreadedStub(ThreadedComponent, Stub):
             self.logger.info("%s simulate exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
             
-    @checkmate.runtime.timeout_manager.WaitOnFalse()
+    @checkmate.timeout_manager.WaitOnFalse()
     def validate(self, exchange):
         result = False
         with self.validation_lock:

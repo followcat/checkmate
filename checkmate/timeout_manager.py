@@ -6,7 +6,7 @@ import functools
 
 class TimeoutManager():
     timeout_value = None
-    logger = logging.getLogger('checkmate.runtime.timeout_manager.TimeoutManager')
+    logger = logging.getLogger('checkmate.timeout_manager.TimeoutManager')
     @staticmethod
     def get_timeout_value():
         if TimeoutManager.timeout_value is None:
@@ -78,7 +78,7 @@ class WaitOn():
     """
         >>> import time
         >>> import threading
-        >>> import checkmate.runtime.timeout_manager
+        >>> import checkmate.timeout_manager
         >>> class TestThread(threading.Thread):
         ...     def __init__(self):
         ...         super(TestThread, self).__init__()
@@ -87,7 +87,7 @@ class WaitOn():
         ...         self.after_run_have_num = 0
         ...     def get_after_run_have_num(self):
         ...         print(self.after_run_have_num)
-        ...     @checkmate.runtime.timeout_manager.WaitOnException(timeout=2)
+        ...     @checkmate.timeout_manager.WaitOnException(timeout=2)
         ...     def get_after_run_have_num_with_function_waiter(self):
         ...         print(self.after_run_have_num)
         >>> tt = TestThread()
@@ -105,7 +105,7 @@ class WaitOn():
     def __init__(self, timeout=1):
         self.loops = 10
         self.timeout = timeout
-        self.logger = logging.getLogger('checkmate.runtime.timeout_manager.WaitOnException')
+        self.logger = logging.getLogger('checkmate.timeout_manager.WaitOnException')
 
     def __call__(self, func):
         global EXCEPTION, FALSE
