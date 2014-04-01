@@ -1,0 +1,30 @@
+---
+title: 'State identification'
+data:
+  - Definition and accessibility: 'Acknowledge'
+    tran_title: [Partition, State, Valid value, Comment]
+    Value partitions:
+    - [S-ACK-01, A0(False), False valid value, State false value]
+    - [S-ACK-02, A0(True), True valid value, State true value]
+
+    tran_title: [Method, Comment]
+    Standard methods:
+    - [toggle, Toggle component state]
+---
+title: "State machine"
+data:
+  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', '[Input/Final state/Output]']
+    Transitions - exchanges:
+    - [Reaction,      x,          RE()]
+    - [Acknowledge,   A0(False),  A0.toggle()]
+
+  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', '[Input/Final state/Output]']
+    Transitions - exchanges:
+    - [Reaction,      x,        RL()]
+    - [Acknowledge,   A0(True), A0.toggle()]
+    - [Action,        x,        DR()]
+
+  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'C3 pause process']
+    Transitions - exchanges:
+    - [Pause,         x,         PA()]
+    - [Acknowledge,   A0(False), A0(False)]
