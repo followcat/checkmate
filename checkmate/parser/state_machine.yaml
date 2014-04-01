@@ -2,23 +2,23 @@
 title: 'State identification'
 data:
   - Definition and accessibility: 'TESTState'
-    tran_title: [Partition, State, Valid value, Comment]
     Value partitions:
-    - [S-STATE-01, M0(True),    True valid value,   State true value]
-    - [S-STATE-02, M0(False),   False valid value,  State false value]
+    # [Partition,   State,      Valid value,        Comment]
+    - [S-STATE-01,  M0(True),   True valid value,   State true value]
+    - [S-STATE-02,  M0(False),  False valid value,  State false value]
 
-    tran_title: [Method, Comment]
     Standard methods:
+    # [Method, Comment]
     - [toggle, Toggle component state]
 
   - Definition and accessibility: 'TESTAnotherState'
-    tran_title: [Partition, State, Valid value, Comment]
     Value partitions:
-    - [S-ANOST-01, Q(None), First valid value,  AnotherState first value]
-    - [S-ANOST-02, Q(),     Second valid value, AnotherState second value]
+    # [Partition,   State,      Valid value,        Comment]
+    - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
+    - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
 
-    tran_title: [Method, Comment]
     Standard methods:
+    # [Method,  Comment]
     - [append,  Append element to state]
     - [pop,     Pop element from state]
 ---
