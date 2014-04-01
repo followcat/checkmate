@@ -5,7 +5,7 @@ import zope.interface
 import checkmate._utils
 import checkmate._storage
 import checkmate.transition
-import checkmate.parser.dtvisitor
+import checkmate.parser.yaml_visitor
 
 
 def _to_interface(_classname):
@@ -26,7 +26,7 @@ class Declarator(object):
         self.basic_modules['exchanges'] = [data_module, state_module]
         self.content = content
         if self.content is not None:
-            self.data_source = checkmate.parser.dtvisitor.call_visitor(self.content)
+            self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content)
         self.output = {}
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
@@ -172,7 +172,7 @@ class Declarator(object):
         >>> import checkmate.state
         >>> import collections
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -198,7 +198,7 @@ class Declarator(object):
         >>> import checkmate.state
         >>> import collections
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()

@@ -6,7 +6,7 @@ import zope.interface
 import checkmate._utils
 import checkmate.exchange
 import checkmate.data_structure
-import checkmate.parser.dtvisitor
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -16,7 +16,7 @@ class ApplicationMeta(type):
         exchange_module = namespace['exchange_module']
 
         path = os.path.dirname(exchange_module.__file__)
-        filename = 'exchanges.rst'
+        filename = 'exchanges.yaml'
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
         try:
@@ -76,10 +76,10 @@ class Application(object):
             <InterfaceClass sample_app.component_3.states.IAcknowledge>
         """
         path = os.path.dirname(self.exchange_module.__file__)
-        filename = 'itp.rst'
+        filename = 'itp.yaml'
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
-        _output = checkmate.parser.dtvisitor.call_visitor(matrix)
+        _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
         state_modules = []
         for name in list(self.components.keys()):
             state_modules.append(self.components[name].state_module)
