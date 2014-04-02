@@ -71,8 +71,9 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, test=None):
+    def __init__(self, test=None, is_setup=False):
         self.test = test
+        self.is_setup = is_setup
         self.components = []
         self.tran_dict = {}
         self.logger = logging.getLogger('checkmate.runtime.procedure')
@@ -83,7 +84,7 @@ class Procedure(object):
         self.system_under_test = system_under_test
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
-        if not self._components_match_sut(self.system_under_test):
+        if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
@@ -136,7 +137,8 @@ class Procedure(object):
             except ValueError:
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
-        self.logger.info('Procedure Done')
+        if not self.is_setup:
+            self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
