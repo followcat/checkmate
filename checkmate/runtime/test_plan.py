@@ -1,28 +1,14 @@
-import checkmate._tree
 import checkmate.sandbox
 import checkmate.test_data
-import checkmate.service_registry
 import checkmate.runtime.procedure
 import checkmate.parser.feature_visitor
 
 
-def build_procedure_with_initial(components, exchanges, output, initial, final, itp_transitions):
-    import checkmate.runtime.procedure
-    class TestProc(checkmate.runtime.procedure.Procedure):
-        """"""
-            
-    proc = TestProc()
-    setattr(proc, 'components', components)
-    setattr(proc, 'exchanges', checkmate._tree.Tree(exchanges[0], [checkmate._tree.Tree(_o, []) for _o in output]))
-    setattr(proc, 'initial', initial)
-    setattr(proc, 'final', final)
-    setattr(proc, 'itp_transitions', itp_transitions)
+def build_procedure(sandbox):
+    proc = checkmate.runtime.procedure.Procedure()
+    sandbox.fill_procedure(proc)
     return proc
 
-def get_origin_component(exchange, components):
-    for _c in components:
-        if exchange.action in _c.outgoings:
-            return _c
 
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
     """
@@ -52,42 +38,25 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         ...     procedures.append(p[0])
 
         >>> proc = procedures[0]
-        >>> proc.system_under_test = ['C1']
         >>> r.application.compare_states(proc.initial)
         False
-        >>> proc.transform_to_initial()
-        >>> time.sleep(2)
-        >>> c1.context.states[0].value
-        'True'
-        >>> c3.context.states[0].value
-        'False'
-        >>> r.application.compare_states(proc.initial)
-        True
-        >>> proc.result = None
-        >>> proc._run_from_startpoint(proc.exchanges)
-        >>> r.application.compare_states(proc.final)
-        True
+        >>> proc(['C1'])
         >>> r.stop_test()
 
     """
-    a = application_class()
-    a.start()
-    if transition_list is None:
-        a.get_initial_transitions()
-        transition_list = a.initial_transitions
-    components = list(a.components.keys())
+    _application = application_class()
+    components = list(_application.components.keys())
+    state_modules = []
+    for name in components:
+        state_modules.append(_application.components[name].state_module)
+    _application.get_initial_transitions()
+    transition_list = _application.initial_transitions
+
     for _transition in transition_list:
-        _incoming = _transition.incoming[0].factory()
-        origin = get_origin_component(_incoming, list(a.components.values()))
-        for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin.name):
-            _o = a.components[_e.destination].process([_e])
-            yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
+        box = checkmate.sandbox.Sandbox(_application, [_transition])
+        box([_transition], foreign_transitions=True)
+        yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
 
-
-def build_procedure(sandbox):
-    proc = checkmate.runtime.procedure.Procedure()
-    sandbox.fill_procedure(proc)
-    return proc
 
 def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     """
