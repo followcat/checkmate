@@ -11,6 +11,12 @@ import checkmate.parser.yaml_visitor
 def _to_interface(_classname):
     return 'I'+_classname
 
+def name_to_interface(name, module):
+    try:
+        interface = getattr(module, _to_interface(name))
+    except AttributeError:
+        raise AttributeError(module.__name__+' has no interface defined:'+_to_interface(name))
+    return interface
 
 class Declarator(object):
     def __init__(self, data_module, state_module=None, exchange_module=None,
@@ -103,13 +109,6 @@ class Declarator(object):
         # Return storage for compatibility only
         return (interface, partition_storage)
 
-    def name_to_interface(self, name, module_type):
-        try:
-            interface = getattr(self.module[module_type], _to_interface(name))
-        except AttributeError:
-            raise AttributeError(self.module[module_type].__name__+' has no interface defined:'+_to_interface(name))
-        return interface
-
     def new_transition(self, item):
         initial_state = []
         input = []
@@ -131,7 +130,7 @@ class Declarator(object):
                 continue
             for each_item in _v:
                 for _name, _data in each_item.items():
-                    interface = self.name_to_interface(_name, module_type)
+                    interface = name_to_interface(_name, self.module[module_type])
                     storage_data = checkmate._storage.Data(module_type, interface, [_data])
                     if _k == 'init_state':
                         initial_state.append(storage_data)
@@ -217,6 +216,39 @@ class Declarator(object):
             self.get_partitions()
             self.get_transitions()
             return self.output
+
+def new_get_procedure_transition(item, exchange_module, state_modules=[]):
+    initial_state = []
+    input = []
+    final = []
+
+    for _k, _v in item.items():
+        if _k == 'init_state' or _k == 'final_state':
+            module_type = 'states'
+        elif _k == 'incoming':
+            module_type = 'exchanges'
+        elif _k == 'tran_title':
+            try:
+                tran_name = item['tran_title']
+            except IndexError:
+                tran_name = 'unknown'
+            continue
+        for each_item in _v:
+            for _name, _data in each_item.items():
+                if module_type == 'states':
+                    for s_module in state_modules:
+                        if hasattr(s_module, _to_interface(_name)):
+                            interface = name_to_interface(_name, s_module)
+                            if _k == 'init_state':
+                                initial_state.append(checkmate._storage.Data(s_module, interface, [_data]))
+                            elif _k == 'final_state':
+                                final.append(checkmate._storage.Data(module_type, interface, [_data]))
+                elif module_type == 'exchanges' and _k == 'incoming':
+                    interface = name_to_interface(_name, exchange_module)
+                    input.append(checkmate._storage.Data(module_type, interface, [_data]))
+
+    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
+    return ts
 
 def get_procedure_transition(array_items, exchange_module, state_modules=[]):
     initial_state = []
