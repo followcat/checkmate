@@ -57,14 +57,12 @@ class Sandbox(object):
                             break
                     if done:
                         break
-                if done:
-                    break
 
     @property
     def is_run(self):
         return self.exchanges is not None
 
-    def __call__(self, transitions):
+    def __call__(self, transitions, foreign_transitions=False):
         """
             >>> import sample_app.application
             >>> import checkmate.sandbox
@@ -80,19 +78,41 @@ class Sandbox(object):
             'False'
         """
         for _transition in transitions:
-            for component in list(self.application.components.values()):
-                if not _transition in component.state_machine.transitions:
-                    continue
-                if len(_transition.incoming) > 0:
+            _outgoing = []
+            if len(_transition.incoming) > 0:
+                #try simulation by any component first
+                for component in list(self.application.components.values()):
+                    if not foreign_transitions and not _transition in component.state_machine.transitions:
+                        continue
                     _incoming = _transition.generic_incoming(component.states)
-                    _outgoing = component.process(_incoming)
-                    self.exchanges = checkmate._tree.Tree(_incoming[0], [])
-                elif len(_transition.outgoing) > 0:
+                    _outgoing = component.simulate(_incoming[0])
+                    if len(_outgoing) == 0:
+                        #simulation failed
+                        continue
+                    break
+                if len(_outgoing) == 0:
+                    for component in list(self.application.components.values()):
+                        if not foreign_transitions and not _transition in component.state_machine.transitions:
+                            continue
+                        _incoming = _transition.generic_incoming(component.states)
+                        _outgoing = component.process([_incoming[0]])
+                        if len(_outgoing) == 0:
+                            continue
+                        self.exchanges = checkmate._tree.Tree(_incoming[0], [])
+                        break
+            #for now, this is not a real empty incoming but the root of TransitionTree
+            elif len(_transition.outgoing) > 0:
+                for component in list(self.application.components.values()):
+                    if not foreign_transitions and not _transition in component.state_machine.transitions:
+                        continue
                     _outgoing = component.simulate(_transition.outgoing[0].factory())
-                    self.exchanges = None
-                else:
-                    return False
-                self.exchanges = self.generate(_outgoing, self.exchanges)
+                    if len(_outgoing) == 0:
+                        continue
+                    break
+            if len(_outgoing) == 0:
+                return False
+
+            self.exchanges = self.generate(_outgoing, self.exchanges)
 
             if self.is_run:
                 self.update_required_states(_transition)
