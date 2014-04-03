@@ -69,7 +69,7 @@ def TestProcedureGenerator(application_class=checkmate.test_data.App):
     c2 = box.application.components['C2']
     #Skip the last two transitions as no outgoing sent to 'C1'
     #Skip the third transition from the last as 'C3' state does not match
-    for _t in c2.state_machine.transitions[:-5]:
+    for _t in c2.state_machine.transitions[:1]:
         box([_t])
         yield build_procedure(box), box.exchanges.root.destination, box.exchanges.root.action
 
