@@ -1,26 +1,47 @@
 ---
 title: 'Test procedure'
 data:
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Toggle C1 state with AC']
-    Procedures - exchanges:
-    - [Action,          x,           AC()]
-    - [State,           M0(True),    M0(False)]
-    - [AnotherState,    Q0(),        Q0()]
-    - [Acknowledge,     A0(False),   A0(True)]
+  - init_state: 
+      - State:                  M0(True)
+      - AnotherState:           Q0()
+      - Acknowledge:            A0(False)
+    Transitions - exchanges:
+      - tran_title: Toggle C1 state with AC
+        incoming:
+          - Action:             AC()
+        final_state:
+          - State:              M0(False)
+          - AnotherState:       Q0()
+          - Acknowledge:        A0(True)
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Append request C1 with AP']
-    Procedures - exchanges:
-    - [Action,          x,           AP(R)]
-    - [AnotherState,    Q0(),        Q0(R)]
+  # Always run
+  - init_state: 
+      - AnotherState:           Q0()
+    Transitions - exchanges:
+      - tran_title: Append request C1 with AP
+        incoming:
+          - Action:             AP(R)
+        final_state:
+          - AnotherState:       Q0(R)
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Toggle acknowledge with RL']
-    Procedures - exchanges:
-    - [Reaction,        x,           RL()]
-    - [Acknowledge,     A0(True),    A0(False)]
+  - init_state: 
+      - Acknowledge:            A0(True)
+    Transitions - exchanges:
+      - tran_title: Toggle acknowledge with RL
+        incoming:
+          - Reaction:           RL()
+        final_state:
+          - Acknowledge:        A0(False)
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Toggle C1 state back (RL)']
-    Procedures - exchanges:
-    - [Action,          x,           PP()]
-    - [State,           M0(False),   M0(True)]
-    - [Acknowledge,     A0(False),   A0(False)]
-    - [AnotherState,    Q0(),        Q0(None)]
+  - init_state: 
+      - State:                  M0(False)
+      - Acknowledge:            A0(False)
+      - AnotherState:           Q0()
+    Transitions - exchanges:
+      - tran_title: Toggle C1 state back (RL)
+        incoming:
+          - Action:             PP()
+        final_state:
+          - State:              M0(True)
+          - Acknowledge:        A0(False)
+          - AnotherState:       Q0(None)

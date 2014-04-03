@@ -1,16 +1,30 @@
 ---
 title: 'State machine'
 data:
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', '[Input/Final state/Output]', '[Input/Final state/Output]', '[Input/Final state/Output]', '[Input/Final state/Output]', '[Input/Final state/Output]']
-    Transitions - exchanges:
-    - [ThirdReaction,   x,   x,    x,      x,    DR(),  x]
-    - [AnotherReaction, x,   x,    ARE(),  x,    x,     x]
-    - [x,               ANY, x,    x,      x,    x,     x]
-    - [Action,          x,   AC(), AP(R),  x,    x,     PP(R)]
-    - [Reaction,        x,   x,    x,      RL(), x,     x]
-    
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'C2 third action']
-    Transitions - exchanges:
-    - [Pause,       x,   x]
-    - [ThirdAction, x,   DA()]
-    - [x,           ANY, x]
+  - Transitions - exchanges:
+      - tran_title: '[Input/Final state/Output]'
+        outgoing:
+          - Action:             AC()
+
+      - tran_title: '[Input/Final state/Output]'
+        incoming:
+          - AnotherReaction:    ARE()
+        outgoing:
+          - Action:             AP(R)
+
+      - tran_title: '[Input/Final state/Output]'
+        outgoing:
+          - Reaction:           RL()
+
+      - tran_title: '[Input/Final state/Output]'
+        incoming:
+          - ThirdReaction:      DR()
+
+      - tran_title: '[Input/Final state/Output]'
+        outgoing:
+          - Action:             PP(R)
+
+  - Transitions - exchanges:
+      - tran_title: 'C2 third action'
+        incoming:
+          - ThirdAction:        DA()

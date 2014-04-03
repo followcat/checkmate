@@ -3,40 +3,62 @@ title: 'State identification'
 data:
   - Definition and accessibility: 'TESTState'
     Value partitions:
-    # [Partition,   State,      Valid value,        Comment]
-    - [S-STATE-01,  M0(True),   True valid value,   State true value]
-    - [S-STATE-02,  M0(False),  False valid value,  State false value]
+      # [Partition,   State,      Valid value,        Comment]
+      - [S-STATE-01,  M0(True),   True valid value,   State true value]
+      - [S-STATE-02,  M0(False),  False valid value,  State false value]
 
     Standard methods:
-    # [Method, Comment]
-    - [toggle, Toggle component state]
+      # [Method, Comment]
+      - [toggle, Toggle component state]
 
   - Definition and accessibility: 'TESTAnotherState'
     Value partitions:
-    # [Partition,   State,      Valid value,        Comment]
-    - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
-    - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
+      # [Partition,   State,      Valid value,        Comment]
+      - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
+      - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
 
     Standard methods:
-    # [Method,  Comment]
-    - [append,  Append element to state]
-    - [pop,     Pop element from state]
+      # [Method,  Comment]
+      - [append,  Append element to state]
+      - [pop,     Pop element from state]
 ---
 title: "State machine"
 data:
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Toggle state tran01']
+  - init_state: 
+      - TESTAnotherState: M0(True)
     Transitions - exchanges:
-    - [TESTAction,          x,              TC()]
-    - [TESTState,           M0(True),       M0(False)]
-    - [TESTReaction,        x,              TE()]
+      - tran_title: Toggle state tran01
+        incoming:
+          - TESTAction:       TC()
+        final_state:
+          - TESTAnotherState: M0(False)
+        outgoing:
+          - TESTReaction:     TE()
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Append element ok tran01', "Append element ok tran02"]
+  - init_state:
+      - TESTAnotherState: Q0()
     Transitions - exchanges:
-    - [TESTAction,          x,              TP(R),          TP()]
-    - [TESTAnotherState,    Q0(),           Q0.append(R),   Q0.pop()]
-    - [TESTReaction,        x,              TE(),           TE()]
+      - tran_title: Append element ok tran01
+        incoming:
+          - TESTAction:       TP(R)
+        final_state:
+          - TESTAnotherState: Q0.append(R)
+        outgoing:
+          - TESTReaction:     TE()
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', '']
+      - tran_title: Append element ok tran02
+        incoming:
+          - TESTAction:       TP()
+        final_state:
+          - TESTAnotherState: Q0.pop()
+        outgoing:
+          - TESTReaction:     TE()
+
+  - init_state:
+      - TESTAnotherState: M0(False)
     Transitions - exchanges:
-    - [TESTAction,          x,              TP()]
-    - [TESTState,           M0(False),      M0]
+      - tran_title: 
+        incoming:
+          - TESTAction:       TP()
+        final_state:
+          - TESTAnotherState: M0

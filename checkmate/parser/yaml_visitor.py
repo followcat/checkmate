@@ -17,8 +17,7 @@ class Visitor():
         self.full_description = collections.OrderedDict()
         self._classname = ''
         self.codes = []
-        self.tran_titles = []
-        self.array_items = []
+        self.tran_items = []
         self.standard_methods = {}
 
         self.read_document(stream)
@@ -55,13 +54,12 @@ class Visitor():
                                                 'full_desc': self.full_description})
             elif title == "State machine" or title == "Test procedure":
                 self.state_machine_or_test_procedure(_d)
-                self._transitions.append({'array_items': self.array_items,
-                                          'tran_titles': self.tran_titles})
+                self._transitions.extend(self.tran_items)
+
             self.full_description = collections.OrderedDict()
             self._classname = ''
             self.codes = []
-            self.tran_titles = []
-            self.array_items = []
+            self.tran_items = []
             self.standard_methods = {}
 
     def state_identification(self, content):
@@ -77,11 +75,16 @@ class Visitor():
                 self.value_partitions(_v)
 
     def state_machine_or_test_procedure(self, content):
+        if 'init_state' in content:
+            init_state = content['init_state']
+        else:
+            init_state = None
         for _k,_v in content.items():
             if _k in self.exchanges_kind_list:
+                if init_state is not None:
+                    for _trans_item in _v:
+                        _trans_item['init_state'] = init_state
                 self.standard_methods_exchanges(_v)
-            if _k == 'tran_title':
-                self.set_tran_titles(_v)
 
     def data_structure(self, content):
         for _k,_v in content.items():
@@ -101,7 +104,7 @@ class Visitor():
             self.full_description[code] = (id, val, com)
 
     def standard_methods_exchanges(self, data):
-        self.array_items.extend(data)
+        self.tran_items.extend(data)
 
     def dentification_exchanges(self, data):
         for _list in data:
@@ -112,9 +115,6 @@ class Visitor():
                 self.standard_methods[code] = getattr(checkmate.state, code)
             except AttributeError:
                 raise AttributeError(checkmate.state.__name__+' has no method defined: '+code)
-
-    def set_tran_titles(self, data):
-        self.tran_titles.extend(data)
 
 
 def call_visitor(stream):

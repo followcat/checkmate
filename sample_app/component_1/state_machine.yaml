@@ -24,22 +24,38 @@ data:
 ---
 title: "State machine"
 data:
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Toggle state tran01']
+  - init_state: 
+      - State:                  M0(True)
     Transitions - exchanges:
-    - [Action,          x,              AC()]
-    - [State,           M0(True),       M0(False)]
-    - [Reaction,        x,              RE()]
-    - [AnotherReaction, x,              ARE()]
+      - tran_title: Toggle state tran01
+        incoming:
+          - Action:         AC()
+        final_state:
+          - State:              M0(False)
+        outgoing:
+          - Reaction:           RE()
+          - AnotherReaction:    ARE()
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Append element ok tran01']
+  - init_state: 
+      - AnotherState:           Q0()
     Transitions - exchanges:
-    - [Action,          x,              AP(R)]
-    - [AnotherState,    Q0(),           Q0.append(R)]
-    - [ThirdAction,     x,              DA()]
+      - tran_title: Append element ok tran01
+        incoming:
+          - Action:             AP(R)
+        final_state:
+          - AnotherState:       Q0.append(R)
+        outgoing:
+          - ThirdAction:        DA()
 
-  - tran_title: ['[Exchange/State/Exchange]', '[-/Initial state/-]', 'Append element ok tran02']
+  - init_state: 
+      - State:                  M0(False)
+      - AnotherState:           Q0()
     Transitions - exchanges:
-    - [Action,          x,              PP()]
-    - [State,           M0(False),      M0(True)]
-    - [AnotherState,    Q0(),           Q0.pop()]
-    - [Pause,           x,              PA()]
+      - tran_title: Append element ok tran02
+        incoming:
+          - Action:             PP()
+        final_state:
+          - State:              M0(True)
+          - AnotherState:       Q0.pop()
+        outgoing:
+          - Pause:              PA()
