@@ -22,6 +22,7 @@ class Sandbox(object):
         """
         self.final = []
         self.initial = []
+        self.exchanges = None
         self.application = type(self.initial_application)()
         self.application.start()
 
@@ -42,6 +43,10 @@ class Sandbox(object):
                 if done:
                     break
 
+    @property
+    def is_run(self):
+        return self.exchanges is not None
+
     def __call__(self, transitions):
         """
             >>> import sample_app.application
@@ -57,13 +62,11 @@ class Sandbox(object):
             >>> box.application.components['C3'].states[0].value
             'False'
         """
-        self.is_run = False
         for _transition in transitions:
             for component in list(self.application.components.values()):
                 if not _transition in component.state_machine.transitions:
                     continue
                 if len(_transition.incoming) > 0:
-                    self.is_run = True
                     _incoming = _transition.generic_incoming(component.states)
                     _outgoing = component.process(_incoming)
                     self.exchanges = checkmate._tree.Tree(_incoming[0], [])
@@ -74,8 +77,7 @@ class Sandbox(object):
                     return False
                 self.exchanges = self.generate(_outgoing, self.exchanges)
 
-            if self.exchanges is not None:
-                self.is_run = True
+            if self.is_run:
                 self.update_required_states(_transition)
         return self.is_run
 
@@ -100,6 +102,7 @@ class Sandbox(object):
             if tree is None:
                 tree = checkmate._tree.Tree(_exchange, [])
                 tree = self.generate(_outgoings, tree)
+                self.exchanges = tree
             else:
                 tree.add_node(checkmate._tree.Tree(_exchange, []))
                 tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
@@ -120,3 +123,4 @@ class Sandbox(object):
             _final = transition.final[index]
             if _final.code not in [_temp_final.code for _temp_final in self.final]:
                 self.final.append(_final)
+
