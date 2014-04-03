@@ -85,7 +85,7 @@ class Application(object):
             state_modules.append(self.components[name].state_module)
         self.initial_transitions = []
         for data in _output['transitions']:
-            self.initial_transitions.append(checkmate.partition_declarator.new_get_procedure_transition(data, self.exchange_module, state_modules))
+            self.initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(data, self.exchange_module, state_modules))
 
     def compare_states(self, target):
         """"""

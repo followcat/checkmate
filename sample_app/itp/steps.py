@@ -8,24 +8,28 @@ setattr(builtins, '_', lambda x: x)
 
 @fresher.Before
 def before(sc):
-    fresher.scc.array_items = []
+    fresher.scc.dict_items =   {
+        "init_state": [],
+        "tran_title": None,
+        "final_state": [],
+        "incoming": []
+        }
+
 
 @fresher.Given(_("^Component state (?:(\w+).(\w+)) at value ([\w\(\)]+)$"))
 def set_initial(component_name, state, value):
-    fresher.scc.array_items.append([state, value, 'x'])
+    fresher.scc.dict_items['init_state'].append({state: value})
 
 @fresher.When(_("^Component (\w+) sends exchange (\w+) ([\w\(\)]+)$"))
 def set_incoming(component, exchange, action):
-    fresher.scc.array_items.insert(0, [exchange, 'x', action])
+    fresher.scc.dict_items['incoming'].append({exchange: action})
 
 @fresher.Then(_("^Component state (?:(\w+).(\w+)) should change to value ([\w\(\)]+)$"))
 def set_final(component_name, state, value):
-    for i in range(len(fresher.scc.array_items)):
-        if fresher.scc.array_items[i][0] == state:
-            fresher.scc.array_items[i][2] = value
+    fresher.scc.dict_items['final_state'].append({state: value})
 
 @fresher.After
 def after(sc):
     if fresher.ftc.scenarios is None:
         fresher.ftc.scenarios = []
-    fresher.ftc.scenarios.append(fresher.scc.array_items)
+    fresher.ftc.scenarios.append(fresher.scc.dict_items)

@@ -217,7 +217,7 @@ class Declarator(object):
             self.get_transitions()
             return self.output
 
-def new_get_procedure_transition(item, exchange_module, state_modules=[]):
+def get_procedure_transition(item, exchange_module, state_modules=[]):
     initial_state = []
     input = []
     final = []
@@ -247,40 +247,5 @@ def new_get_procedure_transition(item, exchange_module, state_modules=[]):
                     interface = name_to_interface(_name, exchange_module)
                     input.append(checkmate._storage.Data(module_type, interface, [_data]))
 
-    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
-    return ts
-
-def get_procedure_transition(array_items, exchange_module, state_modules=[]):
-    initial_state = []
-    initial_state_id = []
-    row_count = len(array_items)
-    for i in range(row_count):
-        if array_items[i][1] != 'x':
-            initial_state_id.append(i)
-            if array_items[i][0] == 'x':
-                continue
-            for s_module in state_modules:
-                if hasattr(s_module, _to_interface(array_items[i][0])):
-                    interface = getattr(s_module, _to_interface(array_items[i][0]))
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    initial_state.append(checkmate._storage.Data('states', interface, [array_items[i][1]]))
-
-    for i in range(2, len(array_items[0])):
-        input = []
-        for j in range(0, initial_state_id[0]):
-            if array_items[j][i] != 'x':
-                try:
-                    interface = getattr(exchange_module, _to_interface(array_items[j][0]))
-                except AttributeError:
-                    raise AttributeError(exchange_module,__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                input.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
-        final = []
-        for j in range(initial_state_id[0], initial_state_id[-1]+1):
-            if array_items[j][0] == 'x':
-                continue
-            for s_module in state_modules:
-                if hasattr(s_module, _to_interface(array_items[j][0])):
-                    interface = getattr(s_module, _to_interface(array_items[j][0]))
-                    final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
     return ts
