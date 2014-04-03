@@ -163,7 +163,7 @@ def get_transitions_from_features(exchange_module, state_modules):
             >>> len(transitions)
             8
             >>> transitions # doctest: +ELLIPSIS
-            [<checkmate._storage.TransitionStorage object at ...
+            [<checkmate.transition.Transition object at ...
         """
     array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
     initial_transitions = []

@@ -265,6 +265,7 @@ def get_procedure_transition(array_items, exchange_module, state_modules=[]):
                     interface = getattr(s_module, _to_interface(array_items[j][0]))
                     final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
-    return ts
+    t = checkmate.transition.Transition(initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
+    return t
 
 
