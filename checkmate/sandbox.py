@@ -2,8 +2,9 @@ import checkmate._tree
 
 
 class Sandbox(object):
-    def __init__(self, application):
+    def __init__(self, application, initial_transitions=[]):
         self.initial_application = application
+        self.initial_transitions = initial_transitions
         self.start()
 
     def start(self):
@@ -11,6 +12,13 @@ class Sandbox(object):
             >>> import checkmate.sandbox
             >>> import sample_app.exchanges
             >>> import sample_app.application
+            >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData(),
+            ...                                 [sample_app.application.TestData().components['C3'].state_machine.transitions[1]])
+            >>> box.application.components['C1'].states[0].value
+            'True'
+            >>> box.application.components['C3'].states[0].value
+            'True'
+
             >>> app = sample_app.application.TestData()
             >>> app.start()
             >>> out = app.components['C1'].process([sample_app.exchanges.AC()])
@@ -38,6 +46,15 @@ class Sandbox(object):
                         state.value = initial_state.value
                         done = True
                         break
+                    for transition in self.initial_transitions:
+                        for initial in transition.initial:
+                            if not initial.interface.providedBy(state):
+                                continue
+                            state.value = initial.factory().value
+                            done = True
+                            break
+                        if done:
+                            break
                     if done:
                         break
                 if done:
