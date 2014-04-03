@@ -10,7 +10,7 @@ def build_procedure(sandbox):
     return proc
 
 
-def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
+def _initial_generator_doctest():
     """
         >>> import time
         >>> import checkmate.test_data
@@ -44,6 +44,10 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> r.stop_test()
 
     """
+    pass
+
+
+def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
     _application = application_class()
     components = list(_application.components.keys())
     state_modules = []
@@ -58,7 +62,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
 
 
-def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
+def _feature_generator_doctest():
     """
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor
@@ -97,6 +101,10 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         >>> proc(system_under_test=['C1'])
         >>> r.stop_test()
     """
+    pass
+
+
+def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     _application = application_class()
     components = list(_application.components.keys())
     state_modules = []
