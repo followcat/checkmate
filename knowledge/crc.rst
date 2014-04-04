@@ -69,11 +69,12 @@ checkmate.exchange.Exchange
 +---------------------+---------------+
 
 checkmate.logger.Logger
-+------------------------------------------+
-| Logger                                   |
-+--------------------------+---------------+
-| global logger definition | Partition     |
-+--------------------------+---------------+
++-------------------------------------------+
+| Logger                                    |
++---------------------------+---------------+
+| global logger definition  |               |
+| determine what/how to log |               |
++---------------------------+---------------+
 
 checkmate.partition.Partition
 +--------------------------------------------+
@@ -154,4 +155,140 @@ checkmate.transition.Transition
 | rule for exchange in/out and state change |                   |
 | state/exchange validation and resolvation |                   |
 +-------------------------------------------+-------------------+
+
+checkmate._tree.Tree
++-----------------------------------------------+
+| Tree                                          |
++-------------------------------+---------------+
+| tree structure to store data  |               |
++-------------------------------+---------------+
+
+checkmate._util.ArgumentStorage
++-----------------------------------------------------+
+| ArgumentStorage                                     |
++--------------------------------------------+--------+
+| tuple extends to store partition arguments |  tuple |     
++--------------------------------------------+--------+
+
+checkmate.parser.dtvisitor.Writer
++---------------------------------------------------------------------+
+| Writer                                                              |
++------------------------------------------+--------------------------+
+| inherit from docutils.writers.Writer     |  docutils.writers.Writer |
+| call translator to visit input document  |  DocTreeVisitor          |
++------------------------------------------+--------------------------+
+
+checkmate.parser.dtvisitor.DocTreeVisitor
++-------------------------------------------------------------------------------------------+
+| DocTreeVisitor                                                                            |
++-------------------------------------------------------+-----------------------------------+
+| inherit from docutils.nodes.GenericNodeVisitor        | docutils.nodes.GenericNodeVisitor |
+| extract data by visiting defferent part of a document |                                   |
++-------------------------------------------------------+-----------------------------------+
+
+checkemate.runtime.component.Component
++-------------------------------------------------------------------------------------------+
+| Component                                                                                 |
++-------------------------------------------------------+-----------------------------------+
+| base class define of runtime component                |                                   |
+| own component as context to maintain state-machine    |                                   |
+| create clients to implement communication             |                                   |
+| process/simulate exchange and deliver the output      |                                   |
++-------------------------------------------------------+-----------------------------------+
+
+checkemate.runtime.component.Sut
++-------------------------------------------------------------------------------------------+
+| Sut                                                                                       |
++--------------------------------------------------+----------------------------------------+
+| implment checkmate.component.Component utilities | checkemate.runtime.component.Component |
+| deliver process output via internal client       | checkemate.runtime.component.Component |
++--------------------------------------------------+----------------------------------------+
+
+checkemate.runtime.component.Stub
++----------------------------------------------------------------------------------------------------+
+| Stub                                                                                               | 
++-----------------------------------------------------------+----------------------------------------+
+| deliver output via both internal/external client          | checkemate.runtime.component.Component |
+| validate whether its internal client received exchange    |                                        |
++-----------------------------------------------------------+----------------------------------------+
+
+checkemate.runtime.component.ThreadedComponent
++----------------------------------------------------------------------------------------+
+| ThreadedComponent                                                                      |
++-----------------------------------------------+----------------------------------------+
+| create different type of threadedclients      | checkmate.runtime._threading.Thread    |
+| checkmate.runtime._pyzmq.connector            | checkemate.runtime.component.component |
+| keep trying to recieve exchange from client   | checkmate.runtime._pyzmq.Connector     |
+| process exchange once recieved                | ThreadedClient                         |
+| deliver output exchanges via clients          | zmq.Context                            |
+|                                               | zmq.Poller                             |
++-----------------------------------------------+----------------------------------------+
+
+checkemate.runtime.component.ThreadedSut
++---------------------------------------------------------------------------+
+| ThreadedSut                                                               |
++---------------------------------------+-----------------------------------+
+| implement Sut utilities               | ThreadedComponent                 |
+| implement ThreadedComponent utilities | checkemate.runtime.component.Sut  |
++---------------------------------------+-----------------------------------+
+
+checkemate.runtime.component.ThreadedStub
++----------------------------------------------------------------------------+
+| ThreadedStub                                                               |                       
++---------------------------------------+------------------------------------+
+| implement Stub utilities              | ThreadedComponent                  |
+| implement ThreadedComponent utilities | checkemate.runtime.component.Stub  |
+|                                       | SleepAfterCall                     |
+|                                       | WaitOnFalse                        |
+|                                       | Lock                               |
++---------------------------------------+------------------------------------+
+
+checkemate.runtime.client.Client
++--------------------------------------+
+| Client                               | 
++-----------------------+--------------+
+| base class definition |              |
++-----------------------+--------------+
+
+checkemate.runtime.client.ThreadedClient
++-----------------------------------------------------------------------------------------+
+| ThreadedClient                                                                          |
++---------------------------------------------------+-------------------------------------+
+| communicate with other components with connection | checkmate.runtime._threading.Thread |
+| commnnicate with owner component with pyzmq       | zmq.Context                         |
+| recieve exchange from other component's client    |                                     |
+| foward exchange to owner component once recieved  |                                     |
++---------------------------------------------------+-------------------------------------+
+
+checkemate.runtime.communication.Connector
++--------------------------------------+
+| Connector                            |
++-----------------------+--------------+
+| base class definition |              |
++-----------------------+--------------+
+
+checkemate.runtime.communication.Communication
++--------------------------------------+
+| Communication                        |  
++-----------------------+--------------+
+| base class definition |              |
++-----------------------+--------------+
+
+checkemate.runtime._pyzmq.Communication
++-----------------------------------------------------------------------------------------+
+| Communication                                                                           |
++---------------------------------------------------+-------------------------------------+
+| build up the default communication type by        | checkmate.runtime._threading.Thread |
+| using registry to create connection between       | zmq.Context                         |
+| clients of components                             |                                     |
++---------------------------------------------------+-------------------------------------+
+
+checkemate.runtime._pyzmq.Registry
++-----------------------------------------------------------------------------------------+
+| Communication                                                                           |
++---------------------------------------------------+-------------------------------------+
+| build up the default communication type by        | checkmate.runtime._threading.Thread |
+| using registry to create connection between       | zmq.Context                         | 
+| clients of components                             |                                     |
++---------------------------------------------------+-------------------------------------+
 
