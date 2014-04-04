@@ -5,7 +5,7 @@ import checkmate.state
 
 
 class Visitor():
-    exchanges_kind_list = ["Standard methods", "Exchange", "Transitions - exchanges", "Procedures - exchanges"]
+    exchanges_kind_list = ["Standard methods", "Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
     def __init__(self, stream):
@@ -75,16 +75,9 @@ class Visitor():
                 self.value_partitions(_v)
 
     def state_machine_or_test_procedure(self, content):
-        if 'init_state' in content:
-            init_state = content['init_state']
-        else:
-            init_state = None
         for _k,_v in content.items():
             if _k in self.exchanges_kind_list:
-                if init_state is not None:
-                    for _trans_item in _v:
-                        _trans_item['init_state'] = init_state
-                self.standard_methods_exchanges(_v)
+                self.tran_items.extend(_v)
 
     def data_structure(self, content):
         for _k,_v in content.items():
@@ -102,9 +95,6 @@ class Visitor():
             com = _list[3]
             self.codes.append(code)
             self.full_description[code] = (id, val, com)
-
-    def standard_methods_exchanges(self, data):
-        self.tran_items.extend(data)
 
     def dentification_exchanges(self, data):
         for _list in data:

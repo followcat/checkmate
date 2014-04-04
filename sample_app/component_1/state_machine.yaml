@@ -1,5 +1,5 @@
 ---
-title: 'State identification'
+title: "State identification"
 data:
   - Definition and accessibility: 'State'
     Value partitions:
@@ -24,38 +24,38 @@ data:
 ---
 title: "State machine"
 data:
-  - init_state: 
-      - State:                  M0(True)
-    Transitions - exchanges:
-      - tran_title: Toggle state tran01
+  - Transitions:
+      - name: 'Toggle state tran01'
+        initial: 
+          - State:            M0(True)
         incoming:
-          - Action:         AC()
-        final_state:
-          - State:              M0(False)
+          - Action:           AC()
+        final:
+          - State:            M0(False)
         outgoing:
-          - Reaction:           RE()
-          - AnotherReaction:    ARE()
+          - Reaction:         RE()
+          - AnotherReaction:  ARE()
 
-  - init_state: 
-      - AnotherState:           Q0()
-    Transitions - exchanges:
-      - tran_title: Append element ok tran01
+  - Transitions:
+      - name: 'Append element ok tran01'
+        initial: 
+          - AnotherState:     Q0()
         incoming:
-          - Action:             AP(R)
-        final_state:
-          - AnotherState:       Q0.append(R)
+          - Action:           AP(R)
+        final:
+          - AnotherState:     Q0.append(R)
         outgoing:
-          - ThirdAction:        DA()
+          - ThirdAction:      DA()
 
-  - init_state: 
-      - State:                  M0(False)
-      - AnotherState:           Q0()
-    Transitions - exchanges:
-      - tran_title: Append element ok tran02
+  - Transitions:
+      - name: 'Append element ok tran02'
+        initial: 
+          - State:            M0(False)
+          - AnotherState:     Q0()
         incoming:
-          - Action:             PP()
-        final_state:
-          - State:              M0(True)
-          - AnotherState:       Q0.pop()
+          - Action:           PP()
+        final:
+          - State:            M0(True)
+          - AnotherState:     Q0.pop()
         outgoing:
-          - Pause:              PA()
+          - Pause:            PA()

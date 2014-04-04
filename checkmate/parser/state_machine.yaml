@@ -1,5 +1,5 @@
 ---
-title: 'State identification'
+title: "State identification"
 data:
   - Definition and accessibility: 'TESTState'
     Value partitions:
@@ -24,41 +24,42 @@ data:
 ---
 title: "State machine"
 data:
-  - init_state: 
-      - TESTAnotherState: M0(True)
-    Transitions - exchanges:
-      - tran_title: Toggle state tran01
+  - Transitions:
+      - name: Toggle state tran01
+        initial: 
+          - TESTAnotherState: M0(True)
         incoming:
           - TESTAction:       TC()
-        final_state:
+        final:
           - TESTAnotherState: M0(False)
         outgoing:
           - TESTReaction:     TE()
 
-  - init_state:
-      - TESTAnotherState: Q0()
-    Transitions - exchanges:
-      - tran_title: Append element ok tran01
+  - Transitions:
+      - name: Append element ok tran01
+        initial:
+          - TESTAnotherState: Q0()
         incoming:
           - TESTAction:       TP(R)
-        final_state:
+        final:
           - TESTAnotherState: Q0.append(R)
         outgoing:
           - TESTReaction:     TE()
 
-      - tran_title: Append element ok tran02
+      - name: Append element ok tran02
+        initial:
+          - TESTAnotherState: Q0()
         incoming:
           - TESTAction:       TP()
-        final_state:
+        final:
           - TESTAnotherState: Q0.pop()
         outgoing:
           - TESTReaction:     TE()
 
-  - init_state:
-      - TESTAnotherState: M0(False)
-    Transitions - exchanges:
-      - tran_title: 
+  - Transitions:
+      - initial:
+          - TESTAnotherState: M0(False)
         incoming:
           - TESTAction:       TP()
-        final_state:
+        final:
           - TESTAnotherState: M0

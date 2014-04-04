@@ -1,5 +1,5 @@
 ---
-title: 'State identification'
+title: "State identification"
 data:
   - Definition and accessibility: 'Acknowledge'
     Value partitions:
@@ -12,31 +12,31 @@ data:
 ---
 title: "State machine"
 data:
-  - init_state:
-      - Acknowledge:            A0(False)
-    Transitions - exchanges:
-      - tran_title: '[Input/Final state/Output]'
+  - Transitions:
+      - name: '[Input/Final state/Output]'
+        initial:
+          - Acknowledge:        A0(False)
         incoming:
           - Reaction:           RE()
-        final_state:
+        final:
           - Acknowledge:        A0.toggle()
 
-  - init_state:
-      - Acknowledge:            A0(True)
-    Transitions - exchanges:
-      - tran_title: '[Input/Final state/Output]'
+  - Transitions:
+      - name: '[Input/Final state/Output]'
+        initial:
+          - Acknowledge:        A0(True)
         incoming:
           - Reaction:           RL()
-        final_state:
+        final:
           - Acknowledge:        A0.toggle()
         outgoing:
           - Action:             DR()
 
-  - init_state:
-      - Acknowledge:            A0(False)
-    Transitions - exchanges:
-      - tran_title: C3 pause process
+  - Transitions:
+      - name: 'C3 pause process'
+        initial:
+          - Acknowledge:        A0(False)
         incoming:
           - Pause:              PA()
-        final_state:
+        final:
           - Acknowledge:        A0(False)

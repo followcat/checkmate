@@ -9,16 +9,15 @@ setattr(builtins, '_', lambda x: x)
 @fresher.Before
 def before(sc):
     fresher.scc.dict_items =   {
-        "init_state": [],
-        "tran_title": None,
-        "final_state": [],
-        "incoming": []
+        "initial": [],
+        "incoming": [],
+        "final": []
         }
 
 
 @fresher.Given(_("^Component state (?:(\w+).(\w+)) at value ([\w\(\)]+)$"))
 def set_initial(component_name, state, value):
-    fresher.scc.dict_items['init_state'].append({state: value})
+    fresher.scc.dict_items['initial'].append({state: value})
 
 @fresher.When(_("^Component (\w+) sends exchange (\w+) ([\w\(\)]+)$"))
 def set_incoming(component, exchange, action):
@@ -26,7 +25,7 @@ def set_incoming(component, exchange, action):
 
 @fresher.Then(_("^Component state (?:(\w+).(\w+)) should change to value ([\w\(\)]+)$"))
 def set_final(component_name, state, value):
-    fresher.scc.dict_items['final_state'].append({state: value})
+    fresher.scc.dict_items['final'].append({state: value})
 
 @fresher.After
 def after(sc):

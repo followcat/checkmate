@@ -1,5 +1,5 @@
 ---
-title: 'Data structure'
+title: "Data structure"
 data:
   - Definition and accessibility: 'Attribute'
     Value partitions:
@@ -15,7 +15,7 @@ data:
 
   - Definition: 'ActionRequest(P=ActionPriority, A=Attribute)'
 ---
-title: 'Exchange identification'
+title: "Exchange identification"
 data:
   - Definition and accessibility: 'Action(R=ActionRequest)'
     Value partitions:
@@ -30,22 +30,22 @@ data:
     - [X-REACTION-01,   RE(),     Valid reaction,     Comment]
     - [X-REACTION-02,   RL(),     Release reaction,   Comment]
 
-  - Definition and accessibility: "AnotherReaction"
+  - Definition and accessibility: 'AnotherReaction'
     Value partitions:
     # [Partition,       State,  Valid value,        Comment]
     - [X-ANOREACT-01,   ARE(),  Valid ano-reaction, Comment]
 
-  - Definition and accessibility: "ThirdReaction"
+  - Definition and accessibility: 'ThirdReaction'
     Value partitions:
     # [Partition,       State,  Valid value,        Comment]
     - [X-THRDREACT-01,  DR(),   Valid thd-reaction, Comment]
 
-  - Definition and accessibility: "Pause"
+  - Definition and accessibility: 'Pause'
     Value partitions:
     # [Partition,   State, Valid value,   Comment]
     - [X-PAUSE-01,  PA(),  Valid pause,   Comment]
 
-  - Definition and accessibility: "ThirdAction"
+  - Definition and accessibility: 'ThirdAction'
     Type of data: "Description"
     Exchange: [component 1,component 2,third action]
     Value partitions:
