@@ -146,28 +146,3 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_transitions_from_features(exchange_module, state_modules):
-    """
-            >>> import sample_app.application
-            >>> import checkmate.component
-            >>> import checkmate.parser.feature_visitor
-            >>> import os
-            >>> import checkmate.state
-            >>> import checkmate.exchange
-            >>> a = sample_app.application.TestData()
-            >>> a.start()
-            >>> state_modules = []
-            >>> for name in list(a.components.keys()):
-            ...     state_modules.append(a.components[name].state_module)
-            >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
-            >>> len(transitions)
-            8
-            >>> transitions # doctest: +ELLIPSIS
-            [<checkmate._storage.TransitionStorage object at ...
-        """
-    array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
-    initial_transitions = []
-    for array_items in array_list:
-        initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
-    return initial_transitions 
-

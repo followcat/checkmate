@@ -60,34 +60,6 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-    def get_initial_transitions(self):
-        """
-            >>> import sample_app.application
-            >>> import checkmate.component
-            >>> import os
-            >>> a = sample_app.application.TestData()
-            >>> a.start()
-            >>> a.get_initial_transitions()
-            >>> a.initial_transitions[0].initial[0].interface
-            <InterfaceClass sample_app.component_1.states.IState>
-            >>> a.initial_transitions[0].incoming[0].interface
-            <InterfaceClass sample_app.exchanges.IAction>
-            >>> a.initial_transitions[0].final[2].interface
-            <InterfaceClass sample_app.component_3.states.IAcknowledge>
-        """
-        path = os.path.dirname(self.exchange_module.__file__)
-        filename = 'itp.rst'
-        with open(os.sep.join([path, filename]), 'r') as _file:
-            matrix = _file.read()
-        _output = checkmate.parser.dtvisitor.call_visitor(matrix)
-        state_modules = []
-        for name in list(self.components.keys()):
-            state_modules.append(self.components[name].state_module)
-        self.initial_transitions = []
-        for data in _output['transitions']:
-            array_items = data['array_items']
-            self.initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, self.exchange_module, state_modules))
-
     def compare_states(self, target):
         """"""
         matching = 0
