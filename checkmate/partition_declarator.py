@@ -58,48 +58,55 @@ class Declarator(object):
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
+        def set_partition_arguments(partition_type, standard_methods, key, value):
+            partition_attribute = []
+            for _module in self.basic_modules[partition_type]:
+                try:
+                    interface = getattr(_module, _to_interface(value))
+                    standard_methods.update({key: checkmate._storage.store(partition_type, interface, value)})
+                    partition_attribute.append(key)
+                    break
+                except AttributeError:
+                    continue
+            return partition_attribute
+
+        def get_partition_attribut(signature, partition_type):
+            partition_attribute = []
+            for class_attr in checkmate._utils.method_arguments(signature).values:
+                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, class_attr, class_attr))
+            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
+                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, key, class_kwattr[0][0]))
+            return partition_attribute
+
+        def set_standard_methods(_module, classname, codes, partition_attribute):
+            standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
+                                     'partition_attribute': tuple(partition_attribute)})
+            setattr(_module, classname, _module.declare(classname, standard_methods))
+            setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
+            zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
+
+        def set_exchanges_codes(partition_type, _module, codes, cls):
+            if partition_type == 'exchanges':
+                for code in codes:
+                    if checkmate._utils.is_method(code):
+                        internal_code = checkmate._utils.internal_code(code)
+                        setattr(_module, internal_code, functools.partial(cls, internal_code))
+
         partition_attribute = []
+        classname = signature
+        _module = self.module[partition_type]
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
-            for class_attr in checkmate._utils.method_arguments(signature).values:
-                for _module in self.basic_modules[partition_type]:
-                    try:
-                        interface = getattr(_module, _to_interface(class_attr))
-                        standard_methods.update({class_attr: checkmate._storage.store(partition_type, interface, class_attr)})
-                        partition_attribute.append(class_attr)
-                        break
-                    except AttributeError:
-                        continue
-            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
-                for _module in self.basic_modules[partition_type]:
-                    try:
-                        # class_kwattr[0][0] to get the classname from source string
-                        interface = getattr(_module, _to_interface(class_kwattr[0][0]))
-                        standard_methods.update({key: checkmate._storage.store(partition_type, interface, class_kwattr[0][0])})
-                        partition_attribute.append(key)
-                        break
-                    except AttributeError:
-                        continue
-        else:
-            classname = signature
-
-        _module = self.module[partition_type]
-        standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
-                                 'partition_attribute': tuple(partition_attribute)})
-        setattr(_module, classname, _module.declare(classname, standard_methods))
-        setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
-        zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
+            partition_attribute = get_partition_attribut(signature, partition_type)
+        set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
         cls = checkmate._utils.get_class_implementing(interface)
-        for code in codes:
-            if ((partition_type == 'exchanges') and (checkmate._utils.is_method(code))):
-                setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
+        set_exchanges_codes(partition_type, _module, codes, cls)
 
         partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
         setattr(cls, 'partition_storage', partition_storage)
 
-        # Return storage for compatibility only
         return (interface, partition_storage)
 
     def new_transition(self, item):
