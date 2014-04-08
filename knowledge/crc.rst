@@ -275,20 +275,47 @@ checkemate.runtime.communication.Communication
 +-----------------------+--------------+
 
 checkemate.runtime._pyzmq.Communication
-+-----------------------------------------------------------------------------------------+
-| Communication                                                                           |
-+---------------------------------------------------+-------------------------------------+
-| build up the default communication type by        | checkmate.runtime._threading.Thread |
-| using registry to create connection between       | zmq.Context                         |
-| clients of components                             |                                     |
-+---------------------------------------------------+-------------------------------------+
++----------------------------------------------------------------------+
+| Communication                                                        |
++--------------------------------+-------------------------------------+
+| define a communication type    | checkmate.runtime._threading.Thread |
+| to be used by connectionstry   | zmq.Context                         |
++--------------------------------+-------------------------------------+
 
 checkemate.runtime._pyzmq.Registry
-+-----------------------------------------------------------------------------------------+
-| Communication                                                                           |
-+---------------------------------------------------+-------------------------------------+
-| build up the default communication type by        | checkmate.runtime._threading.Thread |
-| using registry to create connection between       | zmq.Context                         | 
-| clients of components                             |                                     |
-+---------------------------------------------------+-------------------------------------+
++---------------------------------------------------------------------+
+| Registry                                                            |
++-------------------------------+-------------------------------------+
+| listen to port request        | checkmate.runtime._threading.Thread |
+| pick up random free port      | zmq.Context                         | 
+| reply with free port by zmq   | zmq.Poller                          |
+|                               | socket.socket                       |
++-------------------------------+-------------------------------------+
+
+checkemate.runtime._pyzmq.Connector
++-------------------------------------------------------------------------------------+
+| Connector                                                                           |                  
++-----------------------------------------+-------------------------------------------+
+| implement communication type to set up  | checkmate.runtime.communication.Connector |
+| connection for message send/recieve     | checkemate.runtime._pyzmq.Communication   |
+|                                         | checkemate.runtime._pyzmq.Encoder         |
+|                                         | zmq.Poller                                |
+|                                         | zmq.Context                               |
++-----------------------------------------+-------------------------------------------+
+
+checkemate.runtime._pyzmq.Encoder
++-----------------------------------------------+
+| Encoder                                       |
++-------------------------------------+---------+
+| use pickle to de/serialize message  | pickle  |
++-------------------------------------+---------+
+
+checkemate.runtime._runtime.Runtime
++-------------------------------------------------------------------------------------+
+| Runtime                                                                             |
++-----------------------------------------------+-------------------------------------+
+| define the runtime enviroment                 |                                     |
+| to run checkmate test                         |                                     |
+| adapt different application and communication |                                     |
++-----------------------------------------------+-------------------------------------+
 
