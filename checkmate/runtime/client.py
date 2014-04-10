@@ -43,7 +43,7 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, component, connector, address, internal=False, sender_socket=False, is_server=False):
+    def __init__(self, component, connector, address, internal=False, sender_socket=False, is_server=False, reg_key=None):
         super(ThreadedClient, self).__init__(component)
         self.sender = None
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
@@ -52,7 +52,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.component = component
         self.logger.debug("%s initial"%self)
         self.zmq_context = zmq.Context.instance()
-        self.connections = connector(self.component, internal=internal, is_server=is_server)
+        self.connections = connector(self.component, internal=internal, is_server=is_server, reg_key=reg_key)
         if sender_socket:
             self.sender = self.zmq_context.socket(zmq.PUSH)
             self.sender.connect(address)

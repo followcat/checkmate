@@ -29,7 +29,7 @@ def _compatible_skip_test(procedure, message):
         >>> a = checkmate.test_data.App()
         >>> c2 = a.components['C2']
         >>> a.start()
-        >>> proc = checkmate.runtime.procedure.Procedure()
+        >>> proc = checkmate.runtime.procedure.Procedure(checkmate.test_data.App)
 
     If you exepct to output an exchange using generic_incoming(), strange things can happen:
     You select the transition that outputs an 'RL':
@@ -71,8 +71,9 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, test=None, is_setup=False):
+    def __init__(self, application_class, test=None, is_setup=False):
         self.test = test
+        self.application_class = application_class
         self.is_setup = is_setup
         self.components = []
         self.tran_dict = {}
@@ -86,7 +87,8 @@ class Procedure(object):
             self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-        self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+        self.registry = checkmate.runtime.registry.get_registry((''.join(self.system_under_test), self.application_class))
+        self.application = self.registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
                 self.transform_to_initial() 
@@ -124,7 +126,7 @@ class Procedure(object):
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)  
-        stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
+        stub = self.registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
         stub.simulate(current_node.root)
         self._follow_up(current_node)
         
@@ -147,7 +149,7 @@ class Procedure(object):
     def _follow_up(self, node):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:
-                stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _next.root.destination)
+                stub = self.registry.getUtility(checkmate.component.IComponent, _next.root.destination)
                 if not stub.validate(_next.root):
                     raise Exception("No exchange '%s' received by component '%s'" %(_next.root.action, _next.root.destination))
         for _next in node.nodes:

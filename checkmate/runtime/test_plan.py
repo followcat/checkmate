@@ -8,12 +8,12 @@ import checkmate.parser.dtvisitor
 import checkmate.parser.feature_visitor
 
 
-def build_procedure_with_initial(components, exchanges, output, initial, final, itp_transitions):
+def build_procedure_with_initial(application_class, components, exchanges, output, initial, final, itp_transitions):
     import checkmate.runtime.procedure
     class TestProc(checkmate.runtime.procedure.Procedure):
         """"""
             
-    proc = TestProc()
+    proc = TestProc(application_class)
     setattr(proc, 'components', components)
     setattr(proc, 'exchanges', checkmate._tree.Tree(exchanges[0], [checkmate._tree.Tree(_o, []) for _o in output]))
     setattr(proc, 'initial', initial)
@@ -98,6 +98,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> r.application.compare_states(proc.initial)
         True
         >>> proc.result = None
+        >>> proc.registry = checkmate.runtime.registry.global_registry
         >>> proc._run_from_startpoint(proc.exchanges)
         >>> r.application.compare_states(proc.final)
         True
@@ -114,7 +115,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         origin = get_origin_component(_incoming, list(a.components.values()))
         for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin.name):
             _o = a.components[_e.destination].process([_e])
-            yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
+            yield build_procedure_with_initial(application_class, components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
 
 def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App, transition_list=None):
     a = application_class()
@@ -127,5 +128,5 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App, tr
         origin = get_origin_component(_incoming, list(a.components.values()))
         for _e in checkmate.service_registry.global_registry.server_exchanges(_incoming, origin.name):
             _o = a.components[_e.destination].process([_e])
-            yield build_procedure_with_initial(components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
+            yield build_procedure_with_initial(application_class, components, [_e], _o, _transition.initial, _transition.final, transition_list), origin.name, _e.action, _e.destination
 

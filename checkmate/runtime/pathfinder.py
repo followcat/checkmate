@@ -142,7 +142,7 @@ def get_path_from_pathfinder(application, target):
         PP False
     """
     for _run, _app in _find_runs(application, target).items():
-        proc = checkmate.runtime.procedure.Procedure(is_setup=True)
+        proc = checkmate.runtime.procedure.Procedure(type(application), is_setup=True)
         _app.fill_procedure(proc)
         yield (proc, )
 

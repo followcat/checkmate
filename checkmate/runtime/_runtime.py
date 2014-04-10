@@ -20,8 +20,11 @@ class Runtime(object):
     def __init__(self, application, communication, threaded=False, full_python=True):
         """"""
         self.threaded = threaded
+        self.application_class = application
         self.application = application(full_python=full_python)
-        checkmate.runtime.registry.global_registry.registerUtility(self.application, checkmate.application.IApplication)
+        self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
+        checkmate.runtime.registry.global_registry = self._registry
+        self._registry.registerUtility(self.application, checkmate.application.IApplication)
 
         self.communication_list = [(communication(), 'default')]
 
@@ -30,14 +33,14 @@ class Runtime(object):
             self.communication_list.append((_communication, ''))
 
         if self.threaded:
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
+            self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
+            self._registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
         else:
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Stub,
+            self._registry.registerAdapter(checkmate.runtime.component.Stub,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-            checkmate.runtime.registry.global_registry.registerAdapter(checkmate.runtime.component.Sut,
+            self._registry.registerAdapter(checkmate.runtime.component.Sut,
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
@@ -45,23 +48,27 @@ class Runtime(object):
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s"%(sys.argv))
         self.application.sut(sut)
 
+        _key = (''.join(sut), self.application_class)
+        checkmate.runtime.registry.global_registries_dict[_key] = self._registry
         for (communication, type) in self.communication_list:
-            checkmate.runtime.registry.global_registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
+            self._registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
 
         for component in self.application.stubs:
-            stub = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
-            checkmate.runtime.registry.global_registry.registerUtility(stub, checkmate.component.IComponent, component)
+            setattr(self.application.components[component], 'reg_key', _key)
+            stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
+            self._registry.registerUtility(stub, checkmate.component.IComponent, component)
 
         for component in self.application.system_under_test:
-            sut = checkmate.runtime.registry.global_registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
-            checkmate.runtime.registry.global_registry.registerUtility(sut, checkmate.component.IComponent, component)
+            setattr(self.application.components[component], 'reg_key', _key)
+            sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
+            self._registry.registerUtility(sut, checkmate.component.IComponent, component)
 
         import time; time.sleep(1)
         for (communication, type) in self.communication_list:
             communication.initialize()
 
         for name in self.application.stubs + self.application.system_under_test:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            _component = self._registry.getUtility(checkmate.component.IComponent, name)
             _component.initialize()
 
     def start_test(self):
