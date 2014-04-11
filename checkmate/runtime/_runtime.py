@@ -48,18 +48,18 @@ class Runtime(object):
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s"%(sys.argv))
         self.application.sut(sut)
 
-        _key = (''.join(sut), self.application_class)
-        checkmate.runtime.registry.global_registries_dict[_key] = self._registry
+        self.reg_key = (''.join(sut), self.application_class)
+        checkmate.runtime.registry.global_registries_dict[self.reg_key] = self._registry
         for (communication, type) in self.communication_list:
             self._registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
 
         for component in self.application.stubs:
-            setattr(self.application.components[component], 'reg_key', _key)
+            setattr(self.application.components[component], 'reg_key', self.reg_key)
             stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
             self._registry.registerUtility(stub, checkmate.component.IComponent, component)
 
         for component in self.application.system_under_test:
-            setattr(self.application.components[component], 'reg_key', _key)
+            setattr(self.application.components[component], 'reg_key', self.reg_key)
             sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
             self._registry.registerUtility(sut, checkmate.component.IComponent, component)
 
@@ -102,13 +102,13 @@ class Runtime(object):
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
         for name in component_list:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            _component = self._registry.getUtility(checkmate.component.IComponent, name)
             _component.start()
 
     def stop_test(self):
         # Stop stubs last
         for name in self.application.system_under_test + self.application.stubs:
-            _component = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, name)
+            _component = self._registry.getUtility(checkmate.component.IComponent, name)
             _component.stop()
             #if self.threaded:
             #    _component.join()

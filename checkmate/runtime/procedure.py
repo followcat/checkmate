@@ -71,7 +71,7 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, application_class, test=None, is_setup=False):
+    def __init__(self, application_class=None, test=None, is_setup=False):
         self.test = test
         self.application_class = application_class
         self.is_setup = is_setup
@@ -80,14 +80,50 @@ class Procedure(object):
         self.logger = logging.getLogger('checkmate.runtime.procedure')
         
     def __call__(self, system_under_test, result=None, *args):
-        """"""
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime.test_plan
+            >>> import checkmate.runtime.registry
+            >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r1.setup_environment(['C1'])
+            >>> r1.start_test()
+            >>> r1_c1 = checkmate.runtime.registry.get_registry(r1.reg_key).getUtility(checkmate.component.IComponent, 'C1')
+            >>> r1_c2 = checkmate.runtime.registry.get_registry(r1.reg_key).getUtility(checkmate.component.IComponent, 'C2')
+            >>> r1_c3 = checkmate.runtime.registry.get_registry(r1.reg_key).getUtility(checkmate.component.IComponent, 'C3')
+            >>> r2 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r2.setup_environment(['C3'])
+            >>> r2.start_test()
+            >>> r2_c1 = checkmate.runtime.registry.get_registry(r2.reg_key).getUtility(checkmate.component.IComponent, 'C1')
+            >>> r2_c2 = checkmate.runtime.registry.get_registry(r2.reg_key).getUtility(checkmate.component.IComponent, 'C2')
+            >>> r2_c3 = checkmate.runtime.registry.get_registry(r2.reg_key).getUtility(checkmate.component.IComponent, 'C3')
+            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+            >>> procedures = []
+            >>> for p in gen:
+            ...     procedures.append(p[0])
+
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('True', 'False', 'True', 'False')
+            >>> proc = procedures[0]
+            >>> proc.exchanges.root.action
+            'AC'
+            >>> proc(['C1'])
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('False', 'True', 'True', 'False')
+            >>> proc(['C3'])
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('False', 'True', 'False', 'True')
+            >>> r1.stop_test()
+            >>> r2.stop_test()
+        """
         self.result = result
         self.system_under_test = system_under_test
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-        self.registry = checkmate.runtime.registry.get_registry((''.join(self.system_under_test), self.application_class))
+        self.registry = checkmate.runtime.registry.global_registry
+        if self.system_under_test is not None and self.application_class is not None:
+            self.registry = checkmate.runtime.registry.get_registry((''.join(self.system_under_test), self.application_class))
         self.application = self.registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
