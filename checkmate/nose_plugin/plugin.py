@@ -32,6 +32,11 @@ class Checkmate(nose.plugins.Plugin):
                           metavar="COMP1,COMP2",
                           default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
                           help="Specify the system under test.")
+        parser.add_option('--suts', action='store',
+                          dest='suts',
+                          metavar="COMP1,COMP2",
+                          default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
+                          help="Specify the system under test.")
         parser.add_option('--random', action='store_true', default=False,
                           dest='randomized_run',
                           help="Require the tests to be run in random order.")
@@ -61,6 +66,11 @@ class Checkmate(nose.plugins.Plugin):
         nose.plugins.Plugin.configure(self, options, config)
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
+        self.suts = []
+        if len(options.suts) != 0:
+            _tmp_suts = options.suts.split('-')
+            for _sut in _tmp_suts:
+                self.suts.append(_sut.split(','))
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.full_python = options.full_python
@@ -82,6 +92,7 @@ class Checkmate(nose.plugins.Plugin):
         """Set the system under test in loader config"""
         config_as_dict = self.config.todict()
         config_as_dict['system_under_test'] = self.sut
+        config_as_dict['system_under_test_list'] = self.suts
         self.config.update(config_as_dict)
         checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
         loader.suiteClass=checkmate.nose_plugin.ContextSuiteFactory(config=self.config,
@@ -138,15 +149,25 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
-        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
-        self.runtime.setup_environment(self.sut)
-        self.runtime.start_test()
+        self.runtimes = []
+        if len(self.suts) > 0:
+            for sut in self.suts:
+                runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
+                runtime.setup_environment(sut)
+                runtime.start_test()
+                self.runtimes.append(runtime)
+        else:
+            runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
+            runtime.setup_environment(self.sut)
+            runtime.start_test()
+            self.runtimes.append(runtime)
         time.sleep(3)
     
         
     def finalize(self, result):
         """"""
-        self.runtime.stop_test()
+        for runtime in self.runtimes:
+            runtime.stop_test()
 
 
 class TestRunner(nose.core.TextTestRunner):

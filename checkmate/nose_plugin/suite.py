@@ -20,21 +20,47 @@ class TestCase(nose.case.Test):
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
+        config_as_dict = self.config.todict()
         if checkmate.runtime.interfaces.IProcedure.providedBy(test):
-            config_as_dict = self.config.todict()
-            test(config_as_dict['system_under_test'], result)
+            if len(config_as_dict['system_under_test_list']) > 0:
+                for sut in config_as_dict['system_under_test_list']:
+                    test(sut, result)
+            else:
+                test(config_as_dict['system_under_test'], result)
         else:
-            test(result)
+            test(result, self.resultProxy)
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
         super(FunctionTestCase, self).__init__(test, **kwargs)
         self.config = config
 
-    def runTest(self):
+    def run(self, result, resultProxy):
+        self.resultProxy = resultProxy
+        if self.resultProxy:
+            result = self.resultProxy(result, self)
+        try:
+            self.runTest(result)
+        except KeyboardInterrupt:
+            raise
+        except:
+            err = sys.exc_info()
+            result.addError(self, err)
+
+    def runTest(self, result):
         """"""
         config_as_dict = self.config.todict()
-        self.test(system_under_test=config_as_dict['system_under_test'])
+        if len(config_as_dict['system_under_test_list']) > 0:
+            for sut in config_as_dict['system_under_test_list']:
+                self.test(sut, result)
+        else:
+            self.test(config_as_dict['system_under_test'], result)
+
+    def shortDescription(self):
+        if hasattr(self.test, 'description'):
+            return self.test.description
+        return str(self)
+
 
 class ContextSuite(nose.suite.ContextSuite):
     """"""
