@@ -57,18 +57,22 @@ class Encoder(object):
 class Connector(checkmate.runtime.communication.Connector):
     communication = pytango.checkmate.runtime.communication.Communication
 
-    def __init__(self, component, internal=False, is_server=False):
+    def __init__(self, component, internal=False, is_server=False, reg_key=None):
         super(Connector, self).__init__(component, internal=internal, is_server=is_server)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
+        if reg_key is not None:
+            self.utility_registry = checkmate.runtime.registry.get_registry(reg_key)
+        else:
+            self.utility_registry = checkmate.runtime.registry.global_registry
         if self.is_server:
-            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            _communication = self.utility_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
                 self.device_name = _communication.create_tango_device('Device_2', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
     def initialize(self):
         if self.is_server:
-            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+            _communication = self.utility_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:
                 _communication.pytango_server.add_class(pytango.component.component_2.C2Interface, Device_2, 'Device_2')
 
@@ -83,7 +87,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.device_server = self.registry.get_device_by_name(self.device_name)
 
     def close(self):
-        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
+        _communication = self.utility_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
         _communication.delete_tango_device(self.device_name)
 
     def receive(self):
