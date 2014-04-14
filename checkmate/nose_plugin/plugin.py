@@ -35,8 +35,8 @@ class Checkmate(nose.plugins.Plugin):
         parser.add_option('--suts', action='store',
                           dest='suts',
                           metavar="COMP1,COMP2",
-                          default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
-                          help="Specify the system under test.")
+                          default=os.getenv('CHECKMATE_RUNTIME_SUTS', ''),
+                          help="Specify the list of system under test. then the list with become combination of elements")
         parser.add_option('--random', action='store_true', default=False,
                           dest='randomized_run',
                           help="Require the tests to be run in random order.")
@@ -68,9 +68,29 @@ class Checkmate(nose.plugins.Plugin):
             self.sut = options.sut.split(',')
         self.suts = []
         if len(options.suts) != 0:
-            _tmp_suts = options.suts.split('-')
-            for _sut in _tmp_suts:
-                self.suts.append(_sut.split(','))
+            suts_list = options.suts.split(',')
+            #define a generator to generate combination from a list
+            def _combinator(s):
+                if len(s) == 1:
+                    def gen(lst):
+                        yield []
+                        yield [lst[0],]
+                else:
+                    def gen(a):
+                        lst = a[:]
+                        item = lst.pop()
+                        for i in _combinator(lst):
+                            b = i[:]
+                            c = i[:]
+                            c.append(item)
+                            yield b
+                            yield c
+                generator = gen(s)
+                return generator
+            for _sut in _combinator(suts_list):
+                if len(_sut) == 0:
+                    continue
+                self.suts.append(_sut)
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.full_python = options.full_python
@@ -91,7 +111,6 @@ class Checkmate(nose.plugins.Plugin):
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
         config_as_dict = self.config.todict()
-        config_as_dict['system_under_test'] = self.sut
         config_as_dict['system_under_test_list'] = self.suts
         self.config.update(config_as_dict)
         checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
@@ -150,15 +169,11 @@ class Checkmate(nose.plugins.Plugin):
     def begin(self):
         """Start the system under test"""
         self.runtimes = []
-        if len(self.suts) > 0:
-            for sut in self.suts:
-                runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
-                runtime.setup_environment(sut)
-                runtime.start_test()
-                self.runtimes.append(runtime)
-        else:
+        if self.sut and len(self.suts) == 0:
+            self.suts.append(self.sut)
+        for sut in self.suts:
             runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
-            runtime.setup_environment(self.sut)
+            runtime.setup_environment(sut)
             runtime.start_test()
             self.runtimes.append(runtime)
         time.sleep(3)

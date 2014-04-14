@@ -1,3 +1,4 @@
+import sys
 import random
 import unittest
 import collections
@@ -22,23 +23,17 @@ class TestCase(nose.case.Test):
             test = plug_test
         config_as_dict = self.config.todict()
         if checkmate.runtime.interfaces.IProcedure.providedBy(test):
-            if len(config_as_dict['system_under_test_list']) > 0:
-                for sut in config_as_dict['system_under_test_list']:
-                    test(sut, result)
-            else:
-                test(config_as_dict['system_under_test'], result)
+            for sut in config_as_dict['system_under_test_list']:
+                test(sut, result)
         else:
-            test(result, self.resultProxy)
+            test(self.resultProxy(result, test))
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
         super(FunctionTestCase, self).__init__(test, **kwargs)
         self.config = config
 
-    def run(self, result, resultProxy):
-        self.resultProxy = resultProxy
-        if self.resultProxy:
-            result = self.resultProxy(result, self)
+    def run(self, result):
         try:
             self.runTest(result)
         except KeyboardInterrupt:
@@ -50,11 +45,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def runTest(self, result):
         """"""
         config_as_dict = self.config.todict()
-        if len(config_as_dict['system_under_test_list']) > 0:
-            for sut in config_as_dict['system_under_test_list']:
-                self.test(sut, result)
-        else:
-            self.test(config_as_dict['system_under_test'], result)
+        for sut in config_as_dict['system_under_test_list']:
+            self.test(sut, result)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
