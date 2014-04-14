@@ -69,9 +69,10 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> registry = checkmate.runtime.registry.get_registry((''.join(['C1']), sample_app.application.TestData))
+        >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2 = registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c3 = registry.getUtility(checkmate.component.IComponent, 'C3')
         >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
         >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
         >>> time.sleep(1)
@@ -98,7 +99,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> r.application.compare_states(proc.initial)
         True
         >>> proc.result = None
-        >>> proc.registry = checkmate.runtime.registry.global_registry
+        >>> proc.registry = registry
         >>> proc._run_from_startpoint(proc.exchanges)
         >>> r.application.compare_states(proc.final)
         True

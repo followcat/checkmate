@@ -54,10 +54,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, internal=False, is_server=False, reg_key=None):
         super(Connector, self).__init__(component, internal=internal, is_server=is_server)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
-        if reg_key is not None:
-            self.utility_registry = checkmate.runtime.registry.get_registry(reg_key)
-        else:
-            self.utility_registry = checkmate.runtime.registry.global_registry
+        self.utility_registry = checkmate.runtime.registry.get_registry(reg_key)
         if self.is_server:
             _communication = self.utility_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
             if type(_communication) == self.communication:

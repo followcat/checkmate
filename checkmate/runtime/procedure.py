@@ -121,7 +121,6 @@ class Procedure(object):
             self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-        self.registry = checkmate.runtime.registry.global_registry
         if self.system_under_test is not None and self.application_class is not None:
             self.registry = checkmate.runtime.registry.get_registry((''.join(self.system_under_test), self.application_class))
         self.application = self.registry.getUtility(checkmate.application.IApplication)

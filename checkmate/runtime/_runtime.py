@@ -84,13 +84,14 @@ class Runtime(object):
             >>> r = checkmate.runtime._runtime.Runtime(ac, cc)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> c2_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+            >>> registry = checkmate.runtime.registry.get_registry((''.join(['C1']), checkmate.test_data.App))
+            >>> c2_stub = registry.getUtility(checkmate.component.IComponent, 'C2')
             >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
             >>> simulated_exchange = a.components['C2'].state_machine.transitions[0].outgoing[0].factory()
             >>> o = c2_stub.simulate(simulated_exchange) # doctest: +ELLIPSIS
-            >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+            >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
             >>> checkmate.runtime.component.IStub.providedBy(c1)
             False
             >>> c1.process(o) # doctest: +ELLIPSIS

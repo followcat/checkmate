@@ -29,9 +29,8 @@ setattr(checkmate.component.Component, 'state_machine', checkmate.state_machine.
 setattr(checkmate.component.Component, 'services', [])
 
 c = checkmate.runtime._pyzmq.Communication()
-gr = checkmate.runtime.registry.global_registry
 r = checkmate.runtime.registry.RuntimeGlobalRegistry()
-checkmate.runtime.registry.global_registry = r
+checkmate.runtime.registry.global_registries_dict['test'] = r
 
 r.registerAdapter(checkmate.runtime.component.ThreadedStub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
 r.registerAdapter(checkmate.runtime.component.ThreadedSut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
@@ -39,8 +38,12 @@ r.registerAdapter(checkmate.runtime.component.ThreadedSut, (checkmate.component.
 r.registerUtility(checkmate.application.Application(), checkmate.application.IApplication)
 
 r.registerUtility(c, checkmate.runtime.interfaces.ICommunication, 'default')
-sa = r.getAdapter(checkmate.component.Component('a'), checkmate.runtime.component.IStub)
-sb = r.getAdapter(checkmate.component.Component('b'), checkmate.runtime.component.ISut)
+component_a = checkmate.component.Component('a')
+component_b = checkmate.component.Component('b')
+setattr(component_a, 'reg_key', 'test')
+setattr(component_b, 'reg_key', 'test')
+sa = r.getAdapter(component_a, checkmate.runtime.component.IStub)
+sb = r.getAdapter(component_b, checkmate.runtime.component.ISut)
 c.initialize(); sa.initialize(); sb.initialize()
 c.start(); sa.start(); sb.start()
 
@@ -48,7 +51,6 @@ e = checkmate.exchange.Exchange()
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 sb.stop(); sa.stop(); c.close()
-checkmate.runtime.registry.global_registry = gr
 """)
         TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/1.2, 2)
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)

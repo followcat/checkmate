@@ -133,7 +133,8 @@ def get_path_from_pathfinder(application, target):
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'
-        >>> checkmate.runtime.registry.global_registry.registerUtility(app, checkmate.application.IApplication)
+        >>> registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
+        >>> registry.registerUtility(app, checkmate.application.IApplication)
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> generator = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for setup in generator:
