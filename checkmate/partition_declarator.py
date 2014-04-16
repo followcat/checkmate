@@ -70,7 +70,7 @@ class Declarator(object):
                     continue
             return partition_attribute
 
-        def get_partition_attribut(signature, partition_type):
+        def get_partition_attribute(signature, partition_type):
             partition_attribute = []
             for class_attr in checkmate._utils.method_arguments(signature).values:
                 partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, class_attr, class_attr))
@@ -97,7 +97,7 @@ class Declarator(object):
         _module = self.module[partition_type]
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
-            partition_attribute = get_partition_attribut(signature, partition_type)
+            partition_attribute = get_partition_attribute(signature, partition_type)
         set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
@@ -110,7 +110,7 @@ class Declarator(object):
         return (interface, partition_storage)
 
     def new_transition(self, item):
-        tran_name, incoming_list, outgoing_list, ts = make_transitionstorage(item, [self.module['exchanges']], [self.module['states']])
+        tran_name, incoming_list, outgoing_list, ts = make_transition_storage(item, [self.module['exchanges']], [self.module['states']])
         t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
         return (incoming_list, outgoing_list, t)
 
@@ -181,8 +181,8 @@ class Declarator(object):
             self.get_transitions()
             return self.output
 
-def name_to_interface(name, module):
-    for _m in module:
+def name_to_interface(name, modules):
+    for _m in modules:
         if hasattr(_m, _to_interface(name)):
             interface = getattr(_m, _to_interface(name))
             break
@@ -190,7 +190,7 @@ def name_to_interface(name, module):
         raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
     return interface
 
-def make_transitionstorage(item, exchanges, state_modules):
+def make_transition_storage(item, exchanges, state_modules):
     initial_state = []
     input = []
     output = []
@@ -233,4 +233,4 @@ def make_transitionstorage(item, exchanges, state_modules):
     return (tran_name, incoming_list, outgoing_list, ts)
 
 def get_procedure_transition(item, exchanges, state_modules):
-    return make_transitionstorage(item, [exchanges], state_modules)[3]
+    return make_transition_storage(item, [exchanges], state_modules)[3]
