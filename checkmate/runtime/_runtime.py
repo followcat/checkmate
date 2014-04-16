@@ -65,6 +65,7 @@ class Runtime(object):
 
         import time; time.sleep(1)
         for (communication, type) in self.communication_list:
+            setattr(communication, 'reg_key', self.reg_key)
             communication.initialize()
 
         for name in self.application.stubs + self.application.system_under_test:

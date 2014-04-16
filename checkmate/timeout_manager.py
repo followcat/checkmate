@@ -29,6 +29,7 @@ setattr(checkmate.component.Component, 'state_machine', checkmate.state_machine.
 setattr(checkmate.component.Component, 'services', [])
 
 c = checkmate.runtime._pyzmq.Communication()
+c.reg_key = ('test_code',)
 r = checkmate.runtime.registry.RuntimeGlobalRegistry()
 checkmate.runtime.registry.global_registries_dict['test'] = r
 
