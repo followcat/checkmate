@@ -32,11 +32,11 @@ class Checkmate(nose.plugins.Plugin):
                           metavar="COMP1,COMP2",
                           default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
                           help="Specify the system under test.")
-        parser.add_option('--suts', action='store',
-                          dest='suts',
+        parser.add_option('--components', action='store',
+                          dest='components',
                           metavar="COMP1,COMP2",
-                          default=os.getenv('CHECKMATE_RUNTIME_SUTS', ''),
-                          help="Specify the list of system under test. then the list with become combination of elements")
+                          default=os.getenv('CHECKMATE_RUNTIME_COMPONENTS', ''),
+                          help="Specify the list of components. then the list will become combination of suts")
         parser.add_option('--random', action='store_true', default=False,
                           dest='randomized_run',
                           help="Require the tests to be run in random order.")
@@ -66,9 +66,9 @@ class Checkmate(nose.plugins.Plugin):
         nose.plugins.Plugin.configure(self, options, config)
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
-        self.suts = []
-        if len(options.suts) != 0:
-            suts_list = options.suts.split(',')
+        self.components = []
+        if len(options.components) != 0:
+            components_list = options.components.split(',')
             #define a generator to generate combination from a list
             def _combinator(s):
                 if len(s) == 1:
@@ -87,10 +87,18 @@ class Checkmate(nose.plugins.Plugin):
                             yield c
                 generator = gen(s)
                 return generator
-            for _sut in _combinator(suts_list):
+            for _sut in _combinator(components_list):
                 if len(_sut) == 0:
                     continue
-                self.suts.append(_sut)
+                is_inserted = False
+               #create a list with order of the length of items from short to long
+                for item in self.components:
+                    if len(_sut) < len(item):
+                        self.components.insert(self.components.index(item), _sut)
+                        is_inserted = True
+                        break
+                if not is_inserted:
+                    self.components.append(_sut)
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.full_python = options.full_python
@@ -111,7 +119,7 @@ class Checkmate(nose.plugins.Plugin):
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
         config_as_dict = self.config.todict()
-        config_as_dict['system_under_test_list'] = self.suts
+        config_as_dict['system_under_test_list'] = self.components
         self.config.update(config_as_dict)
         checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
         loader.suiteClass=checkmate.nose_plugin.ContextSuiteFactory(config=self.config,
@@ -169,9 +177,9 @@ class Checkmate(nose.plugins.Plugin):
     def begin(self):
         """Start the system under test"""
         self.runtimes = []
-        if self.sut and len(self.suts) == 0:
-            self.suts.append(self.sut)
-        for sut in self.suts:
+        if self.sut and len(self.components) == 0:
+            self.components.append(self.sut)
+        for sut in self.components:
             runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
             runtime.setup_environment(sut)
             runtime.start_test()
