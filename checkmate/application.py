@@ -87,20 +87,20 @@ class Application(object):
         for data in _output['transitions']:
             self.initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(data, self.exchange_module, state_modules))
 
+
     def compare_states(self, target):
         """"""
-        matching = 0
+        if len(target) == 0:
+            return True
+
+        local_copy = []
+        for _component in list(self.components.values()):
+            local_copy += [_s for _s in _component.states]
+
         for _target in target:
-            for _component in list(self.components.values()):
-                try:
-                    #Assume at most one state of component implements interface
-                    _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
-                    if _state == _target.factory():
-                        matching += 1
-                        break
-                    else:
-                        break
-                except IndexError:
-                        continue
-        return matching == len(target)
+            _length = len(local_copy)
+            local_copy = _target.match(local_copy)
+            if len(local_copy) == _length:
+                return False
+        return True
 

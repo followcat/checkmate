@@ -46,16 +46,10 @@ class Transition(object):
         """
         if len(self.incoming) != 0:
             local_copy = list(exchange_list)
+            _length = len(local_copy)
             for incoming_exchange in self.incoming:
-                found = False
-                _interface = incoming_exchange.interface
-                for _exchange in [_e for _e in local_copy if _interface.providedBy(_e)]:
-                    obj = incoming_exchange.factory()
-                    if _exchange == obj:
-                        local_copy.remove(_exchange)
-                        found = True
-                        break
-                if not found:
+                local_copy = incoming_exchange.match(local_copy)
+                if len(local_copy) == _length:
                     return False
             return len(local_copy) == 0
         else:
@@ -81,14 +75,7 @@ class Transition(object):
         if len(exchange_list) != 0:
             local_copy = list(exchange_list)
             for outgoing_exchange in self.outgoing:
-                found = False
-                _interface = outgoing_exchange.interface
-                for _exchange in [_e for _e in local_copy if _interface.providedBy(_e)]:
-                    obj = outgoing_exchange.factory()
-                    if _exchange == obj:
-                        local_copy.remove(_exchange)
-                        found = True
-                        break
+                local_copy = outgoing_exchange.match(local_copy)
             return len(local_copy) == 0
         else:
             return True
@@ -115,15 +102,9 @@ class Transition(object):
             return True
         local_copy = list(state_list)
         for _k in self.initial:
-            found = False
-            _interface = _k.interface
-            for _state in [_s for _s in local_copy if _interface.providedBy(_s)]:
-                obj = _k.factory()
-                if _state == obj:
-                    found = True
-                    local_copy.remove(_state)
-                    break
-            if not found:
+            _length = len(local_copy)
+            local_copy = _k.match(local_copy)
+            if len(local_copy) == _length:
                 return False
         # Do not check len(local_copy) as some state_list are not in self.initial
         return True

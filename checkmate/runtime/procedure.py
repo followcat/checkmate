@@ -71,8 +71,9 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, test=None):
+    def __init__(self, test=None, is_setup=False):
         self.test = test
+        self.is_setup = is_setup
         self.components = []
         self.tran_dict = {}
         self.logger = logging.getLogger('checkmate.runtime.procedure')
@@ -83,7 +84,7 @@ class Procedure(object):
         self.system_under_test = system_under_test
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
-        if not self._components_match_sut(self.system_under_test):
+        if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
@@ -96,110 +97,12 @@ class Procedure(object):
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
             return
-        for (_procedure, *others) in checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial):
-             _procedure(system_under_test=self.system_under_test)
-        if not self.application.compare_states(self.initial):
-            self.transform_to_initial()
+        path = checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial)
+        if len(path) == 0:
+            return _compatible_skip_test(self, "Can't find a path to inital state")
+        for _procedure in path:
+            _procedure(system_under_test=self.system_under_test)
 
-    def check_alwaysrun_transition(self,transition):
-        match = False
-        if len(transition.initial) != len(transition.final):
-            return match
-        for _i, _initial in enumerate(transition.initial):
-            if _initial.factory() != transition.final[_i].factory():
-                match = False
-                break
-            else:
-                match = True
-        return match
-
-    def get_transition_from_itp(self, target, current,correct_way = None):
-        """
-        >>> import checkmate.test_data
-        >>> import sample_app.application
-        >>> import checkmate.runtime._pyzmq
-        >>> import checkmate.runtime._runtime
-        >>> import checkmate.runtime.test_plan
-        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
-        >>> r.setup_environment(['C1'])
-        >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
-        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> procedures = []
-        >>> for p in gen: procedures.append(p[0])
-        >>> p11 = procedures[0]
-        >>> p22 = procedures[1]
-        >>> p33 = procedures[2]
-        >>> p44 = procedures[3]
-        >>> states = []
-        >>> states.extend(c1.context.states)
-        >>> states.extend(c3.context.states)
-        >>> states[0].value, states[1].value, states[2].value
-        ('True', [], 'False')
-        >>> _transitions = p44.get_transition_from_itp(p44.initial, states)
-        >>> for _t in _transitions:
-        ...     print(_t.incoming[0].code, end=',')
-        ...     
-        AC,RL,
-        >>> p44(r.application.system_under_test)
-        >>> r.stop_test()
-        """
-        final_match = False
-        #Default parameter values are evaluated when the function definition is executed.
-        #This means that the expression is evaluated once, when the function is defined, and that that same “pre-computed” value is used for each call.
-        #This is especially important to understand when a default parameter is a mutable object, such as a list or a dictionary:
-        #if the function modifies the object (e.g. by appending an item to a list), the default value is in effect modified.
-        #This is generally not what was intended. A way around this is to use None as the default, and explicitly test for it in the body of the function
-        if correct_way is None:
-            correct_way = []
-
-        for _t in target:
-            for _c in current:
-                try:
-                    _current = [_c for _c in current if _t.interface.providedBy(_c)].pop(0)
-                    if _current != _t.factory():
-                        final_match = False
-                    else:
-                        final_match = True
-                    break
-                except IndexError:
-                    continue
-            if not final_match:
-                break
-
-        if final_match:
-            return correct_way
-
-        for _t in self.itp_transitions:
-            if self.check_alwaysrun_transition(_t):
-                continue
-            matching = False
-            for _i in _t.initial:
-                try:
-                    _current = [_c for _c in current if _i.interface.providedBy(_c)].pop(0)
-                    if _current != _i.factory():
-                        matching = False
-                        break
-                    else:
-                        matching = True
-                except IndexError:
-                    continue    
-            if matching:
-                for _f in _t.final:
-                    try:
-                        _s = [_s for _s in range(len(current)) if _f.interface.providedBy(current[_s])].pop(0)
-                        if current[_s] != _f.factory():
-                            current[_s] = _f.factory()
-                    except IndexError:
-                        continue
-                correct_way.append(_t)
-                if self.get_transition_from_itp(target,current,correct_way) is not None:
-                    return correct_way
-                else:
-                    correct_way.pop()
-        
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and
             node.root.origin != '' and
@@ -235,7 +138,8 @@ class Procedure(object):
             except ValueError:
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
-        self.logger.info('Procedure Done')
+        if not self.is_setup:
+            self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
         if self.result is not None:
