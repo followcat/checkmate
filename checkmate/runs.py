@@ -63,16 +63,15 @@ class TransitionTree(checkmate._tree.Tree):
         return False
 
 class RunCollection(list):
-    def build_trees_from_application(self, application_class):
+    def build_trees_from_application(self, application):
         """
             >>> import sample_app.application
             >>> import checkmate.runs
             >>> runs = checkmate.runs.RunCollection()
-            >>> runs.build_trees_from_application(sample_app.application.TestData)
+            >>> runs.build_trees_from_application(sample_app.application.TestData())
             >>> len(runs)
             3
         """
-        application = application_class()
         for _component in list(application.components.values()):
             for _transition in _component.state_machine.transitions:
                 _tree = TransitionTree(_transition)

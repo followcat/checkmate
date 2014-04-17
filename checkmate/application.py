@@ -44,6 +44,13 @@ class Application(object):
         self.name = self.__module__.split('.')[-2]
         self.communication_list = ()
 
+    def __getattr__(self, name):
+        if name == 'run_collection':
+            setattr(self, 'run_collection', checkmate.runs.RunCollection())
+            self.run_collection.build_trees_from_application(self)
+            return self.run_collection
+        super().__getattr__(self, name)
+
     def start(self):
         """
         """

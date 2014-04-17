@@ -19,7 +19,7 @@ def get_path_from_pathfinder(application, target):
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
         >>> runs = checkmate.runs.RunCollection()
-        >>> runs.build_trees_from_application(_class)
+        >>> runs.build_trees_from_application(_class())
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.AC()
@@ -49,8 +49,7 @@ def _find_runs(application, target):
         >>> import checkmate.runtime.test_plan
         >>> import checkmate.runtime.pathfinder
         >>> a = sample_app.application.TestData()
-        >>> runs = checkmate.runs.RunCollection()
-        >>> runs.build_trees_from_application(type(a))
+        >>> runs = a.run_collection
         >>> ac_run = [r for r in runs if r.root.outgoing[0].code == 'AC'][0]
         >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'RL'][0]
 
@@ -73,9 +72,7 @@ def _find_runs(application, target):
         3
 
     """
-    runs = checkmate.runs.RunCollection()
-    runs.build_trees_from_application(type(application))
-    used_runs = _next_run(application, target, runs, collections.OrderedDict())
+    used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
     return used_runs
 
 def _next_run(application, target, runs, used_runs):
