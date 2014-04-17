@@ -1,5 +1,9 @@
+import os.path
+
+import checkmate._tree
 import checkmate.sandbox
 import checkmate.test_data
+import checkmate.parser.dtvisitor
 import checkmate.runtime.procedure
 import checkmate.parser.feature_visitor
 
@@ -8,6 +12,43 @@ def build_procedure(sandbox):
     proc = checkmate.runtime.procedure.Procedure()
     sandbox.fill_procedure(proc)
     return proc
+
+def get_origin_component(exchange, components):
+    for _c in components:
+        if exchange.action in _c.outgoings:
+            return _c
+
+def get_transitions_from_test(application, file_type):
+    """
+        >>> import checkmate.test_data
+        >>> import checkmate.runtime.test_plan
+        >>> a = checkmate.test_data.App()
+        >>> checkmate.runtime.test_plan.get_transitions_from_test(a, "itp") #doctest: +ELLIPSIS 
+        [<checkmate.transition.Transition object at ...
+        >>> checkmate.runtime.test_plan.get_transitions_from_test(a, "feature") #doctest: +ELLIPSIS 
+        [<checkmate.transition.Transition object at ...
+    """
+
+    if file_type not in ["itp", "feature"]:
+        return []
+    exchange_module = application.exchange_module
+    state_modules = []
+    for name in list(application.components.keys()):
+            state_modules.append(application.components[name].state_module)
+    path = os.path.dirname(exchange_module.__file__)
+    array_list = []
+    if file_type == "itp":
+        with open(os.sep.join([path, "itp.rst"]), 'r') as _file:
+            matrix = _file.read()
+        _output = checkmate.parser.dtvisitor.call_visitor(matrix)
+        for data in _output['transitions']:
+            array_list.append(data['array_items'])
+    if file_type == "feature":
+        array_list = checkmate.parser.feature_visitor.get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
+    transitions = []
+    for array_items in array_list:
+        transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
+    return transitions
 
 
 def _initial_generator_doctest():
@@ -53,8 +94,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    _application.get_initial_transitions()
-    transition_list = _application.initial_transitions
+    transition_list = get_transitions_from_test(_application, "itp")
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
