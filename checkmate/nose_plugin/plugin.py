@@ -99,6 +99,8 @@ class Checkmate(nose.plugins.Plugin):
                         break
                 if not is_inserted:
                     self.components.append(_sut)
+        if self.sut and len(self.components) == 0:
+            self.components.append(self.sut)
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.full_python = options.full_python
@@ -118,9 +120,6 @@ class Checkmate(nose.plugins.Plugin):
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
-        config_as_dict = self.config.todict()
-        config_as_dict['system_under_test_list'] = self.components
-        self.config.update(config_as_dict)
         checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
         loader.suiteClass=checkmate.nose_plugin.ContextSuiteFactory(config=self.config,
                                         suiteClass=checkmate.nose_plugin.ContextSuite)
@@ -131,6 +130,7 @@ class Checkmate(nose.plugins.Plugin):
         """Replace test runner with TestRunner.
         """
         TestRunner.loop_runs = self.loop_runs
+        TestRunner.components = self.components
 
     def wantClass(self, cls):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
@@ -177,8 +177,6 @@ class Checkmate(nose.plugins.Plugin):
     def begin(self):
         """Start the system under test"""
         self.runtimes = []
-        if self.sut and len(self.components) == 0:
-            self.components.append(self.sut)
         for sut in self.components:
             runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
             runtime.setup_environment(sut)
@@ -195,6 +193,7 @@ class Checkmate(nose.plugins.Plugin):
 
 class TestRunner(nose.core.TextTestRunner):
     loop_runs = 1
+    components = ""
 
     def run(self, test):
         """Overrides to provide plugin hooks and defer all output to
@@ -213,8 +212,14 @@ class TestRunner(nose.core.TextTestRunner):
         start = time.time()
 
         #specific code
-        for _loop in range(self.loop_runs):
-            test(result)
+        for _sut in self.components:
+            #do some dirty print
+            result.stream.writeln("sut="+','.join(_sut) + ":")
+            setattr(test.config, 'system_under_test', _sut)
+            for _loop in range(self.loop_runs):
+                test(result)
+            if self.components.index(_sut) < len(self.components)-1:
+                result.stream.writeln()
 
         #from father class code
         stop = time.time()
