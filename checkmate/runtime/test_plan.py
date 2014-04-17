@@ -3,7 +3,7 @@ import os.path
 import checkmate._tree
 import checkmate.sandbox
 import checkmate.test_data
-import checkmate.parser.dtvisitor
+import checkmate.parser.yaml_visitor
 import checkmate.runtime.procedure
 import checkmate.parser.feature_visitor
 
@@ -38,11 +38,11 @@ def get_transitions_from_test(application, file_type):
     path = os.path.dirname(exchange_module.__file__)
     array_list = []
     if file_type == "itp":
-        with open(os.sep.join([path, "itp.rst"]), 'r') as _file:
+        with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
             matrix = _file.read()
-        _output = checkmate.parser.dtvisitor.call_visitor(matrix)
+        _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
         for data in _output['transitions']:
-            array_list.append(data['array_items'])
+            array_list.append(data)
     if file_type == "feature":
         array_list = checkmate.parser.feature_visitor.get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
     transitions = []
