@@ -1,0 +1,54 @@
+---
+title: "Data structure"
+data:
+  - Definition and accessibility: 'Attribute'
+    Value partitions:
+    # [Partition,   State,      Valid value,        Comment]
+    - [D-ATTR-01,   A0('AT1'),  AT1 valid value,    AT1 attribute value]
+    - [D-ATTR-02,   A0('AT2'),  AT2 valid value,    AT2 attribute value]
+
+  - Definition: 'ActionPriority'
+    Value partitions:
+    # [Partition,   State,      Valid value,         Comment]
+    - [D-PRIO-01,   P0('NORM'),  NORM valid value,   NORM priority value]
+    - [D-PRIO-02,   P0('HIGH'),  HIGH valid value,   HIGH priority value]
+
+  - Definition: 'ActionRequest(P=ActionPriority, A=Attribute)'
+---
+title: "Exchange identification"
+data:
+  - Definition and accessibility: 'Action(R=ActionRequest)'
+    Value partitions:
+    # [Partition,     State,  Valid value,    Comment]
+    - [X-ACTION-01,   AC(),   Action action,  Comment AC action]
+    - [X-ACTION-02,   AP(R),  Append action,  Comment AP action]
+    - [X-ACTION-03,   PP(R),  Pop action,     Comment PP action]
+
+  - Definition and accessibility: 'Reaction'
+    Value partitions:
+    # [Partition,       State,    Valid value,        Comment]
+    - [X-REACTION-01,   RE(),     Valid reaction,     Comment]
+    - [X-REACTION-02,   RL(),     Release reaction,   Comment]
+
+  - Definition and accessibility: 'AnotherReaction'
+    Value partitions:
+    # [Partition,       State,  Valid value,        Comment]
+    - [X-ANOREACT-01,   ARE(),  Valid ano-reaction, Comment]
+
+  - Definition and accessibility: 'ThirdReaction'
+    Value partitions:
+    # [Partition,       State,  Valid value,        Comment]
+    - [X-THRDREACT-01,  DR(),   Valid thd-reaction, Comment]
+
+  - Definition and accessibility: 'Pause'
+    Value partitions:
+    # [Partition,   State, Valid value,   Comment]
+    - [X-PAUSE-01,  PA(),  Valid pause,   Comment]
+
+  - Definition and accessibility: 'ThirdAction'
+    Type of data: "Description"
+    Exchange: [component 1,component 2,third action]
+    Value partitions:
+    # [Partition,       State,  Valid value,            Comment]
+    - [X-THRDACT-01,    AL(),   Third action valid 1,   Third action first valid value]
+    - [X-THRDACT-02,    DA(),   Third action valid 2,   Third action second valid value]

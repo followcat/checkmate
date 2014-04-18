@@ -58,7 +58,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
         """
         super(TestData, self).__init__(full_python)
 
-        #can only be loaded after application exchanges.rst is parsed by metaclass
+        #can only be loaded after application exchanges.yaml is parsed by metaclass
         import sample_app.component_1.component
         import sample_app.component_2.component
         import sample_app.component_3.component

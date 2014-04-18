@@ -14,34 +14,37 @@ The consolidated flows of exchange in the sample application are represented in 
                  C1: True, Q()                       C1:                                 C1: False, Q(R)
                  C2:                                 C2:                                 C2: 
                  C3: False                           C3: True                            C3: False
-                |                                   |                                   |   
-                |C2                                 | C2                                | C2
-                |                                   |                                   |
+
              +------+                            +------+                            +------+  
-             |  AC  |< C1 is True                |  RL  |< C3 is True                |  PP  |< C1 is False
-             +------+                            +------+                            +------+  C1 is Q
+             |  C2  |                            |  C2  |                            |  C2  |
+             +------+                            +------+                            +------+
                 |                                   |                                   |
-                |C1: False, Q()                     |C3:toggle()                        |C1: toggle(), Q.pop()
-        +---------------+                           |                          +----------------+   
-        |               |                        +------+                      |                |
-    +------+         +------+                    |  DR  |                   +------+         +------+ 
-    |  RE  |< C3 is  | ARE  |                    +------+                   |  PA  |< C3 is  |  PA  |         
-    +------+  False  +------+                       |                       +------+  False  +------+    
-        |               |                           |C2                        |                |           
-        |C3: toggle()   |C2                         |                          |C3: False       |C2               
-                        |                            C1:                       |                |
-                     +------+                        C2:                            C1: True, Q()
-                     |  AP  |< C1 is Q               C3: False                      C2:
-                     +------+                                                       C3: False
+                | AC                                | RL                                | PP 
+                |                                   |                                   |    
+             +------+                            +------+                            +------+  
+             |  C1  | < C1 is True               |  C3  | < C3 is True               |  C1  | < C1 is False
+             +------+ > False, Q()               +------+ > toggle()                 +------+   C1 is Q  
+                |                                   |                                   |     > toggle(), Q.pop()
+        +---------------+                           | DR                       +----------------+   
+        |               |                           |                          |                |
+        | RE            | ARE                    +------+                      | PA             | PA
+        |               |                        |  C2  |                      |                |
+    +------+         +------+                    +------+                   +------+         +------+ 
+    |  C3  | < C3 is |  C2  |                                               |  C3  | < C3 is |  C2  |         
+    +------+   False +------+                        C1:                    +------+   False +------+    
+             > toggle() |                            C2:                             > False 
+                        | AP                         C3: False                                   C1: True, Q()  
+                        |                                                                        C2:
+                     +------+                                                                    C3: False  
+                     |  C1  | < C1 is Q               
+                     +------+ > Q.append()                                                                                
                         |                 
-                        |C1: Q.append()   
+                        | DA
                         |                 
                      +------+                                         
-                     |  DA  |                            
+                     |  C2  |                            
                      +------+                            
-                        |                                   
-                        | C2                                   
-                        |
+
                          C1: False, Q(R)
                          C2:
                          C3: True
