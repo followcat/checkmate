@@ -22,7 +22,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             'AP'
             >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
             'DA'
-            >>> proc(result=None, system_under_test=['C1'])
+            >>> proc(result=None, runtime=r)
             >>> r.stop_test()
         """
         super(TestProcedureRun1Threaded, self).__init__(application_class, test)

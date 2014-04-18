@@ -82,7 +82,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> proc = procedures[0]
         >>> r.application.compare_states(proc.initial)
         False
-        >>> proc(['C1'])
+        >>> proc(r)
         >>> r.stop_test()
 
     """
@@ -136,7 +136,7 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     procedures.append(p[0])
         >>> proc = procedures[0]
-        >>> proc(system_under_test=['C1'])
+        >>> proc(r)
         >>> r.stop_test()
     """
     _application = application_class()
