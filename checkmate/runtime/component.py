@@ -159,8 +159,17 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def _create_client(self, component, connector_factory, internal=False, reading_client=True, is_server=False):
         _socket = self.zmq_context.socket(zmq.PULL)
         port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        _client = checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port,
-                                                       internal=internal, sender_socket=reading_client, is_server=is_server, reg_key=self.context.reg_key)
+        if self.context.reg_key is not None:
+            _registry = checkmate.runtime.registry.get_registry(self.context.reg_key)
+        else:
+            _registry = checkmate.runtime.registry.global_registry
+        if internal:
+            _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, 'default')
+        else:
+            _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, '')
+        _connector = connector_factory(component, _communication, is_server)
+        _client = checkmate.runtime.client.ThreadedClient(component=component, connector=_connector, address="tcp://127.0.0.1:%i"%port,
+                                                       sender_socket=reading_client)
         if reading_client:
             self.poller.register(_socket, zmq.POLLIN)
         else:
@@ -212,7 +221,7 @@ class ThreadedSut(ThreadedComponent, Sut):
 
         if hasattr(component, 'launch_command'):
             for connector in self.context.connector_list:
-                connector.communication(self.context)
+                connector.communication_class(self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
 

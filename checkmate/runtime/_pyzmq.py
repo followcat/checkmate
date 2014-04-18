@@ -6,9 +6,7 @@ import zmq
 import socket
 
 import checkmate.logger
-import checkmate.runtime.registry
 import checkmate.runtime._threading
-import checkmate.runtime.interfaces
 import checkmate.runtime.communication
 
 
@@ -68,9 +66,9 @@ class Encoder(object):
 
 class Connector(checkmate.runtime.communication.Connector):
     """"""
-    communication = Communication
-    def __init__(self, component, internal=False, is_server=False, reg_key=None):
-        super(Connector, self).__init__(component, internal=internal, is_server=is_server)
+    communication_class = Communication
+    def __init__(self, component, communication=None, is_server=False):
+        super(Connector, self).__init__(component, communication=communication, is_server=is_server)
         self._name = component.name
         self.port = -1
         self.socket = None
@@ -78,16 +76,8 @@ class Connector(checkmate.runtime.communication.Connector):
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self._initport = -1
-        if reg_key is not None:
-            _registry = checkmate.runtime.registry.get_registry(reg_key)
-        else:
-            _registry = checkmate.runtime.registry.global_registry
-        if internal:
-            _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, 'default')
-        else:
-            _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, '')
-        if type(_communication) == self.communication:
-            self._initport = _communication.get_initport()
+        if type(self.communication) == self.communication_class:
+            self._initport = self.communication.get_initport()
 
     def initialize(self):
         super(Connector, self).initialize()
