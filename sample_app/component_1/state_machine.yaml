@@ -1,0 +1,61 @@
+---
+title: "State identification"
+data:
+  - Definition and accessibility: 'State'
+    Value partitions:
+    # [Partition,   State,          Valid value,        Comment]
+    - [S-STATE-01,  M0(True),       True valid value,   State true value]
+    - [S-STATE-02,  M0(False),      False valid value,  State false value]
+
+    Standard methods:
+    # [Method, Comment]
+    - [toggle, Toggle component state]
+
+  - Definition and accessibility: 'AnotherState'
+    Value partitions:
+    # [Partition,   State,      Valid value,        Comment]
+    - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
+    - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
+
+    Standard methods:
+    # [Method,  Comment]
+    - [append,  Append element to state]
+    - [pop,     Pop element from state]
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: 'Toggle state tran01'
+        initial: 
+          - State:            M0(True)
+        incoming:
+          - Action:           AC()
+        final:
+          - State:            M0(False)
+        outgoing:
+          - Reaction:         RE()
+          - AnotherReaction:  ARE()
+
+  - Transitions:
+      - name: 'Append element ok tran01'
+        initial: 
+          - AnotherState:     Q0()
+        incoming:
+          - Action:           AP(R)
+        final:
+          - AnotherState:     Q0.append(R)
+        outgoing:
+          - ThirdAction:      DA()
+
+  - Transitions:
+      - name: 'Append element ok tran02'
+        initial: 
+          - State:            M0(False)
+          - AnotherState:     Q0()
+        incoming:
+          - Action:           PP()
+        final:
+          - State:            M0(True)
+          - AnotherState:     Q0.pop()
+        outgoing:
+          - Pause:            PA()

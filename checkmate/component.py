@@ -14,7 +14,7 @@ class ComponentMeta(type):
         exchange_module = namespace['exchange_module']
 
         path = os.path.dirname(state_module.__file__)
-        filename = 'state_machine.rst'
+        filename = 'state_machine.yaml'
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
         try:

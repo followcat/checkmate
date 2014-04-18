@@ -6,7 +6,7 @@ import zope.interface
 import checkmate._utils
 import checkmate.exchange
 import checkmate.data_structure
-import checkmate.parser.dtvisitor
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -16,7 +16,7 @@ class ApplicationMeta(type):
         exchange_module = namespace['exchange_module']
 
         path = os.path.dirname(exchange_module.__file__)
-        filename = 'exchanges.rst'
+        filename = 'exchanges.yaml'
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
         try:
@@ -69,18 +69,17 @@ class Application(object):
 
     def compare_states(self, target):
         """"""
-        matching = 0
+        if len(target) == 0:
+            return True
+
+        local_copy = []
+        for _component in list(self.components.values()):
+            local_copy += [_s for _s in _component.states]
+
         for _target in target:
-            for _component in list(self.components.values()):
-                try:
-                    #Assume at most one state of component implements interface
-                    _state = [_s for _s in _component.states if _target.interface.providedBy(_s)].pop(0)
-                    if _state == _target.factory():
-                        matching += 1
-                        break
-                    else:
-                        break
-                except IndexError:
-                        continue
-        return matching == len(target)
+            _length = len(local_copy)
+            local_copy = _target.match(local_copy)
+            if len(local_copy) == _length:
+                return False
+        return True
 

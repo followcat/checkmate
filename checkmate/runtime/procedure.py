@@ -97,10 +97,11 @@ class Procedure(object):
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
             return
-        for (_procedure, *others) in checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial):
-             _procedure(system_under_test=self.system_under_test)
-        if not self.application.compare_states(self.initial):
-            self.transform_to_initial()
+        path = checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial)
+        if len(path) == 0:
+            return _compatible_skip_test(self, "Can't find a path to inital state")
+        for _procedure in path:
+            _procedure(system_under_test=self.system_under_test)
 
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and

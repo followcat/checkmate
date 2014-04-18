@@ -30,16 +30,18 @@ def get_path_from_pathfinder(application, target):
         'True'
         >>> checkmate.runtime.registry.global_registry.registerUtility(app, checkmate.application.IApplication)
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
-        >>> generator = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
-        >>> for setup in generator:
-        ...     print(setup[0].exchanges.root.action, app.compare_states(setup[0].initial))
+        >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
+        >>> for _s in setup:
+        ...     print(_s.exchanges.root.action, app.compare_states(_s.initial))
         RL True
         PP False
     """
+    path = []
     for _run, _app in _find_runs(application, target).items():
         proc = checkmate.runtime.procedure.Procedure(is_setup=True)
         _app.fill_procedure(proc)
-        yield (proc, )
+        path.append(proc)
+    return path
 
 def _find_runs(application, target):
     """

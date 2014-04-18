@@ -5,12 +5,66 @@ import zope.interface
 import checkmate._utils
 import checkmate._storage
 import checkmate.transition
-import checkmate.parser.dtvisitor
+import checkmate.parser.yaml_visitor
 
 
 def _to_interface(_classname):
-    return 'I'+_classname
+    return 'I' + _classname
 
+def name_to_interface(name, modules):
+    for _m in modules:
+        if hasattr(_m, _to_interface(name)):
+            interface = getattr(_m, _to_interface(name))
+            break
+    else:
+        raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
+    return interface
+
+def get_procedure_transition(item, exchanges, state_modules):
+    return make_transition(item, [exchanges], state_modules)[2]
+
+def make_transition(item, exchanges, state_modules):
+    initial_state = []
+    input = []
+    output = []
+    final = []
+    incoming_list = []
+    outgoing_list = []
+    module_dict = { 'states':state_modules,
+                    'exchanges':exchanges   }
+    try:
+        tran_name = item['name']
+    except KeyError:
+        tran_name = 'unknown'
+
+    for _k, _v in item.items():
+        if _k == 'initial' or _k == 'final':
+            module_type = 'states'
+        elif _k == 'incoming' or _k == 'outgoing':
+            module_type = 'exchanges'
+        elif _k == 'name':
+            continue
+        for each_item in _v:
+            for _name, _data in each_item.items():
+                interface = name_to_interface(_name, module_dict[module_type])
+                storage_data = checkmate._storage.Data(module_type, interface, [_data])
+                if _k == 'initial':
+                    initial_state.append(storage_data)
+                elif _k == 'final':
+                    final.append(storage_data)
+                elif _k == 'incoming':
+                    input.append(storage_data)
+                    if interface not in incoming_list:
+                        incoming_list.append(interface)
+                elif _k == 'outgoing':
+                    output.append(storage_data)
+                    action = checkmate._utils.internal_code(_data)
+                    if action not in outgoing_list:
+                        outgoing_list.append(action)
+
+    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
+    t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
+    return (incoming_list, outgoing_list, t)
 
 class Declarator(object):
     def __init__(self, data_module, state_module=None, exchange_module=None,
@@ -26,7 +80,7 @@ class Declarator(object):
         self.basic_modules['exchanges'] = [data_module, state_module]
         self.content = content
         if self.content is not None:
-            self.data_source = checkmate.parser.dtvisitor.call_visitor(self.content)
+            self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content)
         self.output = {}
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
@@ -59,111 +113,59 @@ class Declarator(object):
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
+        def set_partition_arguments(partition_type, standard_methods, key, value):
+            partition_attribute = []
+            for _module in self.basic_modules[partition_type]:
+                try:
+                    interface = getattr(_module, _to_interface(value))
+                    standard_methods.update({key: checkmate._storage.store(partition_type, interface, value)})
+                    partition_attribute.append(key)
+                    break
+                except AttributeError:
+                    continue
+            return partition_attribute
+
+        def get_partition_attribute(signature, partition_type):
+            partition_attribute = []
+            for class_attr in checkmate._utils.method_arguments(signature).values:
+                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, class_attr, class_attr))
+            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
+                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, key, class_kwattr[0][0]))
+            return partition_attribute
+
+        def set_standard_methods(_module, classname, codes, partition_attribute):
+            standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
+                                     'partition_attribute': tuple(partition_attribute)})
+            setattr(_module, classname, _module.declare(classname, standard_methods))
+            setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
+            zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
+
+        def set_exchanges_codes(partition_type, _module, codes, cls):
+            if partition_type == 'exchanges':
+                for code in codes:
+                    if checkmate._utils.is_method(code):
+                        internal_code = checkmate._utils.internal_code(code)
+                        setattr(_module, internal_code, functools.partial(cls, internal_code))
+
         partition_attribute = []
+        classname = signature
+        _module = self.module[partition_type]
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
-            for class_attr in checkmate._utils.method_arguments(signature).values:
-                for _module in self.basic_modules[partition_type]:
-                    try:
-                        interface = getattr(_module, _to_interface(class_attr))
-                        standard_methods.update({class_attr: checkmate._storage.store(partition_type, interface, class_attr)})
-                        partition_attribute.append(class_attr)
-                        break
-                    except AttributeError:
-                        continue
-            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
-                for _module in self.basic_modules[partition_type]:
-                    try:
-                        # class_kwattr[0][0] to get the classname from source string
-                        interface = getattr(_module, _to_interface(class_kwattr[0][0]))
-                        standard_methods.update({key: checkmate._storage.store(partition_type, interface, class_kwattr[0][0])})
-                        partition_attribute.append(key)
-                        break
-                    except AttributeError:
-                        continue
-        else:
-            classname = signature
-
-        _module = self.module[partition_type]
-        standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
-                                 'partition_attribute': tuple(partition_attribute)})
-        setattr(_module, classname, _module.declare(classname, standard_methods))
-        setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
-        zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
+            partition_attribute = get_partition_attribute(signature, partition_type)
+        set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
         cls = checkmate._utils.get_class_implementing(interface)
-        for code in codes:
-            if ((partition_type == 'exchanges') and (checkmate._utils.is_method(code))):
-                setattr(_module, checkmate._utils.internal_code(code), functools.partial(cls, checkmate._utils.internal_code(code)))
+        set_exchanges_codes(partition_type, _module, codes, cls)
 
         partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
         setattr(cls, 'partition_storage', partition_storage)
 
-        # Return storage for compatibility only
         return (interface, partition_storage)
 
-    def new_transition(self, array_items, tran_titles):
-        component_transition = []
-        initial_state = []
-        initial_state_id = []
-        row_count = len(array_items)
-        for i in range(row_count):
-            if array_items[i][1] != 'x':
-                initial_state_id.append(i)
-                if array_items[i][0] == 'x':
-                    continue
-                try:
-                    interface = getattr(self.module['states'], _to_interface(array_items[i][0]))
-                except AttributeError:
-                    raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[i][0]))
-                cls = checkmate._utils.get_class_implementing(interface)
-                initial_state.append(checkmate._storage.Data('states', interface, [array_items[i][1]]))
-                if checkmate._utils.is_method(array_items[i][1]):
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    setattr(self.module['states'], checkmate._utils.internal_code(array_items[i][1]),
-                            functools.partial(cls, checkmate._utils.internal_code(array_items[i][1])))
-        incoming_list = []
-        outgoing_list = []
-        for i in range(2, len(array_items[0])):
-            input = [] 
-            for j in range(0, initial_state_id[0]):
-                if array_items[j][i] != 'x':
-                    try:
-                        interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
-                    except AttributeError:
-                        raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                    input.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
-                    if interface not in incoming_list:
-                        incoming_list.append(interface)
-            final = []
-            for j in range(initial_state_id[0], initial_state_id[-1]+1):
-                if array_items[j][0] == 'x':
-                    continue
-                try:
-                    interface = getattr(self.module['states'], _to_interface(array_items[j][0]))
-                except AttributeError:
-                    raise AttributeError(self.module['states'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
-            output = []
-            for j in range(initial_state_id[-1]+1, row_count):
-                if array_items[j][i] != 'x':
-                    try:
-                        interface = getattr(self.module['exchanges'], _to_interface(array_items[j][0]))
-                    except AttributeError:
-                        raise AttributeError(self.module['exchanges'].__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                    output.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
-                    action = checkmate._utils.internal_code(array_items[j][i])
-                    if action not in outgoing_list:
-                        outgoing_list.append(action)
-            try:
-                tran_name = tran_titles[i]
-            except IndexError:
-                tran_name = 'unknown'
-            ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
-            t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
-            component_transition.append(t)
-        return (incoming_list, outgoing_list, component_transition)
+    def new_transition(self, item):
+        return make_transition(item, [self.module['exchanges']], [self.module['states']])
 
     def get_partitions(self):
         """
@@ -172,7 +174,7 @@ class Declarator(object):
         >>> import checkmate.state
         >>> import collections
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -198,7 +200,7 @@ class Declarator(object):
         >>> import checkmate.state
         >>> import collections
         >>> import os
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.rst'
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
@@ -216,12 +218,12 @@ class Declarator(object):
         services = []
         outgoings = []
         for data in self.data_source['transitions']:
-            _incomings, _outgoings, transition = self.new_transition(data['array_items'], data['tran_titles'])
+            _incomings, _outgoings, transition = self.new_transition(data)
             for _incoming in [ _i for _i in _incomings if _i not in services]:
                 services.append(_incoming)
             for _outgoing in [ _i for _i in _outgoings if _i not in outgoings]:
                 outgoings.append(_outgoing)
-            transitions.extend(transition)
+            transitions.append(transition)
         self.output['services'] = services
         self.output['outgoings'] = outgoings
         self.output['transitions'] = transitions
@@ -231,40 +233,3 @@ class Declarator(object):
             self.get_partitions()
             self.get_transitions()
             return self.output
-        
-def get_procedure_transition(array_items, exchange_module, state_modules=[]):
-    initial_state = []
-    initial_state_id = []
-    row_count = len(array_items)
-    for i in range(row_count):
-        if array_items[i][1] != 'x':
-            initial_state_id.append(i)
-            if array_items[i][0] == 'x':
-                continue
-            for s_module in state_modules:
-                if hasattr(s_module, _to_interface(array_items[i][0])):
-                    interface = getattr(s_module, _to_interface(array_items[i][0]))
-                    cls = checkmate._utils.get_class_implementing(interface)
-                    initial_state.append(checkmate._storage.Data('states', interface, [array_items[i][1]]))
-
-    for i in range(2, len(array_items[0])):
-        input = []
-        for j in range(0, initial_state_id[0]):
-            if array_items[j][i] != 'x':
-                try:
-                    interface = getattr(exchange_module, _to_interface(array_items[j][0]))
-                except AttributeError:
-                    raise AttributeError(exchange_module,__name__+' has no interface defined:'+_to_interface(array_items[j][0]))
-                input.append(checkmate._storage.Data('exchanges', interface, [array_items[j][i]]))
-        final = []
-        for j in range(initial_state_id[0], initial_state_id[-1]+1):
-            if array_items[j][0] == 'x':
-                continue
-            for s_module in state_modules:
-                if hasattr(s_module, _to_interface(array_items[j][0])):
-                    interface = getattr(s_module, _to_interface(array_items[j][0]))
-                    final.append(checkmate._storage.Data('states', interface, [array_items[j][i]]))
-    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, []))
-    return ts
-
-

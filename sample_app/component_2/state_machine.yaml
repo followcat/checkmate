@@ -1,0 +1,30 @@
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: '[Input/Final state/Output]'
+        outgoing:
+          - Action:             AC()
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - AnotherReaction:    ARE()
+        outgoing:
+          - Action:             AP(R)
+
+      - name: '[Input/Final state/Output]'
+        outgoing:
+          - Reaction:           RL()
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - ThirdReaction:      DR()
+
+      - name: '[Input/Final state/Output]'
+        outgoing:
+          - Action:             PP(R)
+
+  - Transitions:
+      - name: 'C2 third action'
+        incoming:
+          - ThirdAction:        DA()
