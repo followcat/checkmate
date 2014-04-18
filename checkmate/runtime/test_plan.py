@@ -109,16 +109,17 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         >>> components = list(_application.components.keys())
         >>> state_modules = []
         >>> for name in components:
-        ...         state_modules.append(_application.components[name].state_module)
+        ...     state_modules.append(_application.components[name].state_module)
+
         >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
-        >>> transition_list[0].incoming[0].code
+        >>> transition_list[1].incoming[0].code
         'PP'
-        >>> box = checkmate.sandbox.Sandbox(_application, [transition_list[0]])
-        >>> box.application.components['C1'].states[0].value == transition_list[0].initial[0].arguments[0][0]
+        >>> box = checkmate.sandbox.Sandbox(_application, [transition_list[1]])
+        >>> box.application.components['C1'].states[0].value == transition_list[1].initial[0].arguments[0][0]
         True
-        >>> box.application.compare_states(transition_list[0].initial)
+        >>> box.application.compare_states(transition_list[1].initial)
         True
-        >>> box([transition_list[0]], foreign_transitions=True)
+        >>> box([transition_list[1]], foreign_transitions=True)
         True
         >>> len(box.initial)
         3
@@ -129,9 +130,10 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> registry = checkmate.runtime.registry.get_registry((''.join(['C1']), sample_app.application.TestData))
+        >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2 = registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c3 = registry.getUtility(checkmate.component.IComponent, 'C3')
         >>> procedures = []
         >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     procedures.append(p[0])
