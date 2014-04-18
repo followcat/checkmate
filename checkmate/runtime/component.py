@@ -1,7 +1,5 @@
 import copy
-import time
 import logging
-import socket
 import threading
 
 import zmq
@@ -14,11 +12,10 @@ import checkmate.component
 import checkmate.application
 import checkmate.runtime._pyzmq
 import checkmate.runtime.client
+import checkmate.timeout_manager
 import checkmate.runtime.registry
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
-import checkmate.runtime.interfaces
-import checkmate.timeout_manager
 
 
 SIMULATE_WAIT_SEC = 0.2

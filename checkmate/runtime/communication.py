@@ -1,7 +1,5 @@
 import zope.interface
-import zope.component.factory
 
-import checkmate.runtime.registry
 import checkmate.runtime.interfaces
 
 

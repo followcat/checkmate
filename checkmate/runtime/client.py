@@ -1,6 +1,3 @@
-import time
-import copy
-import socket
 import logging
 
 import zmq
@@ -8,7 +5,6 @@ import zmq
 import zope.interface
 
 import checkmate.logger
-import checkmate.runtime.registry
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
