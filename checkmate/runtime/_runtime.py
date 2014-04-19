@@ -21,17 +21,18 @@ class Runtime(object):
         """"""
         self.threaded = threaded
         self.runtime_components = {}
+        self.communication_list = {}
         self.application_class = application
         self.application = application(full_python=full_python)
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
         checkmate.runtime.registry.global_registry = self._registry
         self._registry.registerUtility(self.application, checkmate.application.IApplication)
 
-        self.communication_list = [(communication(), 'default')]
+        self.communication_list['default'] = communication()
 
         for _c in self.application.communication_list:
             _communication = _c()
-            self.communication_list.append((_communication, ''))
+            self.communication_list[''] = _communication
 
         if self.threaded:
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
@@ -51,7 +52,7 @@ class Runtime(object):
 
         self.reg_key = (''.join(sut), self.application_class)
         checkmate.runtime.registry.global_registries_dict[self.reg_key] = self._registry
-        for (communication, type) in self.communication_list:
+        for type, communication in self.communication_list.items():
             self._registry.registerUtility(communication, checkmate.runtime.interfaces.ICommunication, type)
 
         for component in self.application.stubs:
@@ -65,7 +66,7 @@ class Runtime(object):
             self.runtime_components[component] = sut
 
         import time; time.sleep(1)
-        for (communication, type) in self.communication_list:
+        for type, communication in self.communication_list.items():
             setattr(communication, 'reg_key', self.reg_key)
             communication.initialize()
 
@@ -99,7 +100,7 @@ class Runtime(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> r.stop_test()
         """
-        for (communication, type) in self.communication_list:
+        for type, communication in self.communication_list.items():
             communication.start()
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
@@ -114,7 +115,7 @@ class Runtime(object):
             _component.stop()
             #if self.threaded:
             #    _component.join()
-        for (communication, type) in self.communication_list:
+        for type, communication in self.communication_list.items():
             communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 
