@@ -52,7 +52,7 @@ sa.internal_client_list[0].send(e)
 #stop everything except the logger
 sa.stop(); sb.stop(), runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 """)
-        TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/1.2, 2)
+        TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/4.2, 2)
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
 class SleepAfterCall():
