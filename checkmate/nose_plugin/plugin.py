@@ -213,8 +213,9 @@ class TestRunner(nose.core.TextTestRunner):
 
         #specific code
         for index, _runtime in enumerate(self.runtime_list):
-            #do some dirty print
-            result.stream.writeln("sut="+','.join(_runtime.application.system_under_test) + ":")
+            if len(self.runtime_list) > 1:
+                #do some dirty print
+                result.stream.writeln('sut=' + ','.join(_runtime.application.system_under_test) + ':')
             setattr(test.config, 'runtime', _runtime)
             for _loop in range(self.loop_runs):
                 test(result)
