@@ -62,10 +62,9 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> registry = checkmate.runtime.registry.get_registry((''.join(['C1']), sample_app.application.TestData))
-        >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> c1 = r.runtime_components['C1']
+        >>> c2 = r.runtime_components['C2']
+        >>> c3 = r.runtime_components['C3']
         >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
         >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
         >>> time.sleep(1)
@@ -129,9 +128,9 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> c1 = r.runtime_components['C1']
+        >>> c2 = r.runtime_components['C2']
+        >>> c3 = r.runtime_components['C3']
         >>> procedures = []
         >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     procedures.append(p[0])

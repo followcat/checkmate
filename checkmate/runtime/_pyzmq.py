@@ -25,10 +25,8 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> r = checkmate.runtime._runtime.Runtime(a, c, True)
         >>> r.setup_environment(['C3'])
         >>> r.start_test()
-        >>> import checkmate.runtime.registry
-        >>> registry = checkmate.runtime.registry.get_registry((''.join(['C3']), checkmate.test_data.App))
-        >>> c2_stub = registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c1_stub = registry.getUtility(checkmate.component.IComponent, 'C1')
+        >>> c2_stub = r.runtime_components['C2']
+        >>> c1_stub = r.runtime_components['C1']
         >>> simulated_exchange = r.application.components['C2'].state_machine.transitions[0].outgoing[0].factory()
         >>> simulated_exchange.origin_destination('C2', 'C1')
         >>> o = c2_stub.simulate(simulated_exchange)

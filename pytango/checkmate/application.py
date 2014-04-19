@@ -13,16 +13,14 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
         >>> import sample_app.exchanges
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
-        >>> import checkmate.runtime.registry
         >>> ac = pytango.checkmate.application.Application
         >>> cc = checkmate.runtime._pyzmq.Communication
         >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded=True)
         >>> r.setup_environment(['C3'])
         >>> time.sleep(1)
         >>> r.start_test()
-        >>> registry = checkmate.runtime.registry.get_registry((''.join(['C3']), pytango.checkmate.application.Application))
-        >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = registry.getUtility(checkmate.component.IComponent, 'C2')
+        >>> c1 = r.runtime.components['C1']
+        >>> c2 = r.runtime.components['C2']
         >>> o = c2.simulate(sample_app.exchanges.AC())
         >>> time.sleep(1)
         >>> c1.validate(o[0])

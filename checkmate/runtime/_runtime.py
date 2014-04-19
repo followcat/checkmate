@@ -20,6 +20,7 @@ class Runtime(object):
     def __init__(self, application, communication, threaded=False, full_python=True):
         """"""
         self.threaded = threaded
+        self.runtime_components = {}
         self.application_class = application
         self.application = application(full_python=full_python)
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
@@ -56,12 +57,12 @@ class Runtime(object):
         for component in self.application.stubs:
             setattr(self.application.components[component], 'reg_key', self.reg_key)
             stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
-            self._registry.registerUtility(stub, checkmate.component.IComponent, component)
+            self.runtime_components[component] = stub
 
         for component in self.application.system_under_test:
             setattr(self.application.components[component], 'reg_key', self.reg_key)
             sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
-            self._registry.registerUtility(sut, checkmate.component.IComponent, component)
+            self.runtime_components[component] = sut
 
         import time; time.sleep(1)
         for (communication, type) in self.communication_list:
@@ -69,7 +70,7 @@ class Runtime(object):
             communication.initialize()
 
         for name in self.application.stubs + self.application.system_under_test:
-            _component = self._registry.getUtility(checkmate.component.IComponent, name)
+            _component = self.runtime_components[name]
             _component.initialize()
 
     def start_test(self):
@@ -85,14 +86,13 @@ class Runtime(object):
             >>> r = checkmate.runtime._runtime.Runtime(ac, cc)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> registry = checkmate.runtime.registry.get_registry((''.join(['C1']), checkmate.test_data.App))
-            >>> c2_stub = registry.getUtility(checkmate.component.IComponent, 'C2')
+            >>> c2_stub = r.runtime_components['C2']
             >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
             >>> simulated_exchange = a.components['C2'].state_machine.transitions[0].outgoing[0].factory()
             >>> o = c2_stub.simulate(simulated_exchange) # doctest: +ELLIPSIS
-            >>> c1 = registry.getUtility(checkmate.component.IComponent, 'C1')
+            >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.component.IStub.providedBy(c1)
             False
             >>> c1.process(o) # doctest: +ELLIPSIS
@@ -104,13 +104,13 @@ class Runtime(object):
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
         for name in component_list:
-            _component = self._registry.getUtility(checkmate.component.IComponent, name)
+            _component = self.runtime_components[name]
             _component.start()
 
     def stop_test(self):
         # Stop stubs last
         for name in self.application.system_under_test + self.application.stubs:
-            _component = self._registry.getUtility(checkmate.component.IComponent, name)
+            _component = self.runtime_components[name]
             _component.stop()
             #if self.threaded:
             #    _component.join()
