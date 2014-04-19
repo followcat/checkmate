@@ -136,25 +136,30 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
 
-        _registry = checkmate.runtime.registry.get_registry(self.context.reg_key)
-        _application = _registry.getUtility(checkmate.application.IApplication)
+    def setup(self, runtime):
+        self.runtime = runtime
+        _application = runtime.application
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
-            _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, 'default')
-            connector = connector_factory(component, _communication, is_server=True)
-            self.internal_client_list = [self._create_client(component, connector, reading_client=self.reading_internal_client),]
-            for _component in [_c for _c in _application.components.keys() if _c != component.name]:
+            _communication = runtime.communication_list['default']
+            connector = connector_factory(self.context, _communication, is_server=True)
+            self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
+            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                if not hasattr(_application.components[_component], 'connector_list'):
+                    continue
                 for _c in _application.components[_component].connector_list:
                     connector = connector_factory(_application.components[_component], _communication, is_server=False)
                     self.internal_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_internal_client))
         try:
             if self.using_external_client:
                 for connector_factory in self.context.connector_list:
-                    _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, '')
-                    connector = connector_factory(component, _communication, is_server=True)
-                    self.server_list.append(self._create_client(component, connector))
-                for _component in [_c for _c in _application.components.keys() if _c != component.name]:
-                    _communication = _registry.getUtility(checkmate.runtime.interfaces.ICommunication, '')
+                    _communication = runtime.communication_list['']
+                    connector = connector_factory(self.context, _communication, is_server=True)
+                    self.server_list.append(self._create_client(self.context, connector))
+                for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                    if not hasattr(_application.components[_component], 'connector_list'):
+                        continue
+                    _communication = runtime.communication_list['']
                     for connector_factory in _application.components[_component].connector_list:
                         connector = connector_factory(_application.components[_component], _communication, is_server=False)
                         self.external_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_external_client))
@@ -217,11 +222,13 @@ class ThreadedSut(ThreadedComponent, Sut):
         #Call ThreadedSut first ancestor: ThreadedComponent expected
         super(ThreadedSut, self).__init__(component)
 
-        if hasattr(component, 'launch_command'):
+    def setup(self, runtime):
+        super().setup(runtime)
+        if hasattr(self.context, 'launch_command'):
             for connector in self.context.connector_list:
                 connector.communication_class(self.context)
         else:
-            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
 
     def initialize(self):
         if hasattr(self.context, 'launch_command'):

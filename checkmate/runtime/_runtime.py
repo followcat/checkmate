@@ -30,6 +30,8 @@ class Runtime(object):
 
         self.communication_list['default'] = communication()
 
+        if len(self.application.communication_list) == 0:
+            self.communication_list[''] = communication()
         for _c in self.application.communication_list:
             _communication = _c()
             self.communication_list[''] = _communication
@@ -59,14 +61,16 @@ class Runtime(object):
             setattr(self.application.components[component], 'reg_key', self.reg_key)
             stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
             self.runtime_components[component] = stub
+            stub.setup(self)
 
         for component in self.application.system_under_test:
             setattr(self.application.components[component], 'reg_key', self.reg_key)
             sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
             self.runtime_components[component] = sut
+            sut.setup(self)
 
         import time; time.sleep(1)
-        for type, communication in self.communication_list.items():
+        for communication in self.communication_list.values():
             setattr(communication, 'reg_key', self.reg_key)
             communication.initialize()
 
@@ -100,7 +104,7 @@ class Runtime(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> r.stop_test()
         """
-        for type, communication in self.communication_list.items():
+        for communication in self.communication_list.values():
             communication.start()
         # Start stubs first
         component_list = self.application.stubs + self.application.system_under_test
@@ -115,7 +119,7 @@ class Runtime(object):
             _component.stop()
             #if self.threaded:
             #    _component.join()
-        for type, communication in self.communication_list.items():
+        for communication in self.communication_list.values():
             communication.close()
         checkmate.logger.global_logger.stop_exchange_logger()
 

@@ -16,42 +16,41 @@ class TimeoutManager():
     @staticmethod
     def machine_benchmark():
         test_code = timeit.Timer("""
+import zope.interface
+
 import checkmate.exchange
 import checkmate.component
 import checkmate.application
 import checkmate.state_machine
 import checkmate.runtime._pyzmq
-import checkmate.runtime.registry
+import checkmate.runtime._runtime
 import checkmate.runtime.component
-import checkmate.runtime.interfaces
 
-setattr(checkmate.component.Component, 'state_machine', checkmate.state_machine.StateMachine())
-setattr(checkmate.component.Component, 'services', [])
+@zope.interface.implementer(checkmate.component.IComponent)
+class Comp(checkmate.component.Component):
+    services = []
+    state_machine = checkmate.state_machine.StateMachine()
+    connector_list = (checkmate.runtime._pyzmq.Connector,)
 
-c = checkmate.runtime._pyzmq.Communication()
-c.reg_key = ('test_code',)
-r = checkmate.runtime.registry.RuntimeGlobalRegistry()
-checkmate.runtime.registry.global_registries_dict['test'] = r
+class App(checkmate.application.Application):
+    __module__ = 'timeout_manager.test.App'
+    def __init__(self, full_python=True):
+        super().__init__(full_python)
+        self.communication_list = (checkmate.runtime._pyzmq.Communication,)
+        self.components = {'a': Comp('a'), 'b': Comp('b')}
 
-r.registerAdapter(checkmate.runtime.component.ThreadedStub, (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
-r.registerAdapter(checkmate.runtime.component.ThreadedSut, (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+runtime = checkmate.runtime._runtime.Runtime(App, checkmate.runtime._pyzmq.Communication, True)
 
-r.registerUtility(checkmate.application.Application(), checkmate.application.IApplication)
-
-r.registerUtility(c, checkmate.runtime.interfaces.ICommunication, 'default')
-component_a = checkmate.component.Component('a')
-component_b = checkmate.component.Component('b')
-setattr(component_a, 'reg_key', 'test')
-setattr(component_b, 'reg_key', 'test')
-sa = r.getAdapter(component_a, checkmate.runtime.component.IStub)
-sb = r.getAdapter(component_b, checkmate.runtime.component.ISut)
-c.initialize(); sa.initialize(); sb.initialize()
-c.start(); sa.start(); sb.start()
+runtime.setup_environment(['b'])
+sa = runtime.runtime_components['a']
+sb = runtime.runtime_components['b']
+runtime.start_test()
 
 e = checkmate.exchange.Exchange()
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
-sb.stop(); sa.stop(); c.close()
+#stop everything except the logger
+sa.stop(); sb.stop(), runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 """)
         TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/1.2, 2)
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
