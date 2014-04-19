@@ -41,9 +41,8 @@ As we know the application is only containing static components. They will be st
 
 The runtime is also keeping reference to the dynamic component using a global registry:
 
-    >>> import checkmate.runtime.registry
     >>> import checkmate.component
-    >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
+    >>> c2 = r.runtime_components['C2']
     >>> type(c2)
     <class 'checkmate.runtime.component.ThreadedStub'>
 
@@ -58,7 +57,7 @@ the resulting outgoing will be sent to the corresponding component based on the 
     >>> ac = sample_app.exchanges.AC()
     >>> c2.simulate(ac)
     [<sample_app.exchanges.Action object at 0x7f4030e4e210>]
-    >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+    >>> c3 = r.runtime_components['C3']
     >>> c3.validate(sample_app.exchanges.RE())
     True
     >>> c2.validate(sample_app.exchanges.DA())
@@ -66,7 +65,7 @@ the resulting outgoing will be sent to the corresponding component based on the 
 
 The component states have been updated dynamically
 
-    >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
+    >>> c1 = r.runtime_components['C1']
     >>> c1.context.states[0].value
     'False'
 
@@ -102,7 +101,6 @@ We will now see how.
 
 Lets consider a runtime environment that we load with an application and that we set with SUT=C1:
 
-    >>> import checkmate.runtime.registry
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime._pyzmq
     >>> import checkmate.test_data
@@ -117,7 +115,7 @@ Based on the SUT definition, the component C2 is not in the system under test an
 The stub will be created by adapting the C2 Component_2 object defined in the application to implement the IStub interface for stubs:
 
     >>> import checkmate.runtime.component
-    >>> c2_stub = checkmate.runtime.registry.global_registry.getAdapter(r.application.components['C2'], checkmate.runtime.component.IStub)
+    >>> c2_stub = r.runtime_components['C2']
     >>> type(c2_stub)
     <class 'checkmate.runtime.component.ThreadedStub'>
     >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
@@ -142,7 +140,7 @@ It will not provide a validate() method to validate incoming exchanges from syst
 
     >>> 'C1' in r.application.system_under_test
     True
-    >>> c1_sut = checkmate.runtime.registry.global_registry.getAdapter(r.application.components['C1'], checkmate.runtime.component.ISut)
+    >>> c1_sut = r.runtime_components['C1']
     >>> type(c1_sut)
     <class 'checkmate.runtime.component.ThreadedSut'>
     >>> checkmate.runtime.component.ISut.providedBy(c1_sut)
