@@ -130,7 +130,6 @@ class Checkmate(nose.plugins.Plugin):
         """Replace test runner with TestRunner.
         """
         TestRunner.loop_runs = self.loop_runs
-        TestRunner.components = self.components
 
     def wantClass(self, cls):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
@@ -183,6 +182,7 @@ class Checkmate(nose.plugins.Plugin):
             runtime.start_test()
             self.runtimes.append(runtime)
         time.sleep(3)
+        TestRunner.runtime_list = self.runtimes
     
         
     def finalize(self, result):
@@ -212,13 +212,14 @@ class TestRunner(nose.core.TextTestRunner):
         start = time.time()
 
         #specific code
-        for _sut in self.components:
-            #do some dirty print
-            result.stream.writeln("sut="+','.join(_sut) + ":")
-            setattr(test.config, 'system_under_test', _sut)
+        for index, _runtime in enumerate(self.runtime_list):
+            if len(self.runtime_list) > 1:
+                #do some dirty print
+                result.stream.writeln('sut=' + ','.join(_runtime.application.system_under_test) + ':')
+            setattr(test.config, 'runtime', _runtime)
             for _loop in range(self.loop_runs):
                 test(result)
-            if self.components.index(_sut) < len(self.components)-1:
+            if index < len(self.runtime_list)-1:
                 result.stream.writeln()
 
         #from father class code

@@ -11,13 +11,15 @@ import checkmate.runtime.component
 
 
 class Launcher(object):
-    def __init__(self, component=None, command=None, *args):
+    def __init__(self, component=None, command=None, runtime=None, *args):
         self.command = command
+        self.runtime = runtime
         self.component = component
         if self.command is not None:
             pass
         elif self.component is not None:
             self.runtime_component = checkmate.runtime.component.ThreadedComponent(self.component)
+            self.runtime_component.setup(self.runtime)
         else:
             raise Exception("No command nor component")
 
