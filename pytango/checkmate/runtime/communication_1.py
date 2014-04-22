@@ -54,7 +54,7 @@ class Connector(checkmate.runtime.communication.Connector):
         super(Connector, self).__init__(component, communication, is_server=is_server)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
-            if type(self.communication) == self.communication:
+            if type(self.communication) == self.communication_class:
                 self.device_name = self.communication.create_tango_device('Device_1', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
