@@ -1,5 +1,3 @@
-import time
-import copy
 import logging
 
 import zope.interface
@@ -7,10 +5,9 @@ import zope.interface
 import nose.plugins.skip
 
 import checkmate.application
-import checkmate.runtime.component
+import checkmate.timeout_manager
 import checkmate.runtime.interfaces
 import checkmate.runtime.pathfinder
-import checkmate.timeout_manager
 
 
 def _compatible_skip_test(procedure, message):
@@ -27,9 +24,9 @@ def _compatible_skip_test(procedure, message):
         >>> a = checkmate.test_data.App()
         >>> c2 = a.components['C2']
         >>> a.start()
-        >>> proc = checkmate.runtime.procedure.Procedure(checkmate.test_data.App)
+        >>> proc = checkmate.runtime.procedure.Procedure()
 
-    If you exepct to output an exchange using generic_incoming(), strange things can happen:
+    If you expect to output an exchange using generic_incoming(), strange things can happen:
     You select the transition that outputs an 'RL':
         >>> transition = c2.state_machine.transitions[2]
 
@@ -41,7 +38,7 @@ def _compatible_skip_test(procedure, message):
         >>> _incoming.value
         'AC'
 
-    You better use, the direct simulate() function with exepcted output:
+    You better use, the direct simulate() function with expected output:
         >>> _incoming = c2.simulate(transition.outgoing[0].factory())[0]
         >>> _incoming.value
         'RL'
@@ -69,12 +66,10 @@ def _compatible_skip_test(procedure, message):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
-    def __init__(self, application_class=None, test=None, is_setup=False):
+    def __init__(self, test=None, is_setup=False):
         self.test = test
-        self.application_class = application_class
         self.is_setup = is_setup
         self.components = []
-        self.tran_dict = {}
         self.logger = logging.getLogger('checkmate.runtime.procedure')
         
     def __call__(self, runtime, result=None, *args):
