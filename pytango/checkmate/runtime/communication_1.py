@@ -1,15 +1,4 @@
-import os
-import sys
-import shlex
-
-import zope.component
-
 import PyTango
-
-import checkmate.runtime._threading
-import checkmate.runtime.communication
-
-import sample_app.exchanges
 
 import pytango.component.component_1
 import pytango.checkmate.runtime.communication
@@ -35,54 +24,8 @@ class Device_1(PyTango.Device_4Impl):
         self.incoming.append('PP')
 
 
-class Encoder(object):
-    def encode(self, exchange):
-        return exchange.action
 
-    def decode(self, message):
-        if message == 'AC':
-            return sample_app.exchanges.AC()
-        elif message == 'AP':
-            return sample_app.exchanges.AP()
-        elif message == 'PP':
-            return sample_app.exchanges.PP()
-
-class Connector(checkmate.runtime.communication.Connector):
-    communication_class = pytango.checkmate.runtime.communication.Communication
-
-    def __init__(self, component, communication=None, is_server=False):
-        super(Connector, self).__init__(component, communication, is_server=is_server)
-        self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
-        if self.is_server:
-            if type(self.communication) == self.communication_class:
-                self.device_name = self.communication.create_tango_device('Device_1', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
-        self.encoder = Encoder()
-
-    def initialize(self):
-        if self.is_server:
-            if type(self.communication) == self.communication_class:
-                self.communication.pytango_server.add_class(pytango.component.component_1.C1Interface, Device_1, 'Device_1')
-
-    def open(self):
-        @checkmate.timeout_manager.WaitOnException(timeout=10)
-        def check():
-            self.device_client.attribute_list_query()
-        self.registry = PyTango.Util.instance()
-        self.device_client = PyTango.DeviceProxy(self.device_name)
-        check()
-        if self.is_server:
-            self.device_server = self.registry.get_device_by_name(self.device_name)
-
-    def close(self):
-        self.communication.delete_tango_device(self.device_name)
-
-    def receive(self):
-        try:
-            return self.encoder.decode(self.device_server.incoming.pop(0))
-        except:
-            pass
-
-    def send(self, destination, exchange):
-        call = getattr(self.device_client, self.encoder.encode(exchange))
-        call()
+class Connector(pytango.checkmate.runtime.communication.Connector):
+    device_class = Device_1
+    interface_class = pytango.component.component_1.C1Interface
 

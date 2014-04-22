@@ -6,8 +6,11 @@ import threading
 
 import PyTango
 
-import checkmate.runtime.communication
+import checkmate.timeout_manager
 import checkmate.runtime._threading
+import checkmate.runtime.communication
+
+import sample_app.exchanges
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -25,10 +28,6 @@ class Registry(checkmate.runtime._threading.Thread):
         self.event.set()
         self.pytango_util.server_set_event_loop(self.check_for_shutdown)
         self.pytango_util.server_run()
-
-
-class Connector(checkmate.runtime.communication.Connector):
-    """"""
 
 
 class Communication(checkmate.runtime.communication.Communication):
@@ -90,4 +89,51 @@ class Communication(checkmate.runtime.communication.Communication):
             pass
         except PyTango.ConnectionFailed as e:
             pass
+
+class Encoder(object):
+    def encode(self, exchange):
+        return exchange.action
+
+    def decode(self, message):
+        return getattr(sample_app.exchanges, message)()
+
+
+class Connector(checkmate.runtime.communication.Connector):
+    communication_class = Communication
+
+    def __init__(self, component, communication=None, is_server=False):
+        super().__init__(component, communication, is_server=is_server)
+        self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
+        if self.is_server:
+            if type(self.communication) == self.communication_class:
+                self.device_name = self.communication.create_tango_device(self.__class__.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
+        self.encoder = Encoder()
+
+    def initialize(self):
+        if self.is_server:
+            if type(self.communication) == self.communication_class:
+                self.communication.pytango_server.add_class(self.__class__.interface_class, self.__class__.device_class, self.__class__.device_class.__name__)
+
+    def open(self):
+        @checkmate.timeout_manager.WaitOnException(timeout=10)
+        def check():
+            self.device_client.attribute_list_query()
+        self.registry = PyTango.Util.instance()
+        self.device_client = PyTango.DeviceProxy(self.device_name)
+        check()
+        if self.is_server:
+            self.device_server = self.registry.get_device_by_name(self.device_name)
+
+    def close(self):
+        self.communication.delete_tango_device(self.device_name)
+
+    def receive(self):
+        try:
+            return self.encoder.decode(self.device_server.incoming.pop(0))
+        except:
+            pass
+
+    def send(self, destination, exchange):
+        call = getattr(self.device_client, self.encoder.encode(exchange))
+        call()
 
