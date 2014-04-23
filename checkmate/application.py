@@ -3,6 +3,7 @@ import collections
 
 import zope.interface
 
+import checkmate.runs
 import checkmate._utils
 import checkmate.exchange
 import checkmate.data_structure
