@@ -24,7 +24,7 @@ def get_path_from_pathfinder(application, target):
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.AC()
         >>> ex1.origin_destination('C2', 'C1')
-        >>> exchanges = box.generate([ex1])
+        >>> transitions = box.generate_transition([ex1])
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'
@@ -32,7 +32,7 @@ def get_path_from_pathfinder(application, target):
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for _s in setup:
-        ...     print(_s.exchanges.root.action, app.compare_states(_s.initial))
+        ...     print(_s.transitions.root.incoming[0].factory().action, app.compare_states(_s.initial))
         RL True
         PP False
     """
@@ -64,7 +64,7 @@ def _find_runs(application, target):
         ...     
 
         >>> nbox = checkmate.sandbox.Sandbox(box.application)
-        >>> proc[0][0].exchanges.root.action
+        >>> proc[0][0].transitions.root.incoming[0].factory().action
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
         1

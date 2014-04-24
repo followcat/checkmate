@@ -86,7 +86,7 @@ class Procedure(object):
                 self.transform_to_initial() 
             if not self.application.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
-        self._run_from_startpoint(self.exchanges)
+        self._run_from_startpoint(self.transitions)
 
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
@@ -107,7 +107,7 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)  
         stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
-        stub.simulate(current_node.root)
+        stub.simulate(current_node.root.incoming[0].factory())
         self._follow_up(current_node)
         
         if hasattr(self, 'final'):
@@ -130,8 +130,9 @@ class Procedure(object):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:
                 stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _next.root.destination)
-                if not stub.validate(_next.root):
-                    raise Exception("No exchange '%s' received by component '%s'" %(_next.root.action, _next.root.destination))
+                exchange = _next.root.incoming[0].factory()
+                if not stub.validate(exchange):
+                    raise Exception("No exchange '%s' received by component '%s'" %(exchange.action, _next.root.destination))
         for _next in node.nodes:
             self._follow_up(_next)
 

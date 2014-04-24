@@ -87,8 +87,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box([_transition], foreign_transitions=True)
-        yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
-
+        yield build_procedure(box), box.transitions.root.origin, box.transitions.root.incoming[0].factory().action, box.transitions.root.destination
 
 def _feature_generator_doctest():
     """
@@ -143,5 +142,5 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box([_transition], foreign_transitions=True)
-        yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
+        yield build_procedure(box), box.transitions.root.origin, box.transitions.root.incoming[0].factory().action, box.transitions.root.destination
 
