@@ -24,7 +24,7 @@ def get_path_from_pathfinder(application, target):
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.AC()
         >>> ex1.origin_destination('C2', 'C1')
-        >>> transitions = box.generate_transition([ex1])
+        >>> transitions = box.generate([ex1])
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'

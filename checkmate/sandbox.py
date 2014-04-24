@@ -114,20 +114,20 @@ class Sandbox(object):
             if len(_outgoing) == 0:
                 return False
 
-            self.transitions = self.generate_transition(_outgoing, self.transitions)
+            self.transitions = self.generate(_outgoing, self.transitions)
 
             if self.is_run:
                 self.update_required_states(_transition)
         return self.is_run
 
-    def generate_transition(self, exchanges, tree=None):
+    def generate(self, exchanges, tree=None):
         """
             >>> import sample_app.application
             >>> import checkmate.sandbox
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.AC()
             >>> ex.origin_destination('C2', 'C1')
-            >>> transitions = box.generate_transition([ex])
+            >>> transitions = box.generate([ex])
             >>> box.application.components['C3'].states[0].value
             'True'
         """
@@ -142,11 +142,11 @@ class Sandbox(object):
             self.update_required_states(_transition)
             if tree is None:
                 tree = checkmate._tree.Tree(_transition, [])
-                tree = self.generate_transition(_outgoings, tree)
+                tree = self.generate(_outgoings, tree)
                 self.transitions = tree
             else:
                 tree.add_node(checkmate._tree.Tree(_transition, []))
-                tree.nodes[i] = self.generate_transition(_outgoings, tree.nodes[i])
+                tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
                 i += 1
         return tree
 
