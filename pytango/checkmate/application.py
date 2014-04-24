@@ -19,8 +19,8 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
         >>> r.setup_environment(['C3'])
         >>> time.sleep(1)
         >>> r.start_test()
-        >>> c1 = r.runtime.components['C1']
-        >>> c2 = r.runtime.components['C2']
+        >>> c1 = r.runtime_components['C1']
+        >>> c2 = r.runtime_components['C2']
         >>> o = c2.simulate(sample_app.exchanges.AC())
         >>> time.sleep(1)
         >>> c1.validate(o[0])
