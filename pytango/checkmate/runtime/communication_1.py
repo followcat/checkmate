@@ -7,13 +7,7 @@ import pytango.checkmate.runtime.communication
 class Device_1(pytango.checkmate.runtime.communication.Device):
     services = ('AC', 'AP', 'PP')
 
-d = {}
-for name in Device_1.services:
-    code = """def %s(self):
-    self.incoming.append('%s')
-    """ %(name, name)
-    exec(code, d)
-    setattr(Device_1, name, d[name])
+pytango.checkmate.runtime.communication.add_device_service(Device_1)
 
 
 class Connector(pytango.checkmate.runtime.communication.Connector):

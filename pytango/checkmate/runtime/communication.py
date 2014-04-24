@@ -13,6 +13,15 @@ import checkmate.runtime.communication
 import sample_app.exchanges
 
 
+def add_device_service(_class):
+    d = {}
+    for name in _class.services:
+        code = """
+def %s(self):
+    self.incoming.append('%s')""" %(name, name)
+        exec(code, d)
+        setattr(_class, name, d[name])
+
 class Registry(checkmate.runtime._threading.Thread):
     def __init__(self, event):
         super(Registry, self).__init__()
