@@ -269,7 +269,7 @@ class ThreadedStub(ThreadedComponent, Stub):
 
     @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, transition):
-        output = self.context.simulate_transition(transition)
+        output = self.context.simulate(transition)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)

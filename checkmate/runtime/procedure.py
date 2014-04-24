@@ -41,7 +41,7 @@ def _compatible_skip_test(procedure, message):
         'AC'
 
     You better use, the direct simulate() function with expected output:
-        >>> _incoming = c2.simulate(transition.outgoing[0].factory())[0]
+        >>> _incoming = c2.simulate(transition)[0]
         >>> _incoming.value
         'RL'
 
