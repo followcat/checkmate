@@ -99,6 +99,8 @@ class Sandbox(object):
                         _outgoing = component.process([_incoming[0]])
                         if len(_outgoing) == 0:
                             continue
+                        _transition.origin = _incoming[0].origin
+                        _transition.destination = _incoming[0].destination
                         self.exchanges = checkmate._tree.Tree(_incoming[0], [])
                         self.transitions = checkmate._tree.Tree(_transition, [])
                         break
@@ -138,6 +140,8 @@ class Sandbox(object):
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
             if len(_outgoings) == 0 and self.application.components[_exchange.destination].transition_not_found:
                 continue
+            _transition.origin = _exchange.origin
+            _transition.destination = _exchange.destination
             self.update_required_states(_transition)
             if tree is None:
                 tree = checkmate._tree.Tree(_transition, [])
