@@ -78,8 +78,6 @@ class Procedure(object):
         """"""
         self.result = result
         self.system_under_test = system_under_test
-        if len(self.components) == 0:
-            self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
@@ -98,19 +96,6 @@ class Procedure(object):
             return _compatible_skip_test(self, "Can't find a path to inital state")
         for _procedure in path:
             _procedure(system_under_test=self.system_under_test)
-
-    def _extract_components(self, node, component_list):
-        if (node.root.origin is not None and
-            node.root.origin != '' and
-            node.root.origin not in component_list):
-            component_list.append(node.root.origin)
-        if (node.root.destination is not None and
-            node.root.destination != '' and
-            node.root.destination not in component_list):
-            component_list.append(node.root.destination)
-        for _n in node.nodes:
-            component_list = self._extract_components(_n, component_list)
-        return component_list
 
     def _components_match_sut(self, system_under_test):
         for _sut in system_under_test:
