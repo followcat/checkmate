@@ -16,11 +16,11 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
             >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded()
-            >>> proc.exchanges.nodes[1].root.action
+            >>> proc.transitions.nodes[1].root.incoming[0].factory().action
             'ARE'
-            >>> proc.exchanges.nodes[1].nodes[0].root.action
+            >>> proc.transitions.nodes[1].nodes[0].root.incoming[0].factory().action
             'AP'
-            >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
+            >>> proc.transitions.nodes[1].nodes[0].nodes[0].root.incoming[0].factory().action
             'DA'
             >>> proc(result=None, system_under_test=['C1'])
             >>> r.stop_test()
@@ -42,9 +42,9 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> proc = TestProcedureRun2Threaded()
-            >>> proc.exchanges.root.action
+            >>> proc.transitions.root.incoming[0].factory().action
             'RL'
-            >>> proc.exchanges.nodes[0].root.action
+            >>> proc.transitions.nodes[0].root.incoming[0].factory().action
             'DR'
             >>> r.stop_test()
         """
