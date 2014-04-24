@@ -50,7 +50,8 @@ e = checkmate.exchange.Exchange()
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 #stop everything except the logger
-sa.stop(); sb.stop(), runtime.communication_list['default'].close(); runtime.communication_list[''].close();
+sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
+sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
 """)
         TimeoutManager.timeout_value = round(min(test_code.repeat(5, 1))/4.2, 2)
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
