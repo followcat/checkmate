@@ -64,7 +64,6 @@ class Runtime(object):
             self.runtime_components[component] = sut
             sut.setup(self)
 
-        import time; time.sleep(1)
         for communication in self.communication_list.values():
             communication.initialize()
 
