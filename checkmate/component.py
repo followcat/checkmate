@@ -119,6 +119,32 @@ class Component(object):
                 output.append(_e)
         return output
 
+    def simulate_transition(self, _transition):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.component_2.component
+            >>> c2 = sample_app.component_2.component.Component_2('C2')
+            >>> c2.start()
+            >>> exchange = sample_app.exchanges.AC()
+            >>> transition = c2.get_transition_by_output([exchange])
+            >>> out = c2.simulate_transition(transition)
+            >>> out[0].action == 'AC'
+            True
+        """
+        if len(_transition.incoming) > 0:
+            exchange = _transition.incoming[0].factory()
+        else:
+            exchange = _transition.outgoing[0].factory()
+        _transition = self.get_transition_by_output([exchange])
+        if _transition is None:
+            return []
+        output = []
+        _incoming = _transition.generic_incoming(self.states)
+        for _outgoing in _transition.process(self.states, _incoming):
+            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
+                output.append(_e)
+        return output
+
     @property
     def transition_not_found(self):
         return not self._transition_found

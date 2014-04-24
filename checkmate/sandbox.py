@@ -86,7 +86,7 @@ class Sandbox(object):
                     if not foreign_transitions and not _transition in component.state_machine.transitions:
                         continue
                     _incoming = _transition.generic_incoming(component.states)
-                    _outgoing = component.simulate(_incoming[0])
+                    _outgoing = component.simulate_transition(_transition)
                     if len(_outgoing) == 0:
                         #simulation failed
                         continue
@@ -107,7 +107,7 @@ class Sandbox(object):
                 for component in list(self.application.components.values()):
                     if not foreign_transitions and not _transition in component.state_machine.transitions:
                         continue
-                    _outgoing = component.simulate(_transition.outgoing[0].factory())
+                    _outgoing = component.simulate_transition(_transition)
                     if len(_outgoing) == 0:
                         continue
                     break
