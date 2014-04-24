@@ -1,3 +1,4 @@
+import os
 import os.path
 
 import checkmate.sandbox
@@ -8,8 +9,8 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def build_procedure(sandbox):
-    proc = checkmate.runtime.procedure.Procedure()
+def build_procedure(sandbox, application_class):
+    proc = checkmate.runtime.procedure.Procedure(application_class)
     sandbox.fill_procedure(proc)
     return proc
 
@@ -38,8 +39,7 @@ def get_transitions_from_test(application):
         transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
     return transitions
 
-
-def _initial_generator_doctest():
+def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
     """
         >>> import time
         >>> import checkmate.test_data
@@ -50,9 +50,9 @@ def _initial_generator_doctest():
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> c1 = r.runtime_components['C1']
+        >>> c2 = r.runtime_components['C2']
+        >>> c3 = r.runtime_components['C3']
         >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
         >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
         >>> time.sleep(1)
@@ -69,14 +69,10 @@ def _initial_generator_doctest():
         >>> proc = procedures[0]
         >>> r.application.compare_states(proc.initial)
         False
-        >>> proc(['C1'])
+        >>> proc(r)
         >>> r.stop_test()
 
     """
-    pass
-
-
-def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
     _application = application_class()
     components = list(_application.components.keys())
     state_modules = []
@@ -87,10 +83,11 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box([_transition], foreign_transitions=True)
-        yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
+        yield build_procedure(box, application_class), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
 
 
-def _feature_generator_doctest():
+def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
+
     """
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor
@@ -101,8 +98,9 @@ def _feature_generator_doctest():
         >>> for name in components:
         ...         state_modules.append(_application.components[name].state_module)
         >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
+        >>> transition_list.sort(key=lambda x:x.incoming[0].code)
         >>> transition_list[0].incoming[0].code
-        'PP'
+        'AC'
         >>> box = checkmate.sandbox.Sandbox(_application, [transition_list[0]])
         >>> box.application.components['C1'].states[0].value == transition_list[0].initial[0].arguments[0][0]
         True
@@ -119,20 +117,16 @@ def _feature_generator_doctest():
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> c1 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> c2 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
-        >>> c3 = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C3')
+        >>> c1 = r.runtime_components['C1']
+        >>> c2 = r.runtime_components['C2']
+        >>> c3 = r.runtime_components['C3']
         >>> procedures = []
         >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     procedures.append(p[0])
         >>> proc = procedures[0]
-        >>> proc(system_under_test=['C1'])
+        >>> proc(r)
         >>> r.stop_test()
     """
-    pass
-
-
-def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     _application = application_class()
     components = list(_application.components.keys())
     state_modules = []
@@ -143,5 +137,5 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box([_transition], foreign_transitions=True)
-        yield build_procedure(box), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
+        yield build_procedure(box, application_class), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
 

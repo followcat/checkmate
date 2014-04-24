@@ -4,10 +4,8 @@ import zope.interface
 
 import nose.plugins.skip
 
-import checkmate.component
 import checkmate.application
 import checkmate.timeout_manager
-import checkmate.runtime.registry
 import checkmate.runtime.interfaces
 import checkmate.runtime.pathfinder
 
@@ -49,7 +47,7 @@ def _compatible_skip_test(procedure, message):
         >>> len(_outgoing)
         0
         >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_incoming, [checkmate._tree.Tree(_output, []) for _output in _outgoing]))
-        >>> proc(sut)
+        >>> proc(r)
         Traceback (most recent call last):
         ...
         unittest.case.SkipTest: Procedure components do not match SUT
@@ -74,15 +72,52 @@ class Procedure(object):
         self.components = []
         self.logger = logging.getLogger('checkmate.runtime.procedure')
         
-    def __call__(self, system_under_test, result=None, *args):
-        """"""
+    def __call__(self, runtime, result=None, *args):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime.test_plan
+            >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r1.setup_environment(['C1'])
+            >>> r1.start_test()
+            >>> r1_c1 = r1.runtime_components['C1']
+            >>> r1_c2 = r1.runtime_components['C2']
+            >>> r1_c3 = r1.runtime_components['C3']
+            >>> r2 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r2.setup_environment(['C3'])
+            >>> r2.start_test()
+            >>> r2_c1 = r2.runtime_components['C1']
+            >>> r2_c2 = r2.runtime_components['C2']
+            >>> r2_c3 = r2.runtime_components['C3']
+            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+            >>> procedures = []
+            >>> for p in gen:
+            ...     procedures.append(p[0])
+
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('True', 'False', 'True', 'False')
+            >>> proc = procedures[0]
+            >>> proc.exchanges.root.action
+            'AC'
+            >>> proc(r1)
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('False', 'True', 'True', 'False')
+            >>> proc(r2)
+            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
+            ('False', 'True', 'False', 'True')
+            >>> r1.stop_test()
+            >>> r2.stop_test()
+        """
         self.result = result
-        self.system_under_test = system_under_test
+        self.runtime = runtime
+        if not hasattr(runtime, 'application'):
+            #happens with using --with-doctest on checkmate procedure generator
+            return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
+        self.application = runtime.application
+        self.system_under_test = runtime.application.system_under_test
         if len(self.components) == 0:
             self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-        self.application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
                 self.transform_to_initial() 
@@ -97,7 +132,7 @@ class Procedure(object):
         if len(path) == 0:
             return _compatible_skip_test(self, "Can't find a path to inital state")
         for _procedure in path:
-            _procedure(system_under_test=self.system_under_test)
+            _procedure(runtime=self.runtime)
 
     def _extract_components(self, node, component_list):
         if (node.root.origin is not None and
@@ -121,7 +156,7 @@ class Procedure(object):
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)  
-        stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, current_node.root.origin)
+        stub = self.runtime.runtime_components[current_node.root.origin]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
         
@@ -144,7 +179,7 @@ class Procedure(object):
     def _follow_up(self, node):
         for _next in node.nodes:
             if _next.root.destination not in self.system_under_test:
-                stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, _next.root.destination)
+                stub = self.runtime.runtime_components[_next.root.destination]
                 if not stub.validate(_next.root):
                     raise Exception("No exchange '%s' received by component '%s'" %(_next.root.action, _next.root.destination))
         for _next in node.nodes:

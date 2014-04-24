@@ -22,10 +22,10 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             'AP'
             >>> proc.exchanges.nodes[1].nodes[0].nodes[0].root.action
             'DA'
-            >>> proc(result=None, system_under_test=['C1'])
+            >>> proc(result=None, runtime=r)
             >>> r.stop_test()
         """
-        super(TestProcedureRun1Threaded, self).__init__(test)
+        super(TestProcedureRun1Threaded, self).__init__(application_class, test)
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
         box([c2.state_machine.transitions[0]])
@@ -48,7 +48,7 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             'DR'
             >>> r.stop_test()
         """
-        super(TestProcedureRun2Threaded, self).__init__(test)
+        super(TestProcedureRun2Threaded, self).__init__(application_class, test)
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
         box([c2.state_machine.transitions[0]])
@@ -60,7 +60,7 @@ def build_procedure(sandbox):
     class TestProc(checkmate.runtime.procedure.Procedure):
         """"""
             
-    proc = TestProc()
+    proc = TestProc(type(sandbox.application))
     sandbox.fill_procedure(proc)
     return proc
 

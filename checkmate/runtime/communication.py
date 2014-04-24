@@ -1,16 +1,15 @@
 import zope.interface
-import zope.component.factory
 
-import checkmate.runtime.registry
 import checkmate.runtime.interfaces
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Connector(object):
     """"""
-    def __init__(self, component=None, internal=False, is_server=False):
+    def __init__(self, component=None, communication=None, is_server=False):
         self.component = component
         self.is_server = is_server
+        self.communication = communication
 
     def initialize(self):
         """"""

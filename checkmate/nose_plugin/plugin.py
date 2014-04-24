@@ -32,6 +32,11 @@ class Checkmate(nose.plugins.Plugin):
                           metavar="COMP1,COMP2",
                           default=os.getenv('CHECKMATE_RUNTIME_SUT', ''),
                           help="Specify the system under test.")
+        parser.add_option('--components', action='store',
+                          dest='components',
+                          metavar="COMP1,COMP2",
+                          default=os.getenv('CHECKMATE_RUNTIME_COMPONENTS', ''),
+                          help="Specify the list of components. then the list will become combination of suts")
         parser.add_option('--random', action='store_true', default=False,
                           dest='randomized_run',
                           help="Require the tests to be run in random order.")
@@ -61,6 +66,41 @@ class Checkmate(nose.plugins.Plugin):
         nose.plugins.Plugin.configure(self, options, config)
         if len(options.sut) != 0:
             self.sut = options.sut.split(',')
+        self.components = []
+        if len(options.components) != 0:
+            components_list = options.components.split(',')
+            #define a generator to generate combination from a list
+            def _combinator(s):
+                if len(s) == 1:
+                    def gen(lst):
+                        yield []
+                        yield [lst[0],]
+                else:
+                    def gen(a):
+                        lst = a[:]
+                        item = lst.pop()
+                        for i in _combinator(lst):
+                            b = i[:]
+                            c = i[:]
+                            c.append(item)
+                            yield b
+                            yield c
+                generator = gen(s)
+                return generator
+            for _sut in _combinator(components_list):
+                if len(_sut) == 0:
+                    continue
+                is_inserted = False
+               #create a list with order of the length of items from short to long
+                for item in self.components:
+                    if len(_sut) < len(item):
+                        self.components.insert(self.components.index(item), _sut)
+                        is_inserted = True
+                        break
+                if not is_inserted:
+                    self.components.append(_sut)
+        if self.sut and len(self.components) == 0:
+            self.components.append(self.sut)
         self.runlog = options.runlog
         self.loop_runs = options.loop_runs
         self.full_python = options.full_python
@@ -80,9 +120,6 @@ class Checkmate(nose.plugins.Plugin):
 
     def prepareTestLoader(self, loader):
         """Set the system under test in loader config"""
-        config_as_dict = self.config.todict()
-        config_as_dict['system_under_test'] = self.sut
-        self.config.update(config_as_dict)
         checkmate.nose_plugin.ContextSuite.randomized_run = self.randomized_run
         loader.suiteClass=checkmate.nose_plugin.ContextSuiteFactory(config=self.config,
                                         suiteClass=checkmate.nose_plugin.ContextSuite)
@@ -138,19 +175,27 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
-        self.runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
-        self.runtime.setup_environment(self.sut)
-        self.runtime.start_test()
+        if 'pytango' in self.application_class.__module__ and len(self.components) > 1:
+            raise Exception("'pytango' application is not supported with more than one components set")
+        self.runtimes = []
+        for sut in self.components:
+            runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)
+            runtime.setup_environment(sut)
+            runtime.start_test()
+            self.runtimes.append(runtime)
         time.sleep(3)
+        TestRunner.runtime_list = self.runtimes
     
         
     def finalize(self, result):
         """"""
-        self.runtime.stop_test()
+        for runtime in self.runtimes:
+            runtime.stop_test()
 
 
 class TestRunner(nose.core.TextTestRunner):
     loop_runs = 1
+    components = ""
 
     def run(self, test):
         """Overrides to provide plugin hooks and defer all output to
@@ -169,8 +214,15 @@ class TestRunner(nose.core.TextTestRunner):
         start = time.time()
 
         #specific code
-        for _loop in range(self.loop_runs):
-            test(result)
+        for index, _runtime in enumerate(self.runtime_list):
+            if len(self.runtime_list) > 1:
+                #do some dirty print
+                result.stream.writeln('sut=' + ','.join(_runtime.application.system_under_test) + ':')
+            setattr(test.config, 'runtime', _runtime)
+            for _loop in range(self.loop_runs):
+                test(result)
+            if index < len(self.runtime_list)-1:
+                result.stream.writeln()
 
         #from father class code
         stop = time.time()
