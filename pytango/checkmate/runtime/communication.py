@@ -90,6 +90,18 @@ class Communication(checkmate.runtime.communication.Communication):
         except PyTango.ConnectionFailed as e:
             pass
 
+
+class Device(PyTango.Device_4Impl):
+    def __init__(self, _class, name):
+        PyTango.Device_4Impl.__init__(self, _class, name)
+        self.init_device()
+
+    def init_device(self):
+        self.get_device_properties(self.get_device_class())
+        self.set_state(PyTango.DevState.ON)
+        self.incoming = []
+
+
 class Encoder(object):
     def encode(self, exchange):
         return exchange.action
