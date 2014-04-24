@@ -30,9 +30,8 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> import checkmate.runtime.registry
         >>> c2_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C2')
         >>> c1_stub = checkmate.runtime.registry.global_registry.getUtility(checkmate.component.IComponent, 'C1')
-        >>> simulated_exchange = r.application.components['C2'].state_machine.transitions[0].outgoing[0].factory()
-        >>> simulated_exchange.origin_destination('C2', 'C1')
-        >>> o = c2_stub.simulate(simulated_exchange)
+        >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
+        >>> o = c2_stub.simulate(simulated_transition)
         >>> c1_stub.validate(o[0])
         True
         >>> r.stop_test()

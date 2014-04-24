@@ -268,8 +268,8 @@ class ThreadedStub(ThreadedComponent, Stub):
                     self.process([exchange])
 
     @checkmate.timeout_manager.SleepAfterCall()
-    def simulate(self, exchange):
-        output = self.context.simulate(exchange)
+    def simulate(self, transition):
+        output = self.context.simulate_transition(transition)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
