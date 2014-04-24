@@ -50,5 +50,4 @@ class Thread(threading.Thread):
         """
         with self.stop_condition:
             self.stop_condition.request()
-        self.join()
 

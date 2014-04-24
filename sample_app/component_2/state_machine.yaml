@@ -25,6 +25,10 @@ data:
           - Action:             PP(R)
 
   - Transitions:
+      - name: 'C2 pause process'
+        incoming:
+          - Pause:              PA()
+
       - name: 'C2 third action'
         incoming:
           - ThirdAction:        DA()

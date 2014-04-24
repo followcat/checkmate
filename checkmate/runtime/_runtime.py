@@ -1,5 +1,6 @@
 import sys
 import logging
+import threading
 
 import zope.interface
 import zope.component
@@ -11,6 +12,9 @@ import checkmate.application
 import checkmate.runtime.registry
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
+
+
+TIMEOUT_THREAD_STOP = 1
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IRuntime)
@@ -60,7 +64,6 @@ class Runtime(object):
             self.runtime_components[component] = sut
             sut.setup(self)
 
-        import time; time.sleep(1)
         for communication in self.communication_list.values():
             communication.initialize()
 
@@ -111,5 +114,12 @@ class Runtime(object):
             #    _component.join()
         for communication in self.communication_list.values():
             communication.close()
+
+        def check_threads():
+            return len(threading.enumerate()) == 1
+        condition = threading.Condition()
+        with condition:
+            condition.wait_for(check_threads, TIMEOUT_THREAD_STOP)
+
         checkmate.logger.global_logger.stop_exchange_logger()
 

@@ -41,15 +41,12 @@ class TransitionTree(checkmate._tree.Tree):
             >>> tree1.nodes[0] == tree2
             True
         """
-        is_merged = False
-        if (not is_merged) and self.match_parent(tree):
+        if self.match_parent(tree):
             self.add_node(tree)
-            is_merged = True
-        else:
-            for node in self.nodes:
-                if node.merge(tree):
-                    is_merged = True
-        return is_merged
+            return True
+        for node in self.nodes:
+            if node.merge(tree):
+                return True
 
     def match_parent(self, tree):
         """
@@ -71,8 +68,16 @@ class RunCollection(list):
             >>> runs.build_trees_from_application(sample_app.application.TestData())
             >>> len(runs)
             3
+            >>> for _run in runs:
+            ...     len(_run.walk())
+            6
+            3
+            4
+            >>> [run.incoming[0].code for run in runs[2].walk() if len(run.incoming) > 0]
+            ['PP', 'PA', 'PA']
+
         """
-        for _component in list(application.components.values()):
+        for _component in application.components.values():
             for _transition in _component.state_machine.transitions:
                 _tree = TransitionTree(_transition)
                 self._add_tree(_tree)
@@ -96,13 +101,15 @@ class RunCollection(list):
             (True, True)
         """
         is_merged = False
-        for _tree in self:
-            if _tree.merge(des_tree):
+        _index = 0
+        while _index < len(self):
+            _tree = self[_index]
+            if not is_merged and _tree.merge(des_tree):
                 is_merged = True
             if des_tree.merge(_tree):
                 self.remove(_tree)
-                self._add_tree(des_tree)
-                is_merged = True
+                _index -= 1
+            _index += 1
         if not is_merged and des_tree not in self:
             self.append(des_tree)
 

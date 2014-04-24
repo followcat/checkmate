@@ -175,6 +175,8 @@ class Checkmate(nose.plugins.Plugin):
 
     def begin(self):
         """Start the system under test"""
+        if 'pytango' in self.application_class.__module__ and len(self.components) > 1:
+            raise Exception("'pytango' application is not supported with more than one components set")
         self.runtimes = []
         for sut in self.components:
             runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True, full_python=self.full_python)

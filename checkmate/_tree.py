@@ -44,3 +44,29 @@ class Tree(object):
         assert ITree.providedBy(tree)
         self.nodes.append(tree)
 
+    def walk(self):
+        """
+            visit the tree by depth, and return a list of all nodes
+            >>> t = Tree('peasant', [])
+            >>> t.add_node(Tree('spearman', []))
+            >>> t.add_node(Tree('bowman', []))
+            >>> t.nodes[0].add_node(Tree('swordman', []))
+            >>> t.nodes[1].add_node(Tree('longbowman', []))
+            >>> nodes = t.walk()
+            >>> for _node in nodes:
+            ...     print(_node)
+            peasant
+            spearman
+            swordman
+            bowman
+            longbowman
+        """
+
+        def re_walk(current_node, return_list=[]):
+            return_list.append(current_node.root)
+            for _node in current_node.nodes:
+                re_walk(_node, return_list)
+            return return_list
+        return_list = re_walk(self)
+        return return_list
+
