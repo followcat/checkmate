@@ -1,7 +1,5 @@
 import copy
-import time
 import logging
-import socket
 import threading
 
 import zmq
@@ -14,11 +12,9 @@ import checkmate.component
 import checkmate.application
 import checkmate.runtime._pyzmq
 import checkmate.runtime.client
-import checkmate.runtime.registry
+import checkmate.timeout_manager
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
-import checkmate.runtime.interfaces
-import checkmate.timeout_manager
 
 
 SIMULATE_WAIT_SEC = 0.2
@@ -45,30 +41,21 @@ class Component(object):
         self.server_list = []
         self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
+    def setup(self, runtime):
+        self.runtime = runtime
+
     def initialize(self):
-        for _client in self.external_client_list:
-            _client.initialize()
-        for _server in self.server_list:
-            _server.initialize()
-        for _client in self.internal_client_list:
+        for _client in self.external_client_list + self.server_list + self.internal_client_list:
             _client.initialize()
 
     def start(self):
         self.context.start()
-        for _client in self.external_client_list:
-            _client.start()
-        for _server in self.server_list:
-            _server.start()
-        for _client in self.internal_client_list:
+        for _client in self.external_client_list + self.server_list + self.internal_client_list:
             _client.start()
 
     def stop(self):
         self.context.stop()
-        for _client in self.external_client_list:
-            _client.stop()
-        for _server in self.server_list:
-            _server.stop()
-        for _client in self.internal_client_list:
+        for _client in self.external_client_list + self.server_list + self.internal_client_list:
             _client.stop()
 
     def process(self, exchanges):
@@ -139,30 +126,43 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
 
-        _application = checkmate.runtime.registry.global_registry.getUtility(checkmate.application.IApplication)
+    def setup(self, runtime):
+        super().setup(runtime)
+        _application = runtime.application
         if self.using_internal_client:
-            self.internal_client_list = [self._create_client(component, checkmate.runtime._pyzmq.Connector, is_server=True, internal=True, reading_client=self.reading_internal_client),]
-            for _component in [_c for _c in _application.components.keys() if _c != component.name]:
-                for connector in _application.components[_component].connector_list:
-                    self.internal_client_list.append(self._create_client(_application.components[_component], checkmate.runtime._pyzmq.Connector, internal=True, reading_client=self.reading_internal_client))
+            connector_factory = checkmate.runtime._pyzmq.Connector
+            _communication = runtime.communication_list['default']
+            connector = connector_factory(self.context, _communication, is_server=True)
+            self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
+            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                if not hasattr(_application.components[_component], 'connector_list'):
+                    continue
+                for _c in _application.components[_component].connector_list:
+                    connector = connector_factory(_application.components[_component], _communication, is_server=False)
+                    self.internal_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_internal_client))
         try:
             if self.using_external_client:
-                for connector in self.context.connector_list:
-                    self.server_list.append(self._create_client(component, connector, is_server=True))
-            if self.using_external_client:
-                for _component in [_c for _c in _application.components.keys() if _c != component.name]:
-                    for connector in _application.components[_component].connector_list:
+                for connector_factory in self.context.connector_list:
+                    _communication = runtime.communication_list['']
+                    connector = connector_factory(self.context, _communication, is_server=True)
+                    self.server_list.append(self._create_client(self.context, connector))
+                for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                    if not hasattr(_application.components[_component], 'connector_list'):
+                        continue
+                    _communication = runtime.communication_list['']
+                    for connector_factory in _application.components[_component].connector_list:
+                        connector = connector_factory(_application.components[_component], _communication, is_server=False)
                         self.external_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_external_client))
         except AttributeError:
             pass
         except Exception as e:
             raise e
 
-    def _create_client(self, component, connector_factory, internal=False, reading_client=True, is_server=False):
+    def _create_client(self, component, connector, reading_client=True):
         _socket = self.zmq_context.socket(zmq.PULL)
         port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        _client = checkmate.runtime.client.ThreadedClient(component=component, connector=connector_factory, address="tcp://127.0.0.1:%i"%port,
-                                                       internal=internal, sender_socket=reading_client, is_server=is_server)
+        _client = checkmate.runtime.client.ThreadedClient(component=component, connector=connector, address="tcp://127.0.0.1:%i"%port,
+                                                       sender_socket=reading_client)
         if reading_client:
             self.poller.register(_socket, zmq.POLLIN)
         else:
@@ -208,15 +208,13 @@ class ThreadedSut(ThreadedComponent, Sut):
     reading_internal_client = True
     using_external_client = False
 
-    def __init__(self, component):
-        #Call ThreadedSut first ancestor: ThreadedComponent expected
-        super(ThreadedSut, self).__init__(component)
-
-        if hasattr(component, 'launch_command'):
+    def setup(self, runtime):
+        super().setup(runtime)
+        if hasattr(self.context, 'launch_command'):
             for connector in self.context.connector_list:
-                connector.communication(self.context)
+                connector.communication_class(self.context)
         else:
-            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context))
+            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
 
     def initialize(self):
         if hasattr(self.context, 'launch_command'):

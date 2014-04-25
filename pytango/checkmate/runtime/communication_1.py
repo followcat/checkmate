@@ -6,7 +6,6 @@ import zope.component
 
 import PyTango
 
-import checkmate.runtime.registry
 import checkmate.runtime._threading
 import checkmate.runtime.communication
 
@@ -49,22 +48,20 @@ class Encoder(object):
             return sample_app.exchanges.PP()
 
 class Connector(checkmate.runtime.communication.Connector):
-    communication = pytango.checkmate.runtime.communication.Communication
+    communication_class = pytango.checkmate.runtime.communication.Communication
 
-    def __init__(self, component, internal=False, is_server=False):
-        super(Connector, self).__init__(component, internal=internal, is_server=is_server)
+    def __init__(self, component, communication=None, is_server=False):
+        super(Connector, self).__init__(component, communication, is_server=is_server)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
-            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
-            if type(_communication) == self.communication:
-                self.device_name = _communication.create_tango_device('Device_1', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
+            if type(self.communication) == self.communication_class:
+                self.device_name = self.communication.create_tango_device('Device_1', self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
     def initialize(self):
         if self.is_server:
-            _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
-            if type(_communication) == self.communication:
-                _communication.pytango_server.add_class(pytango.component.component_1.C1Interface, Device_1, 'Device_1')
+            if type(self.communication) == self.communication_class:
+                self.communication.pytango_server.add_class(pytango.component.component_1.C1Interface, Device_1, 'Device_1')
 
     def open(self):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
@@ -77,8 +74,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.device_server = self.registry.get_device_by_name(self.device_name)
 
     def close(self):
-        _communication = checkmate.runtime.registry.global_registry.getUtility(checkmate.runtime.interfaces.ICommunication)
-        _communication.delete_tango_device(self.device_name)
+        self.communication.delete_tango_device(self.device_name)
 
     def receive(self):
         try:

@@ -22,7 +22,7 @@ class TestCase(nose.case.Test):
             test = plug_test
         if checkmate.runtime.interfaces.IProcedure.providedBy(test):
             config_as_dict = self.config.todict()
-            test(config_as_dict['system_under_test'], result)
+            test(config_as_dict['runtime'], result)
         else:
             test(result)
 
@@ -34,7 +34,13 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def runTest(self):
         """"""
         config_as_dict = self.config.todict()
-        self.test(system_under_test=config_as_dict['system_under_test'])
+        self.test(runtime=config_as_dict['runtime'])
+
+    def shortDescription(self):
+        if hasattr(self.test, 'description'):
+            return self.test.description
+        return str(self)
+
 
 class ContextSuite(nose.suite.ContextSuite):
     """"""

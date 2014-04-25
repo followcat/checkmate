@@ -28,7 +28,8 @@ def get_path_from_pathfinder(application, target):
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'
-        >>> checkmate.runtime.registry.global_registry.registerUtility(app, checkmate.application.IApplication)
+        >>> registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
+        >>> registry.registerUtility(app, checkmate.application.IApplication)
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for _s in setup:
@@ -38,7 +39,7 @@ def get_path_from_pathfinder(application, target):
     """
     path = []
     for _run, _app in _find_runs(application, target).items():
-        proc = checkmate.runtime.procedure.Procedure(is_setup=True)
+        proc = checkmate.runtime.procedure.Procedure(type(application), is_setup=True)
         _app.fill_procedure(proc)
         path.append(proc)
     return path
