@@ -89,6 +89,7 @@ class Data(object):
         self.codes = codes
         self.full_description = full_description
 
+    @property
     def storage(self):
         _list = []
         for code in self.codes:
@@ -102,6 +103,13 @@ class Data(object):
             _list.append(store(self.type, self.interface, ''))
         return _list
         
+    def get_description(self, item):
+        """ Return description corresponding to item """
+        for stored_item in list(self.storage):
+            if item == stored_item.factory():
+                return stored_item.description
+        return (None,None,None)
+
 
 class TransitionData(collections.OrderedDict):
     def __init__(self, initial, incoming, final, outgoing):
@@ -121,20 +129,8 @@ class TransitionData(collections.OrderedDict):
         self['outgoing'] = outgoing
     
 
-class PartitionStorage(object):
-    def __init__(self, data):
-        """ Build the list of InternalStorage
-        """
-        assert isinstance(data, Data)
-        self.type = data.type
-        self.storage = data.storage()
-
-    def get_description(self, item):
-        """ Return description corresponding to item """
-        for stored_item in list(self.storage):
-            if item == stored_item.factory():
-                return stored_item.description
-        return (None,None,None)
+class PartitionStorage(Data):
+    """"""
 
 
 class TransitionStorage(object):
@@ -145,7 +141,7 @@ class TransitionStorage(object):
         for key in iter(transition):
             _list = []
             for item in transition[key]:
-                _list.append(item.storage()[0])
+                _list.append(item.storage[0])
             setattr(self, key, _list)
 
         for _attribute in ('incoming', 'final', 'outgoing'):

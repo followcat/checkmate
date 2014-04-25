@@ -159,7 +159,7 @@ class Declarator(object):
         cls = checkmate._utils.get_class_implementing(interface)
         set_exchanges_codes(partition_type, _module, codes, cls)
 
-        partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, interface, codes, full_description)
         setattr(cls, 'partition_storage', partition_storage)
 
         return (interface, partition_storage)
