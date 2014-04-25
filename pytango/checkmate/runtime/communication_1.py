@@ -1,5 +1,3 @@
-import PyTango
-
 import pytango.component.component_1
 import pytango.checkmate.runtime.communication
 
