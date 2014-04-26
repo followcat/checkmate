@@ -168,6 +168,6 @@ def get_transitions_from_features(exchange_module, state_modules):
     array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
     initial_transitions = []
     for array_items in array_list:
-        initial_transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
+        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return initial_transitions 
 

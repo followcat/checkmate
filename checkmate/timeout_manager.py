@@ -28,7 +28,7 @@ import checkmate.runtime.component
 
 @zope.interface.implementer(checkmate.component.IComponent)
 class Comp(checkmate.component.Component):
-    services = []
+    service_interfaces = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 
