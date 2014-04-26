@@ -13,17 +13,21 @@ import checkmate.runtime.communication
 import sample_app.exchanges
 
 
-def add_device_service(_class, _interface, services):
+def add_device_service(services):
     d = {}
-    command = {}
     for name in services:
         code = """
 def %s(self):
     self.incoming.append('%s')""" %(name, name)
         exec(code, d)
+    return d
+
+def add_device_interface(services):
+    command = {}
+    for name in services:
         command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
-        setattr(_class, name, d[name])
-    setattr(_interface, 'cmd_list', command)
+    return {'cmd_list': command}
+
 
 class Registry(checkmate.runtime._threading.Thread):
     def __init__(self, event):
@@ -145,14 +149,15 @@ class Connector(checkmate.runtime.communication.Connector):
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             if type(self.communication) == self.communication_class:
-                add_device_service(self.device_class, self.interface_class, component.services)
-                self.device_name = self.communication.create_tango_device(self.__class__.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
+                self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services))
+                self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
+                self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
     def initialize(self):
         if self.is_server:
             if type(self.communication) == self.communication_class:
-                self.communication.pytango_server.add_class(self.__class__.interface_class, self.__class__.device_class, self.__class__.device_class.__name__)
+                self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
         @checkmate.timeout_manager.WaitOnException(timeout=10)

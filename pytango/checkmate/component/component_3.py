@@ -4,7 +4,7 @@ import sample_app.exchanges
 import sample_app.data_structure
 import sample_app.component_3.states
 
-import pytango.checkmate.runtime.communication_3
+import pytango.checkmate.runtime.communication
 
         
 class Component_3(checkmate.component.Component, metaclass=checkmate.component.ComponentMeta):
@@ -12,7 +12,7 @@ class Component_3(checkmate.component.Component, metaclass=checkmate.component.C
     state_module = sample_app.component_3.states
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
-    connector_list = (pytango.checkmate.runtime.communication_3.Connector,)
+    connector_list = (pytango.checkmate.runtime.communication.Connector,)
 
     def __init__(self, name, full_python=False):
         super(Component_3, self).__init__(name, full_python)
