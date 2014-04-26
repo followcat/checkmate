@@ -13,9 +13,9 @@ import checkmate.runtime.communication
 import sample_app.exchanges
 
 
-def add_device_service(_class):
+def add_device_service(_class, services):
     d = {}
-    for name in _class.services:
+    for name in services:
         code = """
 def %s(self):
     self.incoming.append('%s')""" %(name, name)
@@ -127,6 +127,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             if type(self.communication) == self.communication_class:
+                add_device_service(self.device_class, component.services)
                 self.device_name = self.communication.create_tango_device(self.__class__.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
