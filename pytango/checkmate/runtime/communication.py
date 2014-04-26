@@ -13,14 +13,17 @@ import checkmate.runtime.communication
 import sample_app.exchanges
 
 
-def add_device_service(_class, services):
+def add_device_service(_class, _interface, services):
     d = {}
+    command = {}
     for name in services:
         code = """
 def %s(self):
     self.incoming.append('%s')""" %(name, name)
         exec(code, d)
+        command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
         setattr(_class, name, d[name])
+    setattr(_interface, 'cmd_list', command)
 
 class Registry(checkmate.runtime._threading.Thread):
     def __init__(self, event):
@@ -111,6 +114,21 @@ class Device(PyTango.Device_4Impl):
         self.incoming = []
 
 
+class DeviceInterface(PyTango.DeviceClass):
+    cmd_list = {}
+    attr_list = {}
+
+    def dyn_attr(self, dev_list):
+        """"""
+        for dev in dev_list:
+            try:
+                dev.initialize_dynamic_attributes()
+            except:
+                import traceback
+                dev.warn_stream("Failed to initialize dynamic attributes")
+                dev.debug_stream("Details: " + traceback.format_exc())
+
+
 class Encoder(object):
     def encode(self, exchange):
         return exchange.action
@@ -127,7 +145,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             if type(self.communication) == self.communication_class:
-                add_device_service(self.device_class, component.services)
+                add_device_service(self.device_class, self.interface_class, component.services)
                 self.device_name = self.communication.create_tango_device(self.__class__.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
 
