@@ -111,13 +111,6 @@ class Component(object):
             >>> out[0].action == 'AC'
             True
         """
-        if len(_transition.incoming) > 0:
-            exchange = _transition.incoming[0].factory()
-        else:
-            exchange = _transition.outgoing[0].factory()
-        _transition = self.get_transition_by_output([exchange])
-        if _transition is None:
-            return []
         output = []
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):

@@ -85,10 +85,14 @@ class Sandbox(object):
                     if not foreign_transitions and not _transition in component.state_machine.transitions:
                         continue
                     _incoming = _transition.generic_incoming(component.states)
-                    _outgoing = component.simulate(_transition)
-                    if len(_outgoing) == 0:
-                        #simulation failed
+                    component_transition = component.get_transition_by_output(_incoming)
+                    if component_transition is None:
+                        #failed
                         continue
+                    _outgoing = component.simulate(component_transition)
+                    self.transitions = component_transition
+                    self.transitions.origin = _outgoing[0].origin
+                    self.transitions.destination = _outgoing[0].destination
                     break
                 if len(_outgoing) == 0:
                     for component in list(self.application.components.values()):
@@ -98,9 +102,6 @@ class Sandbox(object):
                         _outgoing = component.process([_incoming[0]])
                         if len(_outgoing) == 0:
                             continue
-                        _transition.origin = _incoming[0].origin
-                        _transition.destination = _incoming[0].destination
-                        self.transitions = checkmate._tree.Tree(_transition, [])
                         break
             #for now, this is not a real empty incoming but the root of TransitionTree
             elif len(_transition.outgoing) > 0:
@@ -110,11 +111,14 @@ class Sandbox(object):
                     _outgoing = component.simulate(_transition)
                     if len(_outgoing) == 0:
                         continue
+                    self.transitions = _transition
+                    self.transitions.origin = _outgoing[0].origin
+                    self.transitions.destination = _outgoing[0].destination
                     break
             if len(_outgoing) == 0:
                 return False
 
-            self.transitions = self.generate(_outgoing, self.transitions)
+            self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
 
             if self.is_run:
                 self.update_required_states(_transition)
@@ -164,4 +168,3 @@ class Sandbox(object):
             _final = transition.final[index]
             if _final.code not in [_temp_final.code for _temp_final in self.final]:
                 self.final.append(_final)
-

@@ -57,9 +57,9 @@ def _compatible_skip_test(procedure, message):
     """
     if hasattr(procedure.result, 'addSkip'):
         if procedure.result is not None:
-            procedure.result.startTest(procedure)  
+            procedure.result.startTest(procedure)
             procedure.result.addSkip(procedure, message)
-            procedure.result.stopTest(procedure)  
+            procedure.result.stopTest(procedure)
             return
     raise nose.plugins.skip.SkipTest(message)
 
@@ -71,7 +71,7 @@ class Procedure(object):
         self.is_setup = is_setup
         self.components = []
         self.logger = logging.getLogger('checkmate.runtime.procedure')
-        
+
     def __call__(self, runtime, result=None, *args):
         """
             >>> import sample_app.application
@@ -119,7 +119,7 @@ class Procedure(object):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
-                self.transform_to_initial() 
+                self.transform_to_initial()
             if not self.application.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
         self._run_from_startpoint(self.transitions)
@@ -141,11 +141,16 @@ class Procedure(object):
 
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
-            self.result.startTest(self)  
-        stub = self.runtime.runtime_components[current_node.root.origin]
+            self.result.startTest(self)
+
+        for component in self.application.components.values():
+            if current_node.root.outgoing[0].code in component.outgoings:
+                stub_name = component.name
+                
+        stub = self.runtime.runtime_components[stub_name]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
-        
+
         if hasattr(self, 'final'):
             @checkmate.timeout_manager.WaitOnFalse()
             def check_compare_states():
