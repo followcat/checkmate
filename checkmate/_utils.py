@@ -1,4 +1,5 @@
 import ast
+import imp
 import sys
 
 import zope.interface

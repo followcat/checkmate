@@ -47,6 +47,7 @@ def store(type, interface, name, description=None):
     """
         >>> import checkmate.test_data
         >>> import sample_app.exchanges
+        >>> import sample_app.component.component_1_states
         >>> a = checkmate.test_data.App()
         >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
         >>> attr = st.factory()
@@ -55,7 +56,7 @@ def store(type, interface, name, description=None):
         >>> st = store('data_structure', sample_app.data_structure.IAttribute, 'AT')
         >>> attr = st.factory()
 
-        >>> st = store('states', sample_app.component_1.states.IAnotherState, 'Q0()')
+        >>> st = store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> state.value
         [None]
@@ -224,7 +225,6 @@ class InternalStorage(object):
     def resolve(self, arg, states=[], exchanges=[]):
         """
             >>> import checkmate.test_data
-            >>> import sample_app.component_1.states
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
             >>> t = a.components['C1'].state_machine.transitions[1]

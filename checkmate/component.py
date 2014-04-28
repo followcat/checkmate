@@ -1,4 +1,7 @@
 import os
+import imp
+import sys
+import importlib
 
 import zope.interface
 
@@ -9,13 +12,35 @@ import checkmate.service_registry
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        state_module = namespace['state_module']
-        data_structure_module = namespace['data_structure_module']
         exchange_module = namespace['exchange_module']
+        data_structure_module = namespace['data_structure_module']
 
-        path = os.path.dirname(state_module.__file__)
-        filename = 'state_machine.yaml'
-        with open(os.sep.join([path, filename]), 'r') as _file:
+        _module = namespace['__module__']
+        _state_name = name.lower() + '_states'
+        state_module_name = _module.replace(name.lower(), _state_name)
+        if state_module_name in sys.modules:
+            state_module = sys.modules[state_module_name]
+        else:
+            state_module = imp.new_module(state_module_name)
+            state_module.__file__ = exchange_module.__file__.replace(name.lower(), name.lower() + '_state')
+            module_code = """
+                \nimport zope.interface.interface\n
+                \nimport checkmate.state\n
+                \n
+                \ndef declare(name, param):
+                \n    return type(name, (checkmate.state.State,), param)\n
+                \n
+                \ndef declare_interface(name, param):
+                \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)\n
+            """
+            exec(module_code, state_module.__dict__, state_module.__dict__)
+            sys.modules[state_module_name] = state_module
+            setattr(importlib.import_module(_module.replace('.'+name.lower(), ''), _module.replace('.component'+name.lower(), '')), _state_name, state_module)
+        namespace['state_module'] = state_module
+
+        path = os.path.dirname(os.path.join(exchange_module.__file__))
+        filename = name.lower() + '.yaml'
+        with open(os.sep.join([path, 'component', filename]), 'r') as _file:
             matrix = _file.read()
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
@@ -111,8 +136,8 @@ class Component(object):
     def simulate(self, exchange):
         """
             >>> import sample_app.application
-            >>> import sample_app.component_2.component
-            >>> c2 = sample_app.component_2.component.Component_2('C2')
+            >>> import sample_app.component.component_2
+            >>> c2 = sample_app.component.component_2.Component_2('C2')
             >>> c2.start()
             >>> out = c2.simulate(sample_app.exchanges.AC())
             >>> out[0].action == 'AC'
