@@ -34,8 +34,8 @@ class Comp(checkmate.component.Component):
 
 class App(checkmate.application.Application):
     __module__ = 'timeout_manager.test.App'
-    def __init__(self, full_python=True):
-        super().__init__(full_python)
+    def __init__(self):
+        super().__init__()
         self.communication_list = (checkmate.runtime._pyzmq.Communication,)
         self.components = {'a': Comp('a'), 'b': Comp('b')}
 

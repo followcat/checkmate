@@ -12,15 +12,15 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
-    component_classes = {('C1',): 'Component_1',
-                         ('C2',): 'Component_2',
-                         ('C3',): 'Component_3',
+    component_classes = {('C1',): ('Component_1', {}),
+                         ('C2',): ('Component_2', {}),
+                         ('C3',): ('Component_3', {}),
                           }
 
     communication_list = (checkmate.runtime._pyzmq.Communication,)
 
 
-    def __init__(self, full_python=False):
+    def __init__(self):
         """
             >>> import sample_app.application
             >>> import checkmate.component
@@ -63,5 +63,5 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             []
 
         """
-        super(TestData, self).__init__(full_python)
+        super(TestData, self).__init__()
 
