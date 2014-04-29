@@ -92,15 +92,6 @@ class Sandbox(object):
                     _outgoing = component.simulate(component_transition)
                     self.transitions = component_transition
                     break
-                if len(_outgoing) == 0:
-                    for component in list(self.application.components.values()):
-                        if not foreign_transitions and not _transition in component.state_machine.transitions:
-                            continue
-                        _incoming = _transition.generic_incoming(component.states)
-                        _outgoing = component.process([_incoming[0]])
-                        if len(_outgoing) == 0:
-                            continue
-                        break
             #for now, this is not a real empty incoming but the root of TransitionTree
             elif len(_transition.outgoing) > 0:
                 for component in list(self.application.components.values()):
