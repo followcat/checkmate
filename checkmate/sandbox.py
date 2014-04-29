@@ -79,29 +79,24 @@ class Sandbox(object):
         """
         for _transition in transitions:
             _outgoing = []
-            if len(_transition.incoming) > 0:
-                #try simulation by any component first
-                for component in list(self.application.components.values()):
-                    if not foreign_transitions and not _transition in component.state_machine.transitions:
-                        continue
+            for component in list(self.application.components.values()):
+                if not foreign_transitions and not _transition in component.state_machine.transitions:
+                    continue
+                if len(_transition.incoming) > 0:
                     _incoming = _transition.generic_incoming(component.states)
                     component_transition = component.get_transition_by_output(_incoming)
                     if component_transition is None:
-                        #failed
                         continue
                     _outgoing = component.simulate(component_transition)
                     self.transitions = component_transition
                     break
-            #for now, this is not a real empty incoming but the root of TransitionTree
-            elif len(_transition.outgoing) > 0:
-                for component in list(self.application.components.values()):
-                    if not foreign_transitions and not _transition in component.state_machine.transitions:
-                        continue
+                elif len(_transition.outgoing) > 0:
                     _outgoing = component.simulate(_transition)
                     if len(_outgoing) == 0:
                         continue
                     self.transitions = _transition
                     break
+
             if len(_outgoing) == 0:
                 return False
 
