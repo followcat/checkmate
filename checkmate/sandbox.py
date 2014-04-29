@@ -62,51 +62,51 @@ class Sandbox(object):
     def is_run(self):
         return self.transitions is not None
 
-    def __call__(self, transitions, foreign_transitions=False):
+    def __call__(self, transition, foreign_transitions=False):
         """
             >>> import sample_app.application
             >>> import checkmate.sandbox
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
             'True'
-            >>> box([sample_app.application.TestData().components['C1'].state_machine.transitions[0],
-            ...      sample_app.application.TestData().components['C3'].state_machine.transitions[1]])
+            >>> box(sample_app.application.TestData().components['C1'].state_machine.transitions[0])
+            True
+            >>> box(sample_app.application.TestData().components['C3'].state_machine.transitions[1])
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> box.application.components['C3'].states[0].value
             'False'
         """
-        for _transition in transitions:
-            _outgoing = []
-            for component in list(self.application.components.values()):
-                if not foreign_transitions and not _transition in component.state_machine.transitions:
+        self.transitions = None
+        _outgoing = []
+        for component in list(self.application.components.values()):
+            if not foreign_transitions and not transition in component.state_machine.transitions:
+                continue
+            if len(transition.incoming) > 0:
+                _incoming = transition.generic_incoming(component.states)
+                component_transition = component.get_transition_by_output(_incoming)
+                if component_transition is None:
                     continue
-                if len(_transition.incoming) > 0:
-                    _incoming = _transition.generic_incoming(component.states)
-                    component_transition = component.get_transition_by_output(_incoming)
-                    if component_transition is None:
-                        continue
-                    _outgoing = component.simulate(component_transition)
-                    self.transitions = component_transition
-                    break
-                elif len(_transition.outgoing) > 0:
-                    _outgoing = component.simulate(_transition)
-                    if len(_outgoing) == 0:
-                        continue
-                    self.transitions = _transition
-                    break
+                _outgoing = component.simulate(component_transition)
+                self.transitions = component_transition
+                break
+            elif len(transition.outgoing) > 0:
+                _outgoing = component.simulate(transition)
+                if len(_outgoing) == 0:
+                    continue
+                self.transitions = transition
+                break
 
-            if len(_outgoing) == 0:
-                return False
+        if len(_outgoing) == 0:
+            return False
 
-            for component in list(self.application.components.values()):
-                if self.transitions in component.state_machine.transitions:
-                    self.transitions.owner = component.name
-            self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
-
-            if self.is_run:
-                self.update_required_states(_transition)
+        for component in list(self.application.components.values()):
+            if self.transitions in component.state_machine.transitions:
+                self.transitions.owner = component.name
+        self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
+        if self.is_run:
+            self.update_required_states(transition)
         return self.is_run
 
     def generate(self, exchanges, tree=None):

@@ -81,7 +81,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box([_transition], foreign_transitions=True)
+        box(_transition, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
@@ -103,7 +103,7 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         True
         >>> box.application.compare_states(transition_list[0].initial)
         True
-        >>> box([transition_list[0]], foreign_transitions=True)
+        >>> box(transition_list[0], foreign_transitions=True)
         True
         >>> len(box.initial)
         3
@@ -133,6 +133,6 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box([_transition], foreign_transitions=True)
+        box(_transition, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
