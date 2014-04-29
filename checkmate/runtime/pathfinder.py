@@ -33,7 +33,7 @@ def get_path_from_pathfinder(application, target):
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for _s in setup:
-        ...     print(_s.transitions.root.incoming[0].factory().action, app.compare_states(_s.initial))
+        ...     print(_s.transitions.root.incoming[0].code, app.compare_states(_s.initial))
         RL True
         PP False
     """
@@ -65,7 +65,7 @@ def _find_runs(application, target):
         ...     
 
         >>> nbox = checkmate.sandbox.Sandbox(box.application)
-        >>> proc[0][0].transitions.root.incoming[0].factory().action
+        >>> proc[0][0].transitions.root.incoming[0].code
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
         1

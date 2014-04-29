@@ -16,11 +16,11 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
             >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded()
-            >>> proc.transitions.nodes[1].root.incoming[0].factory().action
+            >>> proc.transitions.nodes[1].root.incoming[0].code
             'ARE'
-            >>> proc.transitions.nodes[1].nodes[0].root.incoming[0].factory().action
+            >>> proc.transitions.nodes[1].nodes[0].root.incoming[0].code
             'AP'
-            >>> proc.transitions.nodes[1].nodes[0].nodes[0].root.incoming[0].factory().action
+            >>> proc.transitions.nodes[1].nodes[0].nodes[0].root.incoming[0].code
             'DA'
             >>> proc(result=None, runtime=r)
             >>> r.stop_test()
@@ -42,9 +42,9 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> proc = TestProcedureRun2Threaded()
-            >>> proc.transitions.root.incoming[0].factory().action
+            >>> proc.transitions.root.incoming[0].code
             'RL'
-            >>> proc.transitions.nodes[0].root.incoming[0].factory().action
+            >>> proc.transitions.nodes[0].root.incoming[0].code
             'DR'
             >>> r.stop_test()
         """
@@ -71,5 +71,5 @@ def TestProcedureGenerator(application_class=checkmate.test_data.App):
     #Skip the third transition from the last as 'C3' state does not match
     for _t in c2.state_machine.transitions[:1]:
         box([_t])
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].factory().action
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
