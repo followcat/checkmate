@@ -71,5 +71,5 @@ def TestProcedureGenerator(application_class=checkmate.test_data.App):
     #Skip the third transition from the last as 'C3' state does not match
     for _t in c2.state_machine.transitions[:1]:
         box([_t])
-        yield build_procedure(box), box.transitions.root.origin, box.transitions.root.outgoing[0].factory().action, box.transitions.root.destination
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].factory().action
 

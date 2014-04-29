@@ -142,12 +142,8 @@ class Procedure(object):
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
             self.result.startTest(self)
-
-        for component in self.application.components.values():
-            if current_node.root.outgoing[0].code in component.outgoings:
-                stub_name = component.name
                 
-        stub = self.runtime.runtime_components[stub_name]
+        stub = self.runtime.runtime_components[current_node.root.owner]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
 
@@ -169,11 +165,11 @@ class Procedure(object):
 
     def _follow_up(self, node):
         for _next in node.nodes:
-            if _next.root.destination not in self.system_under_test:
-                stub = self.runtime.runtime_components[_next.root.destination]
+            if _next.root.owner not in self.system_under_test:
+                stub = self.runtime.runtime_components[_next.root.owner]
                 exchange = _next.root.incoming[0].factory()
                 if not stub.validate(exchange):
-                    raise Exception("No exchange '%s' received by component '%s'" %(exchange.action, _next.root.destination))
+                    raise Exception("No exchange '%s' received by component '%s'" %(exchange.action, _next.root.owner))
         for _next in node.nodes:
             self._follow_up(_next)
 
