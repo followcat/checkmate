@@ -27,7 +27,7 @@ class ISut(zope.interface.Interface):
 
 class IStub(ISut):
     """"""
-    def simulate(self, exchange):
+    def simulate(self, transition):
         """"""
 
     def validate(self, exchange):
@@ -67,8 +67,8 @@ class Component(object):
         return output
 
     @checkmate.timeout_manager.SleepAfterCall()
-    def simulate(self, exchange):
-        output = self.context.simulate(exchange)
+    def simulate(self, transition):
+        output = self.context.simulate(transition)
         for _o in output:
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
@@ -191,8 +191,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     self.process([exchange])
 
     @checkmate.timeout_manager.SleepAfterCall()
-    def simulate(self, exchange):
-        output = self.context.simulate(exchange)
+    def simulate(self, transition):
+        output = self.context.simulate(transition)
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
                 client.send(_o)
@@ -274,7 +274,7 @@ class ThreadedStub(ThreadedComponent, Stub):
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-            self.logger.info("%s simulate exchange %s to %s"%(self.context.name, _o.value, _o.destination))
+            self.logger.info("%s simulate transition and output %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
             
     @checkmate.timeout_manager.WaitOnFalse(0.3)
