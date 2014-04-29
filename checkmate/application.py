@@ -1,13 +1,12 @@
 import os
-import collections
+import imp
+import sys
+import importlib
 
 import zope.interface
 
 import checkmate.runs
-import checkmate._utils
-import checkmate.exchange
-import checkmate.data_structure
-import checkmate.parser.yaml_visitor
+import checkmate.component
 import checkmate.partition_declarator
 
 
@@ -28,8 +27,30 @@ class ApplicationMeta(type):
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
+            pass
+
+        _module = namespace['__module__']
+        _file = sys.modules[_module].__file__
+        for key, class_name in namespace['component_classes'].items():
+            component_module_name = _module.replace('application', 'component.' + class_name.lower())
+            if component_module_name in sys.modules:
+                component_module = sys.modules[component_module_name]
+            else:
+                component_module = imp.new_module(component_module_name)
+                component_module.__file__ = _file.replace('application', os.path.join('component', class_name.lower()))
+                sys.modules[component_module_name] = component_module
+                setattr(importlib.import_module(_module.replace('application', 'component'), _module.replace('.application', '')), class_name.lower(), component_module)
+            d = {'exchange_module': exchange_module,
+                 'data_structure_module': data_structure_module,
+                 '__module__': component_module_name,
+                 'connector_list': [_c.connector_class for _c in namespace['communication_list']]
+                }
+            _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
+            setattr(component_module, class_name, _class)
+            namespace['component_classes'][key] = _class
+            
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 class IApplication(zope.interface.Interface):
@@ -37,13 +58,18 @@ class IApplication(zope.interface.Interface):
 
 @zope.interface.implementer(IApplication)
 class Application(object):
+    component_classes = {}
+    communication_list = ()
+
     def __init__(self, full_python=False):
         """
         """
-        self.components = {}
-        self.procedure_list = []
         self.name = self.__module__.split('.')[-2]
-        self.communication_list = ()
+        self.components = {}
+        for components, _class in self.component_classes.items():
+            for _c in components:
+                self.components[_c] = _class(_c)
+
 
     def __getattr__(self, name):
         if name == 'run_collection':

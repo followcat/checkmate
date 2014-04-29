@@ -22,16 +22,16 @@ class ComponentMeta(type):
             state_module = sys.modules[state_module_name]
         else:
             state_module = imp.new_module(state_module_name)
-            state_module.__file__ = exchange_module.__file__.replace(name.lower(), name.lower() + '_state')
+            state_module.__file__ = exchange_module.__file__.replace(name.lower(), _state_name)
             module_code = """
-                \nimport zope.interface.interface\n
-                \nimport checkmate.state\n
+                \nimport zope.interface.interface
+                \nimport checkmate.state
                 \n
                 \ndef declare(name, param):
-                \n    return type(name, (checkmate.state.State,), param)\n
+                \n    return type(name, (checkmate.state.State,), param)
                 \n
                 \ndef declare_interface(name, param):
-                \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)\n
+                \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
             """
             exec(module_code, state_module.__dict__, state_module.__dict__)
             sys.modules[state_module_name] = state_module

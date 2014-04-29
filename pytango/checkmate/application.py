@@ -28,27 +28,12 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
         >>> r.stop_test()
 
     """
-    #database = 'tango'
     data_structure_module = sample_app.data_structure
     exchange_module = sample_app.exchanges
 
-    def __init__(self, full_python=False):
-        super(Application, self).__init__(full_python)
-
-        import pytango.checkmate.component.component_1
-        import pytango.checkmate.component.component_2
-        import pytango.checkmate.component.component_3
-        self.components = {'C1': pytango.checkmate.component.component_1.Component_1,
-                           'C2': pytango.checkmate.component.component_2.Component_2,
-                           'C3': pytango.checkmate.component.component_3.Component_3,
-                          }
-
-        for name in list(self.components.keys()):
-            self.components[name] = self.components[name](name, full_python)
-
-        self.communication_list = (pytango.checkmate.runtime.communication.Communication,)
-
-        #db = PyTango.Database()
-        #for name in list(self.components.keys()):
-        #    db.add_device(self.components[name].device_info())
+    component_classes = {('C1',): 'Component_1',
+                         ('C2',): 'Component_2',
+                         ('C3',): 'Component_3',
+                        }
+    communication_list = (pytango.checkmate.runtime.communication.Communication,)
 
