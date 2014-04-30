@@ -168,7 +168,7 @@ class Procedure(object):
             if _next.root.owner not in self.system_under_test:
                 stub = self.runtime.runtime_components[_next.root.owner]
                 if not stub.validate(_next.root):
-                    raise Exception("No exchange '%s' received by component '%s'" %(exchange.action, _next.root.owner))
+                    raise Exception("No exchange '%s' received by component '%s'" %(_next.root.incoming[0].code, _next.root.owner))
         for _next in node.nodes:
             self._follow_up(_next)
 

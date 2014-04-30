@@ -38,6 +38,8 @@ class Component(object):
     def __init__(self, name, full_python=False):
         self.states = []
         self.name = name
+        for _tr in self.state_machine.transitions:
+            _tr.owner = self.name
 
     def get_transition_by_input(self, exchange):
         """

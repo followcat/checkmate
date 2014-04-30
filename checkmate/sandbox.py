@@ -101,10 +101,6 @@ class Sandbox(object):
 
         if len(_outgoing) == 0:
             return False
-
-        for component in self.application.components.values():
-            if self.transitions in component.state_machine.transitions:
-                self.transitions.owner = component.name
         self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
         if self.is_run:
             self.update_required_states(transition)
@@ -128,10 +124,6 @@ class Sandbox(object):
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
             if len(_outgoings) == 0 and self.application.components[_exchange.destination].transition_not_found:
                 return None
-
-            for component in self.application.components.values():
-                if _transition in component.state_machine.transitions:
-                    _transition.owner = component.name
 
             self.update_required_states(_transition)
             tree.add_node(checkmate._tree.Tree(_transition, []))
