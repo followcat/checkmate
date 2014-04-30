@@ -97,7 +97,7 @@ class Procedure(object):
             >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
             ('True', 'False', 'True', 'False')
             >>> proc = procedures[0]
-            >>> proc.transitions.root.incoming[0].code
+            >>> proc.transitions.root.outgoing[0].code
             'AC'
             >>> proc(r1)
             >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
