@@ -13,7 +13,7 @@ class ComponentMeta(type):
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
-        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states', '.component', '.component')
+        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
         module_code = """
                 \nimport zope.interface.interface
                 \nimport checkmate.state

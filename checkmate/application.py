@@ -28,7 +28,7 @@ class ApplicationMeta(type):
             pass
 
         for key, (class_name, class_dict) in namespace['component_classes'].items():
-            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), '', '.component')
+            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), '.component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  '__module__': component_module.__name__,

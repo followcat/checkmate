@@ -4,7 +4,7 @@ import sys
 import importlib
 
 
-def get_module(package_name, module_name, alternative_package=None, target_package=''):
+def get_module(package_name, module_name, alternative_package=None):
     """
         >>> import checkmate._module
         >>> import sample_app.application
