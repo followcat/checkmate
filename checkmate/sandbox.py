@@ -80,8 +80,11 @@ class Sandbox(object):
         """
         self.transitions = None
         _outgoing = []
+        transitions = []
+        for _c in self.application.components:
+            transitions.extend(self.application.components[_c].state_machine.transitions)
         for component in list(self.application.components.values()):
-            if not foreign_transitions and not transition in component.state_machine.transitions:
+            if not foreign_transitions and not transition in transitions:
                 continue
             if len(transition.incoming) > 0:
                 _incoming = transition.generic_incoming(component.states)
@@ -121,10 +124,12 @@ class Sandbox(object):
             'True'
         """
         i = 0
+        Found = True
         for _exchange in exchanges:
             _transition = self.application.components[_exchange.destination].get_transition_by_input([_exchange])
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
             if len(_outgoings) == 0 and self.application.components[_exchange.destination].transition_not_found:
+                Found = False
                 continue
 
             for component in list(self.application.components.values()):
@@ -140,6 +145,8 @@ class Sandbox(object):
                 tree.add_node(checkmate._tree.Tree(_transition, []))
                 tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
                 i += 1
+        if not Found:
+            return None
         return tree
 
     def fill_procedure(self, procedure):
