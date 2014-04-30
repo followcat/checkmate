@@ -117,34 +117,26 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.AC()
             >>> ex.origin_destination('C2', 'C1')
-            >>> transitions = box.generate([ex])
+            >>> _t = box.application.components['C2'].get_transition_by_output([ex])
+            >>> transitions = box.generate([ex], checkmate._tree.Tree(_t, []))
             >>> box.application.components['C3'].states[0].value
             'True'
         """
         i = 0
-        Found = True
         for _exchange in exchanges:
             _transition = self.application.components[_exchange.destination].get_transition_by_input([_exchange])
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
             if len(_outgoings) == 0 and self.application.components[_exchange.destination].transition_not_found:
-                Found = False
-                continue
+                return None
 
             for component in self.application.components.values():
                 if _transition in component.state_machine.transitions:
                     _transition.owner = component.name
 
             self.update_required_states(_transition)
-            if tree is None:
-                tree = checkmate._tree.Tree(_transition, [])
-                tree = self.generate(_outgoings, tree)
-                self.transitions = tree
-            else:
-                tree.add_node(checkmate._tree.Tree(_transition, []))
-                tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
-                i += 1
-        if not Found:
-            return None
+            tree.add_node(checkmate._tree.Tree(_transition, []))
+            tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
+            i += 1
         return tree
 
     def fill_procedure(self, procedure):
