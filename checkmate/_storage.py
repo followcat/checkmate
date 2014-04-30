@@ -4,6 +4,7 @@ import collections
 import zope.interface
 
 import checkmate._utils
+import checkmate._module
 
 
 def _build_resolve_logic(transition, type, data):
@@ -70,15 +71,15 @@ def store(type, interface, name, description=None):
         if type == 'exchanges':
             try:
                 return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._utils.get_module_defining(interface), code))
+                        getattr(checkmate._module.get_module_defining(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
+                raise AttributeError(checkmate._module.get_module_defining(interface).__name__+" has no function defined: "+code)
         else:
             try:
                 return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._utils.get_class_implementing(interface), code))
+                        getattr(checkmate._module.get_class_implementing(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._utils.get_class_implementing(interface).__name__+' has no function defined: '+code)
+                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__+' has no function defined: '+code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
@@ -173,7 +174,7 @@ class InternalStorage(object):
         self.code = checkmate._utils.internal_code(name)
         self.description = description
         self.interface = interface
-        self._class = checkmate._utils.get_class_implementing(interface)
+        self._class = checkmate._module.get_class_implementing(interface)
         if function is None:
             self.function = self._class
         else:

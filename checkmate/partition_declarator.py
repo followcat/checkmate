@@ -3,6 +3,7 @@ import functools
 import zope.interface
 
 import checkmate._utils
+import checkmate._module
 import checkmate._storage
 import checkmate.transition
 import checkmate.parser.yaml_visitor
@@ -147,7 +148,7 @@ class Declarator(object):
         set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
-        cls = checkmate._utils.get_class_implementing(interface)
+        cls = checkmate._module.get_class_implementing(interface)
         set_exchanges_codes(partition_type, _module, codes, cls)
 
         partition_storage = checkmate._storage.PartitionStorage(partition_type, interface, codes, full_description)

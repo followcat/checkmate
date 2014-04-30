@@ -1,6 +1,7 @@
 import os
 import imp
 import sys
+import inspect
 import importlib
 
 
@@ -16,15 +17,17 @@ def get_module(package_name, module_name, alternative_package=None):
         <module 'sample_app.component.yyy' from ...
     """
     basename = package_name.split('.')[-1]
+    _file = sys.modules[package_name].__file__
+
     if alternative_package == None:
         alternative_package = '.' + package_name.split('.')[-2]
-        target_package = alternative_package
+        _fullname = alternative_package + '.' + basename
+        _new_fullname = alternative_package + '.' + module_name
     else:
-        target_package = ''
-    _fullname = target_package + '.' + basename
-    _new_fullname = alternative_package + '.' + module_name
-    _file = sys.modules[package_name].__file__
+        _fullname = '.' + basename
+        _new_fullname = alternative_package + '.' + module_name
     _name = package_name.replace(_fullname, _new_fullname)
+
     if _name in sys.modules:
         module = sys.modules[_name]
     else:
@@ -34,4 +37,29 @@ def get_module(package_name, module_name, alternative_package=None):
         sys.modules[_name] = module
         setattr(importlib.import_module(package_name.replace(_fullname, alternative_package), package_name.replace(_fullname, '')), module_name, module)
     return module
+
+
+def get_module_defining(interface):
+    module_name = interface.__module__
+    module = None
+    try:
+        module = sys.modules[module_name]
+
+    except KeyError:
+        path = None
+        for x in module_name.split('.'):
+            fp, pathname, description = imp.find_module(x, path)
+            path = [pathname]
+        module = imp.load_module(module_name, fp, pathname, description)
+        pass
+    return module
+
+
+def get_class_implementing(interface):
+    """"""
+    module = get_module_defining(interface)
+    for _o in list(module.__dict__.values()):
+        if inspect.isclass(_o):
+            if interface.implementedBy(_o):
+                return _o
 
