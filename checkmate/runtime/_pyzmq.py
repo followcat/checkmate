@@ -29,7 +29,9 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> c1_stub = r.runtime_components['C1']
         >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
         >>> o = c2_stub.simulate(simulated_transition)
-        >>> c1_stub.validate(o[0])
+        >>> c1_stub.context.state_machine.transitions[0].is_matching_incoming(o)
+        True
+        >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
         True
         >>> r.stop_test()
     """

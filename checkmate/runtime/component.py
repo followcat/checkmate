@@ -30,7 +30,7 @@ class IStub(ISut):
     def simulate(self, transition):
         """"""
 
-    def validate(self, exchange):
+    def validate(self, transition):
         """"""
 
 class Component(object):
@@ -105,7 +105,7 @@ class Stub(Component):
             self.logger.info("%s send exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
 
-    def validate(self, exchange):
+    def validate(self, transition):
         for client in [_c for _c in self.internal_client_list if _c.name == self.context.name]:
             if self.internal_client.received(exchange):
                 return True
@@ -278,8 +278,9 @@ class ThreadedStub(ThreadedComponent, Stub):
         return output
             
     @checkmate.timeout_manager.WaitOnFalse(0.3)
-    def validate(self, exchange):
+    def validate(self, transition):
         result = False
+        exchange = transition.incoming[0].factory()
         with self.validation_lock:
             try:
                 self.validation_list.remove(exchange)
