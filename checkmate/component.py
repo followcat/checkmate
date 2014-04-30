@@ -1,10 +1,8 @@
 import os
-import imp
-import sys
-import importlib
 
 import zope.interface
 
+import checkmate._module
 import checkmate.state_machine
 import checkmate.partition_declarator
 import checkmate.service_registry
@@ -15,15 +13,8 @@ class ComponentMeta(type):
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
-        _module = namespace['__module__']
-        _state_name = name.lower() + '_states'
-        state_module_name = _module.replace(name.lower(), _state_name)
-        if state_module_name in sys.modules:
-            state_module = sys.modules[state_module_name]
-        else:
-            state_module = imp.new_module(state_module_name)
-            state_module.__file__ = exchange_module.__file__.replace(name.lower(), _state_name)
-            module_code = """
+        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states', '.component', '.component')
+        module_code = """
                 \nimport zope.interface.interface
                 \nimport checkmate.state
                 \n
@@ -33,9 +24,7 @@ class ComponentMeta(type):
                 \ndef declare_interface(name, param):
                 \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
             """
-            exec(module_code, state_module.__dict__, state_module.__dict__)
-            sys.modules[state_module_name] = state_module
-            setattr(importlib.import_module(_module.replace('.'+name.lower(), ''), _module.replace('.component'+name.lower(), '')), _state_name, state_module)
+        exec(module_code, state_module.__dict__, state_module.__dict__)
         namespace['state_module'] = state_module
 
         path = os.path.dirname(os.path.join(exchange_module.__file__))

@@ -1,11 +1,9 @@
 import os
-import imp
-import sys
-import importlib
 
 import zope.interface
 
 import checkmate.runs
+import checkmate._module
 import checkmate.component
 import checkmate.partition_declarator
 
@@ -29,21 +27,11 @@ class ApplicationMeta(type):
         finally:
             pass
 
-        _module = namespace['__module__']
-        _application = _module.split('.')[-1]
-        _file = sys.modules[_module].__file__
         for key, (class_name, class_dict) in namespace['component_classes'].items():
-            component_module_name = _module.replace(_application, 'component.' + class_name.lower())
-            if component_module_name in sys.modules:
-                component_module = sys.modules[component_module_name]
-            else:
-                component_module = imp.new_module(component_module_name)
-                component_module.__file__ = _file.replace(_application, os.path.join('component', class_name.lower()))
-                sys.modules[component_module_name] = component_module
-                setattr(importlib.import_module(_module.replace(_application, 'component'), _module.replace('.'+_application, '')), class_name.lower(), component_module)
+            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), '', '.component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
-                 '__module__': component_module_name,
+                 '__module__': component_module.__name__,
                  'connector_list': [_c.connector_class for _c in namespace['communication_list']]
                 }
             d.update(class_dict)
