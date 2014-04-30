@@ -78,21 +78,19 @@ class Sandbox(object):
             >>> box.application.components['C3'].states[0].value
             'False'
         """
-        self.transitions = None
         _outgoing = []
-        transitions = []
-        for _c in self.application.components:
-            transitions.extend(self.application.components[_c].state_machine.transitions)
-        for component in list(self.application.components.values()):
-            if not foreign_transitions and not transition in transitions:
+        self.transitions = None
+        for component in self.application.components.values():
+            if not foreign_transitions and not transition in component.state_machine.transitions:
                 continue
             if len(transition.incoming) > 0:
                 _incoming = transition.generic_incoming(component.states)
-                component_transition = component.get_transition_by_output(_incoming)
-                if component_transition is None:
-                    continue
-                _outgoing = component.simulate(component_transition)
-                self.transitions = component_transition
+                for _c in self.application.components.values():
+                    component_transition = _c.get_transition_by_output(_incoming)
+                    if component_transition is not None:
+                        _outgoing = _c.simulate(component_transition)
+                        self.transitions = component_transition
+                        break
                 break
             elif len(transition.outgoing) > 0:
                 _outgoing = component.simulate(transition)
@@ -104,7 +102,7 @@ class Sandbox(object):
         if len(_outgoing) == 0:
             return False
 
-        for component in list(self.application.components.values()):
+        for component in self.application.components.values():
             if self.transitions in component.state_machine.transitions:
                 self.transitions.owner = component.name
         self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
@@ -132,7 +130,7 @@ class Sandbox(object):
                 Found = False
                 continue
 
-            for component in list(self.application.components.values()):
+            for component in self.application.components.values():
                 if _transition in component.state_machine.transitions:
                     _transition.owner = component.name
 
