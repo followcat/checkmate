@@ -6,12 +6,16 @@ import importlib
 
 
 def get_module(package_name, module_name, alternative_package=None):
-    """
+    """Load existing module or create a new one
+
+    This function can be used to create a module in an alternative package beside the provided one:
         >>> import checkmate._module
         >>> import sample_app.application
-        >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', '.component')
+        >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
         <module 'sample_app.component.xxx' from ...
+
+    It can also be used to create a new module beside an existing one in the provided package:
         >>> mod2 = checkmate._module.get_module('sample_app.component.xxx', 'yyy')
         >>> mod2 # doctest: +ELLIPSIS
         <module 'sample_app.component.yyy' from ...
@@ -25,6 +29,7 @@ def get_module(package_name, module_name, alternative_package=None):
         _new_fullname = alternative_package + '.' + module_name
     else:
         _fullname = '.' + basename
+        alternative_package = '.' + alternative_package
         _new_fullname = alternative_package + '.' + module_name
     _name = package_name.replace(_fullname, _new_fullname)
 
