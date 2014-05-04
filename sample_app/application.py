@@ -62,10 +62,12 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
         import sample_app.component_1.component
         import sample_app.component_2.component
         import sample_app.component_3.component
+        import sample_app.user.component
 
         self.components = {'C1': sample_app.component_1.component.Component_1,
                            'C2': sample_app.component_2.component.Component_2,
-                           'C3': sample_app.component_3.component.Component_3}
+                           'C3': sample_app.component_3.component.Component_3,
+                           'USER': sample_app.user.component.User}
         for name in list(self.components.keys()):
             self.components[name] = self.components[name](name)
 

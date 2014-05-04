@@ -3,6 +3,8 @@ title: "State machine"
 data:
   - Transitions:
       - name: '[Input/Final state/Output]'
+        incoming:
+          - ExchangeButton:     PBAC()
         outgoing:
           - Action:             AC()
 
@@ -13,6 +15,8 @@ data:
           - Action:             AP(R)
 
       - name: '[Input/Final state/Output]'
+        incoming:
+          - ExchangeButton:     PBRL()
         outgoing:
           - Reaction:           RL()
 
@@ -21,6 +25,8 @@ data:
           - ThirdReaction:      DR()
 
       - name: '[Input/Final state/Output]'
+        incoming:
+          - ExchangeButton:     PBPP()
         outgoing:
           - Action:             PP(R)
 

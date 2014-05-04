@@ -17,6 +17,13 @@ data:
 ---
 title: "Exchange identification"
 data:
+  - Definition and accessibility: 'ExchangeButton'
+    Value partitions:
+    # [Partition,       State,   Valid value,        Comment]
+    - [X-EXBUTTON-01,   PBAC(),  Exchange Button 1,  Press Button AC]
+    - [X-EXBUTTON-02,   PBRL(),  Exchange Button 2,  Press Button RL]
+    - [X-EXBUTTON-03,   PBPP(),  Exchange Button 3,  Press Button PP]
+
   - Definition and accessibility: 'Action(R=ActionRequest)'
     Value partitions:
     # [Partition,     State,  Valid value,    Comment]
