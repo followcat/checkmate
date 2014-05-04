@@ -2,6 +2,7 @@ import os
 
 import zope.interface
 
+import checkmate._module
 import checkmate.state_machine
 import checkmate.partition_declarator
 import checkmate.service_registry
@@ -9,21 +10,43 @@ import checkmate.service_registry
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        state_module = namespace['state_module']
-        data_structure_module = namespace['data_structure_module']
         exchange_module = namespace['exchange_module']
+        data_structure_module = namespace['data_structure_module']
 
-        path = os.path.dirname(state_module.__file__)
-        filename = 'state_machine.yaml'
-        with open(os.sep.join([path, filename]), 'r') as _file:
+        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
+        module_code = """
+                \nimport zope.interface.interface
+                \nimport checkmate.state
+                \n
+                \ndef declare(name, param):
+                \n    return type(name, (checkmate.state.State,), param)
+                \n
+                \ndef declare_interface(name, param):
+                \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
+            """
+        exec(module_code, state_module.__dict__, state_module.__dict__)
+        namespace['state_module'] = state_module
+
+        path = os.path.dirname(os.path.join(exchange_module.__file__))
+        filename = name.lower() + '.yaml'
+        with open(os.sep.join([path, 'component', filename]), 'r') as _file:
             matrix = _file.read()
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
             declarator_output = declarator.get_output()
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'],
                                                                       declarator_output['transitions'])
-            namespace['services'] = declarator_output['services']
-            namespace['outgoings'] = declarator_output['outgoings']
+            services = []
+            service_interfaces = []
+            for _t in declarator_output['transitions']:
+                for _i in _t.incoming:
+                    if _i.code not in services:
+                        services.append(_i.code)
+                    if _i.interface not in service_interfaces:
+                        service_interfaces.append(_i.interface)
+            namespace['services'] = services
+            namespace['service_interfaces'] = service_interfaces
+
             result = type.__new__(cls, name, bases, dict(namespace))
             return result
         except Exception as e:
@@ -35,7 +58,7 @@ class IComponent(zope.interface.Interface):
 
 @zope.interface.implementer(IComponent)
 class Component(object):
-    def __init__(self, name, full_python=False):
+    def __init__(self, name):
         self.states = []
         self.name = name
 
@@ -65,7 +88,7 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.start()
         >>> r = checkmate.service_registry.global_registry
-        >>> for service in c.services:
+        >>> for service in c.service_interfaces:
         ...    print(r._registry[service])
         ['C1']
         >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
@@ -84,7 +107,7 @@ class Component(object):
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
-        checkmate.service_registry.global_registry.register(self, self.services)
+        checkmate.service_registry.global_registry.register(self, self.service_interfaces)
 
     def stop(self):
         pass
@@ -102,8 +125,8 @@ class Component(object):
     def simulate(self, exchange):
         """
             >>> import sample_app.application
-            >>> import sample_app.component_2.component
-            >>> c2 = sample_app.component_2.component.Component_2('C2')
+            >>> import sample_app.component.component_2
+            >>> c2 = sample_app.component.component_2.Component_2('C2')
             >>> c2.start()
             >>> out = c2.simulate(sample_app.exchanges.AC())
             >>> out[0].action == 'AC'

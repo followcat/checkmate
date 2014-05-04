@@ -1,13 +1,10 @@
 import os
-import collections
 
 import zope.interface
 
 import checkmate.runs
-import checkmate._utils
-import checkmate.exchange
-import checkmate.data_structure
-import checkmate.parser.yaml_visitor
+import checkmate._module
+import checkmate.component
 import checkmate.partition_declarator
 
 
@@ -28,8 +25,22 @@ class ApplicationMeta(type):
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
+            pass
+
+        for key, (class_name, class_dict) in namespace['component_classes'].items():
+            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
+            d = {'exchange_module': exchange_module,
+                 'data_structure_module': data_structure_module,
+                 '__module__': component_module.__name__,
+                 'connector_list': [_c.connector_class for _c in namespace['communication_list']]
+                }
+            d.update(class_dict)
+            _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
+            setattr(component_module, class_name, _class)
+            namespace['component_classes'][key] = _class
+            
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 class IApplication(zope.interface.Interface):
@@ -37,13 +48,18 @@ class IApplication(zope.interface.Interface):
 
 @zope.interface.implementer(IApplication)
 class Application(object):
-    def __init__(self, full_python=False):
+    component_classes = {}
+    communication_list = ()
+
+    def __init__(self):
         """
         """
-        self.components = {}
-        self.procedure_list = []
         self.name = self.__module__.split('.')[-2]
-        self.communication_list = ()
+        self.components = {}
+        for components, _class in self.component_classes.items():
+            for _c in components:
+                self.components[_c] = _class(_c)
+
 
     def __getattr__(self, name):
         if name == 'run_collection':

@@ -36,7 +36,7 @@ def get_transitions_from_test(application):
         array_list.append(data)
     transitions = []
     for array_items in array_list:
-        transitions.append(checkmate.partition_declarator.get_procedure_transition(array_items, exchange_module, state_modules))
+        transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return transitions
 
 def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):

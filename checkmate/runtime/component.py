@@ -211,8 +211,8 @@ class ThreadedSut(ThreadedComponent, Sut):
     def setup(self, runtime):
         super().setup(runtime)
         if hasattr(self.context, 'launch_command'):
-            for connector in self.context.connector_list:
-                connector.communication_class(self.context)
+            for communication_class in self.runtime.application.communication_list:
+                communication_class(self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
 

@@ -3,6 +3,7 @@ import functools
 import zope.interface
 
 import checkmate._utils
+import checkmate._module
 import checkmate._storage
 import checkmate.transition
 import checkmate.parser.yaml_visitor
@@ -20,16 +21,11 @@ def name_to_interface(name, modules):
         raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
     return interface
 
-def get_procedure_transition(item, exchanges, state_modules):
-    return make_transition(item, [exchanges], state_modules)[2]
-
 def make_transition(item, exchanges, state_modules):
     initial_state = []
     input = []
     output = []
     final = []
-    incoming_list = []
-    outgoing_list = []
     module_dict = { 'states':state_modules,
                     'exchanges':exchanges   }
     try:
@@ -54,17 +50,13 @@ def make_transition(item, exchanges, state_modules):
                     final.append(storage_data)
                 elif _k == 'incoming':
                     input.append(storage_data)
-                    if interface not in incoming_list:
-                        incoming_list.append(interface)
                 elif _k == 'outgoing':
                     output.append(storage_data)
                     action = checkmate._utils.internal_code(_data)
-                    if action not in outgoing_list:
-                        outgoing_list.append(action)
 
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
-    return (incoming_list, outgoing_list, t)
+    return t
 
 class Declarator(object):
     def __init__(self, data_module, state_module=None, exchange_module=None,
@@ -156,10 +148,10 @@ class Declarator(object):
         set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
-        cls = checkmate._utils.get_class_implementing(interface)
+        cls = checkmate._module.get_class_implementing(interface)
         set_exchanges_codes(partition_type, _module, codes, cls)
 
-        partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, interface, codes, full_description)
         setattr(cls, 'partition_storage', partition_storage)
 
         return (interface, partition_storage)
@@ -207,25 +199,14 @@ class Declarator(object):
         >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
         >>> de.get_partitions()
         >>> de.get_transitions()
-        >>> de.output['services']
-        [<InterfaceClass checkmate.exchange.ITESTAction>]
         >>> de.output['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...
         >>> len(de.output['transitions'])
         4
         """
         transitions = []
-        services = []
-        outgoings = []
         for data in self.data_source['transitions']:
-            _incomings, _outgoings, transition = self.new_transition(data)
-            for _incoming in [ _i for _i in _incomings if _i not in services]:
-                services.append(_incoming)
-            for _outgoing in [ _i for _i in _outgoings if _i not in outgoings]:
-                outgoings.append(_outgoing)
-            transitions.append(transition)
-        self.output['services'] = services
-        self.output['outgoings'] = outgoings
+            transitions.append(self.new_transition(data))
         self.output['transitions'] = transitions
 
     def get_output(self):
