@@ -5,6 +5,24 @@ import inspect
 import importlib
 
 
+def get_declare_code(base_class_name):
+    """
+        >>> import checkmate._module
+        >>> checkmate._module.get_declare_code('checkmate.exchange.Exchange') # doctest: +ELLIPSIS
+        '\\n            \\nimport zope.interface.interface\\n            \\nimport checkmate.exchange\\n            \\n\\n            \\ndef declare(name, param):\\n            \\n    return type(name, (checkmate.exchange.Exchange,), param)\\n...
+    """
+    return """
+            \nimport zope.interface.interface
+            \nimport %s
+            \n
+            \ndef declare(name, param):
+            \n    return type(name, (%s,), param)
+            \n
+            \ndef declare_interface(name, param):
+            \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
+        """ %('.'.join(base_class_name.split('.')[:-1]), base_class_name)
+
+
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
 

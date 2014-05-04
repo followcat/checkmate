@@ -77,31 +77,37 @@ class Declarator(object):
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
         >>> import collections
         >>> import zope.interface
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.data_structure
         >>> import checkmate.partition_declarator
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange)
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
+        >>> de = checkmate.partition_declarator.Declarator(data_module=data_structure_module, exchange_module=exchange_module, state_module=state_module)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
-        >>> par[1].get_description(sample_app.data_structure.TestActionPriority('NORM'))
+        (<InterfaceClass checkmate.data.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
+        >>> par[1].get_description(checkmate.data.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
         >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
         >>> ar # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
-        >>> sample_app.data_structure.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
+        >>> checkmate.data.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
         True
         >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.exchange.ITestAction>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
@@ -161,23 +167,28 @@ class Declarator(object):
 
     def get_partitions(self):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
-        >>> import collections
         >>> import os
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.output['states']
         []
         >>> de.output['data_structure'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass checkmate.data.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
         >>> de.output['exchanges'] # doctest: +ELLIPSIS
-        [(<InterfaceClass checkmate.exchange.ITESTAction>, <checkmate._storage.PartitionStorage object ...
+        [(<InterfaceClass checkmate.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object ...
         """
         for partition_type in ('states', 'data_structure', 'exchanges'):
             partitions = []
@@ -187,16 +198,21 @@ class Declarator(object):
 
     def get_transitions(self):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
-        >>> import collections
         >>> import os
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.get_transitions()
         >>> de.output['transitions'] # doctest: +ELLIPSIS
