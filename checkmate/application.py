@@ -1,35 +1,52 @@
 import os
-import collections
 
 import zope.interface
 
 import checkmate.runs
-import checkmate._utils
-import checkmate.exchange
-import checkmate.data_structure
-import checkmate.parser.yaml_visitor
+import checkmate._module
+import checkmate.component
 import checkmate.partition_declarator
 
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        data_structure_module = namespace['data_structure_module']
-        exchange_module = namespace['exchange_module']
+        exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
+        exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__, exchange_module.__dict__)
+        namespace['exchange_module'] = exchange_module
 
-        path = os.path.dirname(exchange_module.__file__)
-        filename = 'exchanges.yaml'
-        with open(os.sep.join([path, filename]), 'r') as _file:
+        data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
+        exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__, data_structure_module.__dict__)
+        namespace['data_structure_module'] = data_structure_module
+
+        if 'exchange_definition_file' not in namespace:
+            #will also be used to look for components' stae_machine yaml and itp.yaml
+            namespace['exchange_definition_file'] = namespace['__module__']
+        with open(namespace['exchange_definition_file'], 'r') as _file:
             matrix = _file.read()
         try:
-            global checkmate
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']
             namespace['exchanges'] = output['exchanges']
         finally:
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
+            pass
+
+        for key, (class_name, class_dict) in namespace['component_classes'].items():
+            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
+            d = {'exchange_module': exchange_module,
+                 'data_structure_module': data_structure_module,
+                 'exchange_definition_file': namespace['exchange_definition_file'],
+                 '__module__': component_module.__name__,
+                 'connector_list': [_c.connector_class for _c in namespace['communication_list']]
+                }
+            d.update(class_dict)
+            _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
+            setattr(component_module, class_name, _class)
+            namespace['component_classes'][key] = _class
+            
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 class IApplication(zope.interface.Interface):
@@ -37,13 +54,18 @@ class IApplication(zope.interface.Interface):
 
 @zope.interface.implementer(IApplication)
 class Application(object):
-    def __init__(self, full_python=False):
+    component_classes = {}
+    communication_list = ()
+
+    def __init__(self):
         """
         """
-        self.components = {}
-        self.procedure_list = []
         self.name = self.__module__.split('.')[-2]
-        self.communication_list = ()
+        self.components = {}
+        for components, _class in self.component_classes.items():
+            for _c in components:
+                self.components[_c] = _class(_c)
+
 
     def __getattr__(self, name):
         if name == 'run_collection':

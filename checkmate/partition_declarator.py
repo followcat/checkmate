@@ -3,6 +3,7 @@ import functools
 import zope.interface
 
 import checkmate._utils
+import checkmate._module
 import checkmate._storage
 import checkmate.transition
 import checkmate.parser.yaml_visitor
@@ -20,16 +21,11 @@ def name_to_interface(name, modules):
         raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
     return interface
 
-def get_procedure_transition(item, exchanges, state_modules):
-    return make_transition(item, [exchanges], state_modules)[2]
-
 def make_transition(item, exchanges, state_modules):
     initial_state = []
     input = []
     output = []
     final = []
-    incoming_list = []
-    outgoing_list = []
     module_dict = { 'states':state_modules,
                     'exchanges':exchanges   }
     try:
@@ -54,20 +50,16 @@ def make_transition(item, exchanges, state_modules):
                     final.append(storage_data)
                 elif _k == 'incoming':
                     input.append(storage_data)
-                    if interface not in incoming_list:
-                        incoming_list.append(interface)
                 elif _k == 'outgoing':
                     output.append(storage_data)
                     action = checkmate._utils.internal_code(_data)
-                    if action not in outgoing_list:
-                        outgoing_list.append(action)
 
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
-    return (incoming_list, outgoing_list, t)
+    return t
 
 class Declarator(object):
-    def __init__(self, data_module, state_module=None, exchange_module=None,
+    def __init__(self, data_module, exchange_module, state_module=None,
                        transition_module=None, content=None):
         self.module = {}
         self.module['data_structure'] = data_module
@@ -85,31 +77,37 @@ class Declarator(object):
 
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
         >>> import collections
         >>> import zope.interface
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.data_structure
         >>> import checkmate.partition_declarator
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange)
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
-        >>> par[1].get_description(sample_app.data_structure.TestActionPriority('NORM'))
+        (<InterfaceClass checkmate.data.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
+        >>> par[1].get_description(checkmate.data.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         >>> sp = de.new_partition('states', "TestState", standard_methods = {'toggle':getattr(checkmate.state, 'toggle')}, codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.state.ITestState>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
         >>> ar = de.new_partition('data_structure', 'TestActionRequest(P=TestActionPriority)', standard_methods = {}, codes=[])
         >>> ar # doctest: +ELLIPSIS
-        (<InterfaceClass sample_app.data_structure.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
-        >>> sample_app.data_structure.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
+        >>> checkmate.data.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
         True
         >>> ac = de.new_partition('exchanges', 'TestAction(R=TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.exchange.ITestAction>, <checkmate._storage.PartitionStorage object at ...
+        (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
@@ -156,10 +154,10 @@ class Declarator(object):
         set_standard_methods(_module, classname, codes, partition_attribute)
 
         interface = getattr(_module, _to_interface(classname))
-        cls = checkmate._utils.get_class_implementing(interface)
+        cls = checkmate._module.get_class_implementing(interface)
         set_exchanges_codes(partition_type, _module, codes, cls)
 
-        partition_storage = checkmate._storage.PartitionStorage(checkmate._storage.Data(partition_type, interface, codes, full_description))
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, interface, codes, full_description)
         setattr(cls, 'partition_storage', partition_storage)
 
         return (interface, partition_storage)
@@ -169,23 +167,28 @@ class Declarator(object):
 
     def get_partitions(self):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
-        >>> import collections
         >>> import os
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.output['states']
         []
         >>> de.output['data_structure'] # doctest: +ELLIPSIS
-        [(<InterfaceClass sample_app.data_structure.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass checkmate.data.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
         >>> de.output['exchanges'] # doctest: +ELLIPSIS
-        [(<InterfaceClass checkmate.exchange.ITESTAction>, <checkmate._storage.PartitionStorage object ...
+        [(<InterfaceClass checkmate.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object ...
         """
         for partition_type in ('states', 'data_structure', 'exchanges'):
             partitions = []
@@ -195,37 +198,31 @@ class Declarator(object):
 
     def get_transitions(self):
         """
-        >>> import sample_app.data_structure
-        >>> import checkmate.exchange
-        >>> import checkmate.state
-        >>> import collections
         >>> import os
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(sample_app.data_structure, checkmate.state, checkmate.exchange, content=c) 
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.get_transitions()
-        >>> de.output['services']
-        [<InterfaceClass checkmate.exchange.ITESTAction>]
         >>> de.output['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...
         >>> len(de.output['transitions'])
         4
         """
         transitions = []
-        services = []
-        outgoings = []
         for data in self.data_source['transitions']:
-            _incomings, _outgoings, transition = self.new_transition(data)
-            for _incoming in [ _i for _i in _incomings if _i not in services]:
-                services.append(_incoming)
-            for _outgoing in [ _i for _i in _outgoings if _i not in outgoings]:
-                outgoings.append(_outgoing)
-            transitions.append(transition)
-        self.output['services'] = services
-        self.output['outgoings'] = outgoings
+            transitions.append(self.new_transition(data))
         self.output['transitions'] = transitions
 
     def get_output(self):

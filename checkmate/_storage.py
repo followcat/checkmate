@@ -4,6 +4,7 @@ import collections
 import zope.interface
 
 import checkmate._utils
+import checkmate._module
 
 
 def _build_resolve_logic(transition, type, data):
@@ -47,6 +48,7 @@ def store(type, interface, name, description=None):
     """
         >>> import checkmate.test_data
         >>> import sample_app.exchanges
+        >>> import sample_app.component.component_1_states
         >>> a = checkmate.test_data.App()
         >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
         >>> attr = st.factory()
@@ -55,7 +57,7 @@ def store(type, interface, name, description=None):
         >>> st = store('data_structure', sample_app.data_structure.IAttribute, 'AT')
         >>> attr = st.factory()
 
-        >>> st = store('states', sample_app.component_1.states.IAnotherState, 'Q0()')
+        >>> st = store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> state.value
         [None]
@@ -69,15 +71,15 @@ def store(type, interface, name, description=None):
         if type == 'exchanges':
             try:
                 return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._utils.get_module_defining(interface), code))
+                        getattr(checkmate._module.get_module_defining(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._utils.get_module_defining(interface).__name__+" has no function defined: "+code)
+                raise AttributeError(checkmate._module.get_module_defining(interface).__name__+" has no function defined: "+code)
         else:
             try:
                 return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._utils.get_class_implementing(interface), code))
+                        getattr(checkmate._module.get_class_implementing(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._utils.get_class_implementing(interface).__name__+' has no function defined: '+code)
+                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__+' has no function defined: '+code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
@@ -89,6 +91,7 @@ class Data(object):
         self.codes = codes
         self.full_description = full_description
 
+    @property
     def storage(self):
         _list = []
         for code in self.codes:
@@ -102,6 +105,13 @@ class Data(object):
             _list.append(store(self.type, self.interface, ''))
         return _list
         
+    def get_description(self, item):
+        """ Return description corresponding to item """
+        for stored_item in list(self.storage):
+            if item == stored_item.factory():
+                return stored_item.description
+        return (None,None,None)
+
 
 class TransitionData(collections.OrderedDict):
     def __init__(self, initial, incoming, final, outgoing):
@@ -121,20 +131,8 @@ class TransitionData(collections.OrderedDict):
         self['outgoing'] = outgoing
     
 
-class PartitionStorage(object):
-    def __init__(self, data):
-        """ Build the list of InternalStorage
-        """
-        assert isinstance(data, Data)
-        self.type = data.type
-        self.storage = data.storage()
-
-    def get_description(self, item):
-        """ Return description corresponding to item """
-        for stored_item in list(self.storage):
-            if item == stored_item.factory():
-                return stored_item.description
-        return (None,None,None)
+class PartitionStorage(Data):
+    """"""
 
 
 class TransitionStorage(object):
@@ -145,7 +143,7 @@ class TransitionStorage(object):
         for key in iter(transition):
             _list = []
             for item in transition[key]:
-                _list.append(item.storage()[0])
+                _list.append(item.storage[0])
             setattr(self, key, _list)
 
         for _attribute in ('incoming', 'final', 'outgoing'):
@@ -176,7 +174,7 @@ class InternalStorage(object):
         self.code = checkmate._utils.internal_code(name)
         self.description = description
         self.interface = interface
-        self._class = checkmate._utils.get_class_implementing(interface)
+        self._class = checkmate._module.get_class_implementing(interface)
         if function is None:
             self.function = self._class
         else:
@@ -228,7 +226,6 @@ class InternalStorage(object):
     def resolve(self, arg, states=[], exchanges=[]):
         """
             >>> import checkmate.test_data
-            >>> import sample_app.component_1.states
             >>> import sample_app.exchanges
             >>> a = checkmate.test_data.App()
             >>> t = a.components['C1'].state_machine.transitions[1]

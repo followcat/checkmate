@@ -24,7 +24,7 @@ export TANGO_DB_NAME=pytango_C1_python_runs
 export TANGO_HOST=localhost:10202
 DataBaseds 2 -ORBendPoint giop:tcp::10202&amp;
 sleep 10
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --full-python --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.python_application.FullPython --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>

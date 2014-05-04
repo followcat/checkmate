@@ -21,13 +21,13 @@ TIMEOUT_THREAD_STOP = 1
 @zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.interfaces.IProtocol))
 class Runtime(object):
     """"""
-    def __init__(self, application, communication, threaded=False, full_python=True):
+    def __init__(self, application, communication, threaded=False):
         """"""
         self.threaded = threaded
         self.runtime_components = {}
         self.communication_list = {}
         self.application_class = application
-        self.application = application(full_python=full_python)
+        self.application = application()
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
         self.communication_list['default'] = communication()

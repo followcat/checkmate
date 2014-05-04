@@ -1,19 +1,22 @@
-import os.path
-
 import checkmate.application
 import checkmate.runtime._pyzmq
 
-import sample_app.exchanges
-import sample_app.data_structure
 
 class TestData(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
     """"""
     __test__ = False
 
-    data_structure_module = sample_app.data_structure
-    exchange_module = sample_app.exchanges
+    exchange_definition_file = 'sample_app/exchanges.yaml'
 
-    def __init__(self, full_python=False):
+    component_classes = {('C1',): ('Component_1', {}),
+                         ('C2',): ('Component_2', {}),
+                         ('C3',): ('Component_3', {}),
+                          }
+
+    communication_list = (checkmate.runtime._pyzmq.Communication,)
+
+
+    def __init__(self):
         """
             >>> import sample_app.application
             >>> import checkmate.component
@@ -56,18 +59,5 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             []
 
         """
-        super(TestData, self).__init__(full_python)
-
-        #can only be loaded after application exchanges.yaml is parsed by metaclass
-        import sample_app.component_1.component
-        import sample_app.component_2.component
-        import sample_app.component_3.component
-
-        self.components = {'C1': sample_app.component_1.component.Component_1,
-                           'C2': sample_app.component_2.component.Component_2,
-                           'C3': sample_app.component_3.component.Component_3}
-        for name in list(self.components.keys()):
-            self.components[name] = self.components[name](name)
-
-        self.communication_list = (checkmate.runtime._pyzmq.Communication,)
+        super(TestData, self).__init__()
 

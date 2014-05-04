@@ -34,8 +34,8 @@ The first value of the table is assumed to be the initial state of the component
 
 That will be the component state after startup:
     >>> import sample_app.application
-    >>> import sample_app.component_1.component
-    >>> c1 = sample_app.component_1.component.Component_1('C1')
+    >>> import sample_app.component.component_1
+    >>> c1 = sample_app.component.component_1.Component_1('C1')
     >>> c1.start()
     >>> type(c1.states[0]) is sample_app.component_1.states.State
     True
@@ -69,8 +69,8 @@ Given that an application is defining exchanges and her components are defining 
 
 This mapping between the table and the transition can be found in the transition definition stored in the component:
     >>> import sample_app.application
-    >>> import sample_app.component_1.component
-    >>> c1 = sample_app.component_1.component.Component_1('C1')
+    >>> import sample_app.component.component_1
+    >>> c1 = sample_app.component.component_1.Component_1('C1')
     >>> transition = c1.state_machine.transitions[0]
 
 The initial and final states for this transition are:
@@ -88,7 +88,7 @@ The incoming and the two outgoing exchanges for this transition are:
     'ARE'
 
 If the component current state is matching the initial state of the transition:
-    >>> c1 = sample_app.component_1.component.Component_1('C1')
+    >>> c1 = sample_app.component.component_1.Component_1('C1')
     >>> c1.start()
     >>> transition = c1.state_machine.transitions[0]
     >>> transition.is_matching_initial(c1.states)
