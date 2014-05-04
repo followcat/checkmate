@@ -70,11 +70,11 @@ class RunCollection(list):
             3
             >>> for _run in runs:
             ...     len(_run.walk())
-            6
-            3
+            7
             4
+            5
             >>> [run.incoming[0].code for run in runs[2].walk() if len(run.incoming) > 0]
-            ['PP', 'PA', 'PA']
+            ['PBPP', 'PP', 'PA', 'PA']
 
         """
         for _component in application.components.values():

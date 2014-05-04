@@ -35,8 +35,9 @@ def _compatible_skip_test(procedure, message):
 
     But you get the wrong output (because it takes the first transition matching
     the generic_incoming (here this is transition index 1)
+    *** this issue no longer exist after USER added***
         >>> _incoming.value
-        'AC'
+        'RL'
 
     You better use, the direct simulate() function with expected output:
         >>> _incoming = c2.simulate(transition)[0]
