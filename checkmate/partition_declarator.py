@@ -59,7 +59,7 @@ def make_transition(item, exchanges, state_modules):
     return t
 
 class Declarator(object):
-    def __init__(self, data_module, state_module=None, exchange_module=None,
+    def __init__(self, data_module, exchange_module, state_module=None,
                        transition_module=None, content=None):
         self.module = {}
         self.module['data_structure'] = data_module
@@ -89,7 +89,7 @@ class Declarator(object):
         >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
-        >>> de = checkmate.partition_declarator.Declarator(data_module=data_structure_module, exchange_module=exchange_module, state_module=state_module)
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
@@ -181,7 +181,7 @@ class Declarator(object):
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=c)
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.output['states']
         []
@@ -212,7 +212,7 @@ class Declarator(object):
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=c)
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c)
         >>> de.get_partitions()
         >>> de.get_transitions()
         >>> de.output['transitions'] # doctest: +ELLIPSIS

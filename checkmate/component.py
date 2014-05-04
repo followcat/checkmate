@@ -22,7 +22,7 @@ class ComponentMeta(type):
         with open(os.sep.join([path, 'component', filename]), 'r') as _file:
             matrix = _file.read()
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, state_module=state_module, exchange_module=exchange_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=matrix)
             declarator_output = declarator.get_output()
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'],
                                                                       declarator_output['transitions'])

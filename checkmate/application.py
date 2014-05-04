@@ -21,7 +21,7 @@ class ApplicationMeta(type):
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']
