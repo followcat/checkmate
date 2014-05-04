@@ -13,7 +13,7 @@ class ApplicationMeta(type):
         exchange_module = namespace['exchange_module']
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
-        exec(checkmate._module.get_declare_code('checkmate.state.State'), data_structure_module.__dict__, data_structure_module.__dict__)
+        exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__, data_structure_module.__dict__)
         namespace['data_structure_module'] = data_structure_module
 
         path = os.path.dirname(exchange_module.__file__)
