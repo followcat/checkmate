@@ -39,7 +39,7 @@ def _compatible_skip_test(procedure, message):
         'AC'
 
     You better use, the direct simulate() function with expected output:
-        >>> _incoming = c2.simulate(transition.outgoing[0].factory())[0]
+        >>> _incoming = c2.simulate(transition)[0]
         >>> _incoming.value
         'RL'
 
@@ -57,9 +57,9 @@ def _compatible_skip_test(procedure, message):
     """
     if hasattr(procedure.result, 'addSkip'):
         if procedure.result is not None:
-            procedure.result.startTest(procedure)  
+            procedure.result.startTest(procedure)
             procedure.result.addSkip(procedure, message)
-            procedure.result.stopTest(procedure)  
+            procedure.result.stopTest(procedure)
             return
     raise nose.plugins.skip.SkipTest(message)
 
@@ -71,10 +71,11 @@ class Procedure(object):
         self.is_setup = is_setup
         self.components = []
         self.logger = logging.getLogger('checkmate.runtime.procedure')
-        
+
     def __call__(self, runtime, result=None, *args):
         """
             >>> import sample_app.application
+            >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
             >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
             >>> r1.setup_environment(['C1'])
@@ -96,7 +97,7 @@ class Procedure(object):
             >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
             ('True', 'False', 'True', 'False')
             >>> proc = procedures[0]
-            >>> proc.exchanges.root.action
+            >>> proc.transitions.root.outgoing[0].code
             'AC'
             >>> proc(r1)
             >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
@@ -114,16 +115,14 @@ class Procedure(object):
             return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
         self.application = runtime.application
         self.system_under_test = runtime.application.system_under_test
-        if len(self.components) == 0:
-            self.components = self._extract_components(self.exchanges, [])
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
-                self.transform_to_initial() 
+                self.transform_to_initial()
             if not self.application.compare_states(self.initial):
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
-        self._run_from_startpoint(self.exchanges)
+        self._run_from_startpoint(self.transitions)
 
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
@@ -134,19 +133,6 @@ class Procedure(object):
         for _procedure in path:
             _procedure(runtime=self.runtime)
 
-    def _extract_components(self, node, component_list):
-        if (node.root.origin is not None and
-            node.root.origin != '' and
-            node.root.origin not in component_list):
-            component_list.append(node.root.origin)
-        if (node.root.destination is not None and
-            node.root.destination != '' and
-            node.root.destination not in component_list):
-            component_list.append(node.root.destination)
-        for _n in node.nodes:
-            component_list = self._extract_components(_n, component_list)
-        return component_list
-
     def _components_match_sut(self, system_under_test):
         for _sut in system_under_test:
             if _sut not in self.components:
@@ -155,11 +141,12 @@ class Procedure(object):
 
     def _run_from_startpoint(self, current_node):
         if self.result is not None:
-            self.result.startTest(self)  
-        stub = self.runtime.runtime_components[current_node.root.origin]
+            self.result.startTest(self)
+                
+        stub = self.runtime.runtime_components[current_node.root.owner]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
-        
+
         if hasattr(self, 'final'):
             @checkmate.timeout_manager.WaitOnFalse()
             def check_compare_states():
@@ -178,10 +165,10 @@ class Procedure(object):
 
     def _follow_up(self, node):
         for _next in node.nodes:
-            if _next.root.destination not in self.system_under_test:
-                stub = self.runtime.runtime_components[_next.root.destination]
+            if _next.root.owner not in self.system_under_test:
+                stub = self.runtime.runtime_components[_next.root.owner]
                 if not stub.validate(_next.root):
-                    raise Exception("No exchange '%s' received by component '%s'" %(_next.root.action, _next.root.destination))
+                    raise Exception("No exchange '%s' received by component '%s'" %(_next.root.incoming[0].code, _next.root.owner))
         for _next in node.nodes:
             self._follow_up(_next)
 

@@ -38,6 +38,8 @@ class Component(object):
     def __init__(self, name, full_python=False):
         self.states = []
         self.name = name
+        for _tr in self.state_machine.transitions:
+            _tr.owner = self.name
 
     def get_transition_by_input(self, exchange):
         """
@@ -99,19 +101,18 @@ class Component(object):
                 output.append(_e)
         return output
 
-    def simulate(self, exchange):
+    def simulate(self, _transition):
         """
             >>> import sample_app.application
             >>> import sample_app.component_2.component
             >>> c2 = sample_app.component_2.component.Component_2('C2')
             >>> c2.start()
-            >>> out = c2.simulate(sample_app.exchanges.AC())
+            >>> exchange = sample_app.exchanges.AC()
+            >>> transition = c2.get_transition_by_output([exchange])
+            >>> out = c2.simulate(transition)
             >>> out[0].action == 'AC'
             True
         """
-        _transition = self.get_transition_by_output([exchange])
-        if _transition is None:
-            return []
         output = []
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):

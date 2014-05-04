@@ -1,4 +1,3 @@
-import os
 import os.path
 
 import checkmate.sandbox
@@ -9,8 +8,8 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def build_procedure(sandbox, application_class):
-    proc = checkmate.runtime.procedure.Procedure(application_class)
+def build_procedure(sandbox):
+    proc = checkmate.runtime.procedure.Procedure()
     sandbox.fill_procedure(proc)
     return proc
 
@@ -53,8 +52,8 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
-        >>> simulated_exchange = c2.context.state_machine.transitions[0].outgoing[0].factory()
-        >>> o = c2.simulate(simulated_exchange) # doctest: +ELLIPSIS
+        >>> simulated_transition = c2.context.state_machine.transitions[0]
+        >>> o = c2.simulate(simulated_transition) # doctest: +ELLIPSIS
         >>> time.sleep(1)
         >>> c1.context.states[0].value
         'False'
@@ -82,12 +81,10 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box([_transition], foreign_transitions=True)
-        yield build_procedure(box, application_class), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
-
+        box(_transition, foreign_transitions=True)
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
-
     """
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor
@@ -106,7 +103,7 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
         True
         >>> box.application.compare_states(transition_list[0].initial)
         True
-        >>> box([transition_list[0]], foreign_transitions=True)
+        >>> box(transition_list[0], foreign_transitions=True)
         True
         >>> len(box.initial)
         3
@@ -136,6 +133,6 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box([_transition], foreign_transitions=True)
-        yield build_procedure(box, application_class), box.exchanges.root.origin, box.exchanges.root.action, box.exchanges.root.destination
+        box(_transition, foreign_transitions=True)
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 

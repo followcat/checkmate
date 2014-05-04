@@ -21,9 +21,11 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
         >>> r.start_test()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
-        >>> o = c2.simulate(sample_app.exchanges.AC())
+        >>> simulated_transition = c2.context.get_transition_by_output([sample_app.exchanges.AC()])
+        >>> o = c2.simulate(simulated_transition)
         >>> time.sleep(1)
-        >>> c1.validate(o[0])
+        >>> c1.context.state_machine.transitions[0].is_matching_incoming(o)
+        >>> c1.validate(c1.context.state_machine.transitions[0])
         True
         >>> r.stop_test()
 
