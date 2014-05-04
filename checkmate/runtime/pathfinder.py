@@ -50,6 +50,7 @@ def _find_runs(application, target):
         >>> import checkmate.runs
         >>> import checkmate.sandbox
         >>> import sample_app.application
+        >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
         >>> import checkmate.runtime.pathfinder
         >>> a = sample_app.application.TestData()
