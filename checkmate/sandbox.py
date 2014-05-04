@@ -127,7 +127,10 @@ class Sandbox(object):
 
             self.update_required_states(_transition)
             tree.add_node(checkmate._tree.Tree(_transition, []))
-            tree.nodes[i] = self.generate(_outgoings, tree.nodes[i])
+            tmp_tree = self.generate(_outgoings, tree.nodes[i])
+            if tmp_tree is None:
+                return None
+            tree.nodes[i] = tmp_tree
             i += 1
         return tree
 
