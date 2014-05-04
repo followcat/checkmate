@@ -8,6 +8,9 @@ import importlib
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
 
+    The provided package_name is expected to be a sub-package
+    under the project main package (eg. 'main.sub').
+
     This function can be used to create a module in an alternative package beside the provided one:
         >>> import checkmate._module
         >>> import sample_app.application
@@ -19,12 +22,21 @@ def get_module(package_name, module_name, alternative_package=None):
         >>> mod2 = checkmate._module.get_module('sample_app.component.xxx', 'yyy')
         >>> mod2 # doctest: +ELLIPSIS
         <module 'sample_app.component.yyy' from ...
+
+        >>> mod3 = checkmate._module.get_module('checkmate.application', 'data')
+        >>> mod3 # doctest: +ELLIPSIS
+        <module 'checkmate.data' from ...
     """
+    assert(len(package_name.split('.')) > 1)
+
     basename = package_name.split('.')[-1]
     _file = sys.modules[package_name].__file__
 
     if alternative_package == None:
-        alternative_package = '.' + package_name.split('.')[-2]
+        if len(package_name.split('.')) > 2:
+            alternative_package = '.' + package_name.split('.')[-2]
+        else:
+            alternative_package = package_name.split('.')[-2]
         _fullname = alternative_package + '.' + basename
         _new_fullname = alternative_package + '.' + module_name
     else:
