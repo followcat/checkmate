@@ -1,8 +1,5 @@
 import checkmate.application
 
-import sample_app.exchanges
-import sample_app.data_structure
-
 import pytango.checkmate.runtime.communication
 
 
@@ -10,7 +7,7 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
     """
         >>> import pytango.checkmate.application
         >>> import time
-        >>> import sample_app.exchanges
+        >>> import pytango.checkmate.exchanges
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> ac = pytango.checkmate.python_application.FullPython
@@ -21,15 +18,14 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
         >>> r.start_test()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
-        >>> o = c2.simulate(sample_app.exchanges.AC())
+        >>> o = c2.simulate(pytango.checkmate.exchanges.AC())
         >>> time.sleep(1)
         >>> c1.validate(o[0])
         True
         >>> r.stop_test()
 
     """
-    data_structure_module = sample_app.data_structure
-    exchange_module = sample_app.exchanges
+    exchange_definition_file = 'sample_app/exchanges.yaml'
 
     component_classes = {('C1',): ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
                          ('C2',): ('Component_2', {'launch_command': "python ./pytango/component/component_2.py {component.name}"}),

@@ -27,7 +27,7 @@ def get_transitions_from_test(application):
     state_modules = []
     for name in list(application.components.keys()):
             state_modules.append(application.components[name].state_module)
-    path = os.path.dirname(exchange_module.__file__)
+    path = os.path.dirname(application.exchange_definition_file)
     array_list = []
     with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
         matrix = _file.read()
@@ -132,7 +132,7 @@ def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
+    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.exchange_definition_file)
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
