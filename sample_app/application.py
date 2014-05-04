@@ -1,14 +1,12 @@
 import checkmate.application
 import checkmate.runtime._pyzmq
 
-import sample_app.exchanges
-
 
 class TestData(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
     """"""
     __test__ = False
 
-    exchange_module = sample_app.exchanges
+    exchange_definition_file = 'sample_app/exchanges.yaml'
 
     component_classes = {('C1',): ('Component_1', {}),
                          ('C2',): ('Component_2', {}),

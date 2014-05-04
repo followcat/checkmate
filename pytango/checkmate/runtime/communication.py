@@ -10,8 +10,6 @@ import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
 
-import sample_app.exchanges
-
 
 def add_device_service(services):
     d = {}
@@ -77,7 +75,10 @@ class Encoder(object):
         return exchange.action
 
     def decode(self, message):
-        return getattr(sample_app.exchanges, message)()
+        #cannot be imported before the application is created
+        import pytango.checkmate.exchanges
+
+        return getattr(pytango.checkmate.exchanges, message)()
 
 
 class Connector(checkmate.runtime.communication.Connector):

@@ -10,15 +10,18 @@ import checkmate.partition_declarator
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        exchange_module = namespace['exchange_module']
+        exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
+        exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__, exchange_module.__dict__)
+        namespace['exchange_module'] = exchange_module
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
         exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__, data_structure_module.__dict__)
         namespace['data_structure_module'] = data_structure_module
 
-        path = os.path.dirname(exchange_module.__file__)
-        filename = 'exchanges.yaml'
-        with open(os.sep.join([path, filename]), 'r') as _file:
+        if 'exchange_definition_file' not in namespace:
+            #will also be used to look for components' stae_machine yaml and itp.yaml
+            namespace['exchange_definition_file'] = namespace['__module__']
+        with open(namespace['exchange_definition_file'], 'r') as _file:
             matrix = _file.read()
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix)
@@ -33,6 +36,7 @@ class ApplicationMeta(type):
             component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
+                 'exchange_definition_file': namespace['exchange_definition_file'],
                  '__module__': component_module.__name__,
                  'connector_list': [_c.connector_class for _c in namespace['communication_list']]
                 }

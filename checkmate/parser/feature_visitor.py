@@ -146,7 +146,7 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_transitions_from_features(exchange_module, state_modules):
+def get_transitions_from_features(exchange_module, state_modules, path=None):
     """
             >>> import sample_app.application
             >>> import checkmate.component
@@ -165,7 +165,11 @@ def get_transitions_from_features(exchange_module, state_modules):
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate.transition.Transition object at ...
         """
-    array_list = get_array_list([os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')])
+    if path is None:
+        path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')
+    else:
+        path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(path), 'itp')
+    array_list = get_array_list([path])
     initial_transitions = []
     for array_items in array_list:
         initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))

@@ -1,12 +1,10 @@
 import checkmate.application
 
-import sample_app.exchanges
-
 import pytango.checkmate.runtime.communication
 
 
 class Application(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
-    exchange_module = sample_app.exchanges
+    exchange_definition_file = 'sample_app/exchanges.yaml'
 
     component_classes = {('C1',): ('Component_1', {'launch_command': "java -classpath {classpath}:. pytango.component.Component_1 {component.name}"}),
                          ('C2',): ('Component_2', {}),
