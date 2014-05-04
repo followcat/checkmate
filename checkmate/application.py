@@ -10,15 +10,17 @@ import checkmate.partition_declarator
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
-        data_structure_module = namespace['data_structure_module']
         exchange_module = namespace['exchange_module']
+
+        data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
+        exec(checkmate._module.get_declare_code('checkmate.state.State'), data_structure_module.__dict__, data_structure_module.__dict__)
+        namespace['data_structure_module'] = data_structure_module
 
         path = os.path.dirname(exchange_module.__file__)
         filename = 'exchanges.yaml'
         with open(os.sep.join([path, filename]), 'r') as _file:
             matrix = _file.read()
         try:
-            global checkmate
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, content=matrix)
             output = declarator.get_output()
 

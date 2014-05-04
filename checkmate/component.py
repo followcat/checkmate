@@ -14,17 +14,7 @@ class ComponentMeta(type):
         data_structure_module = namespace['data_structure_module']
 
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
-        module_code = """
-                \nimport zope.interface.interface
-                \nimport checkmate.state
-                \n
-                \ndef declare(name, param):
-                \n    return type(name, (checkmate.state.State,), param)
-                \n
-                \ndef declare_interface(name, param):
-                \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
-            """
-        exec(module_code, state_module.__dict__, state_module.__dict__)
+        exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__, state_module.__dict__)
         namespace['state_module'] = state_module
 
         path = os.path.dirname(os.path.join(exchange_module.__file__))
