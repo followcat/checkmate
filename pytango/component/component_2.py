@@ -13,19 +13,31 @@ class Component_2(PyTango.Device_4Impl):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
+        self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
+        self.user_dev = PyTango.DeviceProxy('sys/user/USER')
+
+    def PBAC(self):
+        #Execute asynchronously in case of nested called caused infinitely wait
+        self.c1_dev.command_inout_asynch('AC')
+
+    def PBRL(self):
+        self.c3_dev.command_inout_asynch('RL')
+
+    def PBPP(self):
+        self.c1_dev.command_inout_asynch('PP')
 
     def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
         self.c1_dev.command_inout_asynch('AP')
 
     def PA(self):
-        pass
+        self.user_dev.VOPA()
 
     def DA(self):
-        pass
+        self.user_dev.VODA()
 
     def DR(self):
-        pass
+        self.user_dev.VODR()
 
 
 class C2Interface(PyTango.DeviceClass):
@@ -40,7 +52,10 @@ class C2Interface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
  
 
-    cmd_list = {'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
+    cmd_list = {'PBAC': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PBRL': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PBPP': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
