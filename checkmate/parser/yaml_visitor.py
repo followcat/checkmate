@@ -121,7 +121,6 @@ def call_visitor(stream):
         3
         >>> len(output['exchanges'])
         2
-        >>> import sample_app.component_1.states
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()

@@ -91,8 +91,8 @@ This is where the power of the python console helps.
     [GCC 4.4.5] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import sample_app.application
-    >>> import sample_app.component_2.component
-    >>> c2 = sample_app.component_2.component.Component_2('C2')
+    >>> import sample_app.component.component_2
+    >>> c2 = sample_app.component.component_2.Component_2('C2')
     >>> c2.start()
     >>> c2.simulate(sample_app.exchanges.AC())
     Traceback (most recent call last):
@@ -113,8 +113,8 @@ The reason we are using doctest is that we can just paste the output from the py
     def simulate(self, exchange):
         """
             >>> import sample_app.application
-            >>> import sample_app.component_2.component
-            >>> c2 = sample_app.component_2.component.Component_2('C2')
+            >>> import sample_app.component.component_2
+            >>> c2 = sample_app.component.component_2.Component_2('C2')
             >>> c2.start()
             >>> out = c2.simulate(sample_app.exchanges.AC())
             >>> out[0].action == 'AC'

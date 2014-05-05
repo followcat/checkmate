@@ -7,8 +7,8 @@ In order to support this undetermined character, the states (initial, final) and
 In checkmate this object is a 'InternalStorage'.
 
     >>> import sample_app.application
-    >>> import sample_app.component_1.component 
-    >>> c1 = sample_app.component_1.component.Component_1('C1')
+    >>> import sample_app.component.component_1 
+    >>> c1 = sample_app.component.component_1.Component_1('C1')
     >>> transition = c1.state_machine.transitions[0] 
     >>> type(transition.incoming[0])
     <class 'checkmate._storage.InternalStorage'>
@@ -27,7 +27,7 @@ By calling this factory method, we will create different object that will be eit
     <class 'sample_app.exchanges.Action'>
     >>> final = transition.final[0].factory()
     >>> type(final)
-    <class 'sample_app.component_1.states.State'>
+    <class 'sample_app.component.component_1_state.State'>
     >>> incoming.action == 'AC' and final.value == 'False'
     True
 
@@ -40,7 +40,7 @@ The function of an InternalStorage is unfortunately not always a function. It is
     >>> transition.incoming[0].function
     functools.partial(<class 'sample_app.exchanges.Action'>, 'AC')
     >>> transition.final[0].function
-    <class 'sample_app.component_1.states.State'>
+    <class 'sample_app.component.component_1_state.State'>
 
 So we see that value storage is done using a function callcable that is a class.
 Calling this storage factory will return an instance of that class with attribute set to the stored value.
@@ -68,7 +68,7 @@ The last transition of component 1 has a function attribute that is a real funct
 
     >>> t = c1.state_machine.transitions[-1]
     >>> t.final[0].function
-    <class 'sample_app.component_1.states.State'>
+    <class 'sample_app.component.component_1_state.State'>
     >>> t.final[1].function
     <function pop at 0x7fa0e99b05f0>
 

@@ -1,5 +1,4 @@
 import ast
-import sys
 
 import zope.interface
 
@@ -207,32 +206,6 @@ def argument_value(argument):
     """
     return (argument.isdigit() or
         argument in ['True', 'False', 'AT1', 'AT2', 'NORM', 'HIGH', 'None', 'AUTO', 'MANUAL'])
-
-def get_module_defining(interface):
-    module_name = interface.__module__
-    module = None
-    try:
-        module = sys.modules[module_name]
-
-    except KeyError:
-        path = None
-        for x in module_name.split('.'):
-            fp, pathname, description = imp.find_module(x, path)
-            path = [pathname]
-        module = imp.load_module(module_name, fp, pathname, description)
-        pass
-    return module
-
-def get_class_implementing(interface):
-    """"""
-    import imp
-    import inspect
-
-    module = get_module_defining(interface)
-    for _o in list(module.__dict__.values()):
-        if inspect.isclass(_o):
-            if interface.implementedBy(_o):
-                return _o
 
 class IArgumentStorage(zope.interface.Interface):
     """"""

@@ -13,48 +13,6 @@ import checkmate.runtime.communication
 POLLING_TIMOUT_MS = 1000
 
 
-class Communication(checkmate.runtime.communication.Communication):
-    """
-        >>> import checkmate.runtime._pyzmq
-        >>> import checkmate.runtime._runtime
-        >>> import checkmate.test_data
-        >>> import checkmate.runtime
-        >>> import checkmate.component
-        >>> a = checkmate.test_data.App
-        >>> c = checkmate.runtime._pyzmq.Communication
-        >>> r = checkmate.runtime._runtime.Runtime(a, c, True)
-        >>> r.setup_environment(['C3'])
-        >>> r.start_test()
-        >>> c2_stub = r.runtime_components['C2']
-        >>> c1_stub = r.runtime_components['C1']
-        >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
-        >>> o = c2_stub.simulate(simulated_transition)
-        >>> c1_stub.context.state_machine.transitions[0].is_matching_incoming(o)
-        True
-        >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
-        True
-        >>> r.stop_test()
-    """
-    def __init__(self, component=None):
-        """"""
-        super(Communication, self).__init__(component)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
-        self.logger.info("%s initialize"%self)
-        self.registry = Registry()
-
-    def initialize(self):
-        """"""
-        super(Communication, self).initialize()
-        self.registry.start()
-
-    def close(self):
-        self.registry.stop()
-        self.logger.info("%s close"%self)
-
-    def get_initport(self):
-        return self.registry._initport
-
-
 class Encoder(object):
     def encode(self, exchange):
         return pickle.dumps(exchange)
@@ -65,7 +23,6 @@ class Encoder(object):
 
 class Connector(checkmate.runtime.communication.Connector):
     """"""
-    communication_class = Communication
     def __init__(self, component, communication=None, is_server=False):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server)
         self._name = component.name
@@ -75,8 +32,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self._initport = -1
-        if type(self.communication) == self.communication_class:
-            self._initport = self.communication.get_initport()
+        self._initport = self.communication.get_initport()
 
     def initialize(self):
         super(Connector, self).initialize()
@@ -181,4 +137,48 @@ class Registry(checkmate.runtime._threading.Thread):
             addr, port = _socket.getsockname()
             _socket.close()
         return port
+
+
+class Communication(checkmate.runtime.communication.Communication):
+    """
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.test_data
+        >>> import checkmate.runtime
+        >>> import checkmate.component
+        >>> a = checkmate.test_data.App
+        >>> c = checkmate.runtime._pyzmq.Communication
+        >>> r = checkmate.runtime._runtime.Runtime(a, c, True)
+        >>> r.setup_environment(['C3'])
+        >>> r.start_test()
+        >>> c2_stub = r.runtime_components['C2']
+        >>> c1_stub = r.runtime_components['C1']
+        >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
+        >>> o = c2_stub.simulate(simulated_transition)
+        >>> c1_stub.context.state_machine.transitions[0].is_matching_incoming(o)
+        True
+        >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
+        True
+        >>> r.stop_test()
+    """
+    connector_class = Connector
+
+    def __init__(self, component=None):
+        """"""
+        super(Communication, self).__init__(component)
+        self.registry = Registry()
+
+    def initialize(self):
+        """"""
+        super(Communication, self).initialize()
+        self.registry.start()
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
+        self.logger.info("%s initialize" % (self))
+
+    def close(self):
+        self.registry.stop()
+        self.logger.info("%s close" % (self))
+
+    def get_initport(self):
+        return self.registry._initport
 
