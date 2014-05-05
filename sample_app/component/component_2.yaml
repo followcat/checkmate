@@ -23,6 +23,8 @@ data:
       - name: '[Input/Final state/Output]'
         incoming:
           - ThirdReaction:      DR()
+        outgoing:
+          - ValidateOutput:     VODR()
 
       - name: '[Input/Final state/Output]'
         incoming:
@@ -34,7 +36,11 @@ data:
       - name: 'C2 pause process'
         incoming:
           - Pause:              PA()
+        outgoing:
+          - ValidateOutput:     VOPA()
 
       - name: 'C2 third action'
         incoming:
           - ThirdAction:        DA()
+        outgoing:
+          - ValidateOutput:     VODA()

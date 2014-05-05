@@ -58,4 +58,11 @@ data:
     # [Partition,       State,   Valid value,        Comment]
     - [X-EXBUTTON-01,   PBAC(),  Exchange Button 1,  Press Button AC]
     - [X-EXBUTTON-02,   PBRL(),  Exchange Button 2,  Press Button RL]
-    - [X-EXBUTTON-03,   PBPP(),  Exchange Button 3,  Press Button PP]
+    - [X-EXBUTTON-03,   PBPP(),  Exchange Button 3,  Press Button PP] 
+
+  - Definition and accessibility: 'ValidateOutput'
+    Value partitions:
+    # [Partition,       State,   Valid value,        Comment]
+    - [X-VLOUTPUT-01,   VODA(),  Validate Output 1,  Validate Output DA]
+    - [X-VLOUTPUT-02,   VODR(),  Validate Output 2,  Validate Output DR]
+    - [X-VLOUTPUT-03,   VOPA(),  Validate Output 3,  Validate Output PA]
