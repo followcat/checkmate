@@ -16,11 +16,11 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
             >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded()
-            >>> proc.transitions.nodes[0].nodes[1].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[1].root.incoming[0].code
             'ARE'
-            >>> proc.transitions.nodes[0].nodes[1].nodes[0].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[1].nodes[0].root.incoming[0].code
             'AP'
-            >>> proc.transitions.nodes[0].nodes[1].nodes[0].nodes[0].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[1].nodes[0].nodes[0].root.incoming[0].code
             'DA'
             >>> proc(result=None, runtime=r)
             >>> r.stop_test()
@@ -43,10 +43,10 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> proc = TestProcedureRun2Threaded()
             >>> proc.transitions.root.outgoing[0].code
-            'RL'
+            'PBRL'
             >>> proc.transitions.nodes[0].root.incoming[0].code
-            'RL'
-            >>> proc.transitions.nodes[0].nodes[0].root.incoming[0].code
+            'PBRL'
+            >>> proc.transitions.nodes[0].nodes[0].nodes[0].root.incoming[0].code
             'DR'
             >>> r.stop_test()
         """
