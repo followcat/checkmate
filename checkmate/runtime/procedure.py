@@ -118,6 +118,8 @@ class Procedure(object):
         self.system_under_test = runtime.application.system_under_test
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
+        if self.transitions.root.owner in self.system_under_test:
+            return _compatible_skip_test(self, "SUT do NOT simulate")
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
                 self.transform_to_initial()
