@@ -84,11 +84,8 @@ class Declarator(object):
         >>> import checkmate.data_structure
         >>> import checkmate.partition_declarator
         >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
-        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
-        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
-        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
@@ -180,11 +177,8 @@ class Declarator(object):
         >>> import checkmate.application
         >>> import checkmate.partition_declarator
         >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
-        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
-        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
-        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
@@ -211,11 +205,8 @@ class Declarator(object):
         >>> import checkmate.application
         >>> import checkmate.partition_declarator
         >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
-        >>> exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__)
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
-        >>> exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__)
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
-        >>> exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__)
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()

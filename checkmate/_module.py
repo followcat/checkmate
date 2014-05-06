@@ -5,21 +5,21 @@ import inspect
 import importlib
 
 
-def get_defination_class_code(classname, moduleclass=None, interface_class=None):
+def get_defination_class_code(classname, module_class=None, interface_class=None):
     run_code = ''
 
-    if moduleclass is not None:
-        import_module_class = 'import ' + '.'.join(moduleclass.split('.')[:-1])
+    if module_class is not None:
+        import_module = 'import ' + '.'.join(module_class.split('.')[:-1])
     else:
-        import_module_class = ''
-        moduleclass = ''
+        import_module = ''
+        module_class = ''
 
     run_code += """
             \n%s\n\n
             \nclass %s(%s):
             \n    def __init__(self, *args, **kwargs):
             \n        super().__init__(*args, **kwargs)
-            """ % (import_module_class, classname, moduleclass)
+            """ % (import_module, classname, module_class)
 
     if interface_class is not None:
         run_code += """
@@ -30,24 +30,6 @@ def get_defination_class_code(classname, moduleclass=None, interface_class=None)
             """ % (interface_class)
 
     return run_code
-
-def get_declare_code(base_class_name):
-    """
-        >>> import checkmate._module
-        >>> checkmate._module.get_declare_code('checkmate.exchange.Exchange') # doctest: +ELLIPSIS
-        '\\n            \\nimport zope.interface.interface\\n            \\nimport checkmate.exchange\\n            \\n\\n            \\ndef declare(name, param):\\n            \\n    return type(name, (checkmate.exchange.Exchange,), param)\\n...
-    """
-    return """
-            \nimport zope.interface.interface
-            \nimport %s
-            \n
-            \ndef declare(name, param):
-            \n    return type(name, (%s,), param)
-            \n
-            \ndef declare_interface(name, param):
-            \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
-        """ %('.'.join(base_class_name.split('.')[:-1]), base_class_name)
-
 
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
