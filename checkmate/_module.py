@@ -5,7 +5,7 @@ import inspect
 import importlib
 
 
-def get_definition_class_code(classname, module_class=None, interface_class=None):
+def exec_class_definition(exec_module, classname, standard_methods, module_class=None, interface_class=None):
     run_code = ''
 
     if module_class is not None:
@@ -14,22 +14,27 @@ def get_definition_class_code(classname, module_class=None, interface_class=None
         import_module = ''
         module_class = ''
 
-    run_code += """
-            \n%s\n\n
-            \nclass %s(%s):
-            \n    def __init__(self, *args, **kwargs):
-            \n        super().__init__(*args, **kwargs)
-            """ % (import_module, classname, module_class)
-
     if interface_class is not None:
         run_code += """
-            \nimport zope.interface.interface\n\n
+            \nimport zope.interface.interface\n
             \nclass %s(zope.interface.Interface):
             \n    \"\"\"\"\"\"
             \n
             """ % (interface_class)
 
-    return run_code
+    run_code += """
+            \n%s\n
+            \n@zope.interface.implementer(%s)
+            \nclass %s(%s):
+            \n    def __init__(self, *args, **kwargs):
+            \n        super().__init__(*args, **kwargs)
+            """ % (import_module, interface_class, classname, module_class)
+
+    exec(run_code, exec_module.__dict__)
+    define_class = getattr(exec_module, classname)
+    for _k, _v in standard_methods.items():
+        setattr(define_class, _k, _v)
+
 
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
@@ -39,7 +44,6 @@ def get_module(package_name, module_name, alternative_package=None):
 
     This function can be used to create a module in an alternative package beside the provided one:
         >>> import checkmate._module
-        >>> import sample_app.application
         >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
         <module 'sample_app.component.xxx' from ...
@@ -105,4 +109,3 @@ def get_class_implementing(interface):
         if inspect.isclass(_o):
             if interface.implementedBy(_o):
                 return _o
-

@@ -1,7 +1,5 @@
 import functools
 
-import zope.interface
-
 import checkmate._utils
 import checkmate._module
 import checkmate._storage
@@ -137,11 +135,7 @@ class Declarator(object):
                 'states':'checkmate.state.State'
             }
             moduleclass = moduleclass_map[partition_type]
-            exec(checkmate._module.get_definition_class_code(classname, moduleclass, interface_class=_to_interface(classname)),  _module.__dict__)
-            define_class = getattr(_module, classname)
-            for _k, _v in standard_methods.items():
-                setattr(define_class, _k, _v)
-            zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
+            checkmate._module.exec_class_definition(_module, classname, standard_methods, moduleclass, _to_interface(classname))
 
         def set_exchanges_codes(partition_type, _module, codes, cls):
             if partition_type == 'exchanges':
