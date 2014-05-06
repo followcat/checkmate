@@ -244,9 +244,7 @@ class ThreadedStub(ThreadedComponent, Stub):
     reading_external_client = True
 
     def __init__(self, component):
-        self.validation_list = []
         self.validation_lock = threading.Lock()
-        self.validation_condition = threading.Condition(self.validation_lock)
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
 
@@ -262,8 +260,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
                     with self.validation_lock:
-                        self.validation_list.append(exchange)
-                    self.process([exchange])
+                        self.process([exchange])
 
     @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, transition):
@@ -279,17 +276,6 @@ class ThreadedStub(ThreadedComponent, Stub):
             
     @checkmate.timeout_manager.WaitOnFalse(0.3)
     def validate(self, transition):
-        result = False
-        exchange = transition.incoming[0].factory()
         with self.validation_lock:
-            try:
-                self.validation_list.remove(exchange)
-                result = True
-            except:
-                result = False
-        return result
-
-    def beforeTest(self, result):
-        with self.validation_lock:
-            self.validation_list = []
+            return self.context.validate(transition)
 

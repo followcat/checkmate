@@ -51,6 +51,7 @@ class Component(object):
     def __init__(self, name):
         self.states = []
         self.name = name
+        self.validation_list = []
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
 
@@ -109,6 +110,7 @@ class Component(object):
         if _transition is None:
             return []
         output = []
+        self.validation_list.append(_transition)
         for _outgoing in _transition.process(self.states, exchange):
             for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
@@ -132,6 +134,30 @@ class Component(object):
             for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
+
+    def validate(self, _transition):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.component.component_1
+            >>> c1 = sample_app.component.component_1.Component_1('C1')
+            >>> c1.start()
+            >>> exchange = sample_app.exchanges.AC()
+            >>> transition = c1.get_transition_by_input([exchange])
+            >>> c1.validate(transition)
+            False
+            >>> out = c1.process([exchange])
+            >>> c1.validate(transition)
+            True
+            >>> c1.validate(transition)
+            False
+        """
+        result = False
+        try:
+            self.validation_list.remove(_transition)
+            result = True
+        except:
+            result = False
+        return result
 
     @property
     def transition_not_found(self):
