@@ -139,10 +139,3 @@ class State(checkmate.partition.Partition):
             >>> delattr(State, 'pop')
         """
         return super(State, self).__eq__(other)
-
-def declare(name, param):
-    return type(name, (State,), param)
-
-def declare_interface(name, param):
-    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
-
