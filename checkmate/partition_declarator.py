@@ -1,5 +1,3 @@
-import functools
-
 import checkmate._utils
 import checkmate._module
 import checkmate._storage
@@ -50,7 +48,6 @@ def make_transition(item, exchanges, state_modules):
                     input.append(storage_data)
                 elif _k == 'outgoing':
                     output.append(storage_data)
-                    action = checkmate._utils.internal_code(_data)
 
     ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(initial_state, input, final, output))
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
@@ -76,7 +73,6 @@ class Declarator(object):
     def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
         """
         >>> import collections
-        >>> import zope.interface
         >>> import checkmate._module
         >>> import checkmate.application
         >>> import checkmate.data_structure
@@ -142,7 +138,8 @@ class Declarator(object):
                 for code in codes:
                     if checkmate._utils.is_method(code):
                         internal_code = checkmate._utils.internal_code(code)
-                        setattr(_module, internal_code, functools.partial(cls, internal_code))
+                        moduleclass = _module.__name__+'.'+cls.__name__
+                        checkmate._module.exec_exchange_function_definition(_module, internal_code, moduleclass)
 
         partition_attribute = []
         classname = signature

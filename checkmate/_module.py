@@ -5,6 +5,17 @@ import inspect
 import importlib
 
 
+def exec_exchange_function_definition(exec_module, internal_code, module_class):
+    import_module = 'import ' + '.'.join(module_class.split('.')[:-1])
+    run_code = ''
+    run_code += """
+                \n%s\n
+                \ndef %s(*args, **kwargs):
+                \n    return %s('%s', *args, **kwargs)
+                """ % (import_module, internal_code, module_class, internal_code)
+    exec(run_code, exec_module.__dict__)
+
+
 def exec_class_definition(exec_module, classname, standard_methods, module_class=None, interface_class=None):
     run_code = ''
 
