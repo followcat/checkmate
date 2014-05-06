@@ -106,10 +106,7 @@ class Stub(Component):
         return output
 
     def validate(self, transition):
-        for client in [_c for _c in self.internal_client_list if _c.name == self.context.name]:
-            if self.internal_client.received(exchange):
-                return True
-        return False
+        return self.context.validate(transition)
 
 
 class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
@@ -277,5 +274,5 @@ class ThreadedStub(ThreadedComponent, Stub):
     @checkmate.timeout_manager.WaitOnFalse(0.3)
     def validate(self, transition):
         with self.validation_lock:
-            return self.context.validate(transition)
+            return super().validate(transition)
 
