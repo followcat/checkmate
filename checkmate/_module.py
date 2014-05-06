@@ -5,6 +5,32 @@ import inspect
 import importlib
 
 
+def get_defination_class_code(classname, moduleclass=None, interface_class=None):
+    run_code = ''
+
+    if moduleclass is not None:
+        import_module_class = 'import ' + '.'.join(moduleclass.split('.')[:-1])
+    else:
+        import_module_class = ''
+        moduleclass = ''
+
+    run_code += """
+            \n%s\n\n
+            \nclass %s(%s):
+            \n    def __init__(self, *args, **kwargs):
+            \n        super().__init__(*args, **kwargs)
+            """ % (import_module_class, classname, moduleclass)
+
+    if interface_class is not None:
+        run_code += """
+            \nimport zope.interface.interface\n\n
+            \nclass %s(zope.interface.Interface):
+            \n    \"\"\"\"\"\"
+            \n
+            """ % (interface_class)
+
+    return run_code
+
 def get_declare_code(base_class_name):
     """
         >>> import checkmate._module

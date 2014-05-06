@@ -131,11 +131,19 @@ class Declarator(object):
                 partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, key, class_kwattr[0][0]))
             return partition_attribute
 
-        def set_standard_methods(_module, classname, codes, partition_attribute):
+        def set_standard_methods(_module, classname, codes, partition_attribute, partition_type):
             standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
                                      'partition_attribute': tuple(partition_attribute)})
-            setattr(_module, classname, _module.declare(classname, standard_methods))
-            setattr(_module, _to_interface(classname), _module.declare_interface(_to_interface(classname), {}))
+            moduleclass_map = {
+                'exchanges':'checkmate.exchange.Exchange',
+                'data_structure':'checkmate.data_structure.DataStructure',
+                'states':'checkmate.state.State'
+            }
+            moduleclass = moduleclass_map[partition_type]
+            exec(checkmate._module.get_defination_class_code(classname, moduleclass, interface_class=_to_interface(classname)),  _module.__dict__)
+            define_class = getattr(_module, classname)
+            for _k, _v in standard_methods.items():
+                setattr(define_class, _k, _v)
             zope.interface.classImplements(getattr(_module, classname), [getattr(_module, _to_interface(classname))])
 
         def set_exchanges_codes(partition_type, _module, codes, cls):
@@ -151,7 +159,7 @@ class Declarator(object):
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
             partition_attribute = get_partition_attribute(signature, partition_type)
-        set_standard_methods(_module, classname, codes, partition_attribute)
+        set_standard_methods(_module, classname, codes, partition_attribute, partition_type)
 
         interface = getattr(_module, _to_interface(classname))
         cls = checkmate._module.get_class_implementing(interface)
