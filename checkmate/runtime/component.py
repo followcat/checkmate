@@ -60,41 +60,6 @@ class Component(object):
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
-        for _o in output:
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
-                client.send(_o)
-            checkmate.logger.global_logger.log_exchange(_o)
-        return output
-
-    @checkmate.timeout_manager.SleepAfterCall()
-    def simulate(self, transition):
-        output = self.context.simulate(transition)
-        for _o in output:
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
-                client.send(_o)
-            checkmate.logger.global_logger.log_exchange(_o)
-        return output
-
-
-@zope.interface.implementer(ISut)
-@zope.component.adapter(checkmate.component.IComponent)
-class Sut(Component):
-    """"""
-    def process(self, exchanges):
-        output = self.context.process(exchanges)
-        self.logger.debug("%s process exchange %s"%(self.context.name, exchanges[0].value))
-        for _o in output:
-            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
-                client.send(_o)
-            checkmate.logger.global_logger.log_exchange(_o)
-        return output
-
-
-@zope.interface.implementer(IStub)
-@zope.component.adapter(checkmate.component.IComponent)
-class Stub(Component):
-    def process(self, exchanges):
-        output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s"%(self.context.name, exchanges[0].value))
         for _o in output:
             for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
@@ -105,8 +70,31 @@ class Stub(Component):
             self.logger.info("%s send exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
 
+    def simulate(self, transition):
+        output = self.context.simulate(transition)
+        for _o in output:
+            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
+                client.send(_o)
+            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
+                client.send(_o)
+            checkmate.logger.global_logger.log_exchange(_o)
+            self.logger.info("%s simulate transition and output %s to %s"%(self.context.name, _o.value, _o.destination))
+        return output
+
     def validate(self, transition):
         return self.context.validate(transition)
+
+
+@zope.interface.implementer(ISut)
+@zope.component.adapter(checkmate.component.IComponent)
+class Sut(Component):
+    """"""
+
+
+@zope.interface.implementer(IStub)
+@zope.component.adapter(checkmate.component.IComponent)
+class Stub(Component):
+    """"""
 
 
 class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
@@ -120,6 +108,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
+        self.validation_lock = threading.Lock()
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
 
@@ -174,9 +163,6 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.stop(self)
         checkmate.runtime._threading.Thread.stop(self)
 
-    def process(self, exchanges):
-        Component.process(self, exchanges)
-
     def run(self):
         while True:
             if self.check_for_stop():
@@ -185,16 +171,17 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             for socket in iter(s):
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
-                    self.process([exchange])
+                    with self.validation_lock:
+                        self.process([exchange])
 
     @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, transition):
-        output = self.context.simulate(transition)
-        for _o in output:
-            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
-                client.send(_o)
-        checkmate.logger.global_logger.log_exchange(_o)
-        return output
+        return super().simulate(transition)
+
+    @checkmate.timeout_manager.WaitOnFalse(0.3)
+    def validate(self, transition):
+        with self.validation_lock:
+            return super().validate(transition)
 
 
 @zope.component.adapter(checkmate.component.IComponent)
@@ -223,9 +210,6 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.start()
         super(ThreadedSut, self).start()
 
-    def process(self, exchanges):
-        Sut.process(self, exchanges)
-
     def stop(self):
         self.launcher.end()
         super(ThreadedSut, self).stop()
@@ -241,12 +225,8 @@ class ThreadedStub(ThreadedComponent, Stub):
     reading_external_client = True
 
     def __init__(self, component):
-        self.validation_lock = threading.Lock()
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
-
-    def process(self, exchanges):
-        Stub.process(self, exchanges)
 
     def run(self):
         while True:
@@ -259,20 +239,4 @@ class ThreadedStub(ThreadedComponent, Stub):
                     with self.validation_lock:
                         self.process([exchange])
 
-    @checkmate.timeout_manager.SleepAfterCall()
-    def simulate(self, transition):
-        output = self.context.simulate(transition)
-        for _o in output:
-            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
-                client.send(_o)
-            for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
-                client.send(_o)
-            checkmate.logger.global_logger.log_exchange(_o)
-            self.logger.info("%s simulate transition and output %s to %s"%(self.context.name, _o.value, _o.destination))
-        return output
-            
-    @checkmate.timeout_manager.WaitOnFalse(0.3)
-    def validate(self, transition):
-        with self.validation_lock:
-            return super().validate(transition)
 
