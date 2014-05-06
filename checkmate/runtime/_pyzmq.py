@@ -153,10 +153,11 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> r.start_test()
         >>> c2_stub = r.runtime_components['C2']
         >>> c1_stub = r.runtime_components['C1']
-        >>> simulated_exchange = r.application.components['C2'].state_machine.transitions[0].outgoing[0].factory()
-        >>> simulated_exchange.origin_destination('C2', 'C1')
-        >>> o = c2_stub.simulate(simulated_exchange)
-        >>> c1_stub.validate(o[0])
+        >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
+        >>> o = c2_stub.simulate(simulated_transition)
+        >>> c1_stub.context.state_machine.transitions[0].is_matching_incoming(o)
+        True
+        >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
         True
         >>> r.stop_test()
     """
@@ -165,18 +166,18 @@ class Communication(checkmate.runtime.communication.Communication):
     def __init__(self, component=None):
         """"""
         super(Communication, self).__init__(component)
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
+        self.logger.info("%s initialize"%self)
         self.registry = Registry()
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
         self.registry.start()
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
-        self.logger.info("%s initialize" % (self))
 
     def close(self):
         self.registry.stop()
-        self.logger.info("%s close" % (self))
+        self.logger.info("%s close"%self)
 
     def get_initport(self):
         return self.registry._initport

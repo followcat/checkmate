@@ -24,7 +24,8 @@ def get_path_from_pathfinder(application, target):
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.AC()
         >>> ex1.origin_destination('C2', 'C1')
-        >>> exchanges = box.generate([ex1])
+        >>> _t = box.application.components['C2'].get_transition_by_output([ex1])
+        >>> transitions = box.generate([ex1], checkmate._tree.Tree(_t, []))
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'
@@ -33,7 +34,7 @@ def get_path_from_pathfinder(application, target):
         >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for _s in setup:
-        ...     print(_s.exchanges.root.action, app.compare_states(_s.initial))
+        ...     print(_s.transitions.root.outgoing[0].code, app.compare_states(_s.initial))
         RL True
         PP False
     """
@@ -49,6 +50,7 @@ def _find_runs(application, target):
         >>> import checkmate.runs
         >>> import checkmate.sandbox
         >>> import sample_app.application
+        >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
         >>> import checkmate.runtime.pathfinder
         >>> a = sample_app.application.TestData()
@@ -57,7 +59,9 @@ def _find_runs(application, target):
         >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'RL'][0]
 
         >>> box = checkmate.sandbox.Sandbox(a)
-        >>> box([ac_run.root, rl_run.root])
+        >>> box(ac_run.root)
+        True
+        >>> box(rl_run.root)
         True
         >>> proc = []
         >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator():
@@ -65,7 +69,7 @@ def _find_runs(application, target):
         ...     
 
         >>> nbox = checkmate.sandbox.Sandbox(box.application)
-        >>> proc[0][0].exchanges.root.action
+        >>> proc[0][0].transitions.root.outgoing[0].code
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
         1
@@ -83,7 +87,7 @@ def _next_run(application, target, runs, used_runs):
     for _run in runs:
         if _run in used_runs:
             continue
-        box([_run.root])
+        box(_run.root)
         if box.is_run:
             if box.application.compare_states(target):
                 used_runs[_run] = box

@@ -88,8 +88,8 @@ class Runtime(object):
             >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
-            >>> simulated_exchange = a.components['C2'].state_machine.transitions[0].outgoing[0].factory()
-            >>> o = c2_stub.simulate(simulated_exchange) # doctest: +ELLIPSIS
+            >>> simulated_transition = a.components['C2'].state_machine.transitions[0]
+            >>> o = c2_stub.simulate(simulated_transition) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.component.IStub.providedBy(c1)
             False
