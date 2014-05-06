@@ -5,7 +5,7 @@ import inspect
 import importlib
 
 
-def get_defination_class_code(classname, module_class=None, interface_class=None):
+def get_definition_class_code(classname, module_class=None, interface_class=None):
     run_code = ''
 
     if module_class is not None:

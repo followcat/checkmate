@@ -137,7 +137,7 @@ class Declarator(object):
                 'states':'checkmate.state.State'
             }
             moduleclass = moduleclass_map[partition_type]
-            exec(checkmate._module.get_defination_class_code(classname, moduleclass, interface_class=_to_interface(classname)),  _module.__dict__)
+            exec(checkmate._module.get_definition_class_code(classname, moduleclass, interface_class=_to_interface(classname)),  _module.__dict__)
             define_class = getattr(_module, classname)
             for _k, _v in standard_methods.items():
                 setattr(define_class, _k, _v)
