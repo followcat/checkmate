@@ -125,21 +125,8 @@ class Declarator(object):
         def set_standard_methods(_module, classname, codes, partition_attribute, partition_type):
             standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
                                      'partition_attribute': tuple(partition_attribute)})
-            moduleclass_map = {
-                'exchanges':'checkmate.exchange.Exchange',
-                'data_structure':'checkmate.data_structure.DataStructure',
-                'states':'checkmate.state.State'
-            }
-            moduleclass = moduleclass_map[partition_type]
-            checkmate._module.exec_class_definition(_module, classname, standard_methods, moduleclass, _to_interface(classname))
-
-        def set_exchanges_codes(partition_type, _module, codes, cls):
-            if partition_type == 'exchanges':
-                for code in codes:
-                    if checkmate._utils.is_method(code):
-                        internal_code = checkmate._utils.internal_code(code)
-                        moduleclass = _module.__name__+'.'+cls.__name__
-                        checkmate._module.exec_exchange_function_definition(_module, internal_code, moduleclass)
+            defined_class, defined_interface = checkmate._module.exec_class_definition(partition_type, _module, classname, standard_methods, _to_interface(classname), codes)
+            return defined_class, defined_interface
 
         partition_attribute = []
         classname = signature
@@ -147,16 +134,12 @@ class Declarator(object):
         if checkmate._utils.is_method(signature):
             classname = checkmate._utils._leading_name(signature)
             partition_attribute = get_partition_attribute(signature, partition_type)
-        set_standard_methods(_module, classname, codes, partition_attribute, partition_type)
 
-        interface = getattr(_module, _to_interface(classname))
-        cls = checkmate._module.get_class_implementing(interface)
-        set_exchanges_codes(partition_type, _module, codes, cls)
+        defined_class, defined_interface = set_standard_methods(_module, classname, codes, partition_attribute, partition_type)
 
-        partition_storage = checkmate._storage.PartitionStorage(partition_type, interface, codes, full_description)
-        setattr(cls, 'partition_storage', partition_storage)
-
-        return (interface, partition_storage)
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, codes, full_description)
+        setattr(defined_class, 'partition_storage', partition_storage)
+        return (defined_interface, partition_storage)
 
     def new_transition(self, item):
         return make_transition(item, [self.module['exchanges']], [self.module['states']])
