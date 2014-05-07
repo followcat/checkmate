@@ -119,11 +119,20 @@ class Component(object):
     def simulate(self, _transition):
         """
             >>> import sample_app.application
-            >>> import sample_app.component.component_2
-            >>> c2 = sample_app.component.component_2.Component_2('C2')
+            >>> import checkmate.service_registry
+            >>> checkmate.service_registry.reset()
+            >>> a = sample_app.application.TestData()
+            >>> c2 = a.components['C2']
             >>> c2.start()
             >>> exchange = sample_app.exchanges.AC()
             >>> transition = c2.get_transition_by_output([exchange])
+
+        We can't simulate a transition when no destination for outgoing is registered:
+            >>> c2.simulate(transition)
+            []
+
+        Registration is done when the destination component is started:
+            >>> a.components['C1'].start()
             >>> out = c2.simulate(transition)
             >>> out[0].action == 'AC'
             True

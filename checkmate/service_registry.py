@@ -75,3 +75,8 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         return _factory(component_name, [])
 
 global_registry = ServiceRegistry()
+
+def reset():
+    global global_registry
+    global_registry = ServiceRegistry()
+
