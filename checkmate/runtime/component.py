@@ -207,6 +207,12 @@ class ThreadedSut(ThreadedComponent, Sut):
     using_internal_client = True
     reading_internal_client = True
     using_external_client = False
+    def __init__(self, component):
+        self.validation_list = []
+        self.validation_lock = threading.Lock()
+        self.validation_condition = threading.Condition(self.validation_lock)
+        #Call ThreadedSut first ancestor: ThreadedComponent expected
+        super(ThreadedSut, self).__init__(component)
 
     def setup(self, runtime):
         super().setup(runtime)
@@ -226,12 +232,40 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.start()
         super(ThreadedSut, self).start()
 
+    def run(self):
+        while True:
+            if self.check_for_stop():
+                break
+            s = dict(self.poller.poll(POLLING_TIMEOUT_SEC * 1000))
+            for socket in s:
+                exchange = socket.recv_pyobj()
+                if exchange is not None:
+                    with self.validation_lock:
+                        self.validation_list.append(exchange)
+                    self.process([exchange])
+
     def process(self, exchanges):
         Sut.process(self, exchanges)
 
     def stop(self):
         self.launcher.end()
         super(ThreadedSut, self).stop()
+
+    @checkmate.timeout_manager.WaitOnFalse(0.3)
+    def validate(self, transition):
+        result = False
+        exchange = transition.incoming[0].factory()
+        with self.validation_lock:
+            try:
+                self.validation_list.remove(exchange)
+                result = True
+            except:
+                result = False
+        return result
+
+    def beforeTest(self, result):
+        with self.validation_lock:
+            self.validation_list = []
 
 
 @zope.component.adapter(checkmate.component.IComponent)
