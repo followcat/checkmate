@@ -16,5 +16,6 @@ export LD_LIBRARY_PATH=$TANGO_INSTALL_DIR/lib:/usr/local/mysql/lib:$OMNI_ROOT/li
 export TANGO_DB_NAME=checkmate
 export TANGO_HOST='localhost:10000'
 
+#15 means SIGTERM
+trap "echo 'Hello world'" 15
 python ./pytango/component/component_2_taurus.py
-trap "pkill -f \"python ./pytango/component/component_2_taurus.py\"" 1 2 3 15

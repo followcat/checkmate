@@ -99,7 +99,8 @@ def start_taurus_app():
     model = 'sys/component_2/C2'
     panel.setModel(model)
     panel.setViewFilters([command_filter])
-    panel.show()
+    #do Not show while running nose plugin
+    #panel.show()
     app.exec_()
 
 if __name__ == '__main__':
@@ -107,6 +108,8 @@ if __name__ == '__main__':
     py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
     U.server_init()
+    import time
+    time.sleep(1)
     start_taurus_app()
     U.server_run()
 
