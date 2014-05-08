@@ -1,7 +1,5 @@
 import zope.interface
 
-import checkmate.service_registry
-
 
 class Transition(object):
     """Driving a change of state inside a state machine
@@ -29,8 +27,8 @@ class Transition(object):
 
         The exchange_list must contain all incoming from the transition to match.
 
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.state_machine.transitions[0].name
             'Toggle state tran01'
@@ -61,8 +59,8 @@ class Transition(object):
         The exchange_list can contain only a subset of the transition outgoing
         to match. All item in exchange_list must be matched though.
 
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> c = a.components['C2']
             >>> i = c.state_machine.transitions[0].outgoing[0].factory()
             >>> i.action
@@ -82,8 +80,8 @@ class Transition(object):
 
     def is_matching_initial(self, state_list):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> a.start()
             >>> c.state_machine.transitions[0].is_matching_initial(c.states)
@@ -111,8 +109,8 @@ class Transition(object):
 
     def resolve_arguments(self, _type, data, states, incoming_exchange=[]):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
@@ -136,7 +134,7 @@ class Transition(object):
         return resolved_arguments
 
 
-    def generic_incoming(self, states):
+    def generic_incoming(self, states, service_registry):
         """ Generate a generic incoming for the provided state
 
         In case the transition has no incoming, raise AttributeError exception.
@@ -145,15 +143,15 @@ class Transition(object):
         for incoming in self.incoming:
             arguments = self.resolve_arguments('incoming', incoming, states)
             _i = incoming.factory(kwargs=arguments)
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_i, ''):
+            for _e in service_registry.server_exchanges(_i, ''):
                 incoming_exchanges.append(_e)
         return incoming_exchanges
             
 
     def process(self, states, _incoming):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.start()
             >>> i = c.state_machine.transitions[0].incoming[0].factory()

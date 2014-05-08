@@ -148,12 +148,12 @@ def get_array_list(paths, localization_path=None):
 
 def get_transitions_from_features(exchange_module, state_modules, path=None):
     """
-            >>> import sample_app.application
-            >>> import checkmate.component
-            >>> import checkmate.parser.feature_visitor
             >>> import os
             >>> import checkmate.state
             >>> import checkmate.exchange
+            >>> import checkmate.component
+            >>> import checkmate.parser.feature_visitor
+            >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> state_modules = []

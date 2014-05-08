@@ -13,8 +13,8 @@ def get_path_from_pathfinder(application, target):
         >>> import checkmate.runtime.registry    
         >>> import checkmate.runtime.pathfinder
         >>> import checkmate.runtime.communication
-        >>> import sample_app.application
         >>> import sample_app.exchanges
+        >>> import sample_app.application
         >>> import sample_app.runtime.test_procedure
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
@@ -49,10 +49,10 @@ def _find_runs(application, target):
     """
         >>> import checkmate.runs
         >>> import checkmate.sandbox
-        >>> import sample_app.application
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
         >>> import checkmate.runtime.pathfinder
+        >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> runs = a.run_collection
         >>> ac_run = [r for r in runs if r.root.outgoing[0].code == 'AC'][0]

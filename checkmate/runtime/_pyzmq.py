@@ -143,10 +143,10 @@ class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
-        >>> import checkmate.test_data
         >>> import checkmate.runtime
         >>> import checkmate.component
-        >>> a = checkmate.test_data.App
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData
         >>> c = checkmate.runtime._pyzmq.Communication
         >>> r = checkmate.runtime._runtime.Runtime(a, c, True)
         >>> r.setup_environment(['C3'])

@@ -1,17 +1,17 @@
 import checkmate._tree
 import checkmate.sandbox
-import checkmate.test_data
 import checkmate.runtime.procedure
+import sample_app.application
 
 
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, application_class=checkmate.test_data.App, test=None):
+    def __init__(self, application_class=sample_app.application.TestData, test=None):
         """
-            >>> import checkmate.test_data
             >>> import checkmate.runtime._pyzmq
             >>> import checkmate.runtime._runtime
-            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, True)
+            >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
@@ -33,12 +33,12 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
 
 class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, application_class=checkmate.test_data.App, test=None):
+    def __init__(self, application_class=sample_app.application.TestData, test=None):
         """
-            >>> import checkmate.test_data
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
-            >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime.communication.Communication)
+            >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> proc = TestProcedureRun2Threaded()
@@ -66,7 +66,7 @@ def build_procedure(sandbox):
     sandbox.fill_procedure(proc)
     return proc
 
-def TestProcedureGenerator(application_class=checkmate.test_data.App):
+def TestProcedureGenerator(application_class=sample_app.application.TestData):
     box = checkmate.sandbox.Sandbox(application_class())
     c2 = box.application.components['C2']
     #Skip the last two transitions as no outgoing sent to 'C1'

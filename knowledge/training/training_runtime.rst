@@ -9,8 +9,8 @@ The runtime must be given the application to load:
 
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime._pyzmq
-    >>> import checkmate.test_data
-    >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, threaded=True)
+    >>> import sample_app.application
+    >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
  
 Following the checkmate design, if we want to run a procedure in some setting we have to specify the SUT (system under test).
 This information should be given to the runtime otherwise it will not be able to know which stub must be created:
@@ -103,8 +103,8 @@ Lets consider a runtime environment that we load with an application and that we
 
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime._pyzmq
-    >>> import checkmate.test_data
-    >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, threaded=True)
+    >>> import sample_app.application
+    >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
     >>> r.setup_environment(sut=['C1'])
 
 Based on the SUT definition, the component C2 is not in the system under test and a corresponing stub need to be defined by the runtime.

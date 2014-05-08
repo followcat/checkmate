@@ -9,9 +9,9 @@ import checkmate._module
 
 def _build_resolve_logic(transition, type, data):
     """
-        >>> import checkmate.test_data
         >>> import sample_app.exchanges
-        >>> a = checkmate.test_data.App()
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
         >>> t = a.components['C1'].state_machine.transitions[1]
         >>> _build_resolve_logic(t, 'final', t.final[0])
         {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
@@ -46,10 +46,10 @@ def _build_resolve_logic(transition, type, data):
 
 def store(type, interface, name, description=None):
     """
-        >>> import checkmate.test_data
         >>> import sample_app.exchanges
+        >>> import sample_app.application
         >>> import sample_app.component.component_1_states
-        >>> a = checkmate.test_data.App()
+        >>> a = sample_app.application.TestData()
         >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
         >>> attr = st.factory()
         >>> attr.value
@@ -161,9 +161,9 @@ class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
     def __init__(self, interface, name ,description, function=None):
         """
-            >>> import checkmate.test_data
+            >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> a = checkmate.test_data.App()
+            >>> a = sample_app.application.TestData()
             >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'P(HIGH)', None, sample_app.data_structure.ActionPriority)
             >>> st.factory().value
             'HIGH'
@@ -188,9 +188,9 @@ class InternalStorage(object):
             >>> 'Q0.append(R)'
             'Q0.append(R)'
 
-            >>> import checkmate.test_data
+            >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> a = checkmate.test_data.App()
+            >>> a = sample_app.application.TestData()
             >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R', None, sample_app.data_structure.ActionRequest)
             >>> r1 = st.factory(kwargs={'P': 'HIGH'})
             >>> r1.P.value
@@ -225,9 +225,9 @@ class InternalStorage(object):
 
     def resolve(self, arg, states=[], exchanges=[]):
         """
-            >>> import checkmate.test_data
             >>> import sample_app.exchanges
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]

@@ -35,14 +35,12 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
 
     def register(self, component, services):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
-            >>> r = checkmate.service_registry.global_registry
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> _service = c1.state_machine.transitions[0].incoming[0].interface
-            >>> r.register(c1, (_service,))
-            >>> r._registry[_service]
+            >>> c1.service_registry._registry[_service]
             ['C1']
         """
         for _service in services:
@@ -55,16 +53,13 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
 
     def server_exchanges(self, exchange, component_name=''):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
-            >>> r = checkmate.service_registry.global_registry
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> c3 = a.components['C3']
-            >>> _service = c1.state_machine.transitions[0].outgoing[0].interface
-            >>> r.register(c3, (_service,))
             >>> e = c1.state_machine.transitions[0].outgoing[0].factory()
-            >>> for _e in r.server_exchanges(e, 'C1'):
+            >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
             ...     print(_e.destination)
             C3
         """
@@ -73,10 +68,3 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             if _service.providedBy(exchange):
                 return _factory(component_name, _servers)
         return _factory(component_name, [])
-
-global_registry = ServiceRegistry()
-
-def reset():
-    global global_registry
-    global_registry = ServiceRegistry()
-

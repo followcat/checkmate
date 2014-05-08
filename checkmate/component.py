@@ -48,17 +48,18 @@ class IComponent(zope.interface.Interface):
 
 @zope.interface.implementer(IComponent)
 class Component(object):
-    def __init__(self, name):
+    def __init__(self, name, service_registry):
         self.states = []
         self.name = name
         self.validation_list = []
+        self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
 
     def get_transition_by_input(self, exchange):
         """
-        >>> import checkmate.test_data
-        >>> a = checkmate.test_data.App()
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
         >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
@@ -76,13 +77,12 @@ class Component(object):
             
     def get_transition_by_output(self, exchange):
         """
-        >>> import checkmate.test_data
-        >>> a = checkmate.test_data.App()
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> r = checkmate.service_registry.global_registry
         >>> for service in c.service_interfaces:
-        ...    print(r._registry[service])
+        ...    print(c.service_registry._registry[service])
         ['C1']
         >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
         >>> c.get_transition_by_output([r_tm]) == c.state_machine.transitions[0]
@@ -100,7 +100,6 @@ class Component(object):
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
-        checkmate.service_registry.global_registry.register(self, self.service_interfaces)
 
     def stop(self):
         pass
@@ -112,35 +111,26 @@ class Component(object):
         output = []
         self.validation_list.append(_transition)
         for _outgoing in _transition.process(self.states, exchange):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
+            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
 
     def simulate(self, _transition):
         """
-            >>> import sample_app.application
             >>> import checkmate.service_registry
-            >>> checkmate.service_registry.reset()
+            >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c2 = a.components['C2']
             >>> c2.start()
             >>> exchange = sample_app.exchanges.AC()
             >>> transition = c2.get_transition_by_output([exchange])
-
-        We can't simulate a transition when no destination for outgoing is registered:
-            >>> c2.simulate(transition)
-            []
-
-        Registration is done when the destination component is started:
-            >>> a.components['C1'].start()
-            >>> out = c2.simulate(transition)
-            >>> out[0].action == 'AC'
-            True
+            >>> c2.simulate(transition)  # doctest: +ELLIPSIS
+            [<sample_app.exchanges.Action object at ...
         """
         output = []
-        _incoming = _transition.generic_incoming(self.states)
+        _incoming = _transition.generic_incoming(self.states, self.service_registry)
         for _outgoing in _transition.process(self.states, _incoming):
-            for _e in checkmate.service_registry.global_registry.server_exchanges(_outgoing, self.name):
+            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
         return output
 
@@ -148,7 +138,8 @@ class Component(object):
         """
             >>> import sample_app.application
             >>> import sample_app.component.component_1
-            >>> c1 = sample_app.component.component_1.Component_1('C1')
+            >>> a = sample_app.application.TestData()
+            >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.AC()
             >>> transition = c1.get_transition_by_input([exchange])

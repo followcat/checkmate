@@ -13,15 +13,15 @@ import checkmate.runtime.pathfinder
 def _compatible_skip_test(procedure, message):
     """
         >>> import checkmate._tree
-        >>> import checkmate.test_data
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime.procedure
-        >>> r = checkmate.runtime._runtime.Runtime(checkmate.test_data.App, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> import sample_app.application
+        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> sut = ['C1']
         >>> r.setup_environment(sut)
         >>> r.start_test()
-        >>> a = checkmate.test_data.App()
+        >>> a = sample_app.application.TestData()
         >>> c2 = a.components['C2']
         >>> a.start()
         >>> proc = checkmate.runtime.procedure.Procedure()
@@ -31,7 +31,7 @@ def _compatible_skip_test(procedure, message):
         >>> transition = c2.state_machine.transitions[2]
 
     You execute it:
-        >>> _incoming = c2.process(transition.generic_incoming(c2.states))[0]
+        >>> _incoming = c2.process(transition.generic_incoming(c2.states, c2.service_registry))[0]
 
     But you get the wrong output (because it takes the first transition matching
     the generic_incoming (here this is transition index 1)
@@ -74,9 +74,9 @@ class Procedure(object):
 
     def __call__(self, runtime, result=None, *args):
         """
-            >>> import sample_app.application
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
+            >>> import sample_app.application
             >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
             >>> r1.setup_environment(['C1'])
             >>> r1.start_test()

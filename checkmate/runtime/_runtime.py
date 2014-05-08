@@ -73,13 +73,11 @@ class Runtime(object):
 
     def start_test(self):
         """
-            >>> import checkmate.test_data
             >>> import checkmate.runtime
             >>> import checkmate.component
             >>> import checkmate.runtime.communication
-            >>> del checkmate.test_data.my_data
-            >>> checkmate.test_data.my_data = {}
-            >>> ac = checkmate.test_data.App
+            >>> import sample_app.application
+            >>> ac = sample_app.application.TestData
             >>> cc = checkmate.runtime.communication.Communication
             >>> r = checkmate.runtime._runtime.Runtime(ac, cc)
             >>> r.setup_environment(['C1'])
