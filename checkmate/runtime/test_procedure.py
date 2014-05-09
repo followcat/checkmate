@@ -4,9 +4,9 @@ import pickle
 import inspect
 import os.path
 import checkmate._tree
-import checkmate.test_data
 import checkmate.service_registry
 import checkmate.runtime.procedure
+import sample_app.application
 
 
 def read_log(_f):
@@ -26,7 +26,7 @@ def read_log(_f):
         pass
     return proc
 
-def TestLogProcedureGenerator(application_class=checkmate.test_data.App):
+def TestLogProcedureGenerator(application_class=sample_app.application.TestData):
     a = application_class()
     for dirpath, dirnames, filenames in os.walk(os.path.dirname(inspect.getfile(application_class))):
         for _filename in [_f for _f in filenames if re.match('exchange-.*\.log', _f) is not None]:

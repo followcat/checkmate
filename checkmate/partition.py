@@ -33,8 +33,8 @@ class Partition(object):
 
         We can pass _utils.ArgumentStorage formatted argument to act on attribute instantiation.
             >>> import checkmate._utils
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> args = checkmate._utils.ArgumentStorage(((), {'R': checkmate._utils.ArgumentStorage(((), {'P': checkmate._utils.ArgumentStorage((('HIGH',), {}))}))}))
             >>> ac = a.exchanges[0][-1].storage[0].factory(args.values, args.attribute_values)
             >>> ac.R.P.value
@@ -89,8 +89,8 @@ class Partition(object):
 
     def __eq__(self, other):
         """
-            >>> import checkmate.test_data
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> r1 = a.data_structure[2][-1].storage[0].factory()
             >>> r2 = a.data_structure[2][-1].storage[0].factory()
             >>> r1 == r2
@@ -118,8 +118,8 @@ class Partition(object):
 
 def compare_value(one, other):
     """
-    >>> import checkmate.test_data
-    >>> a = checkmate.test_data.App()
+    >>> import sample_app.application
+    >>> a = sample_app.application.TestData()
     >>> r1 = a.data_structure[1][-1].storage[0].factory()
     >>> r2 = a.data_structure[1][-1].storage[0].factory()
     >>> checkmate.partition.compare_value(r1, r2)
@@ -146,8 +146,8 @@ def compare_value(one, other):
 
 def compare_attr(one, other):
     """
-    >>> import checkmate.test_data
-    >>> a = checkmate.test_data.App()
+    >>> import sample_app.application
+    >>> a = sample_app.application.TestData()
     >>> r1 = a.data_structure[2][-1].storage[0].factory()
     >>> r2 = a.data_structure[2][-1].storage[0].factory()
     >>> checkmate.partition.compare_attr(r1, r2)

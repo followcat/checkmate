@@ -1,11 +1,11 @@
 import os.path
 
 import checkmate.sandbox
-import checkmate.test_data
 import checkmate.runtime.procedure
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
+import sample_app.application
 
 
 def build_procedure(sandbox):
@@ -15,9 +15,9 @@ def build_procedure(sandbox):
 
 def get_transitions_from_test(application):
     """
-        >>> import checkmate.test_data
         >>> import checkmate.runtime.test_plan
-        >>> a = checkmate.test_data.App()
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
         >>> checkmate.runtime.test_plan.get_transitions_from_test(a) #doctest: +ELLIPSIS 
         [<checkmate.transition.Transition object at ...
     """
@@ -38,14 +38,13 @@ def get_transitions_from_test(application):
         transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return transitions
 
-def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, transition_list=None):
+def TestProcedureInitialGenerator(application_class=sample_app.application.TestData, transition_list=None):
     """
         >>> import time
-        >>> import checkmate.test_data
-        >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
+        >>> import sample_app.application
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
@@ -84,7 +83,7 @@ def TestProcedureInitialGenerator(application_class=checkmate.test_data.App, tra
         box(_transition, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
-def TestProcedureFeaturesGenerator(application_class=checkmate.test_data.App):
+def TestProcedureFeaturesGenerator(application_class=sample_app.application.TestData):
     """
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor

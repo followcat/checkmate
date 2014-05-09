@@ -8,7 +8,7 @@ class TransitionTree(checkmate._tree.Tree):
         """
             >>> import checkmate._storage
             >>> import checkmate.transition
-            >>> import checkmate.test_data
+            >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
             >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
@@ -16,7 +16,7 @@ class TransitionTree(checkmate._tree.Tree):
             >>> tree = checkmate.runs.TransitionTree(test_transition)
             >>> (tree.root.incoming[0].code, tree.root.outgoing[0].code, tree.root.outgoing[1].code)
             ('AC', 'RE', 'ARE')
-            >>> tt = checkmate.runs.TransitionTree(checkmate.test_data.App().components['C1'].state_machine.transitions[0])
+            >>> tt = checkmate.runs.TransitionTree(sample_app.application.TestData().components['C1'].state_machine.transitions[0])
             >>> tt.root #doctest: +ELLIPSIS
             <checkmate.transition.Transition object at ...
         """
@@ -27,9 +27,9 @@ class TransitionTree(checkmate._tree.Tree):
         """
             >>> import checkmate._storage
             >>> import checkmate.transition
-            >>> import checkmate.test_data
             >>> import checkmate.runs
-            >>> a = checkmate.test_data.App()
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
             >>> t1 = a.components['C1'].state_machine.transitions[0]
             >>> t2 = a.components['C3'].state_machine.transitions[0]
             >>> tree1 = checkmate.runs.TransitionTree(t1)
@@ -62,8 +62,8 @@ class TransitionTree(checkmate._tree.Tree):
 class RunCollection(list):
     def build_trees_from_application(self, application):
         """
-            >>> import sample_app.application
             >>> import checkmate.runs
+            >>> import sample_app.application
             >>> runs = checkmate.runs.RunCollection()
             >>> runs.build_trees_from_application(sample_app.application.TestData())
             >>> len(runs)

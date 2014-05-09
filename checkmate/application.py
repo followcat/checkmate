@@ -5,6 +5,7 @@ import zope.interface
 import checkmate.runs
 import checkmate._module
 import checkmate.component
+import checkmate.service_registry
 import checkmate.partition_declarator
 
 
@@ -62,10 +63,11 @@ class Application(object):
         """
         self.name = self.__module__.split('.')[-2]
         self.components = {}
+        self.service_registry = checkmate.service_registry.ServiceRegistry()
         for components, _class in self.component_classes.items():
             for _c in components:
-                self.components[_c] = _class(_c)
-
+                self.components[_c] = _class(_c, self.service_registry)
+                self.service_registry.register(self.components[_c], self.components[_c].service_interfaces)
 
     def __getattr__(self, name):
         if name == 'run_collection':

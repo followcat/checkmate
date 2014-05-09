@@ -4,10 +4,10 @@ import argparse
 import importlib
 import subprocess
 
-import checkmate.test_data
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.runtime.component
+import sample_app.application
 
 
 class Launcher(object):
@@ -63,7 +63,7 @@ def start_component(*args, **kwargs):
     parser.add_argument('--component', dest='component_name', action='store',
                         help='name of the component')
     parser.add_argument('--application', dest='application_callable', action='store',
-                        default="checkmate.test_data.App",
+                        default="sample_app.application.TestData",
                         help='application to find the component')
     parser.add_argument('--communication', dest='communication_callable', action='store',
                         default="checkmate.runtime._pyzmq.Communication",

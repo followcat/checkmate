@@ -11,5 +11,6 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
                          ('C3',): ('Component_3', {'launch_command': "./pytango/component/Component_3 {component.name}"}),
                          ('USER',): ('User', {}),
                         }
+
     communication_list = (pytango.checkmate.runtime.communication.Communication,)
 

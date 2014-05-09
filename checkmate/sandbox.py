@@ -64,8 +64,8 @@ class Sandbox(object):
 
     def __call__(self, transition, foreign_transitions=False):
         """
-            >>> import sample_app.application
             >>> import checkmate.sandbox
+            >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
             'True'
@@ -84,7 +84,7 @@ class Sandbox(object):
             if not foreign_transitions and not transition in component.state_machine.transitions:
                 continue
             if len(transition.incoming) > 0:
-                _incoming = transition.generic_incoming(component.states)
+                _incoming = transition.generic_incoming(component.states, component.service_registry)
                 for _c in self.application.components.values():
                     component_transition = _c.get_transition_by_output(_incoming)
                     if component_transition is not None:
@@ -108,8 +108,8 @@ class Sandbox(object):
 
     def generate(self, exchanges, tree=None):
         """
-            >>> import sample_app.application
             >>> import checkmate.sandbox
+            >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.AC()
             >>> ex.origin_destination('C2', 'C1')
@@ -118,7 +118,6 @@ class Sandbox(object):
             >>> box.application.components['C3'].states[0].value
             'True'
         """
-        i = 0
         for _exchange in exchanges:
             _transition = self.application.components[_exchange.destination].get_transition_by_input([_exchange])
             _outgoings = self.application.components[_exchange.destination].process([_exchange])
@@ -126,12 +125,10 @@ class Sandbox(object):
                 return None
 
             self.update_required_states(_transition)
-            tree.add_node(checkmate._tree.Tree(_transition, []))
-            tmp_tree = self.generate(_outgoings, tree.nodes[i])
+            tmp_tree = self.generate(_outgoings, checkmate._tree.Tree(_transition, []))
             if tmp_tree is None:
                 return None
-            tree.nodes[i] = tmp_tree
-            i += 1
+            tree.add_node(tmp_tree)
         return tree
 
     def fill_procedure(self, procedure):

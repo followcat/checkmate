@@ -143,10 +143,10 @@ class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
-        >>> import checkmate.test_data
         >>> import checkmate.runtime
         >>> import checkmate.component
-        >>> a = checkmate.test_data.App
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData
         >>> c = checkmate.runtime._pyzmq.Communication
         >>> r = checkmate.runtime._runtime.Runtime(a, c, True)
         >>> r.setup_environment(['C3'])
@@ -166,18 +166,18 @@ class Communication(checkmate.runtime.communication.Communication):
     def __init__(self, component=None):
         """"""
         super(Communication, self).__init__(component)
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
+        self.logger.info("%s initialize"%self)
         self.registry = Registry()
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
         self.registry.start()
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
-        self.logger.info("%s initialize" % (self))
 
     def close(self):
         self.registry.stop()
-        self.logger.info("%s close" % (self))
+        self.logger.info("%s close"%self)
 
     def get_initport(self):
         return self.registry._initport
