@@ -84,20 +84,26 @@ class C2Interface(PyTango.DeviceClass):
     attr_list = {
                 }
 
+buttons = {}
+model = 'sys/component_2/C2'
+commands = ['ButtonAC', 'ButtonRL', 'ButtonPP']
+
+def create_button(command, model=model):
+    button = taurus.qt.qtgui.button.TaurusCommandButton(command=command)
+    button.setModel(model)
+    buttons[command] = button
 
 def get_button(command):
-    button = taurus.qt.qtgui.button.TaurusCommandButton(command=command)
-    button.setModel('sys/component_2/C2')
-    return button
-
-def command_filter(command):
-    return command.cmd_name in ['ButtonAC', 'ButtonRL', 'ButtonPP']
+    return buttons[command]
 
 app = taurus.qt.qtgui.application.TaurusApplication(['Component_2'])
 def start_taurus_app():
+    for command in commands:
+        create_button(command)
     panel = taurus.qt.qtgui.panel.TaurusCommandsForm()
-    model = 'sys/component_2/C2'
     panel.setModel(model)
+    def command_filter(command):
+        return command.cmd_name in commands
     panel.setViewFilters([command_filter])
     #do Not show while running nose plugin
     #panel.show()
@@ -108,8 +114,8 @@ if __name__ == '__main__':
     py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
     U.server_init()
-    import time
-    time.sleep(1)
+    #wait for server initializing completed
+    time.sleep(2)
     start_taurus_app()
     U.server_run()
 
