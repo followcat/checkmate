@@ -13,7 +13,6 @@ class ComponentMeta(type):
         data_structure_module = namespace['data_structure_module']
 
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
-        exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__, state_module.__dict__)
         namespace['state_module'] = state_module
 
         path = os.path.dirname(os.path.join(namespace['exchange_definition_file']))

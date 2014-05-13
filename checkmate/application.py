@@ -10,11 +10,9 @@ import checkmate.partition_declarator
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
-        exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__, exchange_module.__dict__)
         namespace['exchange_module'] = exchange_module
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
-        exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__, data_structure_module.__dict__)
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition_file' not in namespace:
