@@ -202,7 +202,11 @@ class ThreadedSut(ThreadedComponent, Sut):
 
     def initialize(self):
         if hasattr(self.context, 'launch_command'):
-            self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
+            if hasattr(self.context, 'command_env'):
+                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, 
+                                                                    command_env=self.context.command_env, component=self.context)
+            else:
+                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 

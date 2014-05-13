@@ -11,10 +11,11 @@ import sample_app.application
 
 
 class Launcher(object):
-    def __init__(self, component=None, command=None, runtime=None, *args):
+    def __init__(self, component=None, command=None, command_env=None, runtime=None, *args):
         self.command = command
         self.runtime = runtime
         self.component = component
+        self.command_env = command_env
         if self.command is not None:
             pass
         elif self.component is not None:
@@ -25,9 +26,12 @@ class Launcher(object):
 
     def initialize(self):
         if self.command is not None:
+            command_env = dict(os.environ)
+            if self.command_env is not None:
+                command_env.update(self.command_env) 
             CLASSPATH = os.getenv('CHECKMATE_CLASSPATH', os.getenv('CLASSPATH'))
             self.process = subprocess.Popen(shlex.split(self.command.format(classpath=CLASSPATH, component=self.component)),
-                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                            env=command_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             self.runtime_component.initialize()
 
@@ -42,7 +46,6 @@ class Launcher(object):
                 outs, errs = self.process.communicate(timeout=5)
             except subprocess.TimeoutExpired:
                 self.process.kill()
-                outs, errs = self.process.communicate()
         else:
             self.runtime_component.stop()
 
