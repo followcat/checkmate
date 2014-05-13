@@ -5,7 +5,6 @@ import zope.interface
 import checkmate._module
 import checkmate.state_machine
 import checkmate.partition_declarator
-import checkmate.service_registry
 
 
 class ComponentMeta(type):
@@ -24,8 +23,7 @@ class ComponentMeta(type):
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=matrix)
             declarator_output = declarator.get_output()
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'],
-                                                                      declarator_output['transitions'])
+            namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
             services = []
             service_interfaces = []
             for _t in declarator_output['transitions']:
@@ -100,6 +98,7 @@ class Component(object):
     def start(self):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
+        self.service_registry.register(self, self.service_interfaces)
 
     def stop(self):
         pass
@@ -117,15 +116,22 @@ class Component(object):
 
     def simulate(self, _transition):
         """
-            >>> import checkmate.service_registry
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c2 = a.components['C2']
             >>> c2.start()
             >>> exchange = sample_app.exchanges.AC()
             >>> transition = c2.get_transition_by_output([exchange])
-            >>> c2.simulate(transition)  # doctest: +ELLIPSIS
-            [<sample_app.exchanges.Action object at ...
+
+        We can't simulate a transition when no destination for outgoing is registered:
+            >>> c2.simulate(transition)
+            []
+
+        Registration is done when the destination component is started:
+            >>> a.components['C1'].start()
+            >>> out = c2.simulate(transition)
+            >>> out[0].action == 'AC'
+            True
         """
         output = []
         _incoming = _transition.generic_incoming(self.states, self.service_registry)

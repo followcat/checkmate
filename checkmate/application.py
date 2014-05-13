@@ -1,5 +1,3 @@
-import os
-
 import zope.interface
 
 import checkmate.runs
@@ -67,7 +65,6 @@ class Application(object):
         for components, _class in self.component_classes.items():
             for _c in components:
                 self.components[_c] = _class(_c, self.service_registry)
-                self.service_registry.register(self.components[_c], self.components[_c].service_interfaces)
 
     def __getattr__(self, name):
         if name == 'run_collection':
