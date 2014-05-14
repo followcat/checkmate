@@ -73,10 +73,6 @@ def _find_runs(application, target):
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
         1
-        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[2][0].initial))
-        2
-        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[3][0].initial))
-        3
 
     """
     used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
