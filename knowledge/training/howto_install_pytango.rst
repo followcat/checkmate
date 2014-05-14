@@ -124,7 +124,7 @@ Up to this point, the operation must be done using the checkmate virtual environ
 
         Use 'python setup.py build; python setup.py install' to compile and install. 
         The problem met when building is -lboost_python-py33 did not exist.
-        But if boost was installed successfully, there should be a a library like "libboost_python-py3.3.so".
+        But if boost was installed successfully, there should be a a library like "libboost_python3.so".
         Make a symbolic link to it through "libboost_python-py33.so".
         After installation, an ImportError when trying to import PyTango and it showed something like "libboost_python3.so no such file or directory".
         Solve this problem by adding a line to the $VIRTUALENV/bin/activate:
