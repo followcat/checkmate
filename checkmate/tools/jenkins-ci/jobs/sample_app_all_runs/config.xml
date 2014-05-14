@@ -13,8 +13,7 @@
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command>sleep 5
-cd $CHECKMATE_HOME
+      <command>cd $CHECKMATE_HOME
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --components=C1,C2,C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>

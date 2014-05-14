@@ -17,7 +17,6 @@
 export TANGO_HOST=localhost:10203
 export TANGO_DB_NAME=pytango_C3_python
 DataBaseds 2 -ORBendPoint giop:tcp::10203&amp;
-sleep 10
 python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.python_application.FullPython --sut=C3 checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
