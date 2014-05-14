@@ -6,9 +6,6 @@ data:
     # [Partition, State,      Valid value,      Comment]
     - [D-ATTR-01, B0('AT1'),  AT1 valid value,  AT1 attribute value]
     - [D-ATTR-02, B0('AT2'),  AT2 valid value,  AT1 attribute value]
-    Standard methods:
-    # [Method, Comment]
-    - [toggle, Toggle component state]
 
   - Definition: 'TESTActionPriority'
     Value partitions:

@@ -7,20 +7,12 @@ data:
       - [S-STATE-01,  M0(True),   True valid value,   State true value]
       - [S-STATE-02,  M0(False),  False valid value,  State false value]
 
-    Standard methods:
-      # [Method, Comment]
-      - [toggle, Toggle component state]
-
   - Definition and accessibility: 'TESTAnotherState'
     Value partitions:
       # [Partition,   State,      Valid value,        Comment]
       - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
       - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
-
-    Standard methods:
-      # [Method,  Comment]
-      - [append,  Append element to state]
-      - [pop,     Pop element from state]
+      
 ---
 title: "State machine"
 data:

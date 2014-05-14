@@ -4,7 +4,6 @@ import checkmate._storage
 
 class Partition(object):
     """"""
-    _queue = False
     partition_attribute = tuple()
 
     def __init__(self, value=None, *args, **kwargs):
@@ -46,21 +45,17 @@ class Partition(object):
             >>> ac2.R.P.value
             'HIGH'
         """
-        if hasattr(self, 'append'):
-            self._queue = True
-        if self._queue == True:
-            # intended to be a 'None' string
-            if (type(value) == str and value == 'None'):
-                value = []
-            if type(value) == list:
-                self.value = list(value)
-            else:
-                self.value = [value]
+        if type(value) == list:
+            self.value = list(value)
+        elif value == 'None':
+            self.value = None
         else:
             self.value = value
-            if value is None:
+            if value is None and hasattr(self, '_valid_values'):
                 try:
                     self.value = self._valid_values[0]
+                    if self.value == 'None':
+                        self.value = None
                 except:
                     pass
             
@@ -130,19 +125,10 @@ def compare_value(one, other):
     >>> checkmate.partition.compare_value(r1, r2)
     False
     """
-    if one._queue == True:
-        if len(one.value) == 0:
-            return (len(other.value) == 0 or other.value[0] == None)
-        elif len(other.value) == 0:
-            return (len(one.value) == 0 or one.value[0] == None)
-        elif one.value[0] == None or other.value[0] == None:
-            return True
-        else:
-            return (one.value == other.value)
-    if one.value == None or other.value == None:
+    if None in [one.value, other.value]:
         return True
     else:
-        return (one.value == other.value)
+        return one.value == other.value
 
 def compare_attr(one, other):
     """

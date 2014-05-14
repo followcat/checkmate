@@ -59,8 +59,8 @@ def store(type, interface, name, description=None):
 
         >>> st = store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
-        >>> state.value
-        [None]
+        >>> print(state.value)
+        None
         >>> st = store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
         >>> ex = st.factory({'R': 'HIGH'})
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
