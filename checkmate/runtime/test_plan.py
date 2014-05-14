@@ -1,5 +1,6 @@
 import os.path
 
+import checkmate.runs
 import checkmate.sandbox
 import checkmate.runtime.procedure
 import checkmate.parser.yaml_visitor
@@ -133,5 +134,36 @@ def TestProcedureFeaturesGenerator(application_class=sample_app.application.Test
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box(_transition, foreign_transitions=True)
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+
+def TestProcedureRunsGenerator(application_class=sample_app.application.TestData):
+    """
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime.test_plan
+        >>> procedures = []
+        >>> for p in checkmate.runtime.test_plan.TestProcedureRunsGenerator(sample_app.application.TestData):
+        ...     procedures.append(p[0])
+        >>> procedures[0].transitions.root.outgoing[0].code
+        'PBAC'
+        >>> procedures[1].transitions.root.outgoing[0].code
+        'PBRL'
+        >>> procedures[2].transitions.root.outgoing[0].code
+        'PBPP'
+        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> r.setup_environment(['C2'])
+        >>> r.start_test()
+        >>> procedures[0](r)
+        >>> r.stop_test()
+    """
+
+    _application = application_class()
+    runs = checkmate.runs.RunCollection()
+    runs.build_trees_from_application(application_class()) 
+    for _run in runs:
+        _transitions = _run.walk()
+        box = checkmate.sandbox.Sandbox(_application, _transitions)
+        box(_transitions[0], foreign_transitions=True) 
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
