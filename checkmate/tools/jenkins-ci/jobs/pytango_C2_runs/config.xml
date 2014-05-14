@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Pytango application ITP with SUT=C1</description>
+  <description>Pytango application ITP with SUT=C2</description>
   <logRotator>
     <daysToKeep>-1</daysToKeep>
     <numToKeep>-1</numToKeep>
@@ -21,16 +21,16 @@
     <hudson.tasks.Shell>
       <command>cd $CHECKMATE_HOME
 export CHECKMATE_CLASSPATH=$TANGO_CLASSPATH
-export TANGO_DB_NAME=pytango_C1_runs
-export TANGO_HOST=localhost:10102
-DataBaseds 2 -ORBendPoint giop:tcp::10102&amp;
+export TANGO_DB_NAME=pytango_C2_runs
+export TANGO_HOST=localhost:10108
+DataBaseds 2 -ORBendPoint giop:tcp::10108&amp;
 sleep 10
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C1 --runs=100 --random checkmate/ sample_app/</command>
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --application=pytango.checkmate.application.Application --sut=C2 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>pytango_C2</childProjects>
+      <childProjects>pytango_C3</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
