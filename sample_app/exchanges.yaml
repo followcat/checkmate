@@ -13,11 +13,11 @@ data:
     - [D-PRIO-01,   P0('NORM'),  NORM valid value,   NORM priority value]
     - [D-PRIO-02,   P0('HIGH'),  HIGH valid value,   HIGH priority value]
 
-  - Definition: 'ActionRequest(P=ActionPriority, A=Attribute)'
+  - Definition: 'ActionRequest(P:ActionPriority, A:Attribute)'
 ---
 title: "Exchange identification"
 data:
-  - Definition and accessibility: 'Action(R=ActionRequest)'
+  - Definition and accessibility: 'Action(R:ActionRequest)'
     Value partitions:
     # [Partition,     State,  Valid value,    Comment]
     - [X-ACTION-01,   AC(),   Action action,  Comment AC action]

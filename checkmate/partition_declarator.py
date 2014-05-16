@@ -1,4 +1,5 @@
 import checkmate._utils
+import checkmate._exec_tools
 import checkmate._module
 import checkmate._storage
 import checkmate.transition
@@ -102,41 +103,15 @@ class Declarator(object):
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
-        def set_partition_arguments(partition_type, standard_methods, key, value):
-            partition_attribute = []
-            for _module in self.basic_modules[partition_type]:
-                try:
-                    interface = getattr(_module, _to_interface(value))
-                    standard_methods.update({key: checkmate._storage.store(partition_type, interface, value)})
-                    partition_attribute.append(key)
-                    break
-                except AttributeError:
-                    continue
-            return partition_attribute
-
-        def get_partition_attribute(signature, partition_type):
-            partition_attribute = []
-            for class_attr in checkmate._utils.method_arguments(signature).values:
-                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, class_attr, class_attr))
-            for key, class_kwattr in checkmate._utils.method_arguments(signature).attribute_values.items():
-                partition_attribute.extend(set_partition_arguments(partition_type, standard_methods, key, class_kwattr[0][0]))
-            return partition_attribute
-
-        def set_standard_methods(_module, classname, codes, partition_attribute, partition_type):
-            standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None],
-                                     'partition_attribute': tuple(partition_attribute)})
-            defined_class, defined_interface = checkmate._module.exec_class_definition(partition_type, _module, classname, standard_methods, _to_interface(classname), codes)
+        def set_standard_methods(_module, signature, codes, partition_type):
+            standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None]})
+            defined_class, defined_interface = checkmate._module.exec_class_definition(partition_type, _module, signature, standard_methods, codes)
+            if hasattr(defined_class, "__annotations__"):
+                standard_methods.update({'partition_attribute': tuple(defined_class.__annotations__.keys())})
             return defined_class, defined_interface
 
-        partition_attribute = []
-        classname = signature
         _module = self.module[partition_type]
-        if checkmate._utils.is_method(signature):
-            classname = checkmate._utils._leading_name(signature)
-            partition_attribute = get_partition_attribute(signature, partition_type)
-
-        defined_class, defined_interface = set_standard_methods(_module, classname, codes, partition_attribute, partition_type)
-
+        defined_class, defined_interface = set_standard_methods(_module, signature, codes, partition_type)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, codes, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         return (defined_interface, partition_storage)

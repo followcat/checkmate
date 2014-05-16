@@ -4,17 +4,28 @@ import sys
 import inspect
 import importlib
 
-import checkmate._utils
+import checkmate._exec_tools
 
 
-def exec_class_definition(partition_type, exec_module, classname, standard_methods, interface_class, codes):
+def exec_class_definition(partition_type, exec_module, signature, standard_methods, codes):
     module_class_map = {
         'exchanges':'checkmate.exchange.Exchange',
         'data_structure':'checkmate.data_structure.DataStructure',
         'states':'checkmate.state.State'
     }
+    import_module = ''
+    classname = checkmate._exec_tools.get_function_name(signature)
+    interface_class = 'I' + classname
+
+    parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
+    parameters_str = ', '.join([_p.replace(':',':sample_app.data_structure.') + ' = None' for _p in parameters_list])
+    if len(parameters_list) > 0:
+        import_module += 'import sample_app.data_structure\n'
+        parameters_str += ', '
+
     module_class = module_class_map[partition_type]
-    import_module = 'import ' + '.'.join(module_class.split('.')[:-1])
+    module_name = '.'.join(module_class.split('.')[:-1])
+    import_module += '\nimport ' + module_name
 
     run_code = """
             \nimport zope.interface.interface
@@ -26,14 +37,23 @@ def exec_class_definition(partition_type, exec_module, classname, standard_metho
     run_code += """
             \n@zope.interface.implementer(%s)
             \nclass %s(%s):
-            \n    def __init__(self, *args, **kwargs):
+            \n    def __init__(self, *args, %s**kwargs):
             \n        super().__init__(*args, **kwargs)
-            """ % (interface_class, classname, module_class)
+            """ % (interface_class, classname, module_class, parameters_str)
+
+    if len(parameters_list) > 0:
+        setattr_code = ''
+        for _p in parameters_list:
+            _k, _v = _p.split(':')
+            setattr_code += """
+            \n%s.%s = checkmate._storage.store('%s', sample_app.data_structure.I%s, '%s')
+            """ % (classname, _k, partition_type, _v, _v)
+        run_code += setattr_code
 
     if partition_type == 'exchanges':
         for code in codes:
-            if checkmate._utils.is_method(code):
-                internal_code = checkmate._utils.internal_code(code)
+            if checkmate._exec_tools.is_method(code):
+                internal_code = checkmate._exec_tools.get_function_name(code)
                 run_code += """
                 \ndef %s(*args, **kwargs):
                 \n    return %s('%s', *args, **kwargs)
@@ -41,7 +61,7 @@ def exec_class_definition(partition_type, exec_module, classname, standard_metho
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
-    define_interface = getattr(exec_module, 'I' + classname)
+    define_interface = getattr(exec_module, interface_class)
     for _k, _v in standard_methods.items():
         setattr(define_class, _k, _v)
 
@@ -74,7 +94,7 @@ def get_module(package_name, module_name, alternative_package=None):
     basename = package_name.split('.')[-1]
     _file = sys.modules[package_name].__file__
 
-    if alternative_package == None:
+    if alternative_package is None:
         if len(package_name.split('.')) > 2:
             alternative_package = '.' + package_name.split('.')[-2]
         else:

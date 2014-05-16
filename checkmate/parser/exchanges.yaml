@@ -13,11 +13,11 @@ data:
     - [D-PRIO-01, Q0('NORM'), NORM valid value, NORM priority value]
     - [D-PRIO-02, Q0('HIGH'), HIGH valid value, HIGH priority value]
     
-  - Definition: 'TESTActionRequest(Q=TESTActionPriority, B=TESTAttribute)'
+  - Definition: 'TESTActionRequest(Q:TESTActionPriority, B=TESTAttribute)'
 ---
 title: 'Exchange identification'
 data:
-  - Definition and accessibility: 'TESTAction(T=TESTActionRequest)'
+  - Definition and accessibility: 'TESTAction(T:TESTActionRequest)'
     Value partitions:
     # [Partition,   State,  Valid value,    Comment]
     - [X-ACTION-01, TC(),   Action action,  Comment AC action]
