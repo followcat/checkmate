@@ -25,8 +25,9 @@ These steps may still be done outside the checkmate virtualenv using the ***pyth
         unzip
         python configure-ng.py
         make
-        sudo make install
-
+        make install
+		
+		You might see a message like make: [install_pyuic4] Error 1 (ignored). This is not an error, but rather a warning that can be safely ignored (as explained in this page: this happens when attempting to strip a file that is not a binary but a script, as is the case of pyuic4).
 
     4. install taurus
         wget https://pypi.python.org/packages/source/t/taurus/taurus-3.2.0.tar.gz
