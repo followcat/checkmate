@@ -6,7 +6,6 @@ These steps may still be done outside the checkmate virtualenv using the ***pyth
 
     0. if you don't have python 2.7 installed, you can try with python 2.6, but still 2.7 is recommanded. 
        Make a virtualenv for python 2.7, the following softwares will be installed inside this virtualenv.
-       After this virtualenv created, a new environment variable PY2_VIRTUAL_ENV should be set.
 
 
     1. install Sip
@@ -41,8 +40,13 @@ These steps may still be done outside the checkmate virtualenv using the ***pyth
 The following softwares are also need to be installed in python 2.7 virtual environment in order to run our new pytango component_2 combining with taurus.
 
     5. boost_python, should install the same version as in python 3.3.
-       After boost_python installed, a new environment variable BOOST_ROOT_PY2 should be set to boost_python installation directory.
 
 
-    6. PyTango, should install the same version as in python 3.3.
+    6. numpy
+        pip install numpy==1.7.0.
 
+
+    7. PyTango, should install the same version as in python 3.3.
+
+pos-install: After this virtualenv created, new environment variables PY2_VIRTUAL_ENV and BOOST_ROOT_PY2 should be set to the shell that execute our checkmate test.
+    
