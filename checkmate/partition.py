@@ -132,6 +132,7 @@ def compare_value(one, other):
 
 def compare_attr(one, other):
     """
+    >>> import checkmate.partition
     >>> import sample_app.application
     >>> a = sample_app.application.TestData()
     >>> r1 = a.data_structure[2][-1].storage[0].factory()

@@ -62,6 +62,7 @@ def exec_class_definition(partition_type, exec_module, signature, standard_metho
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
+    standard_methods.update({'partition_attribute': tuple(define_class.__init__.__annotations__.keys())})
     for _k, _v in standard_methods.items():
         setattr(define_class, _k, _v)
 
