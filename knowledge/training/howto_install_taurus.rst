@@ -40,6 +40,8 @@ These steps may still be done outside the checkmate virtualenv using the ***pyth
 The following softwares are also need to be installed in python 2.7 virtual environment in order to run our new pytango component_2 combining with taurus.
 
     5. boost_python, should install the same version as in python 3.3.
+       If boost was installed successfully, there should be a library like "libboost_python.so" in the InstallDir/lib.
+       Make a symbolic link to it through "libboost_python-py27.so".
 
 
     6. numpy
