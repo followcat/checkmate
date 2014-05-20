@@ -13,7 +13,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
         'data_structure':'checkmate.data_structure.DataStructure',
         'states':'checkmate.state.State'
     }
-    import_module = ''
+
     data_structure_module_name = data_structure_module.__name__
     classname = checkmate._exec_tools.get_function_name(signature)
     interface_class = 'I' + classname
@@ -21,38 +21,36 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
     parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
     parameters_str = ', '.join([_p + ' = None' for _p in parameters_list])
-    if len(parameters_list) > 0:
-        import_module += 'import %s\n' % data_structure_module_name
-        parameters_str += ', '
 
     module_class = module_class_map[partition_type]
     module_name = '.'.join(module_class.split('.')[:-1])
-    import_module += '\nimport ' + module_name
+    import_module = module_name
+    if len(parameters_list) > 0:
+        import_module += '\n\nimport ' + data_structure_module_name
+        parameters_str += ', '
 
     run_code = """
             \nimport zope.interface.interface
-            \n%s\n
-            \nclass %s(zope.interface.Interface):
-            \n    \"\"\"\"\"\"
-            """ % (import_module, interface_class)
-
-    run_code += """
-            \n@zope.interface.implementer(%s)
-            \nclass %s(%s):
-            \n    def __init__(self, value=None, *args, %s**kwargs):
+            \nimport {0}\n
+            \nclass {1}(zope.interface.Interface):
+            \n    \"\"\"\"\"\"\n
+            \n
+            \n@zope.interface.implementer({1})
+            \nclass {2}({3}):
+            \n    def __init__(self, value=None, *args, {4}**kwargs):
             \n        super().__init__(value, *args, **kwargs)
-            """ % (interface_class, classname, module_class, parameters_str)
+            """.format(import_module, interface_class, classname, module_class, parameters_str)
 
     if len(parameters_list) > 0:
         setattr_code = ''
         for _p in parameters_list:
             _k, _v = _p.split(':')
             setattr_code += """
-            \n        if %s is None:
-            \n            self.%s = %s(*args, **kwargs)
+            \n        if {0} is None:
+            \n            self.{0} = {1}(*args, **kwargs)
             \n        else:
-            \n            self.%s = %s
-            """ % (_k, _k, _v, _k, _k)
+            \n            self.{0} = {0}
+            """.format(_k, _v)
         run_code += setattr_code
 
     if partition_type == 'exchanges':
@@ -60,9 +58,9 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             if checkmate._exec_tools.is_method(code):
                 internal_code = checkmate._exec_tools.get_function_name(code)
                 run_code += """
-                \ndef %s(*args, **kwargs):
-                \n    return %s('%s', *args, **kwargs)
-                """ % (internal_code, classname, internal_code)
+                \ndef {0}(*args, **kwargs):
+                \n    return {1}('{0}', *args, **kwargs)
+                """.format(internal_code, classname)
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
