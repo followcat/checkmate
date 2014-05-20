@@ -39,8 +39,8 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     run_code += """
             \n@zope.interface.implementer(%s)
             \nclass %s(%s):
-            \n    def __init__(self, *args, %s**kwargs):
-            \n        super().__init__(*args, **kwargs)
+            \n    def __init__(self, value=None, *args, %s**kwargs):
+            \n        super().__init__(value, *args, **kwargs)
             """ % (interface_class, classname, module_class, parameters_str)
 
     if len(parameters_list) > 0:
