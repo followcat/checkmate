@@ -105,7 +105,7 @@ class Declarator(object):
         """
         def set_standard_methods(_module, signature, codes, partition_type):
             standard_methods.update({'_valid_values': [checkmate._utils.valid_value_argument(_v) for _v in codes if checkmate._utils.valid_value_argument(_v) is not None]})
-            defined_class, defined_interface = checkmate._module.exec_class_definition(partition_type, _module, signature, standard_methods, codes)
+            defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, standard_methods, codes)
             return defined_class, defined_interface
 
         _module = self.module[partition_type]

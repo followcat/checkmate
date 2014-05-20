@@ -7,21 +7,22 @@ import importlib
 import checkmate._exec_tools
 
 
-def exec_class_definition(partition_type, exec_module, signature, standard_methods, codes):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, standard_methods, codes):
     module_class_map = {
         'exchanges':'checkmate.exchange.Exchange',
         'data_structure':'checkmate.data_structure.DataStructure',
         'states':'checkmate.state.State'
     }
     import_module = ''
+    data_structure_module_name = data_structure_module.__name__
     classname = checkmate._exec_tools.get_function_name(signature)
     interface_class = 'I' + classname
 
     parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
-    parameters_list = [_p.replace(':',':sample_app.data_structure.') for _p in parameters_list]
+    parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
     parameters_str = ', '.join([_p + ' = None' for _p in parameters_list])
     if len(parameters_list) > 0:
-        import_module += 'import sample_app.data_structure\n'
+        import_module += 'import %s\n' % data_structure_module_name
         parameters_str += ', '
 
     module_class = module_class_map[partition_type]
