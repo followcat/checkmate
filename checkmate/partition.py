@@ -12,10 +12,6 @@ class Partition(object):
             >>> e = Partition('CA', 'AUTO')
             >>> e.value
             'CA'
-            >>> e.parameters['AUTO']
-            >>> e = Partition('CA', R=1)
-            >>> e.parameters['R']
-            1
 
         If the partition defines an attribute as implementing IStorage, the factory() is called to instantiate the attribute.
             >>> import zope.interface
@@ -26,21 +22,18 @@ class Partition(object):
             >>> setattr(Partition, 'A', A())
             >>> Partition.partition_attribute = ('A',)
             >>> ds = Partition('AT1')
-            In factory
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
         We can pass _utils.ArgumentStorage formatted argument to act on attribute instantiation.
-            >>> import checkmate._utils
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> args = checkmate._utils.ArgumentStorage(((), {'R': checkmate._utils.ArgumentStorage(((), {'P': checkmate._utils.ArgumentStorage((('HIGH',), {}))}))}))
-            >>> ac = a.exchanges[0][-1].storage[0].factory(args.values, args.attribute_values)
+            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'P':sample_app.data_structure.ActionPriority('HIGH')})
             >>> ac.R.P.value
             'HIGH'
 
         We can define a partition by passing an instance for attribute.
-            >>> re = a.data_structure[2][-1].storage[0].factory(kwargs={'P': 'HIGH'})
+            >>> re = a.data_structure[2][-1].storage[0].factory(kwargs={'P': sample_app.data_structure.ActionPriority('HIGH')})
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
             >>> ac2.R.P.value
             'HIGH'
@@ -58,26 +51,8 @@ class Partition(object):
                         self.value = None
                 except:
                     pass
-            
-        self.parameters = {}
-        for argument in args:
-            if ((type(argument) == str) and (argument.isalpha())):
-                self.parameters[argument] = None
-        self.parameters.update(kwargs)
-
-        for name in dir(self):
-            attr = getattr(self, name)
-            if name in iter(kwargs):
-                if attr.interface.providedBy(kwargs[name]):
-                    attr = kwargs[name]
-                elif checkmate._utils.IArgumentStorage.providedBy(kwargs[name]):
-                    attr = attr.factory(kwargs[name].values, kwargs[name].attribute_values)
-                else:
-                    # Fallback, for doctest mostly
-                    attr = attr.factory((kwargs[name],))
-            else:
-                attr = attr.factory()
-            setattr(self, name, attr)
+        for _k, _v in kwargs.items():
+            setattr(self, _k, _v)
 
     def __dir__(self):
         return self.partition_attribute

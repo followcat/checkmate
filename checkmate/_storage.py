@@ -46,22 +46,19 @@ def _build_resolve_logic(transition, type, data):
 
 def store(type, interface, name, description=None):
     """
+        >>> import checkmate._storage
         >>> import sample_app.exchanges
         >>> import sample_app.application
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
-        >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
-        >>> attr = st.factory()
+        >>> attr = sample_app.data_structure.Attribute()
         >>> attr.value
         'AT1'
-        >>> st = store('data_structure', sample_app.data_structure.IAttribute, 'AT')
-        >>> attr = st.factory()
-
-        >>> st = store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
+        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
-        >>> st = store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
         >>> ex = st.factory({'R': 'HIGH'})
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
         ('AP', <sample_app.data_structure.ActionRequest object at ...
@@ -163,12 +160,8 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> a = sample_app.application.TestData()
-            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'P(HIGH)', None, sample_app.data_structure.ActionPriority)
-            >>> st.factory().value
-            'HIGH'
-            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'HIGH', None, sample_app.data_structure.ActionPriority)
-            >>> st.factory().value
+            >>> ds_ap = sample_app.data_structure.ActionPriority('HIGH')
+            >>> ds_ap.value
             'HIGH'
         """
         self.code = checkmate._utils.internal_code(name)
@@ -191,17 +184,12 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> a = sample_app.application.TestData()
-            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R', None, sample_app.data_structure.ActionRequest)
-            >>> r1 = st.factory(kwargs={'P': 'HIGH'})
+            >>> r1 = sample_app.data_structure.ActionRequest(P=sample_app.data_structure.ActionPriority('HIGH'))
             >>> r1.P.value
             'HIGH'
-            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R(P=HIGH,A=AT2)', None, sample_app.data_structure.ActionRequest)
-            >>> r = st.factory()
-            >>> (r.P.value, r.A.value)
+            >>> r = sample_app.data_structure.ActionRequest(P='HIGH', A='AT2')
+            >>> (r.P, r.A)
             ('HIGH', 'AT2')
-            >>> r = st.factory(kwargs={'P': 'NORM'})
-            >>> (r.P.value, r.A.value)
-            ('NORM', 'AT2')
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
@@ -225,8 +213,8 @@ class InternalStorage(object):
 
     def resolve(self, arg, states=[], exchanges=[]):
         """
-            >>> import sample_app.exchanges
             >>> import sample_app.application
+            >>> import sample_app.exchanges
             >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
@@ -238,8 +226,8 @@ class InternalStorage(object):
             >>> t.final[0].resolve('R', exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.action, inc.parameters, inc.R)  # doctest: +ELLIPSIS
-            ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
+            >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
+            ('AP', 1)
             >>> t.final[0].resolve('R', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
         """
@@ -252,9 +240,6 @@ class InternalStorage(object):
                 raise AttributeError
             else:
                 for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                    if arg in iter(_exchange.parameters):
-                        if _exchange.parameters[arg] is not None:
-                            return {arg: _exchange.parameters[arg]}
                     try:
                         return {arg: getattr(_exchange, arg)}
                     except AttributeError:

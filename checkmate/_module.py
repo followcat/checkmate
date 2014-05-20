@@ -18,7 +18,8 @@ def exec_class_definition(partition_type, exec_module, signature, standard_metho
     interface_class = 'I' + classname
 
     parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
-    parameters_str = ', '.join([_p.replace(':',':sample_app.data_structure.') + ' = None' for _p in parameters_list])
+    parameters_list = [_p.replace(':',':sample_app.data_structure.') for _p in parameters_list]
+    parameters_str = ', '.join([_p + ' = None' for _p in parameters_list])
     if len(parameters_list) > 0:
         import_module += 'import sample_app.data_structure\n'
         parameters_str += ', '
@@ -46,8 +47,11 @@ def exec_class_definition(partition_type, exec_module, signature, standard_metho
         for _p in parameters_list:
             _k, _v = _p.split(':')
             setattr_code += """
-            \n%s.%s = checkmate._storage.store('%s', sample_app.data_structure.I%s, '%s')
-            """ % (classname, _k, partition_type, _v, _v)
+            \n        if %s is None:
+            \n            self.%s = %s(*args, **kwargs)
+            \n        else:
+            \n            self.%s = %s
+            """ % (_k, _k, _v, _k, _k)
         run_code += setattr_code
 
     if partition_type == 'exchanges':
