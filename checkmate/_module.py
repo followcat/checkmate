@@ -39,6 +39,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             \nclass {2}({3}):
             \n    def __init__(self, value=None, *args, {4}**kwargs):
             \n        super().__init__(value, *args, **kwargs)
+            \n        self.partition_attribute = tuple({2}.__init__.__annotations__.keys())
             """.format(import_module, interface_class, classname, module_class, parameters_str)
 
     if len(parameters_list) > 0:
@@ -65,7 +66,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
-    standard_methods.update({'partition_attribute': tuple(define_class.__init__.__annotations__.keys())})
     for _k, _v in standard_methods.items():
         setattr(define_class, _k, _v)
 
