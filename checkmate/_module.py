@@ -22,6 +22,12 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
     parameters_str = ', '.join([_p + ' = None' for _p in parameters_list])
 
+    valid_values_list = []
+    for _c in codes:
+        for _v in checkmate._exec_tools.get_function_parameters_list(_c):
+            if _v != '':
+                valid_values_list.append(_v)
+
     module_class = module_class_map[partition_type]
     module_name = '.'.join(module_class.split('.')[:-1])
     import_module = module_name
@@ -38,9 +44,10 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             \n@zope.interface.implementer({1})
             \nclass {2}({3}):
             \n    def __init__(self, value=None, *args, {4}**kwargs):
+            \n        self._valid_values = {5}
             \n        super().__init__(value, *args, **kwargs)
             \n        self.partition_attribute = tuple({2}.__init__.__annotations__.keys())
-            """.format(import_module, interface_class, classname, module_class, parameters_str)
+            """.format(import_module, interface_class, classname, module_class, parameters_str, valid_values_list)
 
     if len(parameters_list) > 0:
         setattr_code = ''
@@ -66,9 +73,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
-    for _k, _v in standard_methods.items():
-        setattr(define_class, _k, _v)
-
     return define_class, define_interface
 
 

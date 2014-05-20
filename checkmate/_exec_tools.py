@@ -30,5 +30,5 @@ def get_function_parameters_list(signature):
     found_label = signature.find('(')
     if found_label == -1:
         return ''
-    temp_list = [_p.strip() for _p in signature[signature.find('('):][1:-1].split(',')]
+    temp_list = [_p.strip(' \'"') for _p in signature[signature.find('('):][1:-1].split(',')]
     return temp_list
