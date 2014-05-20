@@ -1,4 +1,3 @@
-import checkmate._utils
 import checkmate._storage
 
 
@@ -25,7 +24,7 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
-        We can pass _utils.ArgumentStorage formatted argument to act on attribute instantiation.
+        factory will set P = sample_app.data_structure.ActionPriority('HIGH')
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'P':sample_app.data_structure.ActionPriority('HIGH')})
