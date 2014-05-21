@@ -7,7 +7,7 @@ import importlib
 import checkmate._exec_tools
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, standard_methods, codes):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
     module_class_map = {
         'exchanges':'checkmate.exchange.Exchange',
         'data_structure':'checkmate.data_structure.DataStructure',

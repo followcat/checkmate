@@ -71,7 +71,7 @@ class Declarator(object):
             self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content)
         self.output = {}
 
-    def new_partition(self, partition_type, signature, standard_methods, codes, full_description=None):
+    def new_partition(self, partition_type, signature, codes, full_description=None):
         """
         >>> import collections
         >>> import checkmate._module
@@ -82,33 +82,29 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> par = de.new_partition('data_structure', "TestActionPriority", standard_methods = {}, codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionPriority", codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(checkmate.data.TestActionPriority('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> sp = de.new_partition('states', "TestState", standard_methods = {}, codes=["M0(True)"])
+        >>> sp = de.new_partition('states', "TestState", codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P:TestActionPriority)', standard_methods = {}, codes=[])
+        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P:TestActionPriority)', codes=[])
         >>> ar # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> hasattr(ar[-1].storage[0].factory(), 'P')
         True
         >>> checkmate.data.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
         True
-        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', standard_methods = {}, codes=['AP(R)'])
+        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R.P.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
-        def set_standard_methods(_module, signature, codes, partition_type):
-            defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, standard_methods, codes)
-            return defined_class, defined_interface
-
         _module = self.module[partition_type]
-        defined_class, defined_interface = set_standard_methods(_module, signature, codes, partition_type)
+        defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, codes, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         return (defined_interface, partition_storage)
@@ -141,7 +137,7 @@ class Declarator(object):
         for partition_type in ('states', 'data_structure', 'exchanges'):
             partitions = []
             for data in self.data_source[partition_type]:
-                partitions.append(self.new_partition(partition_type, data['clsname'], data['standard_methods'], data['codes'], data['full_desc']))
+                partitions.append(self.new_partition(partition_type, data['clsname'], data['codes'], data['full_desc']))
             self.output[partition_type] = partitions
 
     def get_transitions(self):

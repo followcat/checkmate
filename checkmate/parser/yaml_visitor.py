@@ -5,7 +5,7 @@ import checkmate.state
 
 
 class Visitor():
-    exchanges_kind_list = ["Standard methods", "Exchange", "Transitions", "Procedures"]
+    exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
     def __init__(self, stream):
@@ -18,7 +18,6 @@ class Visitor():
         self._classname = ''
         self.codes = []
         self.tran_items = []
-        self.standard_methods = {}
 
         self.read_document(stream)
 
@@ -37,19 +36,16 @@ class Visitor():
             if title == "State identification":
                 self.state_identification(_d)
                 self._state_partitions.append({'clsname': self._classname,
-                                                'standard_methods': self.standard_methods,
                                                 'codes': self.codes,
                                                 'full_desc': self.full_description})
             elif title == "Data structure":
                 self.data_structure(_d)
                 self._data_structure_partitions.append({'clsname': self._classname,
-                                                'standard_methods': self.standard_methods,
                                                 'codes': self.codes,
                                                 'full_desc': self.full_description})
             elif title == "Exchange identification":
                 self.exchange_identification(_d)
                 self._exchange_partitions.append({'clsname': self._classname,
-                                                'standard_methods': self.standard_methods,
                                                 'codes': self.codes,
                                                 'full_desc': self.full_description})
             elif title == "State machine" or title == "Test procedure":
@@ -60,12 +56,9 @@ class Visitor():
             self._classname = ''
             self.codes = []
             self.tran_items = []
-            self.standard_methods = {}
 
     def state_identification(self, content):
         for _k,_v in content.items():
-            if _k in self.exchanges_kind_list:
-                self.dentification_exchanges(_v)
             if _k == "Value partitions":
                 self.value_partitions(_v)
 
@@ -95,16 +88,6 @@ class Visitor():
             com = _list[3]
             self.codes.append(code)
             self.full_description[code] = (id, val, com)
-
-    def dentification_exchanges(self, data):
-        for _list in data:
-            code = _list[0]
-            com = _list[1]
-            # Add standard member function to class
-            try:
-                self.standard_methods[code] = getattr(checkmate.state, code)
-            except AttributeError:
-                raise AttributeError(checkmate.state.__name__+' has no method defined: '+code)
 
 
 def call_visitor(stream):
