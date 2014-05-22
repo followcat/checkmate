@@ -64,7 +64,7 @@ def store(type, interface, name, description=None):
         ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
     if checkmate._exec_tools.method_unbound(name) or type == 'exchanges':
-        code = checkmate._utils.internal_code(name)
+        code = checkmate._exec_tools.get_method_basename(name)
         if type == 'exchanges':
             try:
                 return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
@@ -163,7 +163,7 @@ class InternalStorage(object):
             >>> ds_ap.value
             'HIGH'
         """
-        self.code = checkmate._utils.internal_code(name)
+        self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
         self.interface = interface
         self._class = checkmate._module.get_class_implementing(interface)

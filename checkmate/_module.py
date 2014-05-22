@@ -15,7 +15,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     }
 
     data_structure_module_name = data_structure_module.__name__
-    classname = checkmate._exec_tools.get_function_name(signature)
+    classname = checkmate._exec_tools.get_method_basename(signature)
     interface_class = 'I' + classname
 
     parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
@@ -64,7 +64,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     if partition_type == 'exchanges':
         for code in codes:
             if checkmate._exec_tools.is_method(code):
-                internal_code = checkmate._exec_tools.get_function_name(code)
+                internal_code = checkmate._exec_tools.get_method_basename(code)
                 run_code += """
                 \ndef {0}(*args, **kwargs):
                 \n    return {1}('{0}', *args, **kwargs)

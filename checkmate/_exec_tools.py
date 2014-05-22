@@ -25,12 +25,20 @@ def method_unbound(signature):
             '.' in signature)
 
 
-def get_function_name(signature):
+def get_method_basename(signature):
     """
-        >>> get_function_name('Action(R:ActionRequest)')
+        >>> get_method_basename('Action(R=ActionRequest)')
         'Action'
+        >>> get_method_basename('self.func()')
+        'func'
+        >>> get_method_basename('self.AR.P.p_func()')
+        'p_func'
+        >>> get_method_basename('item')
+        'item'
     """
-    return signature.split('(')[0]
+    method = signature.split('(')[0]
+    basename = method.split('.')[-1]
+    return basename
 
 
 def get_function_parameters_list(signature):
