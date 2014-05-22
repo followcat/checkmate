@@ -3,7 +3,7 @@ import collections
 
 import zope.interface
 
-import checkmate._utils
+import checkmate._exec_tools
 import checkmate._module
 
 
