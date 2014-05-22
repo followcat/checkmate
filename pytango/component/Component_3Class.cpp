@@ -81,7 +81,9 @@ CORBA::Any *toggleClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const C
 CORBA::Any *REClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
 {
 	cout2 << "REClass::execute(): arrived" << endl;
-	((static_cast<Component_3 *>(device))->re());
+    Tango::DevString param;
+    extract(in_any, param);
+    ((static_cast<Component_3 *>(device))->re(param));
 	return new CORBA::Any();
 }
 
@@ -89,7 +91,9 @@ CORBA::Any *REClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA
 CORBA::Any *RLClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
 {
 	cout2 << "RLClass::execute(): arrived" << endl;
-	((static_cast<Component_3 *>(device))->rl());
+    Tango::DevString param;
+    extract(in_any, param);
+    ((static_cast<Component_3 *>(device))->rl(param));
 	return new CORBA::Any();
 }
 
@@ -97,7 +101,9 @@ CORBA::Any *RLClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA
 CORBA::Any *PAClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
 {
 	cout2 << "PAClass::execute(): arrived" << endl;
-	((static_cast<Component_3 *>(device))->pa());
+    Tango::DevString param;
+    extract(in_any, param);
+    ((static_cast<Component_3 *>(device))->pa(param));
 	return new CORBA::Any();
 }
 
@@ -326,8 +332,8 @@ void Component_3Class::command_factory()
 	//	Command RE
 	REClass	*pRECmd =
 		new REClass("RE",
-			Tango::DEV_VOID, Tango::DEV_VOID,
-			"",
+			Tango::DEV_STRING, Tango::DEV_VOID,
+			"param",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pRECmd);
@@ -335,8 +341,8 @@ void Component_3Class::command_factory()
 	//	Command RL
 	RLClass	*pRLCmd =
 		new RLClass("RL",
-			Tango::DEV_VOID, Tango::DEV_VOID,
-			"",
+			Tango::DEV_STRING, Tango::DEV_VOID,
+			"param",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pRLCmd);
@@ -344,8 +350,8 @@ void Component_3Class::command_factory()
 	//	Command PA
 	PAClass	*pPACmd =
 		new PAClass("PA",
-			Tango::DEV_VOID, Tango::DEV_VOID,
-			"",
+			Tango::DEV_STRING, Tango::DEV_VOID,
+			"param",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPACmd);

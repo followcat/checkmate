@@ -76,7 +76,7 @@ void Component_3::toggle()
 	attr_c_state = not attr_c_state;
 }
 
-void Component_3::re()
+void Component_3::re(Tango::DevString param)
 {
 	DEBUG_STREAM << "Component_3::RE()  - " << device_name << endl;
 	if(attr_c_state == false)
@@ -85,17 +85,20 @@ void Component_3::re()
 	}
 }
 
-void Component_3::rl()
+void Component_3::rl(Tango::DevString param)
 {
 	DEBUG_STREAM << "Component_3::RL()  - " << device_name << endl;
 	if(attr_c_state == true)
 	{
 		toggle();
-		c2_dev->command_inout("dr");
+        Tango::DeviceData dd;
+        string argin = "";
+        dd << argin;
+		c2_dev->command_inout("dr", dd);
 	}
 }
 
-void Component_3::pa()
+void Component_3::pa(Tango::DevString param)
 {
 	DEBUG_STREAM << "Component_3::PA()  - " << device_name << endl;
 	if(attr_c_state == false)
