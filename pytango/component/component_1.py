@@ -18,21 +18,21 @@ class Component_1(PyTango.Device_4Impl):
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
 
-    def AC(self):
+    def AC(self, param=''):
         if self.attr_c_state == True:
             self.toggle()
-            self.c3_dev.RE()
-            self.c2_dev.ARE()
+            self.c3_dev.RE('')
+            self.c2_dev.ARE('')
 
-    def AP(self):
-        self.c2_dev.DA()
+    def AP(self, param=''):
+        self.c2_dev.DA('')
 
-    def PP(self):
+    def PP(self, param=''):
         if self.attr_c_state == False:
             self.toggle()
-            self.c2_dev.PA()
+            self.c2_dev.PA('')
             #Execute asynchronously in case of nested called caused infinitely wait(run C3.RL() while C1,C3 as SUT)
-            self.c3_dev.command_inout_asynch('PA')
+            self.c3_dev.command_inout_asynch('PA', '')
 
 
 class C1Interface(PyTango.DeviceClass):
@@ -47,9 +47,9 @@ class C1Interface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
  
 
-    cmd_list = {'AC': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'AP': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PP': [[PyTango.DevVoid], [PyTango.DevVoid]]
+    cmd_list = {'AC': [[PyTango.DevString], [PyTango.DevVoid]],
+                'AP': [[PyTango.DevString], [PyTango.DevVoid]],
+                'PP': [[PyTango.DevString], [PyTango.DevVoid]]
                }
     attr_list = {
                 }
