@@ -21,8 +21,8 @@ data:
     Value partitions:
     # [Partition,     State,  Valid value,    Comment]
     - [X-ACTION-01,   AC(),   Action action,  Comment AC action]
-    - [X-ACTION-02,   AP(R),  Append action,  Comment AP action]
-    - [X-ACTION-03,   PP(R),  Pop action,     Comment PP action]
+    - [X-ACTION-02,   AP(R = None),  Append action,  Comment AP action]
+    - [X-ACTION-03,   PP(R = None),  Pop action,     Comment PP action]
 
   - Definition and accessibility: 'Reaction'
     Value partitions:

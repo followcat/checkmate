@@ -10,7 +10,7 @@ data:
         incoming:
           - AnotherReaction:    ARE()
         outgoing:
-          - Action:             AP(R)
+          - Action:             AP(R = None)
 
       - name: '[Input/Final state/Output]'
         outgoing:
@@ -22,7 +22,7 @@ data:
 
       - name: '[Input/Final state/Output]'
         outgoing:
-          - Action:             PP(R)
+          - Action:             PP(R = None)
 
   - Transitions:
       - name: 'C2 pause process'

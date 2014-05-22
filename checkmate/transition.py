@@ -125,7 +125,7 @@ class Transition(object):
         """
         resolved_arguments = {}
         entry = getattr(self, _type)
-        arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+        arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys())
         for arg in arguments:
             try:
                 resolved_arguments.update(data.resolve(arg, states=states, exchanges=incoming_exchange))

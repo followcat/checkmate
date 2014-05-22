@@ -18,7 +18,7 @@ def _build_resolve_logic(transition, type, data):
     """
     resolved_arguments = {}
     entry = getattr(transition, type)
-    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys())
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -30,7 +30,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition.incoming) != 0):
             if type in ['final', 'outgoing']:
                 for item in transition.incoming:
-                    if arg in list(item.arguments.attribute_values.keys()):
+                    if arg in list(item.arguments['attribute_values'].keys()):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -173,7 +173,7 @@ class InternalStorage(object):
         else:
             self.function = function
 
-        self.arguments = checkmate._utils.method_arguments(name)
+        self.arguments = checkmate._exec_tools.method_arguments(name)
         self.resolve_logic = {}
 
     def factory(self, args=[], kwargs={}):
@@ -193,20 +193,20 @@ class InternalStorage(object):
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
-                if len(self.arguments.values) > 0 and len(args) > 0:
+                if len(self.arguments['values']) > 0 and len(args) > 0:
                     func = self.function.__init__
                     state = args[0]
-                    value = self.arguments.values[0]
+                    value = self.arguments['values'][0]
                     return func(state, value)
             else:
                 return func(*param, **kwparam)
 
         if len(args) == 0:
-            args = self.arguments.values
+            args = self.arguments['values']
         if len(kwargs) == 0:
-            kwargs = self.arguments.attribute_values
+            kwargs = self.arguments['attribute_values']
         else:
-            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
+            _local_kwargs = copy.deepcopy(self.arguments['attribute_values'])
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
