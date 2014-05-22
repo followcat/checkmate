@@ -15,15 +15,15 @@ def add_device_service(services):
     d = {}
     for name in services:
         code = """
-def %s(self):
-    self.incoming.append('%s')""" %(name, name)
+def %s(self, param=''):
+    self.incoming.append(('%s', param))""" %(name, name)
         exec(code, d)
     return d
 
 def add_device_interface(services):
     command = {}
     for name in services:
-        command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
+        command[name] = [[PyTango.DevString], [PyTango.DevVoid]]
     return {'cmd_list': command}
 
 
@@ -77,8 +77,11 @@ class Encoder(object):
     def decode(self, message):
         #cannot be imported before the application is created
         import pytango.checkmate.exchanges
+        _locals = locals()
+        exec_str = 'ex = pytango.checkmate.exchanges.' + message[0] + '(' + message[1] + ')'
+        exec(exec_str)
 
-        return getattr(pytango.checkmate.exchanges, message)()
+        return _locals['ex']
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -111,12 +114,15 @@ class Connector(checkmate.runtime.communication.Connector):
     def receive(self):
         try:
             return self.encoder.decode(self.device_server.incoming.pop(0))
-        except:
+        except AttributeError:
+            pass
+        except IndexError:
             pass
 
     def send(self, destination, exchange):
+        define_str = exchange.get_define_str()
         call = getattr(self.device_client, self.encoder.encode(exchange))
-        call()
+        call(define_str)
 
 
 class Communication(checkmate.runtime.communication.Communication):
