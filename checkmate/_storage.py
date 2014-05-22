@@ -63,20 +63,18 @@ def store(type, interface, name, description=None):
         >>> (ex.action, ex.R) # doctest: +ELLIPSIS
         ('AP', <sample_app.data_structure.ActionRequest object at ...
     """
-    if checkmate._utils.method_unbound(name) or type == 'exchanges':
+    if checkmate._exec_tools.method_unbound(name) or type == 'exchanges':
         code = checkmate._utils.internal_code(name)
         if type == 'exchanges':
             try:
-                return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._module.get_module_defining(interface), code))
+                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._module.get_module_defining(interface).__name__+" has no function defined: "+code)
+                raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + code)
         else:
             try:
-                return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._module.get_class_implementing(interface), code))
+                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_class_implementing(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__+' has no function defined: '+code)
+                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
@@ -95,19 +93,19 @@ class Data(object):
             try:
                 code_description = self.full_description[code]
             except:
-                code_description = (None,None,None)
+                code_description = (None, None, None)
             _storage = store(self.type, self.interface, code, code_description)
             _list.append(_storage)
-        if self.codes == None or len(self.codes) == 0:
+        if self.codes is None or len(self.codes) == 0:
             _list.append(store(self.type, self.interface, ''))
         return _list
-        
+
     def get_description(self, item):
         """ Return description corresponding to item """
         for stored_item in list(self.storage):
             if item == stored_item.factory():
                 return stored_item.description
-        return (None,None,None)
+        return (None, None, None)
 
 
 class TransitionData(collections.OrderedDict):
@@ -126,7 +124,7 @@ class TransitionData(collections.OrderedDict):
         self['incoming'] = incoming
         self['final'] = final
         self['outgoing'] = outgoing
-    
+
 
 class PartitionStorage(Data):
     """"""
@@ -153,10 +151,11 @@ class IStorage(zope.interface.Interface):
     def factory(self, args=[], kwargs={}):
         """"""
 
+
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, name ,description, function=None):
+    def __init__(self, interface, name, description, function=None):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
@@ -254,4 +253,3 @@ class InternalStorage(object):
                 target_copy.remove(_target)
                 break
         return target_copy
-

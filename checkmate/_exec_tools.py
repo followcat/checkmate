@@ -14,6 +14,17 @@ def is_method(signature):
     return True
 
 
+def method_unbound(signature):
+    """
+        >>> method_unbound('func(args)')
+        False
+        >>> method_unbound('Q0.append(R)')
+        True
+    """
+    return (is_method(signature) and
+            '.' in signature)
+
+
 def get_function_name(signature):
     """
         >>> get_function_name('Action(R:ActionRequest)')
