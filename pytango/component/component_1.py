@@ -21,18 +21,21 @@ class Component_1(PyTango.Device_4Impl):
     def AC(self, param=''):
         if self.attr_c_state == True:
             self.toggle()
-            self.c3_dev.RE('')
-            self.c2_dev.ARE('')
+            define_str = ''
+            self.c3_dev.RE(define_str)
+            self.c2_dev.ARE(define_str)
 
     def AP(self, param=''):
-        self.c2_dev.DA('')
+        define_str = ''
+        self.c2_dev.DA(define_str)
 
     def PP(self, param=''):
         if self.attr_c_state == False:
             self.toggle()
-            self.c2_dev.PA('')
+            define_str = ''
+            self.c2_dev.PA(define_str)
             #Execute asynchronously in case of nested called caused infinitely wait(run C3.RL() while C1,C3 as SUT)
-            self.c3_dev.command_inout_asynch('PA', '')
+            self.c3_dev.command_inout_asynch('PA', define_str)
 
 
 class C1Interface(PyTango.DeviceClass):

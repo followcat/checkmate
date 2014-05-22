@@ -100,7 +100,8 @@ public class Component_1 {
         if (c_state == true) {
             toggle();
             DeviceData dd = new DeviceData();
-            dd.insert("");
+            String define_str = "";
+            dd.insert(define_str);
             c3_dev.command_inout("RE", dd);
             c2_dev.command_inout("ARE", dd);
         }
@@ -111,7 +112,8 @@ public class Component_1 {
     public void AP(String param) throws DevFailed {
         xlogger.entry();
         DeviceData dd = new DeviceData();
-        dd.insert("");
+        String define_str = "";
+        dd.insert(define_str);
         c2_dev.command_inout("DA", dd);
         xlogger.exit();
     }
@@ -122,7 +124,8 @@ public class Component_1 {
         if (c_state == false) {
             toggle();
             DeviceData dd = new DeviceData();
-            dd.insert("");
+            String define_str = "";
+            dd.insert(define_str);
             c2_dev.command_inout("PA", dd);
             c3_dev.command_inout_asynch("PA", dd);
         }

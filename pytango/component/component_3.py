@@ -26,7 +26,9 @@ class Component_3(PyTango.Device_4Impl):
     def RL(self, param=''):
         if self.attr_c_state == True:
             self.toggle()
-            self.c2_dev.DR('')
+            define_str = ''
+            self.c2_dev.DR(define_str)
+
     def PA(self, param=''):
         if self.attr_c_state == False:
             pass

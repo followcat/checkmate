@@ -92,8 +92,8 @@ void Component_3::rl(Tango::DevString param)
 	{
 		toggle();
         Tango::DeviceData dd;
-        string argin = "";
-        dd << argin;
+        string define_str = "";
+        dd << define_str;
 		c2_dev->command_inout("dr", dd);
 	}
 }
