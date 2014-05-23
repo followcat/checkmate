@@ -5,12 +5,29 @@ import logging
 
 
 def _log_name(output='out'):
+    """
+    >>> import checkmate.logger
+    >>> checkmate.logger._log_name()
+    './out-Wed-May-21-21:57:58-2014.log'
+    >>> checkmate.logger._log_name('log')
+    './log-Wed-May-21-21:58:08-2014.log'
+    """
     return os.path.join(os.getenv("CHECKMATE_LOG", "."), output + "-" + time.asctime().replace(' ', '-') + ".log")
 
 def runtime_log_name():
+    """
+    >>> import checkmate.logger
+    >>> checkmate.logger.runtime_log_name()
+    './runtime-Wed-May-21-21:59:30-2014.log'
+    """
     return _log_name('runtime')
 
 def exchange_log_name():
+    """
+    >>> import checkmate.logger
+    >>> checkmate.logger.exchange_log_name()
+    './exchange-Wed-May-21-22:00:36-2014.log'
+    """
     return _log_name('exchange')
 
 def start_runtime_logger():

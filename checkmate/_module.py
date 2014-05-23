@@ -99,6 +99,12 @@ def get_module(package_name, module_name, alternative_package=None):
 
 
 def get_module_defining(interface):
+    """
+    >>> import sample_app.application
+    >>> import checkmate._module
+    >>> checkmate._module.get_module_defining(sample_app.data_structure.IAttribute)
+    <module 'sample_app.data_structure' from './sample_app/data_structure.py'>
+    """
     module_name = interface.__module__
     module = None
     try:
@@ -115,7 +121,12 @@ def get_module_defining(interface):
 
 
 def get_class_implementing(interface):
-    """"""
+    """
+    >>> import sample_app.application
+    >>> import checkmate._module
+    >>> checkmate._module.get_class_implementing(sample_app.data_structure.IAttribute)
+    <class 'sample_app.data_structure.Attribute'>
+    """
     module = get_module_defining(interface)
     for _o in list(module.__dict__.values()):
         if inspect.isclass(_o):

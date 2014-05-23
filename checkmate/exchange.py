@@ -52,6 +52,12 @@ class Exchange(checkmate.partition.Partition):
 
     @property
     def origin(self):
+        """
+            >>> e = Exchange()
+            >>> e.origin_destination("origin","")
+            >>> e.origin
+            'origin'
+        """
         try:
             return self._origin
         except AttributeError:
@@ -59,6 +65,12 @@ class Exchange(checkmate.partition.Partition):
 
     @property
     def destination(self):
+        """
+            >>> e = Exchange()
+            >>> e.origin_destination("","destination")
+            >>> e.destination
+            'destination'
+        """
         try:
             return self._destination
         except AttributeError:

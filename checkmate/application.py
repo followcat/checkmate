@@ -9,6 +9,23 @@ import checkmate.partition_declarator
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.exchange_module
+        <module 'sample_app.exchanges' from './sample_app/exchanges.py'>
+        >>> a.data_structure_module
+        <module 'sample_app.data_structure' from './sample_app/data_structure.py'>
+        >>> a.exchange_definition_file
+        'sample_app/exchanges.yaml'
+        >>> a.data_structure
+        [(<InterfaceClass sample_app.data_structure.IAttribute>,
+          <checkmate._storage.PartitionStorage at 0x7f4a107e00d0>),
+         (<InterfaceClass sample_app.data_structure.IActionPriority>,
+          <checkmate._storage.PartitionStorage at 0x7f4a182ecfd0>),
+         (<InterfaceClass sample_app.data_structure.IActionRequest>,
+          <checkmate._storage.PartitionStorage at 0x7f4a107e85d0>)]
+        """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
 
@@ -56,6 +73,12 @@ class Application(object):
 
     def __init__(self):
         """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.name
+        'sample_app'
+        >>> len(a.components)
+        3
         """
         self.name = self.__module__.split('.')[-2]
         self.components = {}
@@ -65,6 +88,12 @@ class Application(object):
                 self.components[_c] = _class(_c, self.service_registry)
 
     def __getattr__(self, name):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.run_collection
+        [<checkmate.runs.TransitionTree object at 0x7fdc60073c50>, <checkmate.runs.TransitionTree object at 0x7fdc60073d50>, <checkmate.runs.TransitionTree object at 0x7fdc60073410>]
+        """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
             self.run_collection.build_trees_from_application(self)
@@ -73,12 +102,26 @@ class Application(object):
 
     def start(self):
         """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> len(c.states)
+        0
+        >>> a.start()
+        >>> len(c.states)
+        2
         """
         for component in list(self.components.values()):
             component.start()
 
     def sut(self, system_under_test):
-        """"""
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.sut(['C1'])
+        >>> a.stubs
+        ['C2', 'C3']
+        """
         self.stubs = list(self.components.keys())
         self.system_under_test = list(system_under_test)
         for name in system_under_test:

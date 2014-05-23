@@ -9,6 +9,15 @@ import checkmate.partition_declarator
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.exchange_module
+        <module 'sample_app.exchanges' from './sample_app/exchanges.py'>
+        >>> c.state_module
+        <module 'sample_app.component.component_1_states' from './sample_app/component/component_1_states.py'>
+        """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
@@ -46,6 +55,16 @@ class IComponent(zope.interface.Interface):
 @zope.interface.implementer(IComponent)
 class Component(object):
     def __init__(self, name, service_registry):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.start()
+        >>> c = a.components['C1']
+        >>> c.name
+        'C1'
+        >>> c.states
+        [<sample_app.component.component_1_states.State object at 0x7f70592c14d0>, <sample_app.component.component_1_states.AnotherState object at 0x7f70592c1490>]
+        """
         self.states = []
         self.name = name
         self.validation_list = []
@@ -95,6 +114,17 @@ class Component(object):
 
             
     def start(self):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.states
+        []
+        >>> c.start()
+        >>> c.states
+        [<sample_app.component.component_1_states.State at 0x7f0ff9ba8490>,
+         <sample_app.component.component_1_states.AnotherState at 0x7f0ff9ba8850>]
+        """
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
         self.service_registry.register(self, self.service_interfaces)
@@ -103,6 +133,22 @@ class Component(object):
         pass
 
     def process(self, exchange):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.start()
+        >>> transition=c.state_machine.transitions[0]
+        >>> transition.is_matching_initial(c.states)
+        True
+        >>> output = transition.process(c.states, [sample_app.exchanges.AC()])
+        >>> output[0].action
+        'RE'
+        >>> output[1].action
+        'ARE'
+        >>> transition.is_matching_initial(c.states)
+        False
+        """
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
             return []
