@@ -74,6 +74,37 @@ class Partition(object):
             return False
         return compare_value(self, other) and compare_attr(self, other)
 
+    def get_define_str(self):
+        """
+            >>> import sample_app.application
+            >>> ap = sample_app.exchanges.AP()
+            >>> ap.partition_attribute
+            ('R',)
+            >>> (ap.R.P.value, ap.R.A.value)
+            ('NORM', 'AT1')
+            >>> ap.get_define_str() # doctest: +ELLIPSIS
+            "R=sample_app.data_structure.ActionRequest(...
+            >>> ex = sample_app.exchanges.ThirdAction()
+            >>> ex.partition_attribute
+            ()
+            >>> ex.get_define_str()
+            ''
+        """
+        if len(self.partition_attribute) == 0:
+            if hasattr(self, 'action'):
+                return ''
+            if self.value is not None:
+                return ''.join(("'", self.value, "'"))
+        _str = ''
+        for index, _attr_str in enumerate(self.partition_attribute):
+            _attr = getattr(self, _attr_str)
+            _cls = _attr.__class__
+            _full_cls_str = '.'.join((_cls.__module__, _cls.__name__))
+            if index > 0:
+                _str += ', '
+            _str = ''.join((_str, _attr_str, '=', _full_cls_str , '('))
+            _str = ''.join((_str, _attr.get_define_str(), ')'))
+        return _str
 
     def description(self):
         try:

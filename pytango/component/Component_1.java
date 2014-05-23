@@ -25,6 +25,7 @@ import org.tango.utils.DevFailedUtils;
 
 import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.DeviceProxy;
+import fr.esrf.TangoApi.DeviceData;
 
 @Device
 public class Component_1 {
@@ -93,31 +94,40 @@ public class Component_1 {
     
     private static Boolean c_state = true;
 
-    @Command(name="AC", inTypeDesc="", outTypeDesc="")
-    public void AC() throws DevFailed {
+    @Command(name="AC", inTypeDesc="param", outTypeDesc="")
+    public void AC(String param) throws DevFailed {
         xlogger.entry();
         if (c_state == true) {
             toggle();
-            c3_dev.command_inout("RE");
-            c2_dev.command_inout("ARE");
+            DeviceData dd = new DeviceData();
+            String define_str = "";
+            dd.insert(define_str);
+            c3_dev.command_inout("RE", dd);
+            c2_dev.command_inout("ARE", dd);
         }
         xlogger.exit();
     }
     
-    @Command(name="AP", inTypeDesc="", outTypeDesc="")
-    public void AP() throws DevFailed {
+    @Command(name="AP", inTypeDesc="param", outTypeDesc="")
+    public void AP(String param) throws DevFailed {
         xlogger.entry();
-        c2_dev.command_inout("DA");
+        DeviceData dd = new DeviceData();
+        String define_str = "";
+        dd.insert(define_str);
+        c2_dev.command_inout("DA", dd);
         xlogger.exit();
     }
     
-    @Command(name="PP", inTypeDesc="", outTypeDesc="")
-    public void PP() throws DevFailed {
+    @Command(name="PP", inTypeDesc="param", outTypeDesc="")
+    public void PP(String param) throws DevFailed {
         xlogger.entry();
         if (c_state == false) {
             toggle();
-            c2_dev.command_inout("PA");
-            c3_dev.command_inout_asynch("PA");
+            DeviceData dd = new DeviceData();
+            String define_str = "";
+            dd.insert(define_str);
+            c2_dev.command_inout("PA", dd);
+            c3_dev.command_inout_asynch("PA", dd);
         }
         xlogger.exit();
     }
