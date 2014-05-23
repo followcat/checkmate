@@ -3,6 +3,7 @@ import imp
 import sys
 import inspect
 import importlib
+import collections
 
 import checkmate._exec_tools
 
@@ -20,7 +21,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
     parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
-    parameters_str = ', '.join([_p + ' = None' for _p in parameters_list])
+    parameters_str = ', '.join([_p + '=None' for _p in parameters_list])
 
     valid_values_list = []
     for _c in codes:
@@ -33,7 +34,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     import_module = module_name
     if len(parameters_list) > 0:
         import_module += '\n\nimport ' + data_structure_module_name
-        parameters_str += ', '
+        parameters_str = ', ' + parameters_str
 
     run_code = """
             \nimport zope.interface.interface
@@ -43,7 +44,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             \n
             \n@zope.interface.implementer({1})
             \nclass {2}({3}):
-            \n    def __init__(self, value=None, *args, {4}**kwargs):
+            \n    def __init__(self, value=None, *args{4}, **kwargs):
             \n        self._valid_values = {5}
             \n        super().__init__(value, *args, **kwargs)
             \n        self.partition_attribute = tuple({2}.__init__.__annotations__.keys())
@@ -52,13 +53,15 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     if len(parameters_list) > 0:
         setattr_code = ''
         for _p in parameters_list:
+            parame = collections.namedtuple('parame', ['attribute', 'classname'])
             _k, _v = _p.split(':')
+            p = parame(_k, _v)
             setattr_code += """
-            \n        if {0} is None:
-            \n            self.{0} = {1}(*args, **kwargs)
+            \n        if {p.attribute} is None:
+            \n            self.{p.attribute} = {p.classname}(*args, **kwargs)
             \n        else:
-            \n            self.{0} = {0}
-            """.format(_k, _v)
+            \n            self.{p.attribute} = {p.attribute}
+            """.format(p=p)
         run_code += setattr_code
 
     if partition_type == 'exchanges':
