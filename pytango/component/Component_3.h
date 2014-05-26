@@ -36,11 +36,11 @@ public:
 public:
 	virtual void toggle();
 	virtual bool is_toggle_allowed(const CORBA::Any &any);
-	virtual void re(Tango::DevString param);
+	virtual void re();
 	virtual bool is_RE_allowed(const CORBA::Any &any);
-	virtual void rl(Tango::DevString param);
+	virtual void rl();
 	virtual bool is_RL_allowed(const CORBA::Any &any);
-	virtual void pa(Tango::DevString param);
+	virtual void pa();
 	virtual bool is_PA_allowed(const CORBA::Any &any);
 
 
