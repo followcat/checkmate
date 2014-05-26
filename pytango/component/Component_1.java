@@ -99,11 +99,8 @@ public class Component_1 {
         xlogger.entry();
         if (c_state == true) {
             toggle();
-            DeviceData dd = new DeviceData();
-            String define_str = "";
-            dd.insert(define_str);
-            c3_dev.command_inout("RE", dd);
-            c2_dev.command_inout("ARE", dd);
+            c3_dev.command_inout("RE");
+            c2_dev.command_inout("ARE");
         }
         xlogger.exit();
     }
@@ -111,10 +108,7 @@ public class Component_1 {
     @Command(name="AP", inTypeDesc="param", outTypeDesc="")
     public void AP(String param) throws DevFailed {
         xlogger.entry();
-        DeviceData dd = new DeviceData();
-        String define_str = "";
-        dd.insert(define_str);
-        c2_dev.command_inout("DA", dd);
+        c2_dev.command_inout("DA");
         xlogger.exit();
     }
     
@@ -123,11 +117,8 @@ public class Component_1 {
         xlogger.entry();
         if (c_state == false) {
             toggle();
-            DeviceData dd = new DeviceData();
-            String define_str = "";
-            dd.insert(define_str);
-            c2_dev.command_inout("PA", dd);
-            c3_dev.command_inout_asynch("PA", dd);
+            c2_dev.command_inout("PA");
+            c3_dev.command_inout_asynch("PA");
         }
         xlogger.exit();
     }
