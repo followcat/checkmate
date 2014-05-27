@@ -89,14 +89,13 @@ class Encoder(object):
     def decode(self, message):
         #cannot be imported before the application is created
         import pytango.checkmate.exchanges
-        _locals = locals()
         if isinstance(message, tuple):
             exec_str = 'ex = pytango.checkmate.exchanges.' + message[0] + '(' + message[1] + ')'
         else:
             exec_str = 'ex = pytango.checkmate.exchanges.' + message + '()'
         exec(exec_str)
 
-        return _locals['ex']
+        return locals()['ex']
 
 
 class Connector(checkmate.runtime.communication.Connector):
