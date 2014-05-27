@@ -33,9 +33,9 @@ data:
         initial: 
           - AnotherState:     Q0()
         incoming:
-          - Action:           AP(R = None)
+          - Action:           AP(R)
         final:
-          - AnotherState:     Q0.append(R = None)
+          - AnotherState:     Q0.append(R)
         outgoing:
           - ThirdAction:      DA()
 

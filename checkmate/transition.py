@@ -125,7 +125,7 @@ class Transition(object):
         """
         resolved_arguments = {}
         entry = getattr(self, _type)
-        arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys())
+        arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
         for arg in arguments:
             try:
                 resolved_arguments.update(data.resolve(arg, states=states, exchanges=incoming_exchange))
@@ -182,4 +182,3 @@ class Transition(object):
             resolved_arguments = self.resolve_arguments('outgoing', outgoing_exchange, states, _incoming)
             _outgoing_list.append(outgoing_exchange.factory(kwargs=resolved_arguments))
         return _outgoing_list
-

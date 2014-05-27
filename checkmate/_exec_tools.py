@@ -1,3 +1,6 @@
+import checkmate._module
+
+
 def is_method(signature):
     """
         >>> is_method('item')
@@ -66,18 +69,27 @@ def get_function_parameters_list(signature):
     return temp_list
 
 
-def method_arguments(signature):
+def method_arguments(signature, interface):
     """
-        >>> argument = method_arguments("ActionMix(False, R = None)")
+        >>> import sample_app.application
+        >>> interface = sample_app.exchanges.IAction
+        >>> argument = method_arguments("ActionMix(False, R = None)", interface)
         >>> argument['attribute_values'], argument['values']
         ({'R': None}, ('False',))
+        >>> argument = method_arguments("AP('R')", interface)
+        >>> argument['attribute_values'], argument['values']
+        ({'R': None}, ())
     """
     args = []
     kwargs = {}
+    cls = checkmate._module.get_class_implementing(interface)
     argument = {'values': None, 'attribute_values': kwargs}
     for each in get_function_parameters_list(signature):
         if '=' not in each:
-            exec("args.append('%s')" % (each))
+            if each in cls.__init__.__annotations__.keys():
+                kwargs[each] = None
+            else:
+                args.append(each)
         else:
             equre_label = each.find('=')
             _k, _v = each[:equre_label].strip(), each[equre_label + 1:].strip()

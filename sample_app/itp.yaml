@@ -20,9 +20,9 @@ data:
         initial: 
           - AnotherState:           Q0()
         incoming:
-          - Action:             AP(R = None)
+          - Action:             AP(R)
         final:
-          - AnotherState:       Q0(R = None)
+          - AnotherState:       Q0(R)
 
   - Procedures:
       - name: 'Toggle acknowledge with RL'

@@ -9,16 +9,17 @@ import checkmate._module
 
 def _build_resolve_logic(transition, type, data):
     """
-        >>> import sample_app.exchanges
         >>> import sample_app.application
+        >>> import sample_app.exchanges
+        >>> import checkmate._storage
         >>> a = sample_app.application.TestData()
         >>> t = a.components['C1'].state_machine.transitions[1]
-        >>> _build_resolve_logic(t, 'final', t.final[0])
+        >>> checkmate._storage._build_resolve_logic(t, 'final', t.final[0])
         {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
     """
     resolved_arguments = {}
     entry = getattr(transition, type)
-    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys())
+    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -172,7 +173,7 @@ class InternalStorage(object):
         else:
             self.function = function
 
-        self.arguments = checkmate._exec_tools.method_arguments(name)
+        self.arguments = checkmate._exec_tools.method_arguments(name, interface)
         self.resolve_logic = {}
 
     def factory(self, args=[], kwargs={}):
