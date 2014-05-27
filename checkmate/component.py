@@ -13,10 +13,10 @@ class ComponentMeta(type):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
-        >>> c.exchange_module
-        <module 'sample_app.exchanges' from './sample_app/exchanges.py'>
-        >>> c.state_module
-        <module 'sample_app.component.component_1_states' from './sample_app/component/component_1_states.py'>
+        >>> c.exchange_module #doctest: +ELLIPSIS
+        <module 'sample_app.exchanges' from ...
+        >>> c.state_module #doctest: +ELLIPSIS
+        <module 'sample_app.component.component_1_states' from ...
         """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
@@ -62,8 +62,8 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.name
         'C1'
-        >>> c.states
-        [<sample_app.component.component_1_states.State object at 0x7f70592c14d0>, <sample_app.component.component_1_states.AnotherState object at 0x7f70592c1490>]
+        >>> c.states #doctest: +ELLIPSIS
+        [<sample_app.component.component_1_states.State object at ...
         """
         self.states = []
         self.name = name
@@ -121,9 +121,8 @@ class Component(object):
         >>> c.states
         []
         >>> c.start()
-        >>> c.states
-        [<sample_app.component.component_1_states.State at 0x7f0ff9ba8490>,
-         <sample_app.component.component_1_states.AnotherState at 0x7f0ff9ba8850>]
+        >>> c.states #doctest: +ELLIPSIS
+        [<sample_app.component.component_1_states.State at ...
         """
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
