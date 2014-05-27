@@ -34,8 +34,8 @@ def get_method_basename(signature):
         'Action'
         >>> get_method_basename('self.func()')
         'func'
-        >>> get_method_basename('self.AR.P.p_func()')
-        'p_func'
+        >>> get_method_basename('self.AC.R.r_func()')
+        'r_func'
         >>> get_method_basename('item')
         'item'
     """

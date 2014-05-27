@@ -24,17 +24,17 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
-        factory will set P = sample_app.data_structure.ActionPriority('HIGH')
+        factory will set R = sample_app.data_structure.ActionRequest('HIGH')
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'P':sample_app.data_structure.ActionPriority('HIGH')})
-            >>> ac.R.P.value
+            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest('HIGH')})
+            >>> ac.R.value
             'HIGH'
 
         We can define a partition by passing an instance for attribute.
-            >>> re = a.data_structure[2][-1].storage[0].factory(kwargs={'P': sample_app.data_structure.ActionPriority('HIGH')})
+            >>> re = sample_app.data_structure.ActionRequest('HIGH')
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
-            >>> ac2.R.P.value
+            >>> ac2.R.value
             'HIGH'
         """
         if type(value) == list:
@@ -60,13 +60,13 @@ class Partition(object):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> r1 = a.data_structure[2][-1].storage[0].factory()
-            >>> r2 = a.data_structure[2][-1].storage[0].factory()
+            >>> r1 = sample_app.exchanges.Action()
+            >>> r2 = sample_app.exchanges.Action()
             >>> r1 == r2
             True
-            >>> r1.P.value
+            >>> r1.R.value
             'NORM'
-            >>> r1.P.value = 'HIGH'
+            >>> r1.R.value = 'HIGH'
             >>> r1 == r2
             False
         """
@@ -80,8 +80,8 @@ class Partition(object):
             >>> ap = sample_app.exchanges.AP()
             >>> ap.partition_attribute
             ('R',)
-            >>> (ap.R.P.value, ap.R.A.value)
-            ('NORM', 'AT1')
+            >>> ap.R.value
+            'NORM'
             >>> ap.get_define_str() # doctest: +ELLIPSIS
             "R=sample_app.data_structure.ActionRequest(...
             >>> ex = sample_app.exchanges.ThirdAction()
@@ -120,8 +120,8 @@ def compare_value(one, other):
     """
     >>> import sample_app.application
     >>> a = sample_app.application.TestData()
-    >>> r1 = a.data_structure[1][-1].storage[0].factory()
-    >>> r2 = a.data_structure[1][-1].storage[0].factory()
+    >>> r1 = sample_app.data_structure.ActionRequest()
+    >>> r2 = sample_app.data_structure.ActionRequest()
     >>> checkmate.partition.compare_value(r1, r2)
     True
     >>> r1.value
@@ -140,13 +140,13 @@ def compare_attr(one, other):
     >>> import checkmate.partition
     >>> import sample_app.application
     >>> a = sample_app.application.TestData()
-    >>> r1 = a.data_structure[2][-1].storage[0].factory()
-    >>> r2 = a.data_structure[2][-1].storage[0].factory()
+    >>> r1 = sample_app.exchanges.Action()
+    >>> r2 = sample_app.exchanges.Action()
     >>> checkmate.partition.compare_attr(r1, r2)
     True
-    >>> r1.P.value
+    >>> r1.R.value
     'NORM'
-    >>> r1.P.value = 'HIGH'
+    >>> r1.R.value = 'HIGH'
     >>> checkmate.partition.compare_attr(r1, r2)
     False
     """

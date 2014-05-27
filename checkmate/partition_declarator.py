@@ -81,25 +81,18 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> par = de.new_partition('data_structure', "TestActionPriority", codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionRequest", codes=["P0('NORM')"], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.data.ITestActionPriority>, <checkmate._storage.PartitionStorage object at ...
-        >>> par[1].get_description(checkmate.data.TestActionPriority('NORM'))
+        (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
+        >>> par[1].get_description(checkmate.data.TestActionRequest('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         >>> sp = de.new_partition('states', "TestState", codes=["M0(True)"])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ar = de.new_partition('data_structure', 'TestActionRequest(P:TestActionPriority)', codes=[])
-        >>> ar # doctest: +ELLIPSIS
-        (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
-        >>> hasattr(ar[-1].storage[0].factory(), 'P')
-        True
-        >>> checkmate.data.ITestActionPriority.providedBy(getattr(ar[-1].storage[0].factory(), 'P'))
-        True
         >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
-        >>> ac[-1].storage[0].factory().R.P.description()
+        >>> ac[-1].storage[0].factory().R.description()
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         """
         _module = self.module[partition_type]
@@ -129,7 +122,7 @@ class Declarator(object):
         >>> de.output['states']
         []
         >>> de.output['data_structure'] # doctest: +ELLIPSIS
-        [(<InterfaceClass checkmate.data.ITESTAttribute>, <checkmate._storage.PartitionStorage object at ...
+        [(<InterfaceClass checkmate.data.ITESTActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> de.output['exchanges'] # doctest: +ELLIPSIS
         [(<InterfaceClass checkmate.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object ...
         """

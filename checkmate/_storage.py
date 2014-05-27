@@ -52,9 +52,9 @@ def store(type, interface, name, description=None):
         >>> import sample_app.application
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
-        >>> attr = sample_app.data_structure.Attribute()
-        >>> attr.value
-        'AT1'
+        >>> acr = sample_app.data_structure.ActionRequest()
+        >>> acr.value
+        'NORM'
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
@@ -160,7 +160,7 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> ds_ap = sample_app.data_structure.ActionPriority('HIGH')
+            >>> ds_ap = sample_app.data_structure.ActionRequest('HIGH')
             >>> ds_ap.value
             'HIGH'
         """
@@ -184,12 +184,9 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> a = sample_app.application.TestData()
-            >>> r1 = sample_app.data_structure.ActionRequest(P=sample_app.data_structure.ActionPriority('HIGH'))
-            >>> r1.P.value
+            >>> r1 = sample_app.data_structure.ActionRequest('HIGH')
+            >>> r1.value
             'HIGH'
-            >>> r = sample_app.data_structure.ActionRequest(P='HIGH', A='AT2')
-            >>> (r.P, r.A)
-            ('HIGH', 'AT2')
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):

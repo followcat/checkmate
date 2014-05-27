@@ -1,19 +1,11 @@
 ---
 title: 'Data structure'
 data:
-  - Definition and accessibility: 'TESTAttribute'
-    Value partitions:
-    # [Partition, State,      Valid value,      Comment]
-    - [D-ATTR-01, B0('AT1'),  AT1 valid value,  AT1 attribute value]
-    - [D-ATTR-02, B0('AT2'),  AT2 valid value,  AT1 attribute value]
-
-  - Definition: 'TESTActionPriority'
+  - Definition: 'TESTActionRequest'
     Value partitions:
     # [Partition, State,      Valid value,      Comment]
     - [D-PRIO-01, Q0('NORM'), NORM valid value, NORM priority value]
     - [D-PRIO-02, Q0('HIGH'), HIGH valid value, HIGH priority value]
-
-  - Definition: 'TESTActionRequest(Q:TESTActionPriority, B:TESTAttribute)'
 ---
 title: 'Exchange identification'
 data:

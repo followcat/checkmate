@@ -18,7 +18,6 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
 
     def __init__(self):
         """
-            >>> import checkmate.component
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']   
@@ -27,9 +26,9 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             'True'
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-01', ...
-            >>> ds = sample_app.data_structure.Attribute('AT2') 
+            >>> ds = sample_app.data_structure.ActionRequest('HIGH') 
             >>> ds.description() # doctest: +ELLIPSIS
-            ('D-ATTR-02', ...
+            ('D-PRIO-02', ...
             >>> i = sample_app.exchanges.AP()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.ThirdAction object at ...

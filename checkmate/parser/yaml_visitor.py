@@ -1,8 +1,6 @@
 import yaml
 import collections
 
-import checkmate.state
-
 
 class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
@@ -92,8 +90,6 @@ class Visitor():
 
 def call_visitor(stream):
     """
-        >>> import sample_app.exchanges
-        >>> import sample_app.data_structure
         >>> import os
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
@@ -101,7 +97,7 @@ def call_visitor(stream):
         >>> f1.close()
         >>> output = call_visitor(c)
         >>> len(output['data_structure'])
-        3
+        1
         >>> len(output['exchanges'])
         2
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'

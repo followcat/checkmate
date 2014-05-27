@@ -86,6 +86,7 @@ def get_module(package_name, module_name, alternative_package=None):
     under the project main package (eg. 'main.sub').
 
     This function can be used to create a module in an alternative package beside the provided one:
+        >>> import sample_app.application
         >>> import checkmate._module
         >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
