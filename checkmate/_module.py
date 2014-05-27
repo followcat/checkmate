@@ -102,8 +102,8 @@ def get_module_defining(interface):
     """
     >>> import sample_app.application
     >>> import checkmate._module
-    >>> checkmate._module.get_module_defining(sample_app.data_structure.IAttribute)
-    <module 'sample_app.data_structure' from './sample_app/data_structure.py'>
+    >>> checkmate._module.get_module_defining(sample_app.data_structure.IAttribute) #doctest: +ELLIPSIS
+    <module 'sample_app.data_structure' from ...
     """
     module_name = interface.__module__
     module = None
