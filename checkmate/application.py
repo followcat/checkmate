@@ -12,19 +12,14 @@ class ApplicationMeta(type):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> a.exchange_module
-        <module 'sample_app.exchanges' from './sample_app/exchanges.py'>
-        >>> a.data_structure_module
-        <module 'sample_app.data_structure' from './sample_app/data_structure.py'>
+        >>> a.exchange_module #doctest: +ELLIPSIS
+        <module 'sample_app.exchanges' from ...
+        >>> a.data_structure_module #doctest: +ELLIPSIS
+        <module 'sample_app.data_structure' from ...
         >>> a.exchange_definition_file
         'sample_app/exchanges.yaml'
-        >>> a.data_structure
-        [(<InterfaceClass sample_app.data_structure.IAttribute>,
-          <checkmate._storage.PartitionStorage at 0x7f4a107e00d0>),
-         (<InterfaceClass sample_app.data_structure.IActionPriority>,
-          <checkmate._storage.PartitionStorage at 0x7f4a182ecfd0>),
-         (<InterfaceClass sample_app.data_structure.IActionRequest>,
-          <checkmate._storage.PartitionStorage at 0x7f4a107e85d0>)]
+        >>> len(a.data_structure)
+        3
         """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
@@ -91,8 +86,8 @@ class Application(object):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> a.run_collection
-        [<checkmate.runs.TransitionTree object at 0x7fdc60073c50>, <checkmate.runs.TransitionTree object at 0x7fdc60073d50>, <checkmate.runs.TransitionTree object at 0x7fdc60073410>]
+        >>> a.run_collection #doctest: +ELLIPSIS
+        [<checkmate.runs.TransitionTree object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
