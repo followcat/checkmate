@@ -62,8 +62,8 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.name
         'C1'
-        >>> c.states #doctest: +ELLIPSIS
-        [<sample_app.component.component_1_states.State object at ...
+        >>> len(c.states) 
+        2
         """
         self.states = []
         self.name = name
