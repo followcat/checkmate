@@ -18,8 +18,8 @@ class ApplicationMeta(type):
         <module 'sample_app.data_structure' from ...
         >>> a.exchange_definition_file
         'sample_app/exchanges.yaml'
-        >>> len(a.data_structure)
-        3
+        >>> a.data_structure #doctest: +ELLIPSIS
+        [(<InterfaceClass sample_app.data_structure.IAttribute>, <checkmate._storage.PartitionStorage object at ... 
         """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
@@ -103,8 +103,8 @@ class Application(object):
         >>> len(c.states)
         0
         >>> a.start()
-        >>> len(c.states)
-        2
+        >>> len(c.states) #doctest: +ELLIPSIS
+        [<sample_app.component.component_1_states.State object at ...
         """
         for component in list(self.components.values()):
             component.start()
