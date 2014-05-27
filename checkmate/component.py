@@ -122,7 +122,7 @@ class Component(object):
         []
         >>> c.start()
         >>> c.states #doctest: +ELLIPSIS
-        [<sample_app.component.component_1_states.State at ...
+        [<sample_app.component.component_1_states.State object at ...
         """
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
