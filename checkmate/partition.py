@@ -28,14 +28,14 @@ class Partition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest('HIGH')})
-            >>> ac.R.value
-            'HIGH'
+            >>> ac.R
+            ['HIGH']
 
         We can define a partition by passing an instance for attribute.
             >>> re = sample_app.data_structure.ActionRequest('HIGH')
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
-            >>> ac2.R.value
-            'HIGH'
+            >>> ac2.R
+            ['HIGH']
         """
         if type(value) == list:
             self.value = list(value)
@@ -64,9 +64,9 @@ class Partition(object):
             >>> r2 = sample_app.exchanges.Action()
             >>> r1 == r2
             True
-            >>> r1.R.value
-            'NORM'
-            >>> r1.R.value = 'HIGH'
+            >>> r1.R
+            ['NORM']
+            >>> r1.R = ['HIGH']
             >>> r1 == r2
             False
         """
@@ -80,8 +80,8 @@ class Partition(object):
             >>> ap = sample_app.exchanges.AP()
             >>> ap.partition_attribute
             ('R',)
-            >>> ap.R.value
-            'NORM'
+            >>> ap.R
+            ['NORM']
             >>> ap.get_define_str() # doctest: +ELLIPSIS
             "R=sample_app.data_structure.ActionRequest(...
             >>> ex = sample_app.exchanges.ThirdAction()
@@ -102,7 +102,7 @@ class Partition(object):
             _full_cls_str = '.'.join((_cls.__module__, _cls.__name__))
             if index > 0:
                 _str += ', '
-            _str = ''.join((_str, _attr_str, '=', _full_cls_str , '('))
+            _str = ''.join((_str, _attr_str, '=', _full_cls_str, '('))
             _str = ''.join((_str, _attr.get_define_str(), ')'))
         return _str
 
@@ -110,11 +110,12 @@ class Partition(object):
         try:
             return (self.partition_storage.get_description(self))
         except AttributeError:
-            return (None,None,None)
+            return (None, None, None)
 
     @property
     def partition_id(self):
         return self.description()[0]
+
 
 def compare_value(one, other):
     """
@@ -124,9 +125,9 @@ def compare_value(one, other):
     >>> r2 = sample_app.data_structure.ActionRequest()
     >>> checkmate.partition.compare_value(r1, r2)
     True
-    >>> r1.value
-    'NORM'
-    >>> r1.value = 'HIGH'
+    >>> r1
+    ['NORM']
+    >>> r1 = ['HIGH']
     >>> checkmate.partition.compare_value(r1, r2)
     False
     """
@@ -134,6 +135,7 @@ def compare_value(one, other):
         return True
     else:
         return one.value == other.value
+
 
 def compare_attr(one, other):
     """
@@ -144,9 +146,9 @@ def compare_attr(one, other):
     >>> r2 = sample_app.exchanges.Action()
     >>> checkmate.partition.compare_attr(r1, r2)
     True
-    >>> r1.R.value
-    'NORM'
-    >>> r1.R.value = 'HIGH'
+    >>> r1.R
+    ['NORM']
+    >>> r1.R = ['HIGH']
     >>> checkmate.partition.compare_attr(r1, r2)
     False
     """
@@ -158,5 +160,4 @@ def compare_attr(one, other):
             return False
     # if dir(one) and dir(other) have same length and all elements of one is in other,
     # then *no* element of dir(other) is missing in dir(one)
-    return True 
-
+    return True
