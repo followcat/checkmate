@@ -14,18 +14,18 @@ class Component_2(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
 
-    def ARE(self, param=''):
+    def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
         define_str = "R=pytango.checkmate.data_structure.ActionRequest(P=pytango.checkmate.data_structure.ActionPriority('NORM'), A=pytango.checkmate.data_structure.Attribute('AT1'))"
         self.c1_dev.command_inout_asynch('AP', define_str)
 
-    def PA(self, param=''):
+    def PA(self):
         pass
 
-    def DA(self, param=''):
+    def DA(self):
         pass
 
-    def DR(self, param=''):
+    def DR(self):
         pass
 
 
@@ -41,10 +41,10 @@ class C2Interface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
  
 
-    cmd_list = {'ARE': [[PyTango.DevString], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevString], [PyTango.DevVoid]],
-                'DR': [[PyTango.DevString], [PyTango.DevVoid]],
-                'DA': [[PyTango.DevString], [PyTango.DevVoid]]
+    cmd_list = {'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }

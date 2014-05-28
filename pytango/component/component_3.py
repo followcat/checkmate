@@ -19,17 +19,16 @@ class Component_3(PyTango.Device_4Impl):
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
 
-    def RE(self, param=''):
+    def RE(self):
         if self.attr_c_state == False:
             self.toggle()
 
-    def RL(self, param=''):
+    def RL(self):
         if self.attr_c_state == True:
             self.toggle()
-            define_str = ''
-            self.c2_dev.DR(define_str)
+            self.c2_dev.DR()
 
-    def PA(self, param=''):
+    def PA(self):
         if self.attr_c_state == False:
             pass
 
@@ -46,9 +45,9 @@ class C3Interface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
  
 
-    cmd_list = {'RE': [[PyTango.DevString], [PyTango.DevVoid]],
-                'RL': [[PyTango.DevString], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevString], [PyTango.DevVoid]]
+    cmd_list = {'RE': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }

@@ -88,11 +88,10 @@ class Partition(object):
             >>> ex.partition_attribute
             ()
             >>> ex.get_define_str()
-            ''
         """
         if len(self.partition_attribute) == 0:
             if hasattr(self, 'action'):
-                return ''
+                return None
             if self.value is not None:
                 return ''.join(("'", self.value, "'"))
         _str = ''
