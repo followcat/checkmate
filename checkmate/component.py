@@ -27,8 +27,8 @@ class ComponentMeta(type):
             service_interfaces = []
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
-                    if _i.code not in services:
-                        services.append(_i.code)
+                    if _i.code not in [_service[0] for _service in services]:
+                        services.append((_i.code, _i.factory().partition_attribute))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
             namespace['services'] = services

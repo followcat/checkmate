@@ -13,17 +13,29 @@ import checkmate.runtime.communication
 
 def add_device_service(services):
     d = {}
-    for name in services:
-        code = """
-def %s(self, param=''):
+    for _service in services:
+        name = _service[0]
+        args = _service[1]
+        if len(args) > 0:
+            code = """
+def %s(self, param):
     self.incoming.append(('%s', param))""" %(name, name)
+        else:
+            code = """
+def %s(self):
+    self.incoming.append('%s')""" %(name, name)
         exec(code, d)
     return d
 
 def add_device_interface(services):
     command = {}
-    for name in services:
-        command[name] = [[PyTango.DevString], [PyTango.DevVoid]]
+    for _service in services:
+        name = _service[0]
+        args = _service[1]
+        if len(args) > 0:
+            command[name] = [[PyTango.DevString], [PyTango.DevVoid]]
+        else:
+            command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     return {'cmd_list': command}
 
 
@@ -77,11 +89,13 @@ class Encoder(object):
     def decode(self, message):
         #cannot be imported before the application is created
         import pytango.checkmate.exchanges
-        _locals = locals()
-        exec_str = 'ex = pytango.checkmate.exchanges.' + message[0] + '(' + message[1] + ')'
+        if isinstance(message, tuple):
+            exec_str = 'ex = pytango.checkmate.exchanges.' + message[0] + '(' + message[1] + ')'
+        else:
+            exec_str = 'ex = pytango.checkmate.exchanges.' + message + '()'
         exec(exec_str)
 
-        return _locals['ex']
+        return locals()['ex']
 
 
 class Connector(checkmate.runtime.communication.Connector):
