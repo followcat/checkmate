@@ -53,16 +53,16 @@ def store(type, interface, name, description=None):
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
         >>> acr = sample_app.data_structure.ActionRequest()
-        >>> acr.value
-        'NORM'
+        >>> acr
+        ['NORM']
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
         >>> ex = st.factory({'R': 'HIGH'})
-        >>> (ex.action, ex.R) # doctest: +ELLIPSIS
-        ('AP', <sample_app.data_structure.ActionRequest object at ...
+        >>> (ex.action, ex.R)
+        ('AP', ['NORM'])
     """
     if checkmate._exec_tools.method_unbound(name) or type == 'exchanges':
         code = checkmate._exec_tools.get_method_basename(name)
@@ -161,8 +161,8 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> ds_ap = sample_app.data_structure.ActionRequest('HIGH')
-            >>> ds_ap.value
-            'HIGH'
+            >>> ds_ap
+            ['HIGH']
         """
         self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
@@ -185,8 +185,8 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> a = sample_app.application.TestData()
             >>> r1 = sample_app.data_structure.ActionRequest('HIGH')
-            >>> r1.value
-            'HIGH'
+            >>> r1
+            ['HIGH']
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
@@ -220,8 +220,8 @@ class InternalStorage(object):
             Traceback (most recent call last):
             ...
             AttributeError
-            >>> t.final[0].resolve('R', exchanges=[inc]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> t.final[0].resolve('R', exchanges=[inc])
+            {'R': ['NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)

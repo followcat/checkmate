@@ -92,8 +92,8 @@ class Declarator(object):
         >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes=['AP(R)'])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
-        >>> ac[-1].storage[0].factory().R.description()
-        ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
+        >>> ac[-1].storage[0].factory().R._valid_values
+        [['NORM']]
         """
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes)
