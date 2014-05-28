@@ -52,7 +52,7 @@ def pop(self, *args, **kwargs):
         >>> s = State()
         >>> s.append('R')
         >>> s.value
-        'R'
+        ['R']
         >>> s.pop()
         'R'
         >>> s.value
