@@ -59,6 +59,7 @@ class Partition(object):
     def __eq__(self, other):
         """
             >>> import sample_app.application
+            >>> import sample_app.component.component_1_states
             >>> a = sample_app.application.TestData()
             >>> r1 = sample_app.exchanges.Action()
             >>> r2 = sample_app.exchanges.Action()
@@ -69,41 +70,21 @@ class Partition(object):
             >>> r1.R = ['HIGH']
             >>> r1 == r2
             False
+            >>> s1 = sample_app.component.component_1_states.State()
+            >>> s2 = sample_app.component.component_1_states.State()
+            >>> s1.value, s2.value
+            ('True', 'True')
+            >>> s1 == s2
+            True
+            >>> s1.value = 'False'
+            >>> s1 == s2
+            False
         """
         if type(self) != type(other):
             return False
-        return compare_value(self, other) and compare_attr(self, other)
-
-    def get_define_str(self):
-        """
-            >>> import sample_app.application
-            >>> ap = sample_app.exchanges.AP()
-            >>> ap.partition_attribute
-            ('R',)
-            >>> ap.R
-            ['NORM']
-            >>> ap.get_define_str() # doctest: +ELLIPSIS
-            "R=sample_app.data_structure.ActionRequest(...
-            >>> ex = sample_app.exchanges.ThirdAction()
-            >>> ex.partition_attribute
-            ()
-            >>> ex.get_define_str()
-        """
-        if len(self.partition_attribute) == 0:
-            if hasattr(self, 'action'):
-                return None
-            if self.value is not None:
-                return ''.join(("'", self.value, "'"))
-        _str = ''
-        for index, _attr_str in enumerate(self.partition_attribute):
-            _attr = getattr(self, _attr_str)
-            _cls = _attr.__class__
-            _full_cls_str = '.'.join((_cls.__module__, _cls.__name__))
-            if index > 0:
-                _str += ', '
-            _str = ''.join((_str, _attr_str, '=', _full_cls_str, '('))
-            _str = ''.join((_str, _attr.get_define_str(), ')'))
-        return _str
+        if None in [self.value, other.value]:
+            return True
+        return self.value==other.value
 
     def description(self):
         try:
@@ -115,48 +96,3 @@ class Partition(object):
     def partition_id(self):
         return self.description()[0]
 
-
-def compare_value(one, other):
-    """
-    >>> import sample_app.application
-    >>> a = sample_app.application.TestData()
-    >>> r1 = sample_app.data_structure.ActionRequest()
-    >>> r2 = sample_app.data_structure.ActionRequest()
-    >>> checkmate.partition.compare_value(r1, r2)
-    True
-    >>> r1
-    ['NORM']
-    >>> r1 = ['HIGH']
-    >>> checkmate.partition.compare_value(r1, r2)
-    False
-    """
-    if None in [one.value, other.value]:
-        return True
-    else:
-        return one.value == other.value
-
-
-def compare_attr(one, other):
-    """
-    >>> import checkmate.partition
-    >>> import sample_app.application
-    >>> a = sample_app.application.TestData()
-    >>> r1 = sample_app.exchanges.Action()
-    >>> r2 = sample_app.exchanges.Action()
-    >>> checkmate.partition.compare_attr(r1, r2)
-    True
-    >>> r1.R
-    ['NORM']
-    >>> r1.R = ['HIGH']
-    >>> checkmate.partition.compare_attr(r1, r2)
-    False
-    """
-    if ((type(one) != type(other)) or (len(dir(one)) != len(dir(other)))):
-        return False
-    for name in dir(one):
-        attr = getattr(one, name)
-        if not (hasattr(other, name) and attr == getattr(other, name)):
-            return False
-    # if dir(one) and dir(other) have same length and all elements of one is in other,
-    # then *no* element of dir(other) is missing in dir(one)
-    return True
