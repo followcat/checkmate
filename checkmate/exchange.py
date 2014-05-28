@@ -42,10 +42,9 @@ class Exchange(checkmate.partition.Partition):
                 for key in iter(dir(self)):
                     if key not in iter(dir(other)):
                         return False
-                    elif getattr(self, key) == getattr(other, key):
-                        return True
-                    elif (getattr(self, key) is not None and
-                        getattr(other, key) is not None):
+                    if (getattr(self, key) is not None and
+                        getattr(other, key) is not None and 
+                        getattr(self, key) != getattr(other, key)):
                         return False
                 return True
         return False
