@@ -48,13 +48,16 @@ def append(self, *args, **kwargs):
 def pop(self, *args, **kwargs):
     """
         >>> setattr(State, 'pop', pop)
-        >>> s = State('R')
+        >>> setattr(State, 'append', append)
+        >>> s = State()
+        >>> s.append('R')
         >>> s.value
-        ['R']
+        'R'
         >>> s.pop()
         'R'
         >>> s.value
         []
+        >>> delattr(State, 'append')
         >>> delattr(State, 'pop')
     """
     try:
@@ -105,6 +108,7 @@ def up(self, *args, **kwargs):
     """
         >>> setattr(State, 'append', append)
         >>> setattr(State, 'up', up)
+        >>> s = State()
         >>> s.append('R')
         >>> s.append('P')
         >>> s.append('S')
