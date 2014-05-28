@@ -13,6 +13,12 @@ def toggle(self, *args, **kwargs):
 
 def append(self, *args, **kwargs):
     """
+        >>> setattr(State, 'append', append)
+        >>> s = State()
+        >>> s.append('Q')
+        >>> s.value
+        ['Q']
+        >>> delattr(State, 'append')
     """
     if self.value is None:
         self.value = []
@@ -40,6 +46,17 @@ def append(self, *args, **kwargs):
         pass
 
 def pop(self, *args, **kwargs):
+    """
+        >>> setattr(State, 'pop', pop)
+        >>> s = State('R')
+        >>> s.value
+        ['R']
+        >>> s.pop()
+        'R'
+        >>> s.value
+        []
+        >>> delattr(State, 'pop')
+    """
     try:
         value = args[0]
     except:
@@ -59,6 +76,20 @@ def pop(self, *args, **kwargs):
         return None
 
 def flush(self, *args, **kwargs):
+    """
+        >>> setattr(State, 'append', append)
+        >>> setattr(State, 'flush', flush)
+        >>> s = State()
+        >>> s.append('P')
+        >>> s.append('R')
+        >>> s.value
+        ['P', 'R']
+        >>> s.flush('P')
+        >>> s.value
+        ['R']
+        >>> delattr(State, 'append')
+        >>> delattr(State, 'flush')
+    """
     try:
         value = args[0]
     except:
@@ -71,6 +102,20 @@ def flush(self, *args, **kwargs):
         self.value.remove(value)
 
 def up(self, *args, **kwargs):
+    """
+        >>> setattr(State, 'append', append)
+        >>> setattr(State, 'up', up)
+        >>> s.append('R')
+        >>> s.append('P')
+        >>> s.append('S')
+        >>> s.value
+        ['R', 'P', 'S']
+        >>> s.up('S')
+        >>> s.value
+        ['R', 'S', 'P']
+        >>> delattr(State, 'append')
+        >>> delattr(State, 'up')
+    """
     try:
         value = args[0]
     except:
@@ -84,6 +129,21 @@ def up(self, *args, **kwargs):
         pass
 
 def down(self, *args, **kwargs):
+    """
+        >>> setattr(State, 'append', append)
+        >>> setattr(State, 'down', down)
+        >>> s = State()
+        >>> s.append('R')
+        >>> s.append('P')
+        >>> s.append('S')
+        >>> s.value
+        ['R', 'P', 'S']
+        >>> s.down('P')
+        >>> s.value
+        ['R', 'S', 'P']
+        >>> delattr(State, 'append')
+        >>> delattr(State, 'down')
+    """
     try:
         value = args[0]
     except:
@@ -92,7 +152,7 @@ def down(self, *args, **kwargs):
         self.value = list([self.value])
     try:
         index = self.value.index(value)
-        return self.value.insert(index, self.value.pop(index))
+        return self.value.insert(index+1, self.value.pop(index))
     except:
         pass
 
