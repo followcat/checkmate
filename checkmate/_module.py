@@ -59,25 +59,33 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             """.format(p=p)
 
         for _c in codes:
-            if checkmate._exec_tools.is_method(_c):
-                internal_code = checkmate._exec_tools.get_method_basename(_c)
+            if checkmate._exec_tools.is_method(_c[1]):
+                internal_code = checkmate._exec_tools.get_method_basename(_c[1])
                 run_code += """
                 \ndef {0}(*args, **kwargs):
                 \n    return {1}('{0}', *args, **kwargs)
                 """.format(internal_code, classname)
     else:
-        valid_values_list = []
-        for _c in codes:
-            for _v in checkmate._exec_tools.get_function_parameters_list(_c):
-                if _v != '':
-                    valid_values_list.append(_v)
-
         if partition_type == 'data_structure':
+            valid_values_list = []
+            start_str = ''
+            temp_list = []
+            for _c in codes:
+                if not start_str == _c[0][:_c[0].rfind('-')]:
+                    if start_str:
+                        valid_values_list.append(temp_list)
+                        temp_list = []
+                    start_str = _c[0][:_c[0].rfind('-')]
+                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
+                    if _v:
+                        temp_list.append(_v)
+            valid_values_list.append(temp_list)
+
             run_code += """
                     \n\n@zope.interface.implementer({0})
                     \nclass {1}(list):
                     \n    def __init__(self, *args):
-                    \n        self._valid_values = [{2}]
+                    \n        self._valid_values = {2}
                     \n        for _l in self._valid_values:
                     \n            for _argv in args:
                     \n                if _argv in _l:
@@ -88,6 +96,11 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
                     """.format(interface_class, classname, valid_values_list)
 
         if partition_type == 'states':
+            valid_values_list = []
+            for _c in codes:
+                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
+                    if _v:
+                        valid_values_list.append(_v)
             module_name = '.'.join(module_class.split('.')[:-1])
             run_code += """
                     \nimport {0}\n

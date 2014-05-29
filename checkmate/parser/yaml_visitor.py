@@ -14,7 +14,7 @@ class Visitor():
 
         self.full_description = collections.OrderedDict()
         self._classname = ''
-        self.codes = []
+        self.codes_list = []
         self.tran_items = []
 
         self.read_document(stream)
@@ -34,17 +34,17 @@ class Visitor():
             if title == "State identification":
                 self.state_identification(_d)
                 self._state_partitions.append({'clsname': self._classname,
-                                                'codes': self.codes,
+                                                'codes_list': self.codes_list,
                                                 'full_desc': self.full_description})
             elif title == "Data structure":
                 self.data_structure(_d)
                 self._data_structure_partitions.append({'clsname': self._classname,
-                                                'codes': self.codes,
+                                                'codes_list': self.codes_list,
                                                 'full_desc': self.full_description})
             elif title == "Exchange identification":
                 self.exchange_identification(_d)
                 self._exchange_partitions.append({'clsname': self._classname,
-                                                'codes': self.codes,
+                                                'codes_list': self.codes_list,
                                                 'full_desc': self.full_description})
             elif title == "State machine" or title == "Test procedure":
                 self.state_machine_or_test_procedure(_d)
@@ -52,7 +52,7 @@ class Visitor():
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
-            self.codes = []
+            self.codes_list = []
             self.tran_items = []
 
     def state_identification(self, content):
@@ -84,7 +84,7 @@ class Visitor():
             code = _list[1]
             val = _list[2]
             com = _list[3]
-            self.codes.append(code)
+            self.codes_list.append([id, code])
             self.full_description[code] = (id, val, com)
 
 

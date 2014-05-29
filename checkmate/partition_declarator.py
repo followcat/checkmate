@@ -70,7 +70,7 @@ class Declarator(object):
             self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content)
         self.output = {}
 
-    def new_partition(self, partition_type, signature, codes, full_description=None):
+    def new_partition(self, partition_type, signature, codes_list, full_description=None):
         """
         >>> import collections
         >>> import checkmate._module
@@ -96,7 +96,8 @@ class Declarator(object):
         [['NORM']]
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes)
+        defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes_list)
+        codes = [_c[1] for _c in codes_list]
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, codes, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         return (defined_interface, partition_storage)
@@ -129,7 +130,7 @@ class Declarator(object):
         for partition_type in ('states', 'data_structure', 'exchanges'):
             partitions = []
             for data in self.data_source[partition_type]:
-                partitions.append(self.new_partition(partition_type, data['clsname'], data['codes'], data['full_desc']))
+                partitions.append(self.new_partition(partition_type, data['clsname'], data['codes_list'], data['full_desc']))
             self.output[partition_type] = partitions
 
     def get_transitions(self):
