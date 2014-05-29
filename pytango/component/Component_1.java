@@ -95,7 +95,7 @@ public class Component_1 {
     private static Boolean c_state = true;
 
     @Command(name="AC", inTypeDesc="param", outTypeDesc="")
-    public void AC(String param) throws DevFailed {
+    public void AC(String[] param) throws DevFailed {
         xlogger.entry();
         if (c_state == true) {
             toggle();
@@ -106,14 +106,14 @@ public class Component_1 {
     }
     
     @Command(name="AP", inTypeDesc="param", outTypeDesc="")
-    public void AP(String param) throws DevFailed {
+    public void AP(String[] param) throws DevFailed {
         xlogger.entry();
         c2_dev.command_inout("DA");
         xlogger.exit();
     }
     
     @Command(name="PP", inTypeDesc="param", outTypeDesc="")
-    public void PP(String param) throws DevFailed {
+    public void PP(String[] param) throws DevFailed {
         xlogger.entry();
         if (c_state == false) {
             toggle();
