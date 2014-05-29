@@ -57,6 +57,8 @@ class TransitionTree(checkmate._tree.Tree):
             >>> a = sample_app.application.TestData()
             >>> t1 = a.components['C2'].state_machine.transitions[0]
             >>> t2 = a.components['C3'].state_machine.transitions[0]  
+            >>> tree1 = checkmate.runs.TransitionTree(t1)
+            >>> tree2 = checkmate.runs.TransitionTree(t2)
             >>> tree1.match_parent(tree2)
             True
             >>> tree2.match_parent(tree1)
