@@ -16,7 +16,7 @@ def add_device_service(services):
     for _service in services:
         name = _service[0]
         args = _service[1]
-        if len(args) > 0:
+        if args is not None:
             code = """
 def %s(self, param):
     self.incoming.append(('%s', param))""" %(name, name)
@@ -32,11 +32,23 @@ def add_device_interface(services):
     for _service in services:
         name = _service[0]
         args = _service[1]
-        if len(args) > 0:
-            command[name] = [[PyTango.DevString], [PyTango.DevVoid]]
+        if args is not None:
+            _type = switch(type(args[0]))
+            command[name] = [[_type], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     return {'cmd_list': command}
+
+
+def switch(_type=None):
+    try:
+        return {str:      PyTango.DevVarStringArray,
+                int:      PyTango.DevVarLongArray,
+                float:    PyTango.DevVarFloatArray,
+                bool:     PyTango.DevVarBooleanArray,
+               }[_type]
+    except KeyError:
+        return None
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -89,13 +101,20 @@ class Encoder(object):
     def decode(self, message):
         #cannot be imported before the application is created
         import pytango.checkmate.exchanges
+        func = message
+        attr = None
         if isinstance(message, tuple):
-            exec_str = 'ex = pytango.checkmate.exchanges.' + message[0] + '(' + message[1] + ')'
-        else:
-            exec_str = 'ex = pytango.checkmate.exchanges.' + message + '()'
-        exec(exec_str)
-
-        return locals()['ex']
+            func = message[0]
+            attr = message[1]
+            if type(message[1]) == PyTango.DeviceData:
+                attr = message[1].extract()
+        ex = getattr(pytango.checkmate.exchanges, func)()
+        if attr is not None:
+            try:
+                setattr(ex, dir(ex)[0], attr)
+            except:
+                pass
+        return ex
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -134,9 +153,14 @@ class Connector(checkmate.runtime.communication.Connector):
             pass
 
     def send(self, destination, exchange):
-        define_str = exchange.get_define_str()
+        attr = exchange.get_partition_attr()
+        param = None
+        if attr:
+            param_type = switch(type(attr[0]))
+            param = PyTango.DeviceData()
+            param.insert(param_type, attr)
         call = getattr(self.device_client, self.encoder.encode(exchange))
-        call(define_str)
+        call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):
