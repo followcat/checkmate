@@ -16,8 +16,8 @@ class Component_2(PyTango.Device_4Impl):
 
     def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
-        define_str = "R=pytango.checkmate.data_structure.ActionRequest(P=pytango.checkmate.data_structure.ActionPriority('NORM'), A=pytango.checkmate.data_structure.Attribute('AT1'))"
-        self.c1_dev.command_inout_asynch('AP', define_str)
+        _R = ['NORM', 'AT1']
+        self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):
         pass
