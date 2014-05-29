@@ -9,6 +9,18 @@ class Visitor():
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
     def __init__(self, stream):
+        """
+            >>> import os
+            >>> import checkmate.parser.yaml_visitor
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
+            >>> file=open(input_file,'r')
+            >>> c = file.read()
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c)
+            >>> len(visitor._data_structure_partitions)
+            3
+            >>> len(visitor._exchange_partitions)
+            2
+        """
         self._state_partitions = []
         self._data_structure_partitions = []
         self._exchange_partitions = []
@@ -27,6 +39,34 @@ class Visitor():
             self.parser_chunk(each)
 
     def parser_chunk(self, chunk):
+        """
+            >>> import os
+            >>> import yaml
+            >>> import checkmate.parser.yaml_visitor
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
+            >>> f = open(input_file,'r')
+            >>> c1 = f.read()
+            >>> f.close()
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> f = open(input_file,'r')
+            >>> c2 = f.read()
+            >>> f.close()
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
+            >>> len(visitor._state_partitions)
+            0
+            >>> list(yaml.load_all(c2))[0]['title']
+            'State identification'
+            >>> visitor.parser_chunk(list(yaml.load_all(c2))[0])
+            >>> len(visitor._state_partitions)
+            2
+            >>> len(visitor._transitions)
+            0
+            >>> list(yaml.load_all(c2))[1]['title']
+            'State machine'
+            >>> visitor.parser_chunk(list(yaml.load_all(c2))[1])
+            >>> len(visitor._transitions)
+            4
+        """
         title = chunk['title']
         chunk_data = chunk['data']
         for _d in chunk_data:

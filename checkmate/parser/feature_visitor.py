@@ -113,6 +113,13 @@ def _compatible_fresher_language(languages):
     return fresher_languages
             
 def _get_languages(makefile_path):
+    """
+        >>> import os
+        >>> import checkmate.parser.feature_visitor
+        >>> makefile_path = os.path.join(os.getenv('CHECKMATE_HOME'),'sample_app/itp')
+        >>> checkmate.parser.feature_visitor._get_languages(makefile_path)
+        ['en', 'zh-CN']
+    """
     makefile = open(os.path.join(makefile_path, 'Makefile'), 'r')
     text = makefile.read()
     makefile.close()

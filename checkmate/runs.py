@@ -50,6 +50,17 @@ class TransitionTree(checkmate._tree.Tree):
 
     def match_parent(self, tree):
         """
+            >>> import checkmate._storage
+            >>> import checkmate.transition
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> t1 = a.components['C2'].state_machine.transitions[0]
+            >>> t2 = a.components['C3'].state_machine.transitions[0]  
+            >>> tree1.match_parent(tree2)
+            True
+            >>> tree2.match_parent(tree1)
+            False
         """
         if len(self.root.outgoing) == 0 or len(tree.root.incoming) == 0:
             return False
