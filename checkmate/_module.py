@@ -8,6 +8,97 @@ import collections
 import checkmate._exec_tools
 
 
+def get_exchange_define_str(import_module, interface_class, classname, module_class, parameters_str, parameters_list, codes):
+    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'module_class', 'parameters_str'])
+    element = class_element(import_module, interface_class, classname, module_class, parameters_str)
+    run_code = """
+            \nimport zope.interface.interface
+            \n
+            \nimport {e.import_module}
+            \n
+            \n
+            \nclass {e.interface_class}(zope.interface.Interface):
+            \n    \"\"\"\"\"\"
+            \n
+            \n
+            \n@zope.interface.implementer({e.interface_class})
+            \nclass {e.classname}({e.module_class}):
+            \n    def __init__(self, value=None, *args{e.parameters_str}, **kwargs):
+            \n        super().__init__(value)
+            \n        self.partition_attribute = tuple({e.classname}.__init__.__annotations__.keys())
+            \n
+            """.format(e = element)
+
+    class_parame = collections.namedtuple('class_parame', ['attribute', 'classname'])
+    for _p in parameters_list:
+        _k, _v = _p.split(':')
+        parame = class_parame(_k, _v)
+        run_code += """
+            \n        if {p.attribute} is None:
+            \n            self.{p.attribute} = {p.classname}(*args)
+            \n        else:
+            \n            self.{p.attribute} = {p.attribute}
+            """.format(p = parame)
+
+    class_action = collections.namedtuple('class_action', ['classname', 'code'])
+    for _c in codes:
+        if checkmate._exec_tools.is_method(_c[1]):
+            internal_code = checkmate._exec_tools.get_method_basename(_c[1])
+            action = class_action(classname, internal_code)
+            run_code += """
+            \ndef {a.code}(*args, **kwargs):
+            \n    return {a.classname}('{a.code}', *args, **kwargs)
+            """.format(a = action)
+    return run_code
+
+
+def get_data_structure_define_str(interface_class, classname, valid_values_list):
+    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
+    element = class_element(interface_class, classname, valid_values_list)
+    run_code = """
+        \nimport zope.interface.interface
+        \n
+        \nclass {e.interface_class}(zope.interface.Interface):
+        \n    \"\"\"\"\"\"
+        \n
+        \n
+        \n@zope.interface.implementer({e.interface_class})
+        \nclass {e.classname}(list):
+        \n    def __init__(self, *args):
+        \n        self._valid_values = {e.valid_values}
+        \n        for _l in self._valid_values:
+        \n            for _argv in args:
+        \n                if _argv in _l:
+        \n                    self.append(_argv)
+        \n                    break
+        \n            else:
+        \n                self.append(_l[0]) 
+        """.format(e = element)
+    return run_code
+
+
+def get_states_define_str(import_module, interface_class, classname, module_class, valid_values_list):
+    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'module_class', 'valid_values'])
+    element = class_element(import_module, interface_class, classname, module_class, valid_values_list)
+    run_code = """
+        \nimport zope.interface.interface
+        \n
+        \nimport {e.import_module}
+        \n
+        \n
+        \nclass {e.interface_class}(zope.interface.Interface):
+        \n    \"\"\"\"\"\"
+        \n
+        \n
+        \n@zope.interface.implementer({e.interface_class})
+        \nclass {e.classname}({e.module_class}):
+        \n    def __init__(self, *args, **kwargs):
+        \n        self._valid_values = {e.valid_values}
+        \n        super().__init__(*args, **kwargs)
+        """.format(e = element)
+    return run_code
+
+
 def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
     module_class_map = {
         'exchanges':'checkmate.exchange.Exchange',
@@ -16,16 +107,11 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     }
     classname = checkmate._exec_tools.get_method_basename(signature)
     interface_class = 'I' + classname
-    module_class = module_class_map[partition_type]
-
-    run_code = """
-            \nimport zope.interface.interface
-            \nclass {0}(zope.interface.Interface):
-            \n    \"\"\"\"\"\"\n
-            """.format(interface_class)
-
+    run_code = ''
 
     if partition_type == 'exchanges':
+        module_class = module_class_map[partition_type]
+
         data_structure_module_name = data_structure_module.__name__
         parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
         parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
@@ -36,81 +122,34 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
         if len(parameters_list) > 0:
             import_module += '\n\nimport ' + data_structure_module_name
             parameters_str = ', ' + parameters_str
+        run_code = get_exchange_define_str(import_module, interface_class, classname, module_class, parameters_str, parameters_list, codes)
 
-        run_code += """
-            \nimport {0}
-            \n
-            \n@zope.interface.implementer({1})
-            \nclass {2}({3}):
-            \n    def __init__(self, value=None, *args{4}, **kwargs):
-            \n        super().__init__(value)
-            \n        self.partition_attribute = tuple({2}.__init__.__annotations__.keys())
-            """.format(import_module, interface_class, classname, module_class, parameters_str)
-
-        for _p in parameters_list:
-            parame = collections.namedtuple('parame', ['attribute', 'classname'])
-            _k, _v = _p.split(':')
-            p = parame(_k, _v)
-            run_code += """
-            \n        if {p.attribute} is None:
-            \n            self.{p.attribute} = {p.classname}(*args)
-            \n        else:
-            \n            self.{p.attribute} = {p.attribute}
-            """.format(p=p)
-
+    elif partition_type == 'data_structure':
+        valid_values_list = []
+        start_str = ''
+        temp_list = []
         for _c in codes:
-            if checkmate._exec_tools.is_method(_c[1]):
-                internal_code = checkmate._exec_tools.get_method_basename(_c[1])
-                run_code += """
-                \ndef {0}(*args, **kwargs):
-                \n    return {1}('{0}', *args, **kwargs)
-                """.format(internal_code, classname)
-    else:
-        if partition_type == 'data_structure':
-            valid_values_list = []
-            start_str = ''
-            temp_list = []
-            for _c in codes:
-                if not start_str == _c[0][:_c[0].rfind('-')]:
-                    if start_str:
-                        valid_values_list.append(temp_list)
-                        temp_list = []
-                    start_str = _c[0][:_c[0].rfind('-')]
-                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
-                    if _v:
-                        temp_list.append(_v)
-            valid_values_list.append(temp_list)
+            if not start_str == _c[0][:_c[0].rfind('-')]:
+                if start_str:
+                    valid_values_list.append(temp_list)
+                    temp_list = []
+                start_str = _c[0][:_c[0].rfind('-')]
+            for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
+                if _v:
+                    temp_list.append(_v)
+        valid_values_list.append(temp_list)
+        run_code = get_data_structure_define_str(interface_class, classname, valid_values_list)
 
-            run_code += """
-                    \n\n@zope.interface.implementer({0})
-                    \nclass {1}(list):
-                    \n    def __init__(self, *args):
-                    \n        self._valid_values = {2}
-                    \n        for _l in self._valid_values:
-                    \n            for _argv in args:
-                    \n                if _argv in _l:
-                    \n                    self.append(_argv)
-                    \n                    break
-                    \n            else:
-                    \n                self.append(_l[0]) 
-                    """.format(interface_class, classname, valid_values_list)
+    elif partition_type == 'states':
+        module_class = module_class_map[partition_type]
+        import_module = '.'.join(module_class.split('.')[:-1])
 
-        if partition_type == 'states':
-            valid_values_list = []
-            for _c in codes:
-                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
-                    if _v:
-                        valid_values_list.append(_v)
-            module_name = '.'.join(module_class.split('.')[:-1])
-            run_code += """
-                    \nimport {0}\n
-                    \n
-                    \n@zope.interface.implementer({1})
-                    \nclass {2}({3}):
-                    \n    def __init__(self, *args, **kwargs):
-                    \n        self._valid_values = {4}
-                    \n        super().__init__(*args, **kwargs)
-                    """.format(module_name, interface_class, classname, module_class, valid_values_list)
+        valid_values_list = []
+        for _c in codes:
+            for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
+                if _v:
+                    valid_values_list.append(_v)
+        run_code = get_states_define_str(import_module, interface_class, classname, module_class, valid_values_list)
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
