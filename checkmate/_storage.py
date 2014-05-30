@@ -48,21 +48,21 @@ def _build_resolve_logic(transition, type, data):
 def store(type, interface, name, description=None):
     """
         >>> import checkmate._storage
-        >>> import sample_app.exchanges
         >>> import sample_app.application
+        >>> import sample_app.exchanges
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
         >>> acr = sample_app.data_structure.ActionRequest()
         >>> acr
-        ['NORM']
+        ['AT1', 'NORM']
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
-        >>> ex = st.factory({'R': 'HIGH'})
+        >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.action, ex.R)
-        ('AP', ['NORM'])
+        ('AP', 'HIGH')
     """
     if checkmate._exec_tools.method_unbound(name) or type == 'exchanges':
         code = checkmate._exec_tools.get_method_basename(name)
@@ -162,7 +162,7 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> ds_ap = sample_app.data_structure.ActionRequest('HIGH')
             >>> ds_ap
-            ['HIGH']
+            ['AT1', 'HIGH']
         """
         self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
@@ -186,7 +186,7 @@ class InternalStorage(object):
             >>> a = sample_app.application.TestData()
             >>> r1 = sample_app.data_structure.ActionRequest('HIGH')
             >>> r1
-            ['HIGH']
+            ['AT1', 'HIGH']
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
@@ -221,7 +221,7 @@ class InternalStorage(object):
             ...
             AttributeError
             >>> t.final[0].resolve('R', exchanges=[inc])
-            {'R': ['NORM']}
+            {'R': ['AT1', 'NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)

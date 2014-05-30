@@ -119,9 +119,9 @@ class Transition(object):
             {'R': 1}
             >>> i = t.incoming[0].factory()
             >>> (i.action, i.R)
-            ('AP', ['NORM'])
+            ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
-            {'R': ['NORM']}
+            {'R': ['AT1', 'NORM']}
         """
         resolved_arguments = {}
         entry = getattr(self, _type)
@@ -160,11 +160,11 @@ class Transition(object):
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': ['NORM']}]
+            [{'R': ['AT1', 'NORM']}]
             >>> i = c.state_machine.transitions[1].incoming[0].factory(kwargs={'R': 1})
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': ['NORM']}]
+            [{'R': ['AT1', 'NORM']}]
         """
         _outgoing_list = []		
         if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
