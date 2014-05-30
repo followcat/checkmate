@@ -27,7 +27,7 @@ def get_exchange_define_str(import_module, interface_class, classname, module_cl
             \n        super().__init__(value)
             \n        self.partition_attribute = tuple({e.classname}.__init__.__annotations__.keys())
             \n
-            """.format(e = element)
+            """.format(e=element)
 
     class_parame = collections.namedtuple('class_parame', ['attribute', 'classname'])
     for _p in parameters_list:
@@ -38,17 +38,16 @@ def get_exchange_define_str(import_module, interface_class, classname, module_cl
             \n            self.{p.attribute} = {p.classname}(*args)
             \n        else:
             \n            self.{p.attribute} = {p.attribute}
-            """.format(p = parame)
+            """.format(p=parame)
 
     class_action = collections.namedtuple('class_action', ['classname', 'code'])
     for _c in codes:
-        if checkmate._exec_tools.is_method(_c[1]):
-            internal_code = checkmate._exec_tools.get_method_basename(_c[1])
-            action = class_action(classname, internal_code)
-            run_code += """
-            \ndef {a.code}(*args, **kwargs):
-            \n    return {a.classname}('{a.code}', *args, **kwargs)
-            """.format(a = action)
+        internal_code = checkmate._exec_tools.get_method_basename(_c[1])
+        action = class_action(classname, internal_code)
+        run_code += """
+        \ndef {a.code}(*args, **kwargs):
+        \n    return {a.classname}('{a.code}', *args, **kwargs)
+        """.format(a=action)
     return run_code
 
 
@@ -72,8 +71,8 @@ def get_data_structure_define_str(interface_class, classname, valid_values_list)
         \n                    self.append(_argv)
         \n                    break
         \n            else:
-        \n                self.append(_l[0]) 
-        """.format(e = element)
+        \n                self.append(_l[0])
+        """.format(e=element)
     return run_code
 
 
@@ -95,33 +94,29 @@ def get_states_define_str(import_module, interface_class, classname, module_clas
         \n    def __init__(self, *args, **kwargs):
         \n        self._valid_values = {e.valid_values}
         \n        super().__init__(*args, **kwargs)
-        """.format(e = element)
+        """.format(e=element)
     return run_code
 
 
 def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
     module_class_map = {
         'exchanges':'checkmate.exchange.Exchange',
-        'data_structure':'checkmate.data_structure.DataStructure',
         'states':'checkmate.state.State'
     }
     classname = checkmate._exec_tools.get_method_basename(signature)
     interface_class = 'I' + classname
-    run_code = ''
+    if partition_type in module_class_map:
+        module_class = module_class_map[partition_type]
+        import_module = '.'.join(module_class.split('.')[:-1])
 
     if partition_type == 'exchanges':
-        module_class = module_class_map[partition_type]
-
-        data_structure_module_name = data_structure_module.__name__
+        parameters_str = ''
         parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
-        parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
-        parameters_str = ', '.join([_p + '=None' for _p in parameters_list])
-
-        module_name = '.'.join(module_class.split('.')[:-1])
-        import_module = module_name
         if len(parameters_list) > 0:
+            data_structure_module_name = data_structure_module.__name__
             import_module += '\n\nimport ' + data_structure_module_name
-            parameters_str = ', ' + parameters_str
+            parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
+            parameters_str = ', ' + ', '.join([_p + '=None' for _p in parameters_list])
         run_code = get_exchange_define_str(import_module, interface_class, classname, module_class, parameters_str, parameters_list, codes)
 
     elif partition_type == 'data_structure':
@@ -141,9 +136,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
         run_code = get_data_structure_define_str(interface_class, classname, valid_values_list)
 
     elif partition_type == 'states':
-        module_class = module_class_map[partition_type]
-        import_module = '.'.join(module_class.split('.')[:-1])
-
         valid_values_list = []
         for _c in codes:
             for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
