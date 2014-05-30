@@ -159,10 +159,14 @@ class InternalStorage(object):
     def __init__(self, interface, name, description, function=None):
         """
             >>> import sample_app.application
-            >>> import sample_app.data_structure
-            >>> ds_ap = sample_app.data_structure.ActionRequest('HIGH')
-            >>> ds_ap
-            ['AT1', 'HIGH']
+            >>> import sample_app.exchanges
+            >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            ((), {'R': None})
+            >>> dir(st.factory())
+            ['R']
+            >>> st.factory().R
+            ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
@@ -178,15 +182,23 @@ class InternalStorage(object):
 
     def factory(self, args=[], kwargs={}):
         """
-            >>> 'Q0.append(R)'
-            'Q0.append(R)'
-
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> a = sample_app.application.TestData()
-            >>> r1 = sample_app.data_structure.ActionRequest('HIGH')
-            >>> r1
-            ['AT1', 'HIGH']
+            >>> import checkmate._storage
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            ((), {'R': None})
+            >>> dir(st.factory())
+            ['R']
+            >>> st.factory().R
+            ['AT1', 'NORM']
+            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
+            ['AT2', 'HIGH']
+            >>> st = checkmate._storage.InternalStorage(sample_app.component.component_1_states.IState, 'M0(True)', None, sample_app.component.component_1_states.State)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            (('True',), {})
+            >>> st.factory().value
+            'True'
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
