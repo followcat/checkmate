@@ -91,8 +91,8 @@ def method_arguments(signature, interface):
             else:
                 args.append(each)
         else:
-            equre_label = each.find('=')
-            _k, _v = each[:equre_label].strip(), each[equre_label + 1:].strip()
+            label = each.find('=')
+            _k, _v = each[:label].strip(), each[label + 1:].strip()
             exec("kwargs['%s'] = %s" % (_k, _v))
     argument['values'] = tuple(args)
     return argument
