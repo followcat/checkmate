@@ -63,8 +63,8 @@ def get_data_structure_define_str(interface_class, classname, valid_values_list)
         \n
         \n@zope.interface.implementer({e.interface_class})
         \nclass {e.classname}(list):
+        \n    _valid_values = {e.valid_values}
         \n    def __init__(self, *args):
-        \n        self._valid_values = {e.valid_values}
         \n        for _l in self._valid_values:
         \n            for _argv in args:
         \n                if _argv in _l:
@@ -91,8 +91,8 @@ def get_states_define_str(import_module, interface_class, classname, module_clas
         \n
         \n@zope.interface.implementer({e.interface_class})
         \nclass {e.classname}({e.module_class}):
+        \n    _valid_values = {e.valid_values}
         \n    def __init__(self, *args, **kwargs):
-        \n        self._valid_values = {e.valid_values}
         \n        super().__init__(*args, **kwargs)
         """.format(e=element)
     return run_code
