@@ -54,4 +54,4 @@ data:
         incoming:
           - TESTAction:       TP()
         final:
-          - TESTAnotherState: M0
+          - TESTAnotherState: M0(False)
