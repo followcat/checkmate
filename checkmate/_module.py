@@ -129,9 +129,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
                     valid_values_list.append(temp_list)
                     temp_list = []
                 start_str = _c[0][:_c[0].rfind('-')]
-            for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
-                if _v:
-                    temp_list.append(_v)
+            temp_list.append(_c[1])
         valid_values_list.append(temp_list)
         run_code = get_data_structure_define_str(interface_class, classname, valid_values_list)
 
@@ -141,6 +139,8 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
                 if _v:
                     valid_values_list.append(_v)
+            else:
+                valid_values_list.append(_c[1])
         run_code = get_states_define_str(import_module, interface_class, classname, module_class, valid_values_list)
 
     exec(run_code, exec_module.__dict__)

@@ -81,7 +81,7 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['D-PRIO-01', "P0('NORM')"]], full_description=collections.OrderedDict([("P0('NORM')",('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['D-PRIO-01', 'NORM']], full_description=collections.OrderedDict([('NORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(checkmate.data.TestActionRequest('NORM'))
