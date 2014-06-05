@@ -14,10 +14,11 @@ def get_exchange_define_str(import_module, interface_class, classname, module_cl
     run_code = """
             \nimport zope.interface.interface
             \n
+            \nimport checkmate.exchange
             \nimport {e.import_module}
             \n
             \n
-            \nclass {e.interface_class}(zope.interface.Interface):
+            \nclass {e.interface_class}(checkmate.exchange.IExchange):
             \n    \"\"\"\"\"\"
             \n
             \n
@@ -82,10 +83,11 @@ def get_states_define_str(import_module, interface_class, classname, module_clas
     run_code = """
         \nimport zope.interface.interface
         \n
+        \nimport checkmate.state
         \nimport {e.import_module}
         \n
         \n
-        \nclass {e.interface_class}(zope.interface.Interface):
+        \nclass {e.interface_class}(checkmate.state.IState):
         \n    \"\"\"\"\"\"
         \n
         \n
