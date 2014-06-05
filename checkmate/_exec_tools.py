@@ -17,15 +17,23 @@ def is_method(signature):
     return True
 
 
-def method_unbound(signature):
+def method_unbound(signature, interface):
     """
-        >>> method_unbound('func(args)')
+        >>> import sample_app.application
+        >>> import sample_app.component
+        >>> interface = sample_app.component.component_3_states.IAcknowledge
+        >>> method_unbound('func(args)', interface)
         False
-        >>> method_unbound('Q0.append(R)')
+        >>> method_unbound('Q0.append(R)', interface)
         True
+        >>> method_unbound('Q0.append2(R)', interface)
+        False
     """
-    return (is_method(signature) and
-            '.' in signature)
+    basename = get_method_basename(signature)
+    if is_method(signature) and interface.get(basename):
+        return True
+    else:
+        return False
 
 
 def get_method_basename(signature):

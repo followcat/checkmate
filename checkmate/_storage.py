@@ -64,7 +64,7 @@ def store(type, interface, name, description=None):
         >>> (ex.action, ex.R)
         ('AP', 'HIGH')
     """
-    if checkmate._exec_tools.method_unbound(name) or type == 'exchanges':
+    if checkmate._exec_tools.method_unbound(name, interface) or type == 'exchanges':
         code = checkmate._exec_tools.get_method_basename(name)
         if type == 'exchanges':
             try:
