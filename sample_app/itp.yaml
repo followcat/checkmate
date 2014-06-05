@@ -4,21 +4,21 @@ data:
   - Procedures:
       - name: 'Toggle C1 state with AC'
         initial: 
-          - State:                  M0(True)
-          - AnotherState:           Q0()
-          - Acknowledge:            A0(False)
+          - State:              __init__(True)
+          - AnotherState:       Q0()
+          - Acknowledge:        __init__(False)
         incoming:
           - Action:             AC()
         final:
-          - State:              M0(False)
+          - State:              __init__(False)
           - AnotherState:       Q0()
-          - Acknowledge:        A0(True)
+          - Acknowledge:        __init__(True)
 
   # Always run
   - Procedures:
       - name: 'Append request C1 with AP'
         initial: 
-          - AnotherState:           Q0()
+          - AnotherState:       Q0()
         incoming:
           - Action:             AP(R)
         final:
@@ -27,21 +27,21 @@ data:
   - Procedures:
       - name: 'Toggle acknowledge with RL'
         initial: 
-          - Acknowledge:            A0(True)
+          - Acknowledge:        __init__(True)
         incoming:
           - Reaction:           RL()
         final:
-          - Acknowledge:        A0(False)
+          - Acknowledge:        __init__(False)
 
   - Procedures:
       - name: 'Toggle C1 state back (RL)'
         initial: 
-          - State:                  M0(False)
-          - Acknowledge:            A0(False)
-          - AnotherState:           Q0()
+          - State:              __init__(False)
+          - Acknowledge:        __init__(False)
+          - AnotherState:       Q0()
         incoming:
           - Action:             PP()
         final:
-          - State:              M0(True)
-          - Acknowledge:        A0(False)
+          - State:              __init__(True)
+          - Acknowledge:        __init__(False)
           - AnotherState:       Q0(None)
