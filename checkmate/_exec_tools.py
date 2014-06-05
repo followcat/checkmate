@@ -44,6 +44,28 @@ def get_method_basename(signature):
     return basename
 
 
+def get_parameters_list(parameter_str):
+    """
+        >>> get_parameters_list("'AT1'")
+        ['AT1']
+        >>> get_parameters_list("AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5")
+        ["AR(P = AP('HIGH', 'NORM', 'LOW'))", "R = AR(P = AP('HIGH', 'NORM'), A = A())", 'K = None', 'Value = 5']
+    """
+    temp_list = []
+    temp_str = ''
+    left_count = 0
+    for _s in parameter_str.split(','):
+        left_count += _s.count('(')
+        left_count -= _s.count(')')
+        temp_str += _s
+        if left_count == 0:
+            temp_list.append(temp_str.strip(' \'"'))
+            temp_str = ''
+            continue
+        temp_str += ','
+    return temp_list
+
+
 def get_function_parameters_list(signature):
     """
         >>> get_function_parameters_list("A0('AT1')")
@@ -55,18 +77,8 @@ def get_function_parameters_list(signature):
     found_label = signature.find('(')
     if found_label == -1 or len(signature[found_label:][1:-1]) == 0:
         return temp_list
-    temp_str = ''
-    left_count = 0
-    for _s in signature[found_label:][1:-1].split(','):
-        left_count += _s.count('(')
-        left_count -= _s.count(')')
-        temp_str += _s
-        if left_count == 0:
-            temp_list.append(temp_str.strip(' \'"'))
-            temp_str = ''
-            continue
-        temp_str += ','
-    return temp_list
+    parameter_str = signature[found_label:][1:-1]
+    return get_parameters_list(parameter_str)
 
 
 def method_arguments(signature, interface):
@@ -84,7 +96,11 @@ def method_arguments(signature, interface):
     kwargs = {}
     cls = checkmate._module.get_class_implementing(interface)
     argument = {'values': None, 'attribute_values': kwargs}
-    for each in get_function_parameters_list(signature):
+    if is_method(signature):
+        parameters_list = get_function_parameters_list(signature)
+    else:
+        parameters_list = get_parameters_list(signature)
+    for each in parameters_list:
         if '=' not in each:
             if each in cls.__init__.__annotations__.keys():
                 kwargs[each] = None
