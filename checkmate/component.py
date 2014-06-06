@@ -26,14 +26,19 @@ class ComponentMeta(type):
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
             services = []
             service_interfaces = []
+            outgoings = []
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
                     if _i.code not in services:
                         services.append(_i.code)
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
+                for _o in _t.outgoing:
+                    if _o.code not in outgoings:
+                        outgoings.append(_o.code)
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
+            namespace['outgoings'] = outgoings
 
             result = type.__new__(cls, name, bases, dict(namespace))
             return result

@@ -120,7 +120,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['default']
             connector = connector_factory(self.context, _communication, is_server=True)
             self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
-            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+            for _component in self.context.connecting_components:
                 if not hasattr(_application.components[_component], 'connector_list'):
                     continue
                 for _c in _application.components[_component].connector_list:
@@ -132,7 +132,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     _communication = runtime.communication_list['']
                     connector = connector_factory(self.context, _communication, is_server=True)
                     self.server_list.append(self._create_client(self.context, connector))
-                for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                for _component in self.context.connecting_components:
                     if not hasattr(_application.components[_component], 'connector_list'):
                         continue
                     _communication = runtime.communication_list['']
