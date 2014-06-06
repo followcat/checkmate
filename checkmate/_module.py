@@ -12,7 +12,7 @@ def get_exchange_define_str(import_module, interface_class, classname, parameter
     class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'parameters_str'])
     element = class_element(import_module, interface_class, classname, parameters_str)
     run_code = """
-            \nimport zope.interface.interface
+            \nimport zope.interface
             \n
             \nimport checkmate.exchange
             \n{e.import_module}
@@ -55,7 +55,7 @@ def get_data_structure_define_str(interface_class, classname, valid_values_list)
     class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
     element = class_element(interface_class, classname, valid_values_list)
     run_code = """
-        \nimport zope.interface.interface
+        \nimport zope.interface
         \n
         \nclass {e.interface_class}(zope.interface.Interface):
         \n    \"\"\"\"\"\"
@@ -80,7 +80,7 @@ def get_states_define_str(interface_class, classname, valid_values_list):
     class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
     element = class_element(interface_class, classname, valid_values_list)
     run_code = """
-        \nimport zope.interface.interface
+        \nimport zope.interface
         \n
         \nimport checkmate.state
         \n
