@@ -7,14 +7,13 @@ import checkmate.runtime.procedure
 
 def get_path_from_pathfinder(application, target):
     """
-        >>> import zope.interface
         >>> import checkmate.runs
         >>> import checkmate.sandbox
         >>> import checkmate.runtime.registry    
         >>> import checkmate.runtime.pathfinder
         >>> import checkmate.runtime.communication
-        >>> import sample_app.exchanges
         >>> import sample_app.application
+        >>> import sample_app.exchanges
         >>> import sample_app.runtime.test_procedure
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData

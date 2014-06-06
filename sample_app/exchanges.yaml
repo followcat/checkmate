@@ -3,12 +3,15 @@ title: "Data structure"
 data:
   - Definition: 'ActionRequest'
     Value partitions:
-    # [Partition,   State,      Valid value,        Comment]
-    - [D-ATTR-01,   'AT1',  AT1 valid value,    AT1 attribute value]
-    - [D-ATTR-02,   'AT2',  AT2 valid value,    AT2 attribute value]
-
-    - [D-PRIO-01,   'NORM', NORM valid value,   NORM priority value]
-    - [D-PRIO-02,   'HIGH', HIGH valid value,   HIGH priority value]
+      # [Partition,   State,  Valid value,        Comment]
+      -
+      #Attribute:
+        - [D-ATTR-01,   'AT1',  AT1 valid value,    AT1 attribute value]
+        - [D-ATTR-02,   'AT2',  AT2 valid value,    AT2 attribute value]
+      -
+      #Priority:
+        - [D-PRIO-01,   'NORM', NORM valid value,   NORM priority value]
+        - [D-PRIO-02,   'HIGH', HIGH valid value,   HIGH priority value]
 ---
 title: "Exchange identification"
 data:

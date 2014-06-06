@@ -41,8 +41,8 @@ def get_exchange_define_str(import_module, interface_class, classname, parameter
             """.format(p=parame)
 
     class_action = collections.namedtuple('class_action', ['classname', 'code'])
-    for _c in codes:
-        internal_code = checkmate._exec_tools.get_method_basename(_c[1])
+    for _c in codes[0]:
+        internal_code = checkmate._exec_tools.get_method_basename(_c)
         action = class_action(classname, internal_code)
         run_code += """
         \ndef {a.code}(*args, **kwargs):
@@ -108,35 +108,20 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
         parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
         if len(parameters_list) > 0:
             import_module = "import " + data_structure_module.__name__
-            parameters_list = [_p.replace(':',':' + data_structure_module.__name__ + '.') for _p in parameters_list]
+            parameters_list = [_p.replace(':', ':' + data_structure_module.__name__ + '.') for _p in parameters_list]
             parameters_str = ', ' + ', '.join([_p + '=None' for _p in parameters_list])
         run_code = get_exchange_define_str(import_module, interface_class, classname, parameters_str, parameters_list, codes)
 
     elif partition_type == 'data_structure':
-        valid_values_list = []
-        start_str = ''
-        temp_list = []
-        for _c in codes:
-            if not start_str == _c[0][:_c[0].rfind('-')]:
-                if start_str:
-                    valid_values_list.append(temp_list)
-                    temp_list = []
-                start_str = _c[0][:_c[0].rfind('-')]
-            temp_list.append(_c[1])
-        valid_values_list.append(temp_list)
-        run_code = get_data_structure_define_str(interface_class, classname, valid_values_list)
+        run_code = get_data_structure_define_str(interface_class, classname, codes)
 
     elif partition_type == 'states':
         valid_values_list = []
-        for _c in codes:
-            if checkmate._exec_tools.is_method(_c[1]):
-                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
-                    if _v:
-                        valid_values_list.append(_v)
+        for _c in codes[0]:
+            if checkmate._exec_tools.is_method(_c):
+                valid_values_list.extend(checkmate._exec_tools.get_function_parameters_list(_c))
             else:
-                for _v in checkmate._exec_tools.get_parameters_list(_c[1]):
-                    if _v:
-                        valid_values_list.append(_v)
+                valid_values_list.extend(checkmate._exec_tools.get_parameters_list(_c))
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     exec(run_code, exec_module.__dict__)
@@ -152,8 +137,8 @@ def get_module(package_name, module_name, alternative_package=None):
     under the project main package (eg. 'main.sub').
 
     This function can be used to create a module in an alternative package beside the provided one:
-        >>> import sample_app.application
         >>> import checkmate._module
+        >>> import sample_app.application
         >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
         <module 'sample_app.component.xxx' from ...

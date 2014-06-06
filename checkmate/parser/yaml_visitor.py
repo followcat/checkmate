@@ -58,12 +58,12 @@ class Visitor():
     def state_identification(self, content):
         for _k,_v in content.items():
             if _k == "Value partitions":
-                self.value_partitions(_v)
+                self.codes_list.append(self.value_partitions(_v))
 
     def exchange_identification(self, content):
         for _k,_v in content.items():
             if _k == "Value partitions":
-                self.value_partitions(_v)
+                self.codes_list.append(self.value_partitions(_v))
 
     def state_machine_or_test_procedure(self, content):
         for _k,_v in content.items():
@@ -73,29 +73,32 @@ class Visitor():
     def data_structure(self, content):
         for _k,_v in content.items():
             if _k == "Value partitions":
-                self.value_partitions(_v)
+                for _list in _v:
+                    self.codes_list.append(self.value_partitions(_list))
 
     def definition_and_accessibility(self, data):
         self._classname = data
 
     def value_partitions(self, data):
+        temp_list = []
         for _list in data:
             id = _list[0]
             code = _list[1]
             val = _list[2]
             com = _list[3]
-            self.codes_list.append([id, code])
+            temp_list.append(code)
             self.full_description[code] = (id, val, com)
-
+        return temp_list
 
 def call_visitor(stream):
     """
         >>> import os
+        >>> import checkmate.parser.yaml_visitor
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> output = call_visitor(c)
+        >>> output = checkmate.parser.yaml_visitor.call_visitor(c)
         >>> len(output['data_structure'])
         1
         >>> len(output['exchanges'])
@@ -104,7 +107,7 @@ def call_visitor(stream):
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> output = call_visitor(c)
+        >>> output = checkmate.parser.yaml_visitor.call_visitor(c)
         >>> len(output['states'])
         2
     """

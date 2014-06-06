@@ -81,15 +81,15 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['D-PRIO-01', 'NORM']], full_description=collections.OrderedDict([('NORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['NORM']], full_description=collections.OrderedDict([('NORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(checkmate.data.TestActionRequest('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> sp = de.new_partition('states', "TestState", codes_list=["M0(True)"])
+        >>> sp = de.new_partition('states', "TestState", codes_list=[["True"]])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=[['X-ACTION-02', 'AP(R)']])
+        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=[['AP(R)']])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R._valid_values
@@ -97,7 +97,9 @@ class Declarator(object):
         """
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes_list)
-        codes = [_c[1] for _c in codes_list]
+        codes = []
+        for _part in codes_list:
+            codes.extend(_part)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, codes, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         return (defined_interface, partition_storage)
