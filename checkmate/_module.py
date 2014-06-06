@@ -129,11 +129,14 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     elif partition_type == 'states':
         valid_values_list = []
         for _c in codes:
-            for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
-                if _v:
-                    valid_values_list.append(_v)
+            if checkmate._exec_tools.is_method(_c[1]):
+                for _v in checkmate._exec_tools.get_function_parameters_list(_c[1]):
+                    if _v:
+                        valid_values_list.append(_v)
             else:
-                valid_values_list.append(_c[1])
+                for _v in checkmate._exec_tools.get_parameters_list(_c[1]):
+                    if _v:
+                        valid_values_list.append(_v)
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     exec(run_code, exec_module.__dict__)
