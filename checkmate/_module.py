@@ -8,22 +8,21 @@ import collections
 import checkmate._exec_tools
 
 
-def get_exchange_define_str(import_module, interface_class, classname, module_class, parameters_str, parameters_list, codes):
-    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'module_class', 'parameters_str'])
-    element = class_element(import_module, interface_class, classname, module_class, parameters_str)
+def get_exchange_define_str(import_module, interface_class, classname, parameters_str, parameters_list, codes):
+    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'parameters_str'])
+    element = class_element(import_module, interface_class, classname, parameters_str)
     run_code = """
             \nimport zope.interface.interface
             \n
             \nimport checkmate.exchange
-            \nimport {e.import_module}
-            \n
+            \n{e.import_module}
             \n
             \nclass {e.interface_class}(checkmate.exchange.IExchange):
             \n    \"\"\"\"\"\"
             \n
             \n
             \n@zope.interface.implementer({e.interface_class})
-            \nclass {e.classname}({e.module_class}):
+            \nclass {e.classname}(checkmate.exchange.Exchange):
             \n    def __init__(self, value=None, *args{e.parameters_str}, **kwargs):
             \n        super().__init__(value)
             \n        self.partition_attribute = tuple({e.classname}.__init__.__annotations__.keys())
@@ -77,14 +76,13 @@ def get_data_structure_define_str(interface_class, classname, valid_values_list)
     return run_code
 
 
-def get_states_define_str(import_module, interface_class, classname, module_class, valid_values_list):
-    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'module_class', 'valid_values'])
-    element = class_element(import_module, interface_class, classname, module_class, valid_values_list)
+def get_states_define_str(interface_class, classname, valid_values_list):
+    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
+    element = class_element(interface_class, classname, valid_values_list)
     run_code = """
         \nimport zope.interface.interface
         \n
         \nimport checkmate.state
-        \nimport {e.import_module}
         \n
         \n
         \nclass {e.interface_class}(checkmate.state.IState):
@@ -92,7 +90,7 @@ def get_states_define_str(import_module, interface_class, classname, module_clas
         \n
         \n
         \n@zope.interface.implementer({e.interface_class})
-        \nclass {e.classname}({e.module_class}):
+        \nclass {e.classname}(checkmate.state.State):
         \n    _valid_values = {e.valid_values}
         \n    def __init__(self, *args, **kwargs):
         \n        super().__init__(*args, **kwargs)
@@ -101,25 +99,18 @@ def get_states_define_str(import_module, interface_class, classname, module_clas
 
 
 def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
-    module_class_map = {
-        'exchanges':'checkmate.exchange.Exchange',
-        'states':'checkmate.state.State'
-    }
     classname = checkmate._exec_tools.get_method_basename(signature)
     interface_class = 'I' + classname
-    if partition_type in module_class_map:
-        module_class = module_class_map[partition_type]
-        import_module = '.'.join(module_class.split('.')[:-1])
 
     if partition_type == 'exchanges':
+        import_module = ''
         parameters_str = ''
         parameters_list = checkmate._exec_tools.get_function_parameters_list(signature)
         if len(parameters_list) > 0:
-            data_structure_module_name = data_structure_module.__name__
-            import_module += '\n\nimport ' + data_structure_module_name
-            parameters_list = [_p.replace(':',':' + data_structure_module_name + '.') for _p in parameters_list]
+            import_module = "import " + data_structure_module.__name__
+            parameters_list = [_p.replace(':',':' + data_structure_module.__name__ + '.') for _p in parameters_list]
             parameters_str = ', ' + ', '.join([_p + '=None' for _p in parameters_list])
-        run_code = get_exchange_define_str(import_module, interface_class, classname, module_class, parameters_str, parameters_list, codes)
+        run_code = get_exchange_define_str(import_module, interface_class, classname, parameters_str, parameters_list, codes)
 
     elif partition_type == 'data_structure':
         valid_values_list = []
@@ -143,7 +134,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
                     valid_values_list.append(_v)
             else:
                 valid_values_list.append(_c[1])
-        run_code = get_states_define_str(import_module, interface_class, classname, module_class, valid_values_list)
+        run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
