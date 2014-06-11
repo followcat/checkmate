@@ -17,7 +17,6 @@ import checkmate.runtime.launcher
 import checkmate.runtime._threading
 
 
-SIMULATE_WAIT_SEC = 0.2
 POLLING_TIMEOUT_SEC = 1
 VALIDATE_TIMEOUT_SEC = POLLING_TIMEOUT_SEC
 
