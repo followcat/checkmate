@@ -174,7 +174,6 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     with self.validation_lock:
                         self.process([exchange])
 
-    @checkmate.timeout_manager.SleepAfterCall()
     def simulate(self, transition):
         return super().simulate(transition)
 
