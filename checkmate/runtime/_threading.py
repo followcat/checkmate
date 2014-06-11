@@ -3,7 +3,7 @@ import threading
 
 #Only use this sleep time for thread who do *not* read on connection
 TIMEOUT_LOCK_ACQUIRE = 1
-SLEEP_WHEN_RUN_SEC = 0.05
+SLEEP_WHEN_RUN_SEC = 0.005
 
 
 class StopCondition(threading.Condition):
