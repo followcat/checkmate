@@ -61,8 +61,9 @@ class Component(object):
         output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s"%(self.context.name, exchanges[0].value))
         for _o in output:
-            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
-                client.send(_o)
+            if _o.destination in self.runtime.application.system_under_test:
+                for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
+                    client.send(_o)
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
@@ -72,8 +73,9 @@ class Component(object):
     def simulate(self, transition):
         output = self.context.simulate(transition)
         for _o in output:
-            for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
-                client.send(_o)
+            if _o.destination in self.runtime.application.system_under_test:
+                for client in [_c for _c in self.internal_client_list if _c.name == _o.destination]:
+                    client.send(_o)
             for client in [_c for _c in self.external_client_list if _c.name == _o.destination]:
                 client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
@@ -99,6 +101,7 @@ class Stub(Component):
 class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     """"""
     using_internal_client = False
+    reading_internal_client = False
     using_external_client = True
     reading_external_client = True
 
@@ -117,14 +120,17 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
-            connector = connector_factory(self.context, _communication, is_server=True)
-            self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
+            if self.reading_internal_client:
+                connector = connector_factory(self.context, _communication, is_server=True)
+                self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                 if not hasattr(_application.components[_component], 'connector_list'):
                     continue
-                for _c in _application.components[_component].connector_list:
-                    connector = connector_factory(_application.components[_component], _communication, is_server=False)
-                    self.internal_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_internal_client))
+                if _component in self.runtime.application.system_under_test:
+                    for _c in _application.components[_component].connector_list:
+                        connector = connector_factory(_application.components[_component], _communication, is_server=False)
+                        self.internal_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_internal_client))
+
         try:
             if self.using_external_client:
                 for connector_factory in self.context.connector_list:
@@ -189,6 +195,7 @@ class ThreadedSut(ThreadedComponent, Sut):
     using_internal_client = True
     reading_internal_client = True
     using_external_client = False
+    reading_external_client = False
 
     def setup(self, runtime):
         super().setup(runtime)
