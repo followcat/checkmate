@@ -31,7 +31,7 @@ data:
   - Transitions:
       - name: 'Append element ok tran01'
         initial: 
-          - AnotherState:     Q0()
+          - AnotherState:     __init__()
         incoming:
           - Action:           AP(R)
         final:
@@ -43,7 +43,7 @@ data:
       - name: 'Append element ok tran02'
         initial: 
           - State:            __init__(False)
-          - AnotherState:     Q0()
+          - AnotherState:     __init__()
         incoming:
           - Action:           PP()
         final:

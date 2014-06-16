@@ -5,24 +5,24 @@ data:
       - name: 'Toggle C1 state with AC'
         initial: 
           - State:              __init__(True)
-          - AnotherState:       Q0()
+          - AnotherState:       __init__()
           - Acknowledge:        __init__(False)
         incoming:
           - Action:             AC()
         final:
           - State:              __init__(False)
-          - AnotherState:       Q0()
+          - AnotherState:       __init__()
           - Acknowledge:        __init__(True)
 
   # Always run
   - Procedures:
       - name: 'Append request C1 with AP'
         initial: 
-          - AnotherState:       Q0()
+          - AnotherState:       __init__()
         incoming:
           - Action:             AP(R)
         final:
-          - AnotherState:       Q0(R)
+          - AnotherState:       __init__(R)
 
   - Procedures:
       - name: 'Toggle acknowledge with RL'
@@ -38,10 +38,10 @@ data:
         initial: 
           - State:              __init__(False)
           - Acknowledge:        __init__(False)
-          - AnotherState:       Q0()
+          - AnotherState:       __init__()
         incoming:
           - Action:             PP()
         final:
           - State:              __init__(True)
           - Acknowledge:        __init__(False)
-          - AnotherState:       Q0(None)
+          - AnotherState:       __init__(None)
