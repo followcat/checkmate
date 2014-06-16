@@ -3,30 +3,26 @@ import checkmate._module
 
 def is_method(signature):
     """
-        >>> is_method('item')
+        >>> import checkmate._exec_tools
+        >>> checkmate._exec_tools.is_method('item')
         False
-        >>> is_method('M0()')
-        True
-        >>> is_method('Q(R=NORM)')
-        True
-        >>> is_method('M0("AUTO")')
+        >>> checkmate._exec_tools.is_method('M0()')
         True
     """
-    if len(signature.split('(')) == 1:
-        return False
-    return True
+    return '(' in signature
 
 
 def method_unbound(signature, interface):
     """
+        >>> import checkmate._exec_tools
         >>> import sample_app.application
         >>> import sample_app.component
         >>> interface = sample_app.component.component_3_states.IAcknowledge
-        >>> method_unbound('func(args)', interface)
+        >>> checkmate._exec_tools.method_unbound('func(args)', interface)
         False
-        >>> method_unbound('Q0.append(R)', interface)
+        >>> checkmate._exec_tools.method_unbound('append(R)', interface)
         True
-        >>> method_unbound('Q0.append2(R)', interface)
+        >>> checkmate._exec_tools.method_unbound('append2(R)', interface)
         False
     """
     basename = get_method_basename(signature)
@@ -38,13 +34,14 @@ def method_unbound(signature, interface):
 
 def get_method_basename(signature):
     """
-        >>> get_method_basename('Action(R=ActionRequest)')
+        >>> import checkmate._exec_tools
+        >>> checkmate._exec_tools.get_method_basename('Action(R=ActionRequest)')
         'Action'
-        >>> get_method_basename('self.func()')
+        >>> checkmate._exec_tools.get_method_basename('func()')
         'func'
-        >>> get_method_basename('self.AC.R.r_func()')
+        >>> checkmate._exec_tools.get_method_basename('AC.R.r_func()')
         'r_func'
-        >>> get_method_basename('item')
+        >>> checkmate._exec_tools.get_method_basename('item')
         'item'
     """
     method = signature.split('(')[0]
@@ -54,9 +51,10 @@ def get_method_basename(signature):
 
 def get_parameters_list(parameter_str):
     """
-        >>> get_parameters_list("'AT1'")
+        >>> import checkmate._exec_tools
+        >>> checkmate._exec_tools.get_parameters_list("'AT1'")
         ['AT1']
-        >>> get_parameters_list("AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5")
+        >>> checkmate._exec_tools.get_parameters_list("AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5")
         ["AR(P = AP('HIGH', 'NORM', 'LOW'))", "R = AR(P = AP('HIGH', 'NORM'), A = A())", 'K = None', 'Value = 5']
     """
     temp_list = []
@@ -76,9 +74,10 @@ def get_parameters_list(parameter_str):
 
 def get_function_parameters_list(signature):
     """
-        >>> get_function_parameters_list("A0('AT1')")
+        >>> import checkmate._exec_tools
+        >>> checkmate._exec_tools.get_function_parameters_list("A0('AT1')")
         ['AT1']
-        >>> get_function_parameters_list("ActionMix(AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5)")
+        >>> checkmate._exec_tools.get_function_parameters_list("ActionMix(AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5)")
         ["AR(P = AP('HIGH', 'NORM', 'LOW'))", "R = AR(P = AP('HIGH', 'NORM'), A = A())", 'K = None', 'Value = 5']
     """
     temp_list = []
@@ -91,12 +90,13 @@ def get_function_parameters_list(signature):
 
 def method_arguments(signature, interface):
     """
+        >>> import checkmate._exec_tools
         >>> import sample_app.application
         >>> interface = sample_app.exchanges.IAction
-        >>> argument = method_arguments("ActionMix(False, R = None)", interface)
+        >>> argument = checkmate._exec_tools.method_arguments("ActionMix(False, R = None)", interface)
         >>> argument['attribute_values'], argument['values']
         ({'R': None}, ('False',))
-        >>> argument = method_arguments("AP('R')", interface)
+        >>> argument = checkmate._exec_tools.method_arguments("AP('R')", interface)
         >>> argument['attribute_values'], argument['values']
         ({'R': None}, ())
     """
