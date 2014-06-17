@@ -26,10 +26,7 @@ def method_unbound(signature, interface):
         False
     """
     basename = get_method_basename(signature)
-    if is_method(signature) and interface.get(basename):
-        return True
-    else:
-        return False
+    return is_method(signature) and interface.get(basename) is not None
 
 
 def get_method_basename(signature):
