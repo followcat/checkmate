@@ -18,7 +18,6 @@ import checkmate.runtime._threading
 
 
 POLLING_TIMEOUT_SEC = 1
-VALIDATE_TIMEOUT_SEC = POLLING_TIMEOUT_SEC
 
 
 class ISut(zope.interface.Interface):
