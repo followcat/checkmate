@@ -96,7 +96,7 @@ class Declarator(object):
         [['NORM']]
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._module.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes_list)
         codes = []
         for _part in codes_list:
             codes.extend(_part)
