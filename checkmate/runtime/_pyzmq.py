@@ -13,6 +13,15 @@ import checkmate.runtime.communication
 POLLING_TIMOUT_MS = 1000
 
 
+class Poller(zmq.Poller):
+    def poll(self, timeout=None):
+        if self.sockets:
+            return super().poll(timeout)
+        if timeout > 0:
+            time.sleep(timeout/1000)
+        return []
+
+
 class Encoder(object):
     def encode(self, exchange):
         return pickle.dumps(exchange)
@@ -29,7 +38,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.port = -1
         self.socket = None
         self.encoder = Encoder()
-        self.poller = zmq.Poller()
+        self.poller = Poller()
         self.zmq_context = zmq.Context.instance()
         self._initport = -1
         self._initport = self.communication.get_initport()
