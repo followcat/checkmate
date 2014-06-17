@@ -57,14 +57,14 @@ def get_parameters_list(parameter_str):
     """
     temp_list = []
     temp_str = ''
-    left_count = 0
+    bracket_count = 0
     for _s in parameter_str.split(','):
         if _s == '':
             continue
-        left_count += _s.count('(')
-        left_count -= _s.count(')')
+        bracket_count += _s.count('(')
+        bracket_count -= _s.count(')')
         temp_str += _s
-        if left_count == 0:
+        if bracket_count == 0:
             temp_list.append(temp_str.strip(' \'"'))
             temp_str = ''
             continue
