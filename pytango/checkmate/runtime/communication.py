@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import shlex
 import random
 import threading
@@ -34,6 +35,7 @@ class Registry(checkmate.runtime._threading.Thread):
         self.pytango_util = PyTango.Util.instance()
 
     def check_for_shutdown(self):
+        time.sleep(1)
         if self.check_for_stop():
             sys.exit(0)
     
