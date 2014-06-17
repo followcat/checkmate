@@ -48,11 +48,12 @@ def get_method_basename(signature):
 
 def get_parameters_list(parameter_str):
     """
+
         >>> import checkmate._exec_tools
         >>> checkmate._exec_tools.get_parameters_list("'AT1'")
         ['AT1']
-        >>> checkmate._exec_tools.get_parameters_list("AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5")
-        ["AR(P = AP('HIGH', 'NORM', 'LOW'))", "R = AR(P = AP('HIGH', 'NORM'), A = A())", 'K = None', 'Value = 5']
+        >>> checkmate._exec_tools.get_parameters_list("R = ActionRequest(['AT2', 'HIGH']), R = ['HIGH']")
+        ["R = ActionRequest(['AT2', 'HIGH'])", "R = ['HIGH']"]
     """
     temp_list = []
     temp_str = ''
@@ -74,8 +75,8 @@ def get_function_parameters_list(signature):
         >>> import checkmate._exec_tools
         >>> checkmate._exec_tools.get_function_parameters_list("A0('AT1')")
         ['AT1']
-        >>> checkmate._exec_tools.get_function_parameters_list("ActionMix(AR(P = AP('HIGH', 'NORM', 'LOW')), R = AR(P = AP('HIGH', 'NORM'), A = A()), K = None, Value = 5)")
-        ["AR(P = AP('HIGH', 'NORM', 'LOW'))", "R = AR(P = AP('HIGH', 'NORM'), A = A())", 'K = None', 'Value = 5']
+        >>> checkmate._exec_tools.get_function_parameters_list("Action(R = ActionRequest(['AT2', 'HIGH']))")
+        ["R = ActionRequest(['AT2', 'HIGH'])"]
     """
     temp_list = []
     found_label = signature.find('(')
