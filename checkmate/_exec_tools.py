@@ -59,6 +59,8 @@ def get_parameters_list(parameter_str):
     temp_str = ''
     left_count = 0
     for _s in parameter_str.split(','):
+        if _s == '':
+            continue
         left_count += _s.count('(')
         left_count -= _s.count(')')
         temp_str += _s
@@ -78,10 +80,7 @@ def get_function_parameters_list(signature):
         >>> checkmate._exec_tools.get_function_parameters_list("Action(R = ActionRequest(['AT2', 'HIGH']))")
         ["R = ActionRequest(['AT2', 'HIGH'])"]
     """
-    temp_list = []
     found_label = signature.find('(')
-    if found_label == -1 or len(signature[found_label:][1:-1]) == 0:
-        return temp_list
     parameter_str = signature[found_label:][1:-1]
     return get_parameters_list(parameter_str)
 
