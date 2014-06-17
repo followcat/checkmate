@@ -4,49 +4,6 @@ import sys
 import inspect
 import importlib
 
-import checkmate._utils
-
-
-def exec_class_definition(partition_type, exec_module, classname, standard_methods, interface_class, codes):
-    module_class_map = {
-        'exchanges':'checkmate.exchange.Exchange',
-        'data_structure':'checkmate.data_structure.DataStructure',
-        'states':'checkmate.state.State'
-    }
-    module_class = module_class_map[partition_type]
-    import_module = 'import ' + '.'.join(module_class.split('.')[:-1])
-
-    run_code = """
-            \nimport zope.interface.interface
-            \n%s\n
-            \nclass %s(zope.interface.Interface):
-            \n    \"\"\"\"\"\"
-            """ % (import_module, interface_class)
-
-    run_code += """
-            \n@zope.interface.implementer(%s)
-            \nclass %s(%s):
-            \n    def __init__(self, *args, **kwargs):
-            \n        super().__init__(*args, **kwargs)
-            """ % (interface_class, classname, module_class)
-
-    if partition_type == 'exchanges':
-        for code in codes:
-            if checkmate._utils.is_method(code):
-                internal_code = checkmate._utils.internal_code(code)
-                run_code += """
-                \ndef %s(*args, **kwargs):
-                \n    return %s('%s', *args, **kwargs)
-                """ % (internal_code, classname, internal_code)
-
-    exec(run_code, exec_module.__dict__)
-    define_class = getattr(exec_module, classname)
-    define_interface = getattr(exec_module, 'I' + classname)
-    for _k, _v in standard_methods.items():
-        setattr(define_class, _k, _v)
-
-    return define_class, define_interface
-
 
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
@@ -56,6 +13,7 @@ def get_module(package_name, module_name, alternative_package=None):
 
     This function can be used to create a module in an alternative package beside the provided one:
         >>> import checkmate._module
+        >>> import sample_app.application
         >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
         <module 'sample_app.component.xxx' from ...
@@ -74,7 +32,7 @@ def get_module(package_name, module_name, alternative_package=None):
     basename = package_name.split('.')[-1]
     _file = sys.modules[package_name].__file__
 
-    if alternative_package == None:
+    if alternative_package is None:
         if len(package_name.split('.')) > 2:
             alternative_package = '.' + package_name.split('.')[-2]
         else:
@@ -102,7 +60,7 @@ def get_module_defining(interface):
     """
     >>> import sample_app.application
     >>> import checkmate._module
-    >>> checkmate._module.get_module_defining(sample_app.data_structure.IAttribute) #doctest: +ELLIPSIS
+    >>> checkmate._module.get_module_defining(sample_app.data_structure.IActionRequest) #doctest: +ELLIPSIS
     <module 'sample_app.data_structure' from ...
     """
     module_name = interface.__module__
@@ -124,8 +82,8 @@ def get_class_implementing(interface):
     """
     >>> import sample_app.application
     >>> import checkmate._module
-    >>> checkmate._module.get_class_implementing(sample_app.data_structure.IAttribute)
-    <class 'sample_app.data_structure.Attribute'>
+    >>> checkmate._module.get_class_implementing(sample_app.data_structure.IActionRequest)
+    <class 'sample_app.data_structure.ActionRequest'>
     """
     module = get_module_defining(interface)
     for _o in list(module.__dict__.values()):

@@ -25,6 +25,7 @@ import org.tango.utils.DevFailedUtils;
 
 import fr.esrf.Tango.*;
 import fr.esrf.TangoApi.DeviceProxy;
+import fr.esrf.TangoApi.DeviceData;
 
 @Device
 public class Component_1 {
@@ -93,8 +94,8 @@ public class Component_1 {
     
     private static Boolean c_state = true;
 
-    @Command(name="AC", inTypeDesc="", outTypeDesc="")
-    public void AC() throws DevFailed {
+    @Command(name="AC", inTypeDesc="param", outTypeDesc="")
+    public void AC(String[] param) throws DevFailed {
         xlogger.entry();
         if (c_state == true) {
             toggle();
@@ -104,15 +105,15 @@ public class Component_1 {
         xlogger.exit();
     }
     
-    @Command(name="AP", inTypeDesc="", outTypeDesc="")
-    public void AP() throws DevFailed {
+    @Command(name="AP", inTypeDesc="param", outTypeDesc="")
+    public void AP(String[] param) throws DevFailed {
         xlogger.entry();
         c2_dev.command_inout("DA");
         xlogger.exit();
     }
     
-    @Command(name="PP", inTypeDesc="", outTypeDesc="")
-    public void PP() throws DevFailed {
+    @Command(name="PP", inTypeDesc="param", outTypeDesc="")
+    public void PP(String[] param) throws DevFailed {
         xlogger.entry();
         if (c_state == false) {
             toggle();

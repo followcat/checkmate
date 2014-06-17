@@ -118,14 +118,14 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
             {'R': 1}
             >>> i = t.incoming[0].factory()
-            >>> (i.action, i.R.P.value)
-            ('AP', 'NORM')
+            >>> (i.action, i.R)
+            ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            {'R': ['AT1', 'NORM']}
         """
         resolved_arguments = {}
         entry = getattr(self, _type)
-        arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+        arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
         for arg in arguments:
             try:
                 resolved_arguments.update(data.resolve(arg, states=states, exchanges=incoming_exchange))
@@ -160,11 +160,11 @@ class Transition(object):
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': ['AT1', 'NORM']}]
             >>> i = c.state_machine.transitions[1].incoming[0].factory(kwargs={'R': 1})
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': ['AT1', 'NORM']}]
         """
         _outgoing_list = []		
         if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
@@ -182,4 +182,3 @@ class Transition(object):
             resolved_arguments = self.resolve_arguments('outgoing', outgoing_exchange, states, _incoming)
             _outgoing_list.append(outgoing_exchange.factory(kwargs=resolved_arguments))
         return _outgoing_list
-

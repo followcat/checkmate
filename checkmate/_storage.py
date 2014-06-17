@@ -3,22 +3,23 @@ import collections
 
 import zope.interface
 
-import checkmate._utils
+import checkmate._exec_tools
 import checkmate._module
 
 
 def _build_resolve_logic(transition, type, data):
     """
-        >>> import sample_app.exchanges
         >>> import sample_app.application
+        >>> import sample_app.exchanges
+        >>> import checkmate._storage
         >>> a = sample_app.application.TestData()
         >>> t = a.components['C1'].state_machine.transitions[1]
-        >>> _build_resolve_logic(t, 'final', t.final[0])
+        >>> checkmate._storage._build_resolve_logic(t, 'final', t.final[0])
         {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
     """
     resolved_arguments = {}
     entry = getattr(transition, type)
-    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys())
+    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -30,7 +31,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition.incoming) != 0):
             if type in ['final', 'outgoing']:
                 for item in transition.incoming:
-                    if arg in list(item.arguments.attribute_values.keys()):
+                    if arg in list(item.arguments['attribute_values'].keys()):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -46,40 +47,35 @@ def _build_resolve_logic(transition, type, data):
 
 def store(type, interface, name, description=None):
     """
-        >>> import sample_app.exchanges
+        >>> import checkmate._storage
         >>> import sample_app.application
+        >>> import sample_app.exchanges
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
-        >>> st = store('data_structure', sample_app.data_structure.IAttribute, "AT('AT1')")
-        >>> attr = st.factory()
-        >>> attr.value
-        'AT1'
-        >>> st = store('data_structure', sample_app.data_structure.IAttribute, 'AT')
-        >>> attr = st.factory()
-
-        >>> st = store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
+        >>> acr = sample_app.data_structure.ActionRequest()
+        >>> acr
+        ['AT1', 'NORM']
+        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
         >>> state = st.factory()
-        >>> state.value
-        [None]
-        >>> st = store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
-        >>> ex = st.factory({'R': 'HIGH'})
-        >>> (ex.action, ex.R) # doctest: +ELLIPSIS
-        ('AP', <sample_app.data_structure.ActionRequest object at ...
+        >>> print(state.value)
+        None
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
+        >>> ex = st.factory(kwargs={'R': 'HIGH'})
+        >>> (ex.action, ex.R)
+        ('AP', 'HIGH')
     """
-    if checkmate._utils.method_unbound(name) or type == 'exchanges':
-        code = checkmate._utils.internal_code(name)
+    if checkmate._exec_tools.method_unbound(name, interface) or type == 'exchanges':
+        code = checkmate._exec_tools.get_method_basename(name)
         if type == 'exchanges':
             try:
-                return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._module.get_module_defining(interface), code))
+                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._module.get_module_defining(interface).__name__+" has no function defined: "+code)
+                raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + code)
         else:
             try:
-                return checkmate._storage.InternalStorage(interface, name, description,
-                        getattr(checkmate._module.get_class_implementing(interface), code))
+                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_class_implementing(interface), code))
             except AttributeError:
-                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__+' has no function defined: '+code)
+                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + code)
     else:
         return checkmate._storage.InternalStorage(interface, name, description)
 
@@ -98,19 +94,19 @@ class Data(object):
             try:
                 code_description = self.full_description[code]
             except:
-                code_description = (None,None,None)
+                code_description = (None, None, None)
             _storage = store(self.type, self.interface, code, code_description)
             _list.append(_storage)
-        if self.codes == None or len(self.codes) == 0:
+        if self.codes is None or len(self.codes) == 0:
             _list.append(store(self.type, self.interface, ''))
         return _list
-        
+
     def get_description(self, item):
         """ Return description corresponding to item """
         for stored_item in list(self.storage):
             if item == stored_item.factory():
                 return stored_item.description
-        return (None,None,None)
+        return (None, None, None)
 
 
 class TransitionData(collections.OrderedDict):
@@ -129,7 +125,7 @@ class TransitionData(collections.OrderedDict):
         self['incoming'] = incoming
         self['final'] = final
         self['outgoing'] = outgoing
-    
+
 
 class PartitionStorage(Data):
     """"""
@@ -156,22 +152,23 @@ class IStorage(zope.interface.Interface):
     def factory(self, args=[], kwargs={}):
         """"""
 
+
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, name ,description, function=None):
+    def __init__(self, interface, name, description, function=None):
         """
             >>> import sample_app.application
-            >>> import sample_app.data_structure
-            >>> a = sample_app.application.TestData()
-            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'P(HIGH)', None, sample_app.data_structure.ActionPriority)
-            >>> st.factory().value
-            'HIGH'
-            >>> st = InternalStorage(sample_app.data_structure.IActionPriority, 'HIGH', None, sample_app.data_structure.ActionPriority)
-            >>> st.factory().value
-            'HIGH'
+            >>> import sample_app.exchanges
+            >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            ((), {'R': None})
+            >>> dir(st.factory())
+            ['R']
+            >>> st.factory().R
+            ['AT1', 'NORM']
         """
-        self.code = checkmate._utils.internal_code(name)
+        self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
         self.interface = interface
         self._class = checkmate._module.get_class_implementing(interface)
@@ -180,53 +177,53 @@ class InternalStorage(object):
         else:
             self.function = function
 
-        self.arguments = checkmate._utils.method_arguments(name)
+        self.arguments = checkmate._exec_tools.method_arguments(name, interface)
         self.resolve_logic = {}
 
     def factory(self, args=[], kwargs={}):
         """
-            >>> 'Q0.append(R)'
-            'Q0.append(R)'
-
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> a = sample_app.application.TestData()
-            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R', None, sample_app.data_structure.ActionRequest)
-            >>> r1 = st.factory(kwargs={'P': 'HIGH'})
-            >>> r1.P.value
-            'HIGH'
-            >>> st = InternalStorage(sample_app.data_structure.IActionRequest, 'R(P=HIGH,A=AT2)', None, sample_app.data_structure.ActionRequest)
-            >>> r = st.factory()
-            >>> (r.P.value, r.A.value)
-            ('HIGH', 'AT2')
-            >>> r = st.factory(kwargs={'P': 'NORM'})
-            >>> (r.P.value, r.A.value)
-            ('NORM', 'AT2')
+            >>> import checkmate._storage
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            ((), {'R': None})
+            >>> dir(st.factory())
+            ['R']
+            >>> st.factory().R
+            ['AT1', 'NORM']
+            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
+            ['AT2', 'HIGH']
+            >>> st = checkmate._storage.InternalStorage(sample_app.component.component_1_states.IState, 'M0(True)', None, sample_app.component.component_1_states.State)
+            >>> st.arguments['values'], st.arguments['attribute_values']
+            (('True',), {})
+            >>> st.factory().value
+            'True'
         """
         def wrapper(func, param, kwparam):
             if type(args) == list and self.interface.implementedBy(self.function):
-                if len(self.arguments.values) > 0 and len(args) > 0:
+                if len(self.arguments['values']) > 0 and len(args) > 0:
                     func = self.function.__init__
                     state = args[0]
-                    value = self.arguments.values[0]
+                    value = self.arguments['values'][0]
                     return func(state, value)
             else:
                 return func(*param, **kwparam)
 
         if len(args) == 0:
-            args = self.arguments.values
+            args = self.arguments['values']
         if len(kwargs) == 0:
-            kwargs = self.arguments.attribute_values
+            kwargs = self.arguments['attribute_values']
         else:
-            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
+            _local_kwargs = copy.deepcopy(self.arguments['attribute_values'])
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
     def resolve(self, arg, states=[], exchanges=[]):
         """
-            >>> import sample_app.exchanges
             >>> import sample_app.application
+            >>> import sample_app.exchanges
             >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
@@ -235,11 +232,11 @@ class InternalStorage(object):
             Traceback (most recent call last):
             ...
             AttributeError
-            >>> t.final[0].resolve('R', exchanges=[inc]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> t.final[0].resolve('R', exchanges=[inc])
+            {'R': ['AT1', 'NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.action, inc.parameters, inc.R)  # doctest: +ELLIPSIS
-            ('AP', {'R': 1}, <sample_app.data_structure.ActionRequest object at ...
+            >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
+            ('AP', 1)
             >>> t.final[0].resolve('R', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
         """
@@ -252,9 +249,6 @@ class InternalStorage(object):
                 raise AttributeError
             else:
                 for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                    if arg in iter(_exchange.parameters):
-                        if _exchange.parameters[arg] is not None:
-                            return {arg: _exchange.parameters[arg]}
                     try:
                         return {arg: getattr(_exchange, arg)}
                     except AttributeError:
@@ -263,10 +257,8 @@ class InternalStorage(object):
         raise AttributeError
 
     def match(self, target_copy):
-        found = False
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             if _target == self.factory():
                 target_copy.remove(_target)
                 break
         return target_copy
-

@@ -19,7 +19,7 @@ class ApplicationMeta(type):
         >>> a.exchange_definition_file
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
-        3
+        1
         """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
@@ -138,8 +138,8 @@ class Application(object):
             >>> c1.states[0].value
             'True'
             >>> t = c1.state_machine.transitions[0]
-            >>> t.initial[0].arguments
-            (('True',), {})
+            >>> t.initial[0].arguments['values']
+            ('True',)
             >>> app.compare_states(t.initial)
             True
             >>> target = t.initial + t.initial

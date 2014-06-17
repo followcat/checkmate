@@ -74,7 +74,7 @@ class Sandbox(object):
             >>> box(sample_app.application.TestData().components['C3'].state_machine.transitions[1])
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': ['AT1', 'NORM']}]
             >>> box.application.components['C3'].states[0].value
             'False'
         """
@@ -140,8 +140,8 @@ class Sandbox(object):
     def update_required_states(self, transition):
         for _initial in transition.initial:
             index = transition.initial.index(_initial)
-            if _initial.code not in [_temp_init.code for _temp_init in self.initial]:
+            if _initial.interface not in [_temp_init.interface for _temp_init in self.initial]:
                 self.initial.append(_initial)
             _final = transition.final[index]
-            if _final.code not in [_temp_final.code for _temp_final in self.final]:
+            if _final.interface not in [_temp_final.interface for _temp_final in self.final]:
                 self.final.append(_final)

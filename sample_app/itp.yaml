@@ -4,44 +4,44 @@ data:
   - Procedures:
       - name: 'Toggle C1 state with AC'
         initial: 
-          - State:                  M0(True)
-          - AnotherState:           Q0()
-          - Acknowledge:            A0(False)
+          - State:              __init__(True)
+          - AnotherState:       __init__()
+          - Acknowledge:        __init__(False)
         incoming:
           - Action:             AC()
         final:
-          - State:              M0(False)
-          - AnotherState:       Q0()
-          - Acknowledge:        A0(True)
+          - State:              __init__(False)
+          - AnotherState:       __init__()
+          - Acknowledge:        __init__(True)
 
   # Always run
   - Procedures:
       - name: 'Append request C1 with AP'
         initial: 
-          - AnotherState:           Q0()
+          - AnotherState:       __init__()
         incoming:
           - Action:             AP(R)
         final:
-          - AnotherState:       Q0(R)
+          - AnotherState:       __init__(R)
 
   - Procedures:
       - name: 'Toggle acknowledge with RL'
         initial: 
-          - Acknowledge:            A0(True)
+          - Acknowledge:        __init__(True)
         incoming:
           - Reaction:           RL()
         final:
-          - Acknowledge:        A0(False)
+          - Acknowledge:        __init__(False)
 
   - Procedures:
       - name: 'Toggle C1 state back (RL)'
         initial: 
-          - State:                  M0(False)
-          - Acknowledge:            A0(False)
-          - AnotherState:           Q0()
+          - State:              __init__(False)
+          - Acknowledge:        __init__(False)
+          - AnotherState:       __init__()
         incoming:
           - Action:             PP()
         final:
-          - State:              M0(True)
-          - Acknowledge:        A0(False)
-          - AnotherState:       Q0(None)
+          - State:              __init__(True)
+          - Acknowledge:        __init__(False)
+          - AnotherState:       __init__(None)
