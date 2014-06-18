@@ -10,8 +10,8 @@ class TransitionTree(checkmate._tree.Tree):
             >>> import checkmate.transition
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'AC', None, sample_app.data_structure.ActionPriority)]
-            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'RE', None, sample_app.data_structure.ActionPriority), checkmate._storage.InternalStorage(sample_app.data_structure.IActionPriority, 'ARE', None, sample_app.data_structure.ActionPriority)]
+            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'AC', None, sample_app.data_structure.ActionRequest)]
+            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'RE', None, sample_app.data_structure.ActionRequest), checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'ARE', None, sample_app.data_structure.ActionRequest)]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
             >>> tree = checkmate.runs.TransitionTree(test_transition)
             >>> (tree.root.incoming[0].code, tree.root.outgoing[0].code, tree.root.outgoing[1].code)
@@ -50,6 +50,19 @@ class TransitionTree(checkmate._tree.Tree):
 
     def match_parent(self, tree):
         """
+            >>> import checkmate._storage
+            >>> import checkmate.transition
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> t1 = a.components['C1'].state_machine.transitions[0]
+            >>> t2 = a.components['C3'].state_machine.transitions[0]  
+            >>> tree1 = checkmate.runs.TransitionTree(t1)
+            >>> tree2 = checkmate.runs.TransitionTree(t2)
+            >>> tree1.match_parent(tree2)
+            True
+            >>> tree2.match_parent(tree1)
+            False
         """
         if len(self.root.outgoing) == 0 or len(tree.root.incoming) == 0:
             return False

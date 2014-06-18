@@ -9,12 +9,22 @@ import checkmate.partition_declarator
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.exchange_module #doctest: +ELLIPSIS
+        <module 'sample_app.exchanges' from ...
+        >>> a.data_structure_module #doctest: +ELLIPSIS
+        <module 'sample_app.data_structure' from ...
+        >>> a.exchange_definition_file
+        'sample_app/exchanges.yaml'
+        >>> len(a.data_structure) #doctest: +ELLIPSIS
+        1
+        """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
-        exec(checkmate._module.get_declare_code('checkmate.exchange.Exchange'), exchange_module.__dict__, exchange_module.__dict__)
         namespace['exchange_module'] = exchange_module
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
-        exec(checkmate._module.get_declare_code('checkmate.data_structure.DataStructure'), data_structure_module.__dict__, data_structure_module.__dict__)
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition_file' not in namespace:
@@ -67,6 +77,12 @@ class Application(object):
 
     def __init__(self):
         """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.name
+        'sample_app'
+        >>> len(a.components)
+        4
         """
         self.name = self.__module__.split('.')[-2]
         self.components = {}
@@ -76,6 +92,12 @@ class Application(object):
                 self.components[_c] = _class(_c, self.service_registry)
 
     def __getattr__(self, name):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.run_collection #doctest: +ELLIPSIS
+        [<checkmate.runs.TransitionTree object at ...
+        """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
             self.run_collection.build_trees_from_application(self)
@@ -84,12 +106,26 @@ class Application(object):
 
     def start(self):
         """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> len(c.states)
+        0
+        >>> a.start()
+        >>> c.states #doctest: +ELLIPSIS
+        [<sample_app.component.component_1_states.State object at ...
         """
         for component in list(self.components.values()):
             component.start()
 
     def sut(self, system_under_test):
-        """"""
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.sut(['C1'])
+        >>> len(a.stubs)
+        3
+        """
         self.stubs = list(self.components.keys())
         self.system_under_test = list(system_under_test)
         for name in system_under_test:
@@ -99,7 +135,26 @@ class Application(object):
                 self.stubs.pop(self.stubs.index(name))
 
     def compare_states(self, target):
-        """"""
+        """Comparison between the states of the application's components and a target.
+
+        This comparison is  taking the length of the target into account.
+        If a matching state is twice in the target, the comparison will fail.
+        This should probably be fixed.
+            >>> import sample_app.application
+            >>> app = sample_app.application.TestData()
+            >>> app.start()
+            >>> c1 = app.components['C1']
+            >>> c1.states[0].value
+            'True'
+            >>> t = c1.state_machine.transitions[0]
+            >>> t.initial[0].arguments['values']
+            ('True',)
+            >>> app.compare_states(t.initial)
+            True
+            >>> target = t.initial + t.initial
+            >>> app.compare_states(target)
+            False
+        """
         if len(target) == 0:
             return True
 

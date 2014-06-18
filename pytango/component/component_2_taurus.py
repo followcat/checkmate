@@ -37,7 +37,8 @@ class Component_2(PyTango.Device_4Impl):
         button.click()
 
     def ButtonAC(self):
-        self.c1_dev.command_inout_asynch('AC')
+        _R = ['AT1', 'NORM']
+        self.c1_dev.command_inout_asynch('AC', _R)
 
     def ButtonRL(self):
         self.c3_dev.command_inout_asynch('RL')
@@ -46,7 +47,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('PP')
 
     def ARE(self):
-        self.c1_dev.command_inout_asynch('AP')
+        _R = ['AT1', 'NORM']
+        self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):
         self.user_dev.VOPA()

@@ -4,8 +4,19 @@ import logging
 import functools
 
 
+PYTANGO_RECEIVE_WAIT_FOR_TIME = 0.001
+PYTANGO_REGISTRY_SLEEP_TIME = 1
+
+VALIDATE_WAITONFALSE_TIME = 0.1
+VALIDATE_WAITONFALSE_LOOP = 100
+
+POLLING_TIMEOUT_MS = 1000
+
+TIMEOUT_THREAD_STOP = 1
+
 class TimeoutManager():
     timeout_value = None
+    processing_benchmark = False
     logger = logging.getLogger('checkmate.timeout_manager.TimeoutManager')
     @staticmethod
     def get_timeout_value():
@@ -15,6 +26,10 @@ class TimeoutManager():
 
     @staticmethod
     def machine_benchmark():
+        if TimeoutManager.processing_benchmark:
+            TimeoutManager.timeout_value = 0
+            return
+        TimeoutManager.processing_benchmark = True
         test_code = timeit.Timer("""
 import zope.interface
 
@@ -56,7 +71,8 @@ sa.internal_client_list[0].send(e)
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
 """)
-        TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1.2, 2)
+        TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1, 2)
+        TimeoutManager.processing_benchmark = False
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
 class SleepAfterCall():
@@ -108,8 +124,8 @@ class WaitOn():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
-    def __init__(self, timeout=1):
-        self.loops = 10
+    def __init__(self, timeout=1, loops = 10):
+        self.loops = loops
         self.timeout = timeout
         self.logger = logging.getLogger('checkmate.timeout_manager.WaitOnException')
 
@@ -122,13 +138,18 @@ class WaitOn():
                 sleep_time = self.timeout * TimeoutManager.get_timeout_value() / self.loops
 
                 for loop_times in range(self.loops):
+                    begin_time = time.time()
                     try:
                         return_value = self.run_rule(func, *args, **kwargs)
                         break
                     except Exception as e:
                         raised_exception = e
-
-                    time.sleep(sleep_time)
+                    run_time = time.time() - begin_time
+                    try:
+                        time.sleep(sleep_time - run_time)
+                    except ValueError:
+                        #sleep_time - run_time < 0
+                        continue
                     self.logger.debug("%s, At %s, Has Been Sleep %f"%(self, func, ((loop_times+1) * sleep_time)))
                 else:
                     self.logger.info("%s, %s, At %s, Use %d Loop, Sleep %f, But Not Enough."%(self, raised_exception, func, loop_times, ((loop_times+1) * sleep_time)))

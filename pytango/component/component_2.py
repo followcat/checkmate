@@ -28,7 +28,8 @@ class Component_2(PyTango.Device_4Impl):
 
     def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
-        self.c1_dev.command_inout_asynch('AP')
+        _R = ['NORM', 'AT1']
+        self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):
         self.user_dev.VOPA()

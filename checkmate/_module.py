@@ -5,24 +5,6 @@ import inspect
 import importlib
 
 
-def get_declare_code(base_class_name):
-    """
-        >>> import checkmate._module
-        >>> checkmate._module.get_declare_code('checkmate.exchange.Exchange') # doctest: +ELLIPSIS
-        '\\n            \\nimport zope.interface.interface\\n            \\nimport checkmate.exchange\\n            \\n\\n            \\ndef declare(name, param):\\n            \\n    return type(name, (checkmate.exchange.Exchange,), param)\\n...
-    """
-    return """
-            \nimport zope.interface.interface
-            \nimport %s
-            \n
-            \ndef declare(name, param):
-            \n    return type(name, (%s,), param)
-            \n
-            \ndef declare_interface(name, param):
-            \n    return zope.interface.interface.InterfaceClass(name, (zope.interface.Interface,), param)
-        """ %('.'.join(base_class_name.split('.')[:-1]), base_class_name)
-
-
 def get_module(package_name, module_name, alternative_package=None):
     """Load existing module or create a new one
 
@@ -50,7 +32,7 @@ def get_module(package_name, module_name, alternative_package=None):
     basename = package_name.split('.')[-1]
     _file = sys.modules[package_name].__file__
 
-    if alternative_package == None:
+    if alternative_package is None:
         if len(package_name.split('.')) > 2:
             alternative_package = '.' + package_name.split('.')[-2]
         else:
@@ -75,6 +57,12 @@ def get_module(package_name, module_name, alternative_package=None):
 
 
 def get_module_defining(interface):
+    """
+    >>> import sample_app.application
+    >>> import checkmate._module
+    >>> checkmate._module.get_module_defining(sample_app.data_structure.IActionRequest) #doctest: +ELLIPSIS
+    <module 'sample_app.data_structure' from ...
+    """
     module_name = interface.__module__
     module = None
     try:
@@ -91,10 +79,14 @@ def get_module_defining(interface):
 
 
 def get_class_implementing(interface):
-    """"""
+    """
+    >>> import sample_app.application
+    >>> import checkmate._module
+    >>> checkmate._module.get_class_implementing(sample_app.data_structure.IActionRequest)
+    <class 'sample_app.data_structure.ActionRequest'>
+    """
     module = get_module_defining(interface)
     for _o in list(module.__dict__.values()):
         if inspect.isclass(_o):
             if interface.implementedBy(_o):
                 return _o
-

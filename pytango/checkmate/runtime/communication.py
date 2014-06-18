@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import shlex
 import random
 import threading
@@ -13,8 +14,15 @@ import checkmate.runtime.communication
 
 def add_device_service(services):
     d = {}
-    for name in services:
-        code = """
+    for _service in services:
+        name = _service[0]
+        args = _service[1]
+        if args is not None:
+            code = """
+def %s(self, param):
+    self.incoming.append(('%s', param))""" %(name, name)
+        else:
+            code = """
 def %s(self):
     self.incoming.append('%s')""" %(name, name)
         exec(code, d)
@@ -22,9 +30,26 @@ def %s(self):
 
 def add_device_interface(services):
     command = {}
-    for name in services:
-        command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
+    for _service in services:
+        name = _service[0]
+        args = _service[1]
+        if args is not None:
+            _type = switch(type(args[0]))
+            command[name] = [[_type], [PyTango.DevVoid]]
+        else:
+            command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     return {'cmd_list': command}
+
+
+def switch(_type=None):
+    try:
+        return {str:      PyTango.DevVarStringArray,
+                int:      PyTango.DevVarLongArray,
+                float:    PyTango.DevVarFloatArray,
+                bool:     PyTango.DevVarBooleanArray,
+               }[_type]
+    except KeyError:
+        return None
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -34,9 +59,10 @@ class Registry(checkmate.runtime._threading.Thread):
         self.pytango_util = PyTango.Util.instance()
 
     def check_for_shutdown(self):
+        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SLEEP_TIME)
         if self.check_for_stop():
             sys.exit(0)
-    
+
     def run(self):
         self.pytango_util.server_init()
         self.event.set()
@@ -77,8 +103,20 @@ class Encoder(object):
     def decode(self, message):
         #cannot be imported before the application is created
         import pytango.checkmate.exchanges
-
-        return getattr(pytango.checkmate.exchanges, message)()
+        func = message
+        attr = None
+        if isinstance(message, tuple):
+            func = message[0]
+            attr = message[1]
+            if type(message[1]) == PyTango.DeviceData:
+                attr = message[1].extract()
+        ex = getattr(pytango.checkmate.exchanges, func)()
+        if attr is not None:
+            try:
+                setattr(ex, dir(ex)[0], attr)
+            except:
+                pass
+        return ex
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -90,6 +128,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
+        self.receive_condition = threading.Condition()
 
     def initialize(self):
         if self.is_server:
@@ -108,15 +147,26 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
-    def receive(self):
+    def check_receive(self):
         try:
-            return self.encoder.decode(self.device_server.incoming.pop(0))
-        except:
-            pass
+            return len(self.device_server.incoming) > 0
+        except AttributeError:
+            return False
+
+    def receive(self):
+        with self.receive_condition:
+            if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_WAIT_FOR_TIME):
+                return self.encoder.decode(self.device_server.incoming.pop(0))
 
     def send(self, destination, exchange):
+        attr = exchange.get_partition_attr()
+        param = None
+        if attr:
+            param_type = switch(type(attr[0]))
+            param = PyTango.DeviceData()
+            param.insert(param_type, attr)
         call = getattr(self.device_client, self.encoder.encode(exchange))
-        call()
+        call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):

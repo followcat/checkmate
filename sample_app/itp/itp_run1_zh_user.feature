@@ -3,11 +3,11 @@
     用户需要能切换C1, C3的状态
 
     场景:通过AC切换C1的状态
-        假如组件的状态C1.State的值是M0(True)
-        而且组件的状态C1.AnotherState的值是Q0()
-        而且组件的状态C3.Acknowledge的值是A0(False)
+        假如组件的状态C1.State的值是__init__(True)
+        而且组件的状态C1.AnotherState的值是__init__()
+        而且组件的状态C3.Acknowledge的值是__init__(False)
         当组件USER发出信号Action PBAC()
-        那么组件的状态C1.State的值变成M0(False)
-        而且组件的状态C1.AnotherState的值变成Q0()
-        而且组件的状态C3.Acknowledge的值变成A0(True)
+        那么组件的状态C1.State的值变成__init__(False)
+        而且组件的状态C1.AnotherState的值变成__init__()
+        而且组件的状态C3.Acknowledge的值变成__init__(True)
 

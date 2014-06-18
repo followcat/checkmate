@@ -9,12 +9,10 @@ import zope.component.interfaces
 import checkmate.logger
 import checkmate.component
 import checkmate.application
+import checkmate.timeout_manager
 import checkmate.runtime.registry
 import checkmate.runtime.component
 import checkmate.runtime.interfaces
-
-
-TIMEOUT_THREAD_STOP = 1
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IRuntime)
@@ -115,7 +113,7 @@ class Runtime(object):
             return len(threading.enumerate()) == 1
         condition = threading.Condition()
         with condition:
-            condition.wait_for(check_threads, TIMEOUT_THREAD_STOP)
+            condition.wait_for(check_threads, checkmate.timeout_manager.TIMEOUT_THREAD_STOP)
 
         checkmate.logger.global_logger.stop_exchange_logger()
 

@@ -9,11 +9,19 @@ import checkmate.partition_declarator
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.exchange_module #doctest: +ELLIPSIS
+        <module 'sample_app.exchanges' from ...
+        >>> c.state_module #doctest: +ELLIPSIS
+        <module 'sample_app.component.component_1_states' from ...
+        """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
-        exec(checkmate._module.get_declare_code('checkmate.state.State'), state_module.__dict__, state_module.__dict__)
         namespace['state_module'] = state_module
 
         path = os.path.dirname(os.path.join(namespace['exchange_definition_file']))
@@ -29,8 +37,8 @@ class ComponentMeta(type):
             outgoings = []
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
-                    if _i.code not in services:
-                        services.append(_i.code)
+                    if _i.code not in [_service[0] for _service in services]:
+                        services.append((_i.code, _i.factory().get_partition_attr()))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
                 for _o in _t.outgoing:
@@ -52,6 +60,16 @@ class IComponent(zope.interface.Interface):
 @zope.interface.implementer(IComponent)
 class Component(object):
     def __init__(self, name, service_registry):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.start()
+        >>> c = a.components['C1']
+        >>> c.name
+        'C1'
+        >>> len(c.states) 
+        2
+        """
         self.states = []
         self.name = name
         self.validation_list = []
@@ -101,6 +119,16 @@ class Component(object):
 
             
     def start(self):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.states
+        []
+        >>> c.start()
+        >>> c.states #doctest: +ELLIPSIS
+        [<sample_app.component.component_1_states.State object at ...
+        """
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory())
         self.service_registry.register(self, self.service_interfaces)
@@ -109,6 +137,22 @@ class Component(object):
         pass
 
     def process(self, exchange):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.start()
+        >>> transition=c.state_machine.transitions[0]
+        >>> transition.is_matching_initial(c.states)
+        True
+        >>> output = transition.process(c.states, [sample_app.exchanges.AC()])
+        >>> output[0].action
+        'RE'
+        >>> output[1].action
+        'ARE'
+        >>> transition.is_matching_initial(c.states)
+        False
+        """
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
             return []

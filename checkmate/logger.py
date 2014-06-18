@@ -5,12 +5,15 @@ import logging
 
 
 def _log_name(output='out'):
+    """"""
     return os.path.join(os.getenv("CHECKMATE_LOG", "."), output + "-" + time.asctime().replace(' ', '-') + ".log")
 
 def runtime_log_name():
+    """"""
     return _log_name('runtime')
 
 def exchange_log_name():
+    """"""
     return _log_name('exchange')
 
 def start_runtime_logger():

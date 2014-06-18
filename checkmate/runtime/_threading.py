@@ -1,11 +1,6 @@
 import threading
 
 
-#Only use this sleep time for thread who do *not* read on connection
-TIMEOUT_LOCK_ACQUIRE = 1
-SLEEP_WHEN_RUN_SEC = 0.05
-
-
 class StopCondition(threading.Condition):
     def __init__(self):
         super(StopCondition, self).__init__()
@@ -40,8 +35,7 @@ class Thread(threading.Thread):
         if check_for_stop() returns True
         """
         with self.stop_condition:
-            output = self.stop_condition.wait_for(self.stop_condition.check, SLEEP_WHEN_RUN_SEC)
-        return output
+            return self.stop_condition.check()
 
     def stop(self):
         """Send stop request
