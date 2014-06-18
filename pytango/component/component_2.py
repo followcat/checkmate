@@ -18,17 +18,19 @@ class Component_2(PyTango.Device_4Impl):
 
     def PBAC(self):
         #Execute asynchronously in case of nested called caused infinitely wait
-        self.c1_dev.command_inout_asynch('AC')
+        _R = ['AT1', 'NORM']
+        self.c1_dev.command_inout_asynch('AC', _R)
 
     def PBRL(self):
         self.c3_dev.command_inout_asynch('RL')
 
     def PBPP(self):
-        self.c1_dev.command_inout_asynch('PP')
+        _R = ['AT1', 'NORM']
+        self.c1_dev.command_inout_asynch('PP', _R)
 
     def ARE(self):
         #Execute asynchronously in case of nested called caused infinitely wait
-        _R = ['NORM', 'AT1']
+        _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):

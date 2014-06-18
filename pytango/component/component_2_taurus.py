@@ -44,7 +44,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c3_dev.command_inout_asynch('RL')
 
     def ButtonPP(self):
-        self.c1_dev.command_inout_asynch('PP')
+        _R = ['AT1', 'NORM']
+        self.c1_dev.command_inout_asynch('PP', _R)
 
     def ARE(self):
         _R = ['AT1', 'NORM']
