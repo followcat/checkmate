@@ -181,7 +181,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def simulate(self, transition):
         return super().simulate(transition)
 
-    @checkmate.timeout_manager.WaitOnFalse(0.1)
+    @checkmate.timeout_manager.WaitOnFalse(0.1, 100)
     def validate(self, transition):
         with self.validation_lock:
             return super().validate(transition)

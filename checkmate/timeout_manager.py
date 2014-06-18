@@ -111,8 +111,8 @@ class WaitOn():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
-    def __init__(self, timeout=1):
-        self.loops = 100
+    def __init__(self, timeout=1, loops = 10):
+        self.loops = loops
         self.timeout = timeout
         self.logger = logging.getLogger('checkmate.timeout_manager.WaitOnException')
 
