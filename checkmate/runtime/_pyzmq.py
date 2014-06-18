@@ -1,3 +1,4 @@
+import time
 import pickle
 import logging
 import threading
@@ -6,11 +7,18 @@ import zmq
 import socket
 
 import checkmate.logger
+import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
-POLLING_TIMOUT_MS = 1000
+class Poller(zmq.Poller):
+    def poll(self, timeout=None):
+        if self.sockets:
+            return super().poll(timeout)
+        if timeout > 0:
+            time.sleep(timeout/1000)
+        return []
 
 
 class Encoder(object):
@@ -29,7 +37,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.port = -1
         self.socket = None
         self.encoder = Encoder()
-        self.poller = zmq.Poller()
+        self.poller = Poller()
         self.zmq_context = zmq.Context.instance()
         self._initport = -1
         self._initport = self.communication.get_initport()
@@ -75,7 +83,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket.send(self.encoder.encode(exchange))
             
     def receive(self):
-        socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+        socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
         if self.socket in socks:
             msg = self.socket.recv()
             if msg != None:
@@ -108,7 +116,7 @@ class Registry(checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
             for sock in iter(socks):
                 if sock == self.socket:
                     self.assign_ports()
