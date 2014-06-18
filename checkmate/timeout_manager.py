@@ -53,7 +53,7 @@ sa.internal_client_list[0].send(e)
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
 """)
-        TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1.2, 2)
+        TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1, 2)
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
 class SleepAfterCall():
