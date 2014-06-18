@@ -6,6 +6,7 @@ import functools
 
 class TimeoutManager():
     timeout_value = None
+    processing_benchmark = False
     logger = logging.getLogger('checkmate.timeout_manager.TimeoutManager')
     @staticmethod
     def get_timeout_value():
@@ -15,6 +16,10 @@ class TimeoutManager():
 
     @staticmethod
     def machine_benchmark():
+        if TimeoutManager.processing_benchmark:
+            TimeoutManager.timeout_value = 0
+            return
+        TimeoutManager.processing_benchmark = True
         test_code = timeit.Timer("""
 import zope.interface
 
@@ -54,6 +59,7 @@ sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.com
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
 """)
         TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1, 2)
+        TimeoutManager.processing_benchmark = False
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
 class SleepAfterCall():
