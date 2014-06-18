@@ -125,13 +125,18 @@ class WaitOn():
                 sleep_time = self.timeout * TimeoutManager.get_timeout_value() / self.loops
 
                 for loop_times in range(self.loops):
+                    begin_time = time.time()
                     try:
                         return_value = self.run_rule(func, *args, **kwargs)
                         break
                     except Exception as e:
                         raised_exception = e
-
-                    time.sleep(sleep_time)
+                    run_time = time.time() - begin_time
+                    try:
+                        time.sleep(sleep_time - run_time)
+                    except ValueError:
+                        #sleep_time - run_time < 0
+                        continue
                     self.logger.debug("%s, At %s, Has Been Sleep %f"%(self, func, ((loop_times+1) * sleep_time)))
                 else:
                     self.logger.info("%s, %s, At %s, Use %d Loop, Sleep %f, But Not Enough."%(self, raised_exception, func, loop_times, ((loop_times+1) * sleep_time)))
