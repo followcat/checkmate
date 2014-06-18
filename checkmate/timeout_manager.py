@@ -106,7 +106,7 @@ class WaitOn():
         0
     """
     def __init__(self, timeout=1):
-        self.loops = 10
+        self.loops = 100
         self.timeout = timeout
         self.logger = logging.getLogger('checkmate.timeout_manager.WaitOnException')
 
