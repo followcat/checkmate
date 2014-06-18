@@ -12,6 +12,8 @@ import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
+SLEEP_WHEN_RUN_SEC = 0.001
+
 def add_device_service(services):
     d = {}
     for name in services:
@@ -92,6 +94,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self.encoder = Encoder()
+        self.receive_condition = threading.Condition()
 
     def initialize(self):
         if self.is_server:
@@ -110,11 +113,16 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
-    def receive(self):
+    def check_receive(self):
         try:
-            return self.encoder.decode(self.device_server.incoming.pop(0))
-        except:
-            pass
+            return len(self.device_server.incoming) > 0
+        except AttributeError:
+            return False
+
+    def receive(self):
+        with self.receive_condition:
+            if self.receive_condition.wait_for(self.check_receive, SLEEP_WHEN_RUN_SEC):
+                return self.encoder.decode(self.device_server.incoming.pop(0))
 
     def send(self, destination, exchange):
         call = getattr(self.device_client, self.encoder.encode(exchange))
