@@ -4,6 +4,16 @@ import logging
 import functools
 
 
+PYTANGO_RECEIVE_WAIT_FOR_TIME = 0.001
+PYTANGO_REGISTRY_SLEEP_TIME = 1
+
+VALIDATE_WAITONFALSE_TIME = 0.1
+VALIDATE_WAITONFALSE_LOOP = 100
+
+POLLING_TIMEOUT_MS = 1000
+
+TIMEOUT_THREAD_STOP = 1
+
 class TimeoutManager():
     timeout_value = None
     processing_benchmark = False

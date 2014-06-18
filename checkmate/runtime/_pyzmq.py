@@ -7,11 +7,9 @@ import zmq
 import socket
 
 import checkmate.logger
+import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
-
-
-POLLING_TIMOUT_MS = 1000
 
 
 class Poller(zmq.Poller):
@@ -85,7 +83,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket.send(self.encoder.encode(exchange))
             
     def receive(self):
-        socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+        socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
         if self.socket in socks:
             msg = self.socket.recv()
             if msg != None:
@@ -118,7 +116,7 @@ class Registry(checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            socks = dict(self.poller.poll(POLLING_TIMOUT_MS))
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
             for sock in iter(socks):
                 if sock == self.socket:
                     self.assign_ports()

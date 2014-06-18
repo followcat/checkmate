@@ -12,8 +12,6 @@ import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
-SLEEP_WHEN_RUN_SEC = 0.001
-
 def add_device_service(services):
     d = {}
     for name in services:
@@ -37,7 +35,7 @@ class Registry(checkmate.runtime._threading.Thread):
         self.pytango_util = PyTango.Util.instance()
 
     def check_for_shutdown(self):
-        time.sleep(1)
+        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SLEEP_TIME)
         if self.check_for_stop():
             sys.exit(0)
     
@@ -121,7 +119,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def receive(self):
         with self.receive_condition:
-            if self.receive_condition.wait_for(self.check_receive, SLEEP_WHEN_RUN_SEC):
+            if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_WAIT_FOR_TIME):
                 return self.encoder.decode(self.device_server.incoming.pop(0))
 
     def send(self, destination, exchange):
