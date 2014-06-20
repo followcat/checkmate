@@ -124,7 +124,7 @@ class Checkmate(nose.plugins.Plugin):
     def prepareTestRunner(self, runner):
         """Replace test runner with TestRunner.
         """
-        TestRunner.loop_runs = self.loop_runs
+        TestRunner.plugin_config = dict(self.__dict__)
 
     def wantClass(self, cls):
         """Select only classes implementing checkmate.runtime.interfaces.IProcedure"""
@@ -168,29 +168,9 @@ class Checkmate(nose.plugins.Plugin):
                               address=nose.util.test_address(generator))
         return self.suiteClass(generate, context=generator, can_split=False)
 
-    def begin(self):
-        """Start the system under test"""
-        if 'pytango' in self.application_class.__module__ and len(self.components) > 1:
-            raise Exception("'pytango' application is not supported with more than one components set")
-        self.runtimes = []
-        for sut in self.components:
-            runtime = checkmate.runtime._runtime.Runtime(self.application_class, self.communication_class, threaded=True)
-            runtime.setup_environment(sut)
-            runtime.start_test()
-            self.runtimes.append(runtime)
-        time.sleep(3)
-        TestRunner.runtime_list = self.runtimes
-    
-        
-    def finalize(self, result):
-        """"""
-        for runtime in self.runtimes:
-            runtime.stop_test()
-
 
 class TestRunner(nose.core.TextTestRunner):
-    loop_runs = 1
-    components = ""
+    plugin_config = {}
 
     def run(self, test):
         """Overrides to provide plugin hooks and defer all output to
@@ -209,14 +189,23 @@ class TestRunner(nose.core.TextTestRunner):
         start = time.time()
 
         #specific code
-        for index, _runtime in enumerate(self.runtime_list):
-            if len(self.runtime_list) > 1:
+        components = self.plugin_config['components']
+        application_class = self.plugin_config['application_class']
+        if 'pytango' in application_class.__module__ and len(components) > 1:
+            raise Exception("'pytango' application is not supported with more than one components set")
+        for index, _sut in enumerate(components):
+            runtime = checkmate.runtime._runtime.Runtime(application_class, self.plugin_config['communication_class'], threaded=True)
+            runtime.setup_environment(_sut)
+            runtime.start_test()
+            time.sleep(3)
+            setattr(test.config, 'runtime', runtime)
+            if len(components) > 1:
                 #do some dirty print
-                result.stream.writeln('sut=' + ','.join(_runtime.application.system_under_test) + ':')
-            setattr(test.config, 'runtime', _runtime)
-            for _loop in range(self.loop_runs):
+                result.stream.writeln('sut=' + ','.join(_sut) + ':')
+            for _loop in range(self.plugin_config['loop_runs']):
                 test(result)
-            if index < len(self.runtime_list)-1:
+            runtime.stop_test()
+            if index < len(components)-1:
                 result.stream.writeln()
 
         #from father class code

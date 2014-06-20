@@ -30,8 +30,6 @@ class Runtime(object):
 
         self.communication_list['default'] = communication()
 
-        if len(self.application.communication_list) == 0:
-            self.communication_list[''] = communication()
         for _c in self.application.communication_list:
             _communication = _c()
             self.communication_list[''] = _communication

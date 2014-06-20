@@ -35,8 +35,9 @@ def _compatible_skip_test(procedure, message):
 
     But you get the wrong output (because it takes the first transition matching
     the generic_incoming (here this is transition index 1)
+    *** this issue no longer exist after USER added***
         >>> _incoming.value
-        'AC'
+        'RL'
 
     You better use, the direct simulate() function with expected output:
         >>> _incoming = c2.simulate(transition)[0]
@@ -117,6 +118,8 @@ class Procedure(object):
         self.system_under_test = runtime.application.system_under_test
         if not self.is_setup and not self._components_match_sut(self.system_under_test):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
+        if self.transitions.root.owner in self.system_under_test:
+            return _compatible_skip_test(self, "SUT do NOT simulate")
         if hasattr(self, 'initial'):
             if not self.application.compare_states(self.initial):
                 self.transform_to_initial()

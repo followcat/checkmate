@@ -43,6 +43,7 @@ import checkmate.runtime.component
 
 @zope.interface.implementer(checkmate.component.IComponent)
 class Comp(checkmate.component.Component):
+    name = ''
     service_interfaces = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
@@ -53,6 +54,8 @@ class App(checkmate.application.Application):
         super().__init__()
         self.communication_list = (checkmate.runtime._pyzmq.Communication,)
         self.components = {'a': Comp('a', self.service_registry), 'b': Comp('b', self.service_registry)}
+        self.components['a'].connecting_components = ['b']
+        self.components['b'].connecting_components = ['a']
 
 runtime = checkmate.runtime._runtime.Runtime(App, checkmate.runtime._pyzmq.Communication, True)
 

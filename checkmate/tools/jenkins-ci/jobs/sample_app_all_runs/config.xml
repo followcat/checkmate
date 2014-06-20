@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Sample application ITP with SUT=C1,C3</description>
+  <description>Sample application ITP with Components=C1,C2,C3</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -13,9 +13,8 @@
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command>sleep 5
-cd $CHECKMATE_HOME
-python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --sut=C1,C3 --runs=100 --random checkmate/ sample_app/</command>
+      <command>cd $CHECKMATE_HOME
+python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --components=C1,C2,C3 --runs=100 --random checkmate/ sample_app/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>

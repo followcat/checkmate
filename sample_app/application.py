@@ -11,6 +11,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
     component_classes = {('C1',): ('Component_1', {}),
                          ('C2',): ('Component_2', {}),
                          ('C3',): ('Component_3', {}),
+                         ('USER',): ('User', {}),
                           }
 
     communication_list = (checkmate.runtime._pyzmq.Communication,)

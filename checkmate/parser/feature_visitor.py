@@ -51,7 +51,7 @@ def new_load_features(paths, language):
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('en'))
         >>> len(features)
-        4
+        7
         >>> feature_names = []
         >>> for _f in features:
         ...     feature_names.append(_f.name)
@@ -60,7 +60,7 @@ def new_load_features(paths, language):
         >>> features = checkmate.parser.feature_visitor.new_load_features([itp_paths],
         ...                     fresher.core.load_language('zh-CN'))
         >>> len(features)
-        4
+        7
         >>> feature_names.clear()
         >>> for _f in features:
         ...     feature_names.append(_f.name)
@@ -136,7 +136,7 @@ def get_array_list(paths, localization_path=None):
         >>> itp_path = os.path.join('sample_app', 'itp')
         >>> itp_absolute_path = os.path.join(os.getenv('CHECKMATE_HOME'), itp_path)
         >>> len(checkmate.parser.feature_visitor.get_array_list([itp_absolute_path]))
-        8
+        14
     """
     if localization_path is None:
         localization_path = paths[0]
@@ -168,7 +168,7 @@ def get_transitions_from_features(exchange_module, state_modules, path=None):
             ...     state_modules.append(a.components[name].state_module)
             >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
             >>> len(transitions)
-            8
+            14
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate.transition.Transition object at ...
         """

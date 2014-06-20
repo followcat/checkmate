@@ -34,8 +34,8 @@ def get_path_from_pathfinder(application, target):
         >>> setup = checkmate.runtime.pathfinder.get_path_from_pathfinder(app, proc.initial)
         >>> for _s in setup:
         ...     print(_s.transitions.root.outgoing[0].code, app.compare_states(_s.initial))
-        RL True
-        PP False
+        PBRL True
+        PBPP False
     """
     path = []
     for _run, _app in _find_runs(application, target).items():
@@ -54,8 +54,8 @@ def _find_runs(application, target):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> runs = a.run_collection
-        >>> ac_run = [r for r in runs if r.root.outgoing[0].code == 'AC'][0]
-        >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'RL'][0]
+        >>> ac_run = [r for r in runs if r.root.outgoing[0].code == 'PBAC'][0]
+        >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'PBRL'][0]
 
         >>> box = checkmate.sandbox.Sandbox(a)
         >>> box(ac_run.root)
@@ -72,10 +72,6 @@ def _find_runs(application, target):
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
         1
-        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[2][0].initial))
-        2
-        >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[3][0].initial))
-        3
 
     """
     used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
