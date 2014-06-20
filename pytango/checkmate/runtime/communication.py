@@ -49,7 +49,7 @@ def switch(_type=None):
                 bool:     PyTango.DevVarBooleanArray,
                }[_type]
     except KeyError:
-        return None
+        return PyTango.DevVoid
 
 
 class Registry(checkmate.runtime._threading.Thread):
