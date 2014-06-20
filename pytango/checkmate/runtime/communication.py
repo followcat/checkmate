@@ -19,12 +19,12 @@ def add_device_service(services):
         args = _service[1]
         if args is not None:
             code = """
-def %s(self, param):
-    self.incoming.append(('%s', param))""" %(name, name)
+                \ndef %s(self, param):
+                \n    self.incoming.append(('%s', param))""" %(name, name)
         else:
             code = """
-def %s(self):
-    self.incoming.append('%s')""" %(name, name)
+                \ndef %s(self):
+                \n    self.incoming.append('%s')""" %(name, name)
         exec(code, d)
     return d
 
