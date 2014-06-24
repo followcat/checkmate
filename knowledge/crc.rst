@@ -213,16 +213,18 @@ checkmate.runtime.component.Stub
 +-----------------------------------------------------------+----------------------------------------+
 
 checkmate.runtime.component.ThreadedComponent
-+----------------------------------------------------------------------------------------+
-| ThreadedComponent                                                                      |
-+-----------------------------------------------+----------------------------------------+
-| create different type of threadedclients      | checkmate.runtime._threading.Thread    |
-| checkmate.runtime._pyzmq.connector            | checkmate.runtime.component.component  |
-| keep trying to receive exchange from client   | checkmate.runtime._pyzmq.Connector     |
-| process exchange once received                | ThreadedClient                         |
-| deliver output exchanges via clients          | zmq.Context                            |
-|                                               | zmq.Poller                             |
-+-----------------------------------------------+----------------------------------------+
++----------------------------------------------------------------------------------------------------+
+| ThreadedComponent                                                                                  |
++----------------------------------------------------+-----------------------------------------------+
+| High availability thread                           | checkmate.runtime._threading.Thread           |
+| Process exchange and perform requests in timely way| checkmate.runtime.component.Component         |
+| Make all Component's Communications operational    | checkmate.runtime.communication.Communication |
+| create different type of threadedclients           | checkmate.runtime._pyzmq.Connector            |
+| Open socket for communication with ThreadedClient  | checkmate.runtime.client.ThreadedClient       |
+| keep trying to receive exchange from client        | zmq.Context                                   |
+| Forward exchange and request to Component          | zmq.Poller                                    |
+| Forward Component output exchanges to clients      |                                               |
++----------------------------------------------------+-----------------------------------------------+
 
 checkmate.runtime.component.ThreadedSut
 +---------------------------------------------------------------------------+
@@ -251,28 +253,34 @@ checkmate.runtime.client.Client
 +-----------------------+--------------+
 
 checkmate.runtime.client.ThreadedClient
-+-----------------------------------------------------------------------------------------+
-| ThreadedClient                                                                          |
-+---------------------------------------------------+-------------------------------------+
-| communicate with other components with connection | checkmate.runtime._threading.Thread |
-| commnnicate with owner component with pyzmq       | zmq.Context                         |
-| receive exchange from other component's client    |                                     |
-| foward exchange to owner component once received  |                                     |
-+---------------------------------------------------+-------------------------------------+
-
-checkmate.runtime.communication.Connector
-+--------------------------------------+
-| Connector                            |
-+-----------------------+--------------+
-| base class definition |              |
-+-----------------------+--------------+
++----------------------------------------------------------------------------------------------------+
+| ThreadedClient                                                                                     |
++----------------------------------------------------+-----------------------------------------------+
+| Heavy duty thread                                  | checkmate.runtime._threading.Thread           |
+| Must be sure to sleep is no processing needed      | checkmate.runtime.communication.Connector     |
+| Bind the socket opened by the ThreadedComponent    | zmq.Context                                   |
+| Listen to the Connector and forward exchange to    |                                               |
+|   ThreadedComponent                                |                                               |
+| Interface to Connector to support sending exchange |                                               |
++----------------------------------------------------+-----------------------------------------------+
 
 checkmate.runtime.communication.Communication
-+--------------------------------------+
-| Communication                        |  
-+-----------------------+--------------+
-| base class definition |              |
-+-----------------------+--------------+
++----------------------------------------------------------------------------------------------------+
+| Communication                                                                                      |
++----------------------------------------------------+-----------------------------------------------+
+| Initialize and start all resources to implement    | checkmate.runtime.communication.Connector     |
+|   the specified protocol                           |                                               |
+| Stop and cleanup all resources for protocol        |                                               |
++----------------------------------------------------+-----------------------------------------------+
+
+checkmate.runtime.communication.Connector
++----------------------------------------------------------------------------------------------------+
+| Connector                                                                                          |
++----------------------------------------------------+-----------------------------------------------+
+| Implement the communication protocol               |                                               |
+| Send outgoing exchange based on the protocol       |                                               |
+| Read incoming exchange based on the protocol       |                                               |
++----------------------------------------------------+-----------------------------------------------+
 
 checkmate.runtime._pyzmq.Communication
 +----------------------------------------------------------------------+
