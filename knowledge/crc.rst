@@ -186,7 +186,7 @@ checkmate.parser.dtvisitor.DocTreeVisitor
 | extract data by visiting defferent part of a document |                                   |
 +-------------------------------------------------------+-----------------------------------+
 
-checkemate.runtime.component.Component
+checkmate.runtime.component.Component
 +-------------------------------------------------------------------------------------------+
 | Component                                                                                 |
 +-------------------------------------------------------+-----------------------------------+
@@ -196,93 +196,93 @@ checkemate.runtime.component.Component
 | process/simulate exchange and deliver the output      |                                   |
 +-------------------------------------------------------+-----------------------------------+
 
-checkemate.runtime.component.Sut
+checkmate.runtime.component.Sut
 +-------------------------------------------------------------------------------------------+
 | Sut                                                                                       |
 +--------------------------------------------------+----------------------------------------+
-| implment checkmate.component.Component utilities | checkemate.runtime.component.Component |
-| deliver process output via internal client       | checkemate.runtime.component.Component |
+| implment checkmate.component.Component utilities | checkmate.runtime.component.Component  |
+| deliver process output via internal client       |                                        |
 +--------------------------------------------------+----------------------------------------+
 
-checkemate.runtime.component.Stub
+checkmate.runtime.component.Stub
 +----------------------------------------------------------------------------------------------------+
 | Stub                                                                                               | 
 +-----------------------------------------------------------+----------------------------------------+
-| deliver output via both internal/external client          | checkemate.runtime.component.Component |
+| deliver output via both internal/external client          | checkmate.runtime.component.Component  |
 | validate whether its internal client received exchange    |                                        |
 +-----------------------------------------------------------+----------------------------------------+
 
-checkemate.runtime.component.ThreadedComponent
+checkmate.runtime.component.ThreadedComponent
 +----------------------------------------------------------------------------------------+
 | ThreadedComponent                                                                      |
 +-----------------------------------------------+----------------------------------------+
 | create different type of threadedclients      | checkmate.runtime._threading.Thread    |
-| checkmate.runtime._pyzmq.connector            | checkemate.runtime.component.component |
-| keep trying to recieve exchange from client   | checkmate.runtime._pyzmq.Connector     |
-| process exchange once recieved                | ThreadedClient                         |
+| checkmate.runtime._pyzmq.connector            | checkmate.runtime.component.component  |
+| keep trying to receive exchange from client   | checkmate.runtime._pyzmq.Connector     |
+| process exchange once received                | ThreadedClient                         |
 | deliver output exchanges via clients          | zmq.Context                            |
 |                                               | zmq.Poller                             |
 +-----------------------------------------------+----------------------------------------+
 
-checkemate.runtime.component.ThreadedSut
+checkmate.runtime.component.ThreadedSut
 +---------------------------------------------------------------------------+
 | ThreadedSut                                                               |
 +---------------------------------------+-----------------------------------+
 | implement Sut utilities               | ThreadedComponent                 |
-| implement ThreadedComponent utilities | checkemate.runtime.component.Sut  |
+| implement ThreadedComponent utilities | checkmate.runtime.component.Sut   |
 +---------------------------------------+-----------------------------------+
 
-checkemate.runtime.component.ThreadedStub
+checkmate.runtime.component.ThreadedStub
 +----------------------------------------------------------------------------+
 | ThreadedStub                                                               |                       
 +---------------------------------------+------------------------------------+
 | implement Stub utilities              | ThreadedComponent                  |
-| implement ThreadedComponent utilities | checkemate.runtime.component.Stub  |
+| implement ThreadedComponent utilities | checkmate.runtime.component.Stub   |
 |                                       | SleepAfterCall                     |
 |                                       | WaitOnFalse                        |
 |                                       | Lock                               |
 +---------------------------------------+------------------------------------+
 
-checkemate.runtime.client.Client
+checkmate.runtime.client.Client
 +--------------------------------------+
 | Client                               | 
 +-----------------------+--------------+
 | base class definition |              |
 +-----------------------+--------------+
 
-checkemate.runtime.client.ThreadedClient
+checkmate.runtime.client.ThreadedClient
 +-----------------------------------------------------------------------------------------+
 | ThreadedClient                                                                          |
 +---------------------------------------------------+-------------------------------------+
 | communicate with other components with connection | checkmate.runtime._threading.Thread |
 | commnnicate with owner component with pyzmq       | zmq.Context                         |
-| recieve exchange from other component's client    |                                     |
-| foward exchange to owner component once recieved  |                                     |
+| receive exchange from other component's client    |                                     |
+| foward exchange to owner component once received  |                                     |
 +---------------------------------------------------+-------------------------------------+
 
-checkemate.runtime.communication.Connector
+checkmate.runtime.communication.Connector
 +--------------------------------------+
 | Connector                            |
 +-----------------------+--------------+
 | base class definition |              |
 +-----------------------+--------------+
 
-checkemate.runtime.communication.Communication
+checkmate.runtime.communication.Communication
 +--------------------------------------+
 | Communication                        |  
 +-----------------------+--------------+
 | base class definition |              |
 +-----------------------+--------------+
 
-checkemate.runtime._pyzmq.Communication
+checkmate.runtime._pyzmq.Communication
 +----------------------------------------------------------------------+
 | Communication                                                        |
 +--------------------------------+-------------------------------------+
-| define a communication type    | checkmate.runtime._threading.Thread |
-| to be used by connectionstry   | zmq.Context                         |
+| define a communication type    | checkmate.runtime._pyzmq.Registry   |
+| to be used by connection       |                                     |
 +--------------------------------+-------------------------------------+
 
-checkemate.runtime._pyzmq.Registry
+checkmate.runtime._pyzmq.Registry
 +---------------------------------------------------------------------+
 | Registry                                                            |
 +-------------------------------+-------------------------------------+
@@ -292,29 +292,29 @@ checkemate.runtime._pyzmq.Registry
 |                               | socket.socket                       |
 +-------------------------------+-------------------------------------+
 
-checkemate.runtime._pyzmq.Connector
+checkmate.runtime._pyzmq.Connector
 +-------------------------------------------------------------------------------------+
 | Connector                                                                           |                  
 +-----------------------------------------+-------------------------------------------+
 | implement communication type to set up  | checkmate.runtime.communication.Connector |
-| connection for message send/recieve     | checkemate.runtime._pyzmq.Communication   |
-|                                         | checkemate.runtime._pyzmq.Encoder         |
+| connection for message send/receive     | checkmate.runtime._pyzmq.Communication    |
+|                                         | checkmate.runtime._pyzmq.Encoder          |
 |                                         | zmq.Poller                                |
 |                                         | zmq.Context                               |
 +-----------------------------------------+-------------------------------------------+
 
-checkemate.runtime._pyzmq.Encoder
+checkmate.runtime._pyzmq.Encoder
 +-----------------------------------------------+
 | Encoder                                       |
 +-------------------------------------+---------+
 | use pickle to de/serialize message  | pickle  |
 +-------------------------------------+---------+
 
-checkemate.runtime._runtime.Runtime
+checkmate.runtime._runtime.Runtime
 +-------------------------------------------------------------------------------------+
 | Runtime                                                                             |
 +-----------------------------------------------+-------------------------------------+
-| define the runtime enviroment                 |                                     |
+| define the runtime environment                |                                     |
 | to run checkmate test                         |                                     |
 | adapt different application and communication |                                     |
 +-----------------------------------------------+-------------------------------------+

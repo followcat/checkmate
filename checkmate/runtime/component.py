@@ -33,24 +33,23 @@ class Component(object):
         self.context = component
         self.internal_client_list = []
         self.external_client_list = []
-        self.server_list = []
         self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
     def setup(self, runtime):
         self.runtime = runtime
 
     def initialize(self):
-        for _client in self.external_client_list + self.server_list + self.internal_client_list:
+        for _client in self.external_client_list + self.internal_client_list:
             _client.initialize()
 
     def start(self):
         self.context.start()
-        for _client in self.external_client_list + self.server_list + self.internal_client_list:
+        for _client in self.external_client_list + self.internal_client_list:
             _client.start()
 
     def stop(self):
         self.context.stop()
-        for _client in self.external_client_list + self.server_list + self.internal_client_list:
+        for _client in self.external_client_list + self.internal_client_list:
             _client.stop()
 
     def process(self, exchanges):
@@ -132,7 +131,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 for connector_factory in self.context.connector_list:
                     _communication = runtime.communication_list['']
                     connector = connector_factory(self.context, _communication, is_server=True)
-                    self.server_list.append(self._create_client(self.context, connector))
+                    self.external_client_list.append(self._create_client(self.context, connector))
                 for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                     if not hasattr(_application.components[_component], 'connector_list'):
                         continue
