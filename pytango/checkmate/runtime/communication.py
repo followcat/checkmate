@@ -100,9 +100,8 @@ class Encoder(object):
     def encode(self, exchange):
         return exchange.action
 
-    def decode(self, message):
+    def decode(self, message, exchange_module):
         #cannot be imported before the application is created
-        import pytango.checkmate.exchanges
         func = message
         attr = None
         if isinstance(message, tuple):
@@ -110,7 +109,7 @@ class Encoder(object):
             attr = message[1]
             if type(message[1]) == PyTango.DeviceData:
                 attr = message[1].extract()
-        ex = getattr(pytango.checkmate.exchanges, func)()
+        ex = getattr(exchange_module, func)()
         if attr is not None:
             try:
                 setattr(ex, dir(ex)[0], attr)
@@ -157,7 +156,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def receive(self):
         with self.receive_condition:
             if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_WAIT_FOR_TIME):
-                return self.encoder.decode(self.device_server.incoming.pop(0))
+                return self.encoder.decode(self.device_server.incoming.pop(0), self.exchange_module)
 
     def send(self, destination, exchange):
         attr = exchange.get_partition_attr()
