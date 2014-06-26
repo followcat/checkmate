@@ -65,7 +65,7 @@ sa = runtime.runtime_components['a']
 sb = runtime.runtime_components['b']
 runtime.start_test()
 
-e = checkmate.exchange.Exchange()
+e = checkmate.exchange.Exchange('Exchange')
 e.origin_destination('a', 'b')
 sa.internal_client_list[0].send(e)
 #stop everything except the logger

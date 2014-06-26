@@ -32,10 +32,7 @@ class Encoder(object):
 
     def decode(self, message, exchange_module):
         load_dict = pickle.loads(message)
-        try:
-            exchange = getattr(exchange_module, load_dict['action'])()
-        except TypeError:
-            exchange = checkmate.exchange.Exchange()
+        exchange = getattr(exchange_module, load_dict['action'])()
         exchange.__dict__.update(load_dict['__dict__'])
         return exchange
 
