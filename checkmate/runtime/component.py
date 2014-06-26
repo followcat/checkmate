@@ -117,28 +117,28 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
             if self.reading_internal_client:
-                connector = connector_factory(self.context, _communication, is_server=True)
+                connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
                 self.internal_client_list = [self._create_client(self.context, connector, reading_client=self.reading_internal_client),]
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                 if not hasattr(_application.components[_component], 'connector_list'):
                     continue
                 if _component in self.runtime.application.system_under_test:
                     for _c in _application.components[_component].connector_list:
-                        connector = connector_factory(_application.components[_component], _communication, is_server=False)
+                        connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
                         self.internal_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_internal_client))
 
         try:
             if self.using_external_client:
                 for connector_factory in self.context.connector_list:
                     _communication = runtime.communication_list['']
-                    connector = connector_factory(self.context, _communication, is_server=True)
+                    connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
                     self.server_list.append(self._create_client(self.context, connector))
                 for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                     if not hasattr(_application.components[_component], 'connector_list'):
                         continue
                     _communication = runtime.communication_list['']
                     for connector_factory in _application.components[_component].connector_list:
-                        connector = connector_factory(_application.components[_component], _communication, is_server=False)
+                        connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
                         self.external_client_list.append(self._create_client(_application.components[_component], connector, reading_client=self.reading_external_client))
         except AttributeError:
             pass

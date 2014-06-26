@@ -57,6 +57,10 @@ class App(checkmate.application.Application):
         self.components['a'].connecting_components = ['b']
         self.components['b'].connecting_components = ['a']
 
+    def __getattr__(self, name):
+        if name == 'exchange_module':
+            return None
+
 runtime = checkmate.runtime._runtime.Runtime(App, checkmate.runtime._pyzmq.Communication, True)
 
 runtime.setup_environment(['b'])

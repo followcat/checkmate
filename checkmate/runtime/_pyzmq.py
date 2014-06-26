@@ -31,9 +31,10 @@ class Encoder(object):
 
 class Connector(checkmate.runtime.communication.Connector):
     """"""
-    def __init__(self, component, communication=None, is_server=False):
+    def __init__(self, component, exchange_module, communication=None, is_server=False):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server)
         self._name = component.name
+        self.exchange_module = exchange_module
         self.port = -1
         self.socket = None
         self.encoder = Encoder()
