@@ -145,8 +145,13 @@ class Connector(checkmate.runtime.communication.Connector):
                 return self.encoder.decode(self.device_server.incoming.pop(0), self.exchange_module)
 
     def send(self, destination, exchange):
-        call = getattr(self.device_client, exchange.action)
-        param = exchange.get_partition_attr()
+        attr = exchange.get_partition_attr()
+        param = None
+        if attr:
+            param_type = switch(type(attr[0]))
+            param = PyTango.DeviceData()
+            param.insert(param_type, attr)
+        call = getattr(self.device_client, self.encoder.encode(exchange))
         call(param)
 
 
