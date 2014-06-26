@@ -7,6 +7,7 @@ import zmq
 import socket
 
 import checkmate.logger
+import checkmate.exchange
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
@@ -23,10 +24,20 @@ class Poller(zmq.Poller):
 
 class Encoder(object):
     def encode(self, exchange):
-        return pickle.dumps(exchange)
+        dump_dict = {
+        'action':exchange.action, 
+        '__dict__':exchange.__reduce__()[2]
+        }
+        return pickle.dumps(dump_dict)
 
-    def decode(self, message):
-        return pickle.loads(message)
+    def decode(self, message, exchange_module):
+        load_dict = pickle.loads(message)
+        try:
+            exchange = getattr(exchange_module, load_dict['action'])()
+        except TypeError:
+            exchange = checkmate.exchange.Exchange()
+        exchange.__dict__.update(load_dict['__dict__'])
+        return exchange
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -88,7 +99,7 @@ class Connector(checkmate.runtime.communication.Connector):
         if self.socket in socks:
             msg = self.socket.recv()
             if msg != None:
-                _exchange = self.encoder.decode(msg)
+                _exchange = self.encoder.decode(msg, self.exchange_module)
                 return _exchange
 
 
