@@ -50,16 +50,13 @@ class Comp(checkmate.component.Component):
 
 class App(checkmate.application.Application):
     __module__ = 'timeout_manager.test.App'
+    exchange_module = checkmate.exchange
     def __init__(self):
         super().__init__()
         self.communication_list = (checkmate.runtime._pyzmq.Communication,)
         self.components = {'a': Comp('a', self.service_registry), 'b': Comp('b', self.service_registry)}
         self.components['a'].connecting_components = ['b']
         self.components['b'].connecting_components = ['a']
-
-    def __getattr__(self, name):
-        if name == 'exchange_module':
-            return None
 
 runtime = checkmate.runtime._runtime.Runtime(App, checkmate.runtime._pyzmq.Communication, True)
 
