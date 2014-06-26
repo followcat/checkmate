@@ -6,7 +6,6 @@ import checkmate.runtime.procedure
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
-import sample_app.application
 
 
 def build_procedure(sandbox):
@@ -39,7 +38,7 @@ def get_transitions_from_test(application):
         transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return transitions
 
-def TestProcedureInitialGenerator(application_class=sample_app.application.TestData, transition_list=None):
+def TestProcedureInitialGenerator(application_class, transition_list=None):
     """
         >>> import time
         >>> import checkmate.runtime._pyzmq
@@ -84,7 +83,7 @@ def TestProcedureInitialGenerator(application_class=sample_app.application.TestD
         box(_transition, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
-def TestProcedureFeaturesGenerator(application_class=sample_app.application.TestData):
+def TestProcedureFeaturesGenerator(application_class):
     """
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor
@@ -136,7 +135,7 @@ def TestProcedureFeaturesGenerator(application_class=sample_app.application.Test
         box(_transition, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
-def TestProcedureRunsGenerator(application_class=sample_app.application.TestData):
+def TestProcedureRunsGenerator(application_class):
     """
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq

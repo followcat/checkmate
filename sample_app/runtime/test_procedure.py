@@ -1,12 +1,11 @@
 import checkmate._tree
 import checkmate.sandbox
 import checkmate.runtime.procedure
-import sample_app.application
 
 
 class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, application_class=sample_app.application.TestData, test=None):
+    def __init__(self, application_class, test=None):
         """
             >>> import checkmate.runtime._pyzmq
             >>> import checkmate.runtime._runtime
@@ -15,7 +14,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
-            >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded()
+            >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
             >>> proc.transitions.nodes[0].nodes[0].nodes[1].root.incoming[0].code
             'ARE'
             >>> proc.transitions.nodes[0].nodes[0].nodes[1].nodes[0].root.incoming[0].code
@@ -31,9 +30,10 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
         box(c2.state_machine.transitions[0])
         box.fill_procedure(self)
 
+
 class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
     """"""
-    def __init__(self, application_class=sample_app.application.TestData, test=None):
+    def __init__(self, application_class, test=None):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
@@ -41,7 +41,7 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> proc = TestProcedureRun2Threaded()
+            >>> proc = TestProcedureRun2Threaded(sample_app.application.TestData)
             >>> proc.transitions.root.outgoing[0].code
             'PBRL'
             >>> proc.transitions.nodes[0].root.incoming[0].code
@@ -58,15 +58,16 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         new_box(c2.state_machine.transitions[2])
         new_box.fill_procedure(self)
 
+
 def build_procedure(sandbox):
     class TestProc(checkmate.runtime.procedure.Procedure):
         """"""
-            
     proc = TestProc(type(sandbox.application))
     sandbox.fill_procedure(proc)
     return proc
 
-def TestProcedureGenerator(application_class=sample_app.application.TestData):
+
+def TestProcedureGenerator(application_class):
     """
             >>> import sample_app.application
             >>> import sample_app.runtime.test_procedure
@@ -86,4 +87,3 @@ def TestProcedureGenerator(application_class=sample_app.application.TestData):
     for _t in c2.state_machine.transitions[:1]:
         box(_t)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
-

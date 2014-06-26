@@ -7,7 +7,6 @@ import subprocess
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.runtime.component
-import sample_app.application
 
 
 class Launcher(object):

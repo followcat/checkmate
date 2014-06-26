@@ -63,7 +63,7 @@ def _find_runs(application, target):
         >>> box(rl_run.root)
         True
         >>> proc = []
-        >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator():
+        >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData):
         ...     proc.append(p)
         ...     
 
