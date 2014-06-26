@@ -24,16 +24,14 @@ class Poller(zmq.Poller):
 
 class Encoder(object):
     def encode(self, exchange):
-        dump_dict = {
-        'action':exchange.action, 
-        '__dict__':exchange.__reduce__()[2]
-        }
-        return pickle.dumps(dump_dict)
+        dump = (exchange.action, exchange.get_partition_attr())
+        return pickle.dumps(dump)
 
     def decode(self, message, exchange_module):
-        load_dict = pickle.loads(message)
-        exchange = getattr(exchange_module, load_dict['action'])()
-        exchange.__dict__.update(load_dict['__dict__'])
+        load = pickle.loads(message)
+        exchange = getattr(exchange_module, load[0])()
+        if exchange.partition_attribute:
+            setattr(exchange, dir(exchange)[0], load[1])
         return exchange
 
 
