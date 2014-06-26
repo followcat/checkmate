@@ -16,17 +16,12 @@ def add_device_service(services):
     d = {}
     for _service in services:
         name = _service[0]
-        args = _service[1]
-        if args is not None:
-            code = """
-                \ndef %s(self, param):
-                \n    self.incoming.append(('%s', param))""" %(name, name)
-        else:
-            code = """
-                \ndef %s(self):
-                \n    self.incoming.append('%s')""" %(name, name)
+        code = """
+            \ndef %s(self, param=None):
+            \n    self.incoming.append(('%s', param))""" % (name, name)
         exec(code, d)
     return d
+
 
 def add_device_interface(services):
     command = {}
@@ -101,20 +96,11 @@ class Encoder(object):
         return exchange.action
 
     def decode(self, message, exchange_module):
-        #cannot be imported before the application is created
-        func = message
-        attr = None
-        if isinstance(message, tuple):
-            func = message[0]
-            attr = message[1]
-            if type(message[1]) == PyTango.DeviceData:
-                attr = message[1].extract()
+        func = message[0]
+        attr = message[1]
         ex = getattr(exchange_module, func)()
-        if attr is not None:
-            try:
-                setattr(ex, dir(ex)[0], attr)
-            except:
-                pass
+        if ex.partition_attribute:
+            setattr(ex, dir(ex)[0], attr)
         return ex
 
 
@@ -159,13 +145,8 @@ class Connector(checkmate.runtime.communication.Connector):
                 return self.encoder.decode(self.device_server.incoming.pop(0), self.exchange_module)
 
     def send(self, destination, exchange):
-        attr = exchange.get_partition_attr()
-        param = None
-        if attr:
-            param_type = switch(type(attr[0]))
-            param = PyTango.DeviceData()
-            param.insert(param_type, attr)
-        call = getattr(self.device_client, self.encoder.encode(exchange))
+        call = getattr(self.device_client, exchange.action)
+        param = exchange.get_partition_attr()
         call(param)
 
 
@@ -177,7 +158,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.tango_database = PyTango.Database()
         if component is None:
             self.device_family = 'communication'
-            self.server_name = self.create_tango_server('S%d' %(random.randint(0, 1000)))
+            self.server_name = self.create_tango_server('S%d' % (random.randint(0, 1000)))
         else:
             self.device_family = type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
@@ -230,4 +211,3 @@ class Communication(checkmate.runtime.communication.Communication):
             pass
         except PyTango.ConnectionFailed as e:
             pass
-
