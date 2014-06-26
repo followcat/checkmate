@@ -67,6 +67,18 @@ def build_procedure(sandbox):
     return proc
 
 def TestProcedureGenerator(application_class=sample_app.application.TestData):
+    """
+            >>> import sample_app.application
+            >>> import sample_app.runtime.test_procedure
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r.setup_environment(['C1'])
+            >>> r.start_test()
+            >>> for g in sample_app.runtime.test_procedure.TestProcedureGenerator(sample_app.application.TestData):
+            ...     g[0](r)
+            >>> r.stop_test()
+    """
     box = checkmate.sandbox.Sandbox(application_class())
     c2 = box.application.components['C2']
     #Skip the last two transitions as no outgoing sent to 'C1'
