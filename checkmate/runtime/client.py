@@ -45,19 +45,19 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
-        self.logger.debug("%s initial"%self)
-        self.poller = checkmate.runtime._pyzmq.Poller()
-        self.connections = {}
 
         self.sender = None
+        self.connections = []
         self.zmq_context = zmq.Context.instance()
+        self.poller = checkmate.runtime._pyzmq.Poller()
+        self.logger.debug("%s initial"%self)
 
-    def add_connector(self, connector, address, reading_client=True):
-        self.connections[connector] = None
-        if reading_client:
-            sender = self.zmq_context.socket(zmq.PUSH)
-            sender.connect(address)
-            self.connections[connector] = sender
+    def add_connector(self, connector):
+        self.connections.append(connector)
+
+    def set_sender(self, address):
+        self.sender = self.zmq_context.socket(zmq.PUSH)
+        self.sender.connect(address)
 
     def initialize(self):
         """"""
@@ -85,8 +85,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 for _c in self.connections:
                     if _c.socket == _s:
                         exchange = _c.receive()
-                        if exchange is not None and self.connections[_c]:
-                            self.connections[_c].send_pyobj(exchange)
+                        if exchange is not None and _c.is_server:
+                            self.sender.send_pyobj(exchange)
                             self.logger.info("%s receive exchange %s"%(self, exchange.value))
 
 

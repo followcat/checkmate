@@ -112,46 +112,44 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
+
+        _socket = self.zmq_context.socket(zmq.PULL)
+        port = _socket.bind_to_random_port("tcp://127.0.0.1")
+        self.internal_client.set_sender("tcp://127.0.0.1:%i"%port)
+        self.external_client.set_sender("tcp://127.0.0.1:%i"%port)
+        self.poller.register(_socket, zmq.POLLIN)
+
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
             if self.reading_internal_client:
                 connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
-                self._add_connector(self.internal_client, connector, reading_client=self.reading_internal_client)
+                self.internal_client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                 if not hasattr(_application.components[_component], 'connector_list'):
                     continue
                 if _component in self.runtime.application.system_under_test:
                     for _c in _application.components[_component].connector_list:
                         connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
-                        self._add_connector(self.internal_client, connector, reading_client=self.reading_internal_client)
+                        self.internal_client.add_connector(connector)
 
         try:
             if self.using_external_client:
                 for connector_factory in self.context.connector_list:
                     _communication = runtime.communication_list['']
                     connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
-                    self._add_connector(self.external_client, connector)
+                    self.external_client.add_connector(connector)
                 for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                     if not hasattr(_application.components[_component], 'connector_list'):
                         continue
                     _communication = runtime.communication_list['']
                     for connector_factory in _application.components[_component].connector_list:
                         connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
-                        self._add_connector(self.external_client, connector, reading_client=self.reading_external_client)
+                        self.external_client.add_connector(connector)
         except AttributeError:
             pass
         except Exception as e:
             raise e
-
-    def _add_connector(self, client, connector, reading_client=True):
-        _socket = self.zmq_context.socket(zmq.PULL)
-        port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        client.add_connector(connector, address="tcp://127.0.0.1:%i"%port, reading_client=reading_client)
-        if reading_client:
-            self.poller.register(_socket, zmq.POLLIN)
-        else:
-            _socket.close()
 
     def start(self):
         Component.start(self)
