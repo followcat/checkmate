@@ -5,6 +5,7 @@ import zmq
 import zope.interface
 
 import checkmate.logger
+import checkmate.runtime._pyzmq
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
@@ -39,25 +40,35 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, component, connector, address, sender_socket=False):
+    def __init__(self, component):
         super(ThreadedClient, self).__init__(component)
-        self.sender = None
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
         self.logger.debug("%s initial"%self)
+        self.poller = checkmate.runtime._pyzmq.Poller()
+        self.connections = {}
+
+        self.sender = None
         self.zmq_context = zmq.Context.instance()
-        self.connections = connector
-        if sender_socket:
-            self.sender = self.zmq_context.socket(zmq.PUSH)
-            self.sender.connect(address)
+
+    def add_connector(self, connector, address, reading_client=True):
+        self.connections[connector] = None
+        if reading_client:
+            sender = self.zmq_context.socket(zmq.PUSH)
+            sender.connect(address)
+            self.connections[connector] = sender
 
     def initialize(self):
         """"""
-        self.connections.initialize()
+        for _c in self.connections:
+            _c.initialize()
+            if hasattr(_c, 'socket') and _c.socket:
+                self.poller.register(_c.socket, zmq.POLLIN)
 
     def start(self):
-        self.connections.open()
+        for _c in self.connections:
+            _c.open()
         super(ThreadedClient, self).start()
 
     def run(self):
@@ -65,10 +76,19 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.logger.debug("%s startup"%self)
         while True:
             if self.check_for_stop():
-                self.connections.close()
+                for _c in self.connections:
+                    _c.close()
                 self.logger.debug("%s stop"%self)
                 break
-            self.process_receive()
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
+            for _s in socks:
+                for _c in self.connections:
+                    if _c.socket == _s:
+                        exchange = _c.receive()
+                        if exchange is not None and self.connections[_c]:
+                            self.connections[_c].send_pyobj(exchange)
+                            self.logger.info("%s receive exchange %s"%(self, exchange.value))
+
 
     def stop(self):
         """"""
@@ -84,11 +104,3 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         destination = exchange.destination
         self.connections.send(destination, exchange)
         self.logger.debug("%s send exchange %s to %s"%(self, exchange.value, destination))
-
-    def process_receive(self):
-        exchange = self.connections.receive()
-        if exchange is not None:
-            if self.sender is not None:
-                self.sender.send_pyobj(exchange)
-                self.logger.debug("%s receive exchange %s"%(self, exchange.value))
-

@@ -39,14 +39,13 @@ class Connector(checkmate.runtime.communication.Connector):
     """"""
     def __init__(self, component, exchange_module, communication=None, is_server=False):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server)
+        self.componet = component
         self._name = component.name
         self.exchange_module = exchange_module
         self.port = -1
         self.socket = None
         self.encoder = Encoder()
-        self.poller = Poller()
         self.zmq_context = zmq.Context.instance()
-        self._initport = -1
         self._initport = self.communication.get_initport()
 
     def initialize(self):
@@ -57,7 +56,6 @@ class Connector(checkmate.runtime.communication.Connector):
     def request_ports(self):
         self.socket = self.zmq_context.socket(zmq.PULL)
         self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
-        self.poller.register(self.socket, zmq.POLLIN)
 
         _socket = self.zmq_context.socket(zmq.REQ)
         _socket.connect("tcp://127.0.0.1:%i"%self._initport)
@@ -83,19 +81,17 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.socket.close()
 
-    def send(self, destination, exchange):
+    def send(self, exchange):
         """"""
         if not self.is_server:
             #no lock require to protect encoder (only pickle)
-            self.socket.send(self.encoder.encode(exchange))
-            
+            self.socket.send(self.encoder.encode(exchange))   
+
     def receive(self):
-        socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
-        if self.socket in socks:
-            msg = self.socket.recv()
-            if msg != None:
-                _exchange = self.encoder.decode(msg, self.exchange_module)
-                return _exchange
+        msg = self.socket.recv()
+        if msg != None:
+            _exchange = self.encoder.decode(msg, self.exchange_module)
+            return _exchange
 
 
 class Registry(checkmate.runtime._threading.Thread):
