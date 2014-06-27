@@ -83,7 +83,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
             for _s in socks:
                 for _c in self.connections:
-                    if _c.socket == _s:
+                    if hasattr(_c,'socket') and _c.socket == _s:
                         exchange = _c.receive()
                         if exchange is not None and _c.is_server:
                             self.sender.send_pyobj(exchange)
