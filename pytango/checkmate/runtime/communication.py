@@ -157,7 +157,7 @@ class Connector(checkmate.runtime.communication.Connector):
             param_type = switch(type(attr[0]))
             param = PyTango.DeviceData()
             param.insert(param_type, attr)
-        call = getattr(self.device_client, self.encoder.encode(exchange))
+        call = getattr(self.device_client, exchange.action)
         call(param)
 
 
