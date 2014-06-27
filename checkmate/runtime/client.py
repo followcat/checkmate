@@ -1,3 +1,4 @@
+import pickle
 import logging
 
 import zmq
@@ -9,6 +10,18 @@ import checkmate.runtime._pyzmq
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
+
+class Encoder(object):
+    def encode(self, exchange):
+        dump = (exchange.action, exchange.get_partition_attr())
+        return pickle.dumps(dump)
+
+    def decode(self, message, exchange_module):
+        load = pickle.loads(message)
+        exchange = getattr(exchange_module, load[0])()
+        if exchange.partition_attribute:
+            setattr(exchange, dir(exchange)[0], load[1])
+        return exchange
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(object):
@@ -48,6 +61,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         self.sender = None
         self.connections = []
+        self.encoder = Encoder()
         self.zmq_context = zmq.Context.instance()
         self.poller = checkmate.runtime._pyzmq.Poller()
         self.logger.debug("%s initial"%self)
@@ -58,6 +72,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def set_sender(self, address):
         self.sender = self.zmq_context.socket(zmq.PUSH)
         self.sender.connect(address)
+
+    def set_exchange_module(self, exchange_module):
+        self.exchange_module = exchange_module
 
     def initialize(self):
         """"""
@@ -82,12 +99,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
             for _s in socks:
-                for _c in self.connections:
-                    if hasattr(_c,'socket') and _c.socket == _s:
-                        exchange = _c.receive()
-                        if exchange is not None and _c.is_server:
-                            self.sender.send_pyobj(exchange)
-                            self.logger.info("%s receive exchange %s"%(self, exchange.value))
+                msg = _s.recv()
+                exchange = self.encoder.decode(msg, self.exchange_module)
+                self.sender.send_pyobj(exchange)
+                self.logger.info("%s receive exchange %s"%(self, exchange.value))
 
 
     def stop(self):

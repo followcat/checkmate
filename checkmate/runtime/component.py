@@ -119,6 +119,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.external_client.set_sender("tcp://127.0.0.1:%i"%port)
         self.poller.register(_socket, zmq.POLLIN)
 
+        self.internal_client.set_exchange_module(_application.exchange_module)
+        self.external_client.set_exchange_module(_application.exchange_module)
+
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
