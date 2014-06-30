@@ -67,7 +67,7 @@ runtime.start_test()
 
 e = checkmate.exchange.Exchange('Exchange')
 e.origin_destination('a', 'b')
-for each in sa.internal_client.connections:
+for each in sa.client.connections:
     each.send(e)
 #stop everything except the logger
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
