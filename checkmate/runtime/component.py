@@ -123,23 +123,18 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                         connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
                         self.client.add_connector(connector)
 
-        try:
-            if self.using_external_client:
-                for connector_factory in self.context.connector_list:
-                    _communication = runtime.communication_list['']
-                    connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
+        if self.using_external_client:
+            for connector_factory in self.context.connector_list:
+                _communication = runtime.communication_list['']
+                connector = connector_factory(self.context, _application.exchange_module, _communication, is_server=True)
+                self.client.add_connector(connector)
+            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
+                if not hasattr(_application.components[_component], 'connector_list'):
+                    continue
+                _communication = runtime.communication_list['']
+                for connector_factory in _application.components[_component].connector_list:
+                    connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
                     self.client.add_connector(connector)
-                for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                    if not hasattr(_application.components[_component], 'connector_list'):
-                        continue
-                    _communication = runtime.communication_list['']
-                    for connector_factory in _application.components[_component].connector_list:
-                        connector = connector_factory(_application.components[_component], _application.exchange_module, _communication, is_server=False)
-                        self.client.add_connector(connector)
-        except AttributeError:
-            pass
-        except Exception as e:
-            raise e
 
     def start(self):
         Component.start(self)
