@@ -9,6 +9,7 @@ import threading
 import zmq
 import PyTango
 
+import checkmate.runtime.encoder
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
@@ -99,18 +100,6 @@ class DeviceInterface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
 
 
-class Encoder(object):
-    def encode(self, exchange):
-        return exchange.action
-
-    def decode(self, message, exchange_module):
-        load = pickle.loads(message)
-        exchange = getattr(exchange_module, load[0])()
-        if exchange.partition_attribute:
-            setattr(exchange, dir(exchange)[0], load[1])
-        return exchange
-
-
 class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, exchange_module, communication=None, is_server=False):
         super().__init__(component, communication, is_server=is_server)
@@ -120,7 +109,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
-        self.encoder = Encoder()
         self.exchange_module = exchange_module
         self.zmq_context = zmq.Context.instance()
 

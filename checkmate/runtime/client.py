@@ -1,27 +1,14 @@
-import pickle
 import logging
 
 import zmq
-
 import zope.interface
 
 import checkmate.logger
+import checkmate.runtime.encoder
 import checkmate.runtime._pyzmq
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
-
-class Encoder(object):
-    def encode(self, exchange):
-        dump = (exchange.action, exchange.get_partition_attr())
-        return pickle.dumps(dump)
-
-    def decode(self, message, exchange_module):
-        load = pickle.loads(message)
-        exchange = getattr(exchange_module, load[0])()
-        if exchange.partition_attribute:
-            setattr(exchange, dir(exchange)[0], load[1])
-        return exchange
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(object):
@@ -61,10 +48,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         self.sender = None
         self.connections = []
-        self.encoder = Encoder()
         self.zmq_context = zmq.Context.instance()
         self.poller = checkmate.runtime._pyzmq.Poller()
-        self.logger.debug("%s initial"%self)
+        self.logger.debug("%s initial" % self)
 
     def add_connector(self, connector):
         self.connections.append(connector)
@@ -90,24 +76,23 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
     def run(self):
         """"""
-        self.logger.debug("%s startup"%self)
+        self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
                 for _c in self.connections:
                     _c.close()
-                self.logger.debug("%s stop"%self)
+                self.logger.debug("%s stop" % self)
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
             for _s in socks:
                 msg = _s.recv()
-                exchange = self.encoder.decode(msg, self.exchange_module)
+                exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
                 self.sender.send_pyobj(exchange)
-                self.logger.info("%s receive exchange %s"%(self, exchange.value))
-
+                self.logger.info("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
         """"""
-        self.logger.debug("%s stop request"%self)
+        self.logger.debug("%s stop request" % self)
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
@@ -118,4 +103,4 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         #no lock shared with process_receive() as POLLING timeout is too long
         destination = exchange.destination
         self.connections.send(destination, exchange)
-        self.logger.debug("%s send exchange %s to %s"%(self, exchange.value, destination))
+        self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, destination))
