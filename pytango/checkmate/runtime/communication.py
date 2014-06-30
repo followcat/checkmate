@@ -144,12 +144,6 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
-    def receive(self):
-        msg = self.socket.recv()
-        if msg != None:
-            _exchange = self.encoder.decode(msg, self.exchange_module)
-            return _exchange
-
     def send(self, exchange):
         attr = exchange.get_partition_attr()
         param = None
