@@ -109,7 +109,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         It is up to the connector to manage the thread protection.
         """
-        #no lock shared with process_receive() as POLLING timeout is too long
         destination = exchange.destination
         self.connections.send(destination, exchange)
         self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, destination))
