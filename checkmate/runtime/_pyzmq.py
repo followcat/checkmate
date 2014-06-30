@@ -1,4 +1,3 @@
-import time
 import pickle
 import logging
 import threading
@@ -11,15 +10,6 @@ import checkmate.exchange
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
-
-
-class Poller(zmq.Poller):
-    def poll(self, timeout=None):
-        if self.sockets:
-            return super().poll(timeout)
-        if timeout > 0:
-            time.sleep(timeout / 1000)
-        return []
 
 
 class Connector(checkmate.runtime.communication.Connector):

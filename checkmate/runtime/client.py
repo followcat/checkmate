@@ -1,3 +1,4 @@
+import time
 import logging
 
 import zmq
@@ -5,9 +6,17 @@ import zope.interface
 
 import checkmate.logger
 import checkmate.runtime.encoder
-import checkmate.runtime._pyzmq
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+
+
+class Poller(zmq.Poller):
+    def poll(self, timeout=None):
+        if self.sockets:
+            return super().poll(timeout)
+        if timeout > 0:
+            time.sleep(timeout / 1000)
+        return []
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
@@ -49,7 +58,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.sender = None
         self.connections = []
         self.zmq_context = zmq.Context.instance()
-        self.poller = checkmate.runtime._pyzmq.Poller()
+        self.poller = Poller()
         self.logger.debug("%s initial" % self)
 
     def add_connector(self, connector):
