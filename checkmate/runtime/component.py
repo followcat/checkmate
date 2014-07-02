@@ -168,7 +168,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
+            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for socket in iter(s):
                 exchange = socket.recv_pyobj()
                 if exchange is not None:
@@ -178,7 +178,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def simulate(self, transition):
         return super().simulate(transition)
 
-    @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.VALIDATE_WAITONFALSE_TIME, checkmate.timeout_manager.VALIDATE_WAITONFALSE_LOOP)
+    @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.VALIDATE_SEC, 100)
     def validate(self, transition):
         with self.validation_lock:
             return super().validate(transition)
@@ -237,7 +237,7 @@ class ThreadedStub(ThreadedComponent, Stub):
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MS))
+            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for socket in s:
                 exchange = socket.recv_pyobj()
                 if exchange is not None:

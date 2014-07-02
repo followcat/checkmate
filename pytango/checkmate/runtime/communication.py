@@ -59,7 +59,7 @@ class Registry(checkmate.runtime._threading.Thread):
         self.pytango_util = PyTango.Util.instance()
 
     def check_for_shutdown(self):
-        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SLEEP_TIME)
+        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
         if self.check_for_stop():
             sys.exit(0)
 
@@ -155,7 +155,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def receive(self):
         with self.receive_condition:
-            if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_WAIT_FOR_TIME):
+            if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_SEC):
                 return self.encoder.decode(self.device_server.incoming.pop(0))
 
     def send(self, destination, exchange):
