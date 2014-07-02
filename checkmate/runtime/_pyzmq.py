@@ -5,8 +5,6 @@ import threading
 import zmq
 import socket
 
-import checkmate.logger
-import checkmate.exchange
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
