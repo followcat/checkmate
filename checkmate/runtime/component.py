@@ -52,8 +52,7 @@ class Component(object):
         output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s"%(self.context.name, exchanges[0].value))
         for _o in output:
-            for connector in [_c for _c in self.client.connections if _c._name == _o.destination]:
-                connector.send(_o)
+            self.client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
             self.logger.info("%s send exchange %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
@@ -61,8 +60,7 @@ class Component(object):
     def simulate(self, transition):
         output = self.context.simulate(transition)
         for _o in output:
-            for connector in [_c for _c in self.client.connections if _c._name == _o.destination]:
-                connector.send(_o)
+            self.client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
             self.logger.info("%s simulate transition and output %s to %s"%(self.context.name, _o.value, _o.destination))
         return output
