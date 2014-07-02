@@ -31,7 +31,7 @@ class IStub(ISut):
 class Component(object):
     def __init__(self, component):
         self.context = component
-        self.client = checkmate.runtime.client.ThreadedClient(self.context)
+        self.client = checkmate.runtime.client.Client(self.context)
         self.logger = logging.getLogger('checkmate.runtime.component.Component')
 
     def setup(self, runtime):
@@ -93,6 +93,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
+        self.client = checkmate.runtime.client.ThreadedClient(self.context)
         self.validation_lock = threading.Lock()
         self.zmq_context = zmq.Context.instance()
         self.poller = zmq.Poller()
