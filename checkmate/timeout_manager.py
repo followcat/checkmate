@@ -50,6 +50,7 @@ class Comp(checkmate.component.Component):
 
 class App(checkmate.application.Application):
     __module__ = 'timeout_manager.test.App'
+    exchange_module = checkmate.exchange
     def __init__(self):
         super().__init__()
         self.communication_list = (checkmate.runtime._pyzmq.Communication,)
@@ -64,9 +65,10 @@ sa = runtime.runtime_components['a']
 sb = runtime.runtime_components['b']
 runtime.start_test()
 
-e = checkmate.exchange.Exchange()
+e = checkmate.exchange.Exchange('Exchange')
 e.origin_destination('a', 'b')
-sa.internal_client_list[0].send(e)
+for each in sa.client.connections:
+    each.send(e)
 #stop everything except the logger
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()

@@ -1,12 +1,22 @@
+import time
 import logging
 
 import zmq
-
 import zope.interface
 
 import checkmate.logger
+import checkmate.runtime.encoder
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+
+
+class Poller(zmq.Poller):
+    def poll(self, timeout=None):
+        if self.sockets:
+            return super().poll(timeout)
+        if timeout > 0:
+            time.sleep(timeout / 1000)
+        return []
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
@@ -39,40 +49,59 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, component, connector, address, sender_socket=False):
+    def __init__(self, component):
         super(ThreadedClient, self).__init__(component)
-        self.sender = None
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
-        self.logger.debug("%s initial"%self)
+
+        self.sender = None
+        self.connections = []
         self.zmq_context = zmq.Context.instance()
-        self.connections = connector
-        if sender_socket:
-            self.sender = self.zmq_context.socket(zmq.PUSH)
-            self.sender.connect(address)
+        self.poller = Poller()
+        self.logger.debug("%s initial" % self)
+
+    def add_connector(self, connector):
+        self.connections.append(connector)
+
+    def set_sender(self, address):
+        self.sender = self.zmq_context.socket(zmq.PUSH)
+        self.sender.connect(address)
+
+    def set_exchange_module(self, exchange_module):
+        self.exchange_module = exchange_module
 
     def initialize(self):
         """"""
-        self.connections.initialize()
+        for _c in self.connections:
+            _c.initialize()
+            if hasattr(_c, 'socket') and _c.socket:
+                self.poller.register(_c.socket, zmq.POLLIN)
 
     def start(self):
-        self.connections.open()
+        for _c in self.connections:
+            _c.open()
         super(ThreadedClient, self).start()
 
     def run(self):
         """"""
-        self.logger.debug("%s startup"%self)
+        self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
-                self.connections.close()
-                self.logger.debug("%s stop"%self)
+                for _c in self.connections:
+                    _c.close()
+                self.logger.debug("%s stop" % self)
                 break
-            self.process_receive()
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+            for _s in socks:
+                msg = _s.recv()
+                exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
+                self.sender.send_pyobj(exchange)
+                self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
         """"""
-        self.logger.debug("%s stop request"%self)
+        self.logger.debug("%s stop request" % self)
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
@@ -80,15 +109,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         It is up to the connector to manage the thread protection.
         """
-        #no lock shared with process_receive() as POLLING timeout is too long
-        destination = exchange.destination
-        self.connections.send(destination, exchange)
-        self.logger.debug("%s send exchange %s to %s"%(self, exchange.value, destination))
-
-    def process_receive(self):
-        exchange = self.connections.receive()
-        if exchange is not None:
-            if self.sender is not None:
-                self.sender.send_pyobj(exchange)
-                self.logger.debug("%s receive exchange %s"%(self, exchange.value))
-
+        for _c in self.connections:
+            if _c._name == exchange.destination:
+                _c.send(exchange)
+                self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))

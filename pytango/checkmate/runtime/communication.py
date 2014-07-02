@@ -2,11 +2,14 @@ import os
 import sys
 import time
 import shlex
+import pickle
 import random
 import threading
 
+import zmq
 import PyTango
 
+import checkmate.runtime.encoder
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
@@ -16,17 +19,12 @@ def add_device_service(services):
     d = {}
     for _service in services:
         name = _service[0]
-        args = _service[1]
-        if args is not None:
-            code = """
-                \ndef %s(self, param):
-                \n    self.incoming.append(('%s', param))""" %(name, name)
-        else:
-            code = """
-                \ndef %s(self):
-                \n    self.incoming.append('%s')""" %(name, name)
+        code = """
+            \ndef %s(self, param=None):
+            \n    self.send(('%s', param))""" % (name, name)
         exec(code, d)
     return d
+
 
 def add_device_interface(services):
     command = {}
@@ -78,7 +76,14 @@ class Device(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
+        self.zmq_context = zmq.Context.instance()
         self.incoming = []
+        self.socket = self.zmq_context.socket(zmq.PUSH)
+        self.socket.connect("tcp://127.0.0.1:%i"%self._initport)
+
+    def send(self, exchange):
+        dump = pickle.dumps(exchange)
+        self.socket.send(dump)
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -96,29 +101,6 @@ class DeviceInterface(PyTango.DeviceClass):
                 dev.debug_stream("Details: " + traceback.format_exc())
 
 
-class Encoder(object):
-    def encode(self, exchange):
-        return exchange.action
-
-    def decode(self, message):
-        #cannot be imported before the application is created
-        import pytango.checkmate.exchanges
-        func = message
-        attr = None
-        if isinstance(message, tuple):
-            func = message[0]
-            attr = message[1]
-            if type(message[1]) == PyTango.DeviceData:
-                attr = message[1].extract()
-        ex = getattr(pytango.checkmate.exchanges, func)()
-        if attr is not None:
-            try:
-                setattr(ex, dir(ex)[0], attr)
-            except:
-                pass
-        return ex
-
-
 class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_server=False):
         super().__init__(component, communication, is_server=is_server)
@@ -127,11 +109,14 @@ class Connector(checkmate.runtime.communication.Connector):
             self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services))
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
-        self.encoder = Encoder()
-        self.receive_condition = threading.Condition()
+        self._name = component.name
+        self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
         if self.is_server:
+            self.socket = self.zmq_context.socket(zmq.PULL)
+            self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
+            setattr(self.device_class, '_initport', self.port)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
@@ -147,25 +132,14 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
-    def check_receive(self):
-        try:
-            return len(self.device_server.incoming) > 0
-        except AttributeError:
-            return False
-
-    def receive(self):
-        with self.receive_condition:
-            if self.receive_condition.wait_for(self.check_receive, checkmate.timeout_manager.PYTANGO_RECEIVE_SEC):
-                return self.encoder.decode(self.device_server.incoming.pop(0))
-
-    def send(self, destination, exchange):
+    def send(self, exchange):
         attr = exchange.get_partition_attr()
         param = None
         if attr:
             param_type = switch(type(attr[0]))
             param = PyTango.DeviceData()
             param.insert(param_type, attr)
-        call = getattr(self.device_client, self.encoder.encode(exchange))
+        call = getattr(self.device_client, exchange.action)
         call(param)
 
 
@@ -177,7 +151,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.tango_database = PyTango.Database()
         if component is None:
             self.device_family = 'communication'
-            self.server_name = self.create_tango_server('S%d' %(random.randint(0, 1000)))
+            self.server_name = self.create_tango_server('S%d' % (random.randint(0, 1000)))
         else:
             self.device_family = type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
@@ -230,4 +204,3 @@ class Communication(checkmate.runtime.communication.Communication):
             pass
         except PyTango.ConnectionFailed as e:
             pass
-

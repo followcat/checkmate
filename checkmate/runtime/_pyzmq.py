@@ -6,27 +6,9 @@ import threading
 import zmq
 import socket
 
-import checkmate.logger
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
-
-
-class Poller(zmq.Poller):
-    def poll(self, timeout=None):
-        if self.sockets:
-            return super().poll(timeout)
-        if timeout > 0:
-            time.sleep(timeout/1000)
-        return []
-
-
-class Encoder(object):
-    def encode(self, exchange):
-        return pickle.dumps(exchange)
-
-    def decode(self, message):
-        return pickle.loads(message)
 
 
 class Connector(checkmate.runtime.communication.Connector):
@@ -36,10 +18,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self._name = component.name
         self.port = -1
         self.socket = None
-        self.encoder = Encoder()
-        self.poller = Poller()
         self.zmq_context = zmq.Context.instance()
-        self._initport = -1
         self._initport = self.communication.get_initport()
 
     def initialize(self):
@@ -50,10 +29,9 @@ class Connector(checkmate.runtime.communication.Connector):
     def request_ports(self):
         self.socket = self.zmq_context.socket(zmq.PULL)
         self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
-        self.poller.register(self.socket, zmq.POLLIN)
 
         _socket = self.zmq_context.socket(zmq.REQ)
-        _socket.connect("tcp://127.0.0.1:%i"%self._initport)
+        _socket.connect("tcp://127.0.0.1:%i" % self._initport)
         _socket.send(pickle.dumps((self._name, self.port)))
         return_code = pickle.loads(_socket.recv())
         _socket.close()
@@ -61,13 +39,13 @@ class Connector(checkmate.runtime.communication.Connector):
     def connect_ports(self):
         if not self.is_server:
             _socket = self.zmq_context.socket(zmq.REQ)
-            _socket.connect("tcp://127.0.0.1:%i"%self._initport)
+            _socket.connect("tcp://127.0.0.1:%i" % self._initport)
             _socket.send(pickle.dumps((self._name,)))
             self.port = pickle.loads(_socket.recv())
             _socket.close()
 
             self.socket = self.zmq_context.socket(zmq.PUSH)
-            self.socket.connect("tcp://127.0.0.1:%i"%self.port)
+            self.socket.connect("tcp://127.0.0.1:%i" % self.port)
 
     def open(self):
         """"""
@@ -76,19 +54,11 @@ class Connector(checkmate.runtime.communication.Connector):
     def close(self):
         self.socket.close()
 
-    def send(self, destination, exchange):
+    def send(self, exchange):
         """"""
         if not self.is_server:
             #no lock require to protect encoder (only pickle)
-            self.socket.send(self.encoder.encode(exchange))
-            
-    def receive(self):
-        socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-        if self.socket in socks:
-            msg = self.socket.recv()
-            if msg != None:
-                _exchange = self.encoder.decode(msg)
-                return _exchange
+            self.socket.send(checkmate.runtime.encoder.encode(exchange))
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -101,18 +71,17 @@ class Registry(checkmate.runtime._threading.Thread):
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.socket = self.zmq_context.socket(zmq.REP)
-        self.logger.debug("%s init"%self)
+        self.logger.debug("%s init" % self)
         self.get_assign_port_lock = threading.Lock()
 
         self._initport = self.pickfreeport()
-        self.socket.bind("tcp://127.0.0.1:%i"%self._initport)
-        self.logger.debug("%s bind port %i to listen port request"%(self, self._initport))
+        self.socket.bind("tcp://127.0.0.1:%i" % self._initport)
+        self.logger.debug("%s bind port %i to listen port request" % (self, self._initport))
         self.poller.register(self.socket, zmq.POLLIN)
-
 
     def run(self):
         """"""
-        self.logger.debug("%s startup"%self)
+        self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
                 break
@@ -122,12 +91,12 @@ class Registry(checkmate.runtime._threading.Thread):
                     self.assign_ports()
 
     def assign_ports(self):
-        """""" 
+        """"""
         _list = pickle.loads(self.socket.recv())
         if len(_list) == 2:
             (name, port) = _list
             self.comp_sender[name] = port
-            self.logger.debug("%s bind port %i to send exchange to %s"%(self, port, name))
+            self.logger.debug("%s bind port %i to send exchange to %s" % (self, port, name))
             self.socket.send(pickle.dumps(0))
         else:
             (name,) = _list
@@ -135,7 +104,7 @@ class Registry(checkmate.runtime._threading.Thread):
             self.socket.send(pickle.dumps(port))
 
     def stop(self):
-        self.logger.debug("%s stop"%self)
+        self.logger.debug("%s stop" % self)
         super(Registry, self).stop()
 
     def pickfreeport(self):
@@ -175,7 +144,7 @@ class Communication(checkmate.runtime.communication.Communication):
         """"""
         super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
-        self.logger.info("%s initialize"%self)
+        self.logger.info("%s initialize" % self)
         self.registry = Registry()
 
     def initialize(self):
@@ -185,8 +154,7 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def close(self):
         self.registry.stop()
-        self.logger.info("%s close"%self)
+        self.logger.info("%s close" % self)
 
     def get_initport(self):
         return self.registry._initport
-

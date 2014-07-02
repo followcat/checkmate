@@ -20,7 +20,7 @@ class Connector(object):
     def close(self):
         """"""
 
-    def send(self, destination, exchange):
+    def send(self, exchange):
         """"""
 
     def receive(self):
@@ -41,4 +41,3 @@ class Communication(object):
 
     def close(self):
         """"""
-
