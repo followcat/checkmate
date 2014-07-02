@@ -14,7 +14,6 @@ class Connector(checkmate.runtime.communication.Connector):
     """"""
     def __init__(self, component, communication=None, is_server=False):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server)
-        self.componet = component
         self._name = component.name
         self.port = -1
         self.socket = None
