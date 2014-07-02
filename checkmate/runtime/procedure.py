@@ -146,6 +146,10 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)
                 
+        if not self.is_setup:
+            for _c in self.runtime.runtime_components.values():
+                _c.context.validation_list.clear()
+
         stub = self.runtime.runtime_components[current_node.root.owner]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
