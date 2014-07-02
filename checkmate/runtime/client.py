@@ -97,7 +97,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 msg = _s.recv()
                 exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
                 self.sender.send_pyobj(exchange)
-                self.logger.info("%s receive exchange %s" % (self, exchange.value))
+                self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
         """"""
