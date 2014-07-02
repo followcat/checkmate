@@ -8,9 +8,10 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def build_procedure(sandbox):
+def build_procedure(sandbox, transition):
     proc = checkmate.runtime.procedure.Procedure()
     sandbox.fill_procedure(proc)
+    proc.final = transition.final
     return proc
 
 def get_transitions_from_test(application):
@@ -81,7 +82,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box(_transition, foreign_transitions=True)
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield build_procedure(box, _transition), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureFeaturesGenerator(application_class):
     """
@@ -133,7 +134,7 @@ def TestProcedureFeaturesGenerator(application_class):
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
         box(_transition, foreign_transitions=True)
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield build_procedure(box, _transition), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureRunsGenerator(application_class):
     """
@@ -164,5 +165,5 @@ def TestProcedureRunsGenerator(application_class):
         _transitions = _run.walk()
         box = checkmate.sandbox.Sandbox(_application, _transitions)
         box(_transitions[0], foreign_transitions=True) 
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield build_procedure(box, _transitions[0]), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
