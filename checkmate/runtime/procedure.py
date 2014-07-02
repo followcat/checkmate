@@ -155,7 +155,7 @@ class Procedure(object):
         self._follow_up(current_node)
 
         if hasattr(self, 'final'):
-            @checkmate.timeout_manager.WaitOnFalse()
+            @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_WAITONFALSE_TIME)
             def check_compare_states():
                 return self.application.compare_states(self.final)
             try:
