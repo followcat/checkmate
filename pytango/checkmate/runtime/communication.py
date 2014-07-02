@@ -101,7 +101,7 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, exchange_module, communication=None, is_server=False):
+    def __init__(self, component, communication=None, is_server=False):
         super().__init__(component, communication, is_server=is_server)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
@@ -109,7 +109,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
-        self.exchange_module = exchange_module
         self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
