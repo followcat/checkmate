@@ -20,6 +20,7 @@ import checkmate.runtime._threading
 class ISut(zope.interface.Interface):
     """"""
 
+
 class IStub(ISut):
     """"""
     def simulate(self, transition):
@@ -27,6 +28,7 @@ class IStub(ISut):
 
     def validate(self, transition):
         """"""
+
 
 class Component(object):
     def __init__(self, component):
@@ -50,11 +52,11 @@ class Component(object):
 
     def process(self, exchanges):
         output = self.context.process(exchanges)
-        self.logger.info("%s process exchange %s"%(self.context.name, exchanges[0].value))
+        self.logger.info("%s process exchange %s" % (self.context.name, exchanges[0].value))
         for _o in output:
             self.client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-            self.logger.info("%s send exchange %s to %s"%(self.context.name, _o.value, _o.destination))
+            self.logger.info("%s send exchange %s to %s" % (self.context.name, _o.value, _o.destination))
         return output
 
     def simulate(self, transition):
@@ -62,7 +64,7 @@ class Component(object):
         for _o in output:
             self.client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
-            self.logger.info("%s simulate transition and output %s to %s"%(self.context.name, _o.value, _o.destination))
+            self.logger.info("%s simulate transition and output %s to %s" % (self.context.name, _o.value, _o.destination))
         return output
 
     def validate(self, transition):
@@ -104,7 +106,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
         _socket = self.zmq_context.socket(zmq.PULL)
         port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        self.client.set_sender("tcp://127.0.0.1:%i"%port)
+        self.client.set_sender("tcp://127.0.0.1:%i" % port)
         self.poller.register(_socket, zmq.POLLIN)
         self.client.set_exchange_module(_application.exchange_module)
 
@@ -183,7 +185,7 @@ class ThreadedSut(ThreadedComponent, Sut):
     def initialize(self):
         if hasattr(self.context, 'launch_command'):
             if hasattr(self.context, 'command_env'):
-                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, 
+                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command,
                                                                     command_env=self.context.command_env, component=self.context)
             else:
                 self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)

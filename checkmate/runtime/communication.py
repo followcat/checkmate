@@ -41,4 +41,3 @@ class Communication(object):
 
     def close(self):
         """"""
-
