@@ -135,6 +135,7 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
+    @checkmate._issue.report('checkmate/issues/sandbox_final.rst')
     @checkmate._issue.report('checkmate/issues/compare_final.rst')
     def compare_states(self, target):
         """Comparison between the states of the application's components and a target.
