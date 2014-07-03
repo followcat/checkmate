@@ -35,15 +35,21 @@ class ComponentMeta(type):
             services = []
             service_interfaces = []
             outgoings = []
+            namespace['is_publish'] = False
+            namespace['subscribe_exchange'] = []
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
                     if _i.code not in [_service[0] for _service in services]:
                         services.append((_i.code, _i.factory().get_partition_attr()))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
+                    if _i.factory().broadcast:
+                        namespace['subscribe_exchange'].append(_i.code)
                 for _o in _t.outgoing:
                     if _o.code not in outgoings:
                         outgoings.append(_o.code)
+                    if _o.factory().broadcast:
+                        namespace['is_publish'] = True
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
             namespace['outgoings'] = outgoings
