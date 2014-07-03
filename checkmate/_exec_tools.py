@@ -1,3 +1,4 @@
+import re
 import collections
 
 import checkmate._module
@@ -121,9 +122,10 @@ def method_arguments(signature, interface):
     return argument
 
 
-def get_exchange_define_str(import_module, interface_class, classname, parameters_str, parameters_list, codes):
-    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'parameters_str'])
-    element = class_element(import_module, interface_class, classname, parameters_str)
+def get_exchange_define_str(import_module, interface_class, classname, parameters_str, annotations_str, annotations_list, codes):
+    parameters_keys = re.compile(r'=[\w]+').sub('', parameters_str)
+    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'parameters_str', 'parameters_keys', 'annotations_str'])
+    element = class_element(import_module, interface_class, classname, parameters_str, parameters_keys, annotations_str)
     run_code = """
             \nimport zope.interface
             \n
@@ -136,14 +138,14 @@ def get_exchange_define_str(import_module, interface_class, classname, parameter
             \n
             \n@zope.interface.implementer({e.interface_class})
             \nclass {e.classname}(checkmate.exchange.Exchange):
-            \n    def __init__(self, value=None, *args{e.parameters_str}, **kwargs):
-            \n        super().__init__(value)
+            \n    def __init__(self, value=None{e.parameters_str}, *args{e.annotations_str}, **kwargs):
+            \n        super().__init__(value{e.parameters_keys}, *args, **kwargs)
             \n        self.partition_attribute = tuple({e.classname}.__init__.__annotations__.keys())
             \n
             """.format(e=element)
 
     class_parame = collections.namedtuple('class_parame', ['attribute', 'classname'])
-    for _p in parameters_list:
+    for _p in annotations_list:
         _k, _v = _p.split(':')
         parame = class_parame(_k, _v)
         run_code += """
@@ -217,13 +219,19 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     if partition_type == 'exchanges':
         import_module = ''
+        annotations_str = ''
+        annotations_list = []
         parameters_str = ''
-        parameters_list = get_function_parameters_list(signature)
-        if len(parameters_list) > 0:
+        for _p in get_function_parameters_list(signature):
+            if ':' in _p:
+                temp_p = _p.replace(':', ':' + data_structure_module.__name__ + '.')
+                annotations_list.append(temp_p)
+                annotations_str += ', ' + temp_p + '=None'
+            else:
+                parameters_str += ', ' + _p
+        if annotations_list:
             import_module = "import " + data_structure_module.__name__
-            parameters_list = [_p.replace(':', ':' + data_structure_module.__name__ + '.') for _p in parameters_list]
-            parameters_str = ', ' + ', '.join([_p + '=None' for _p in parameters_list])
-        run_code = get_exchange_define_str(import_module, interface_class, classname, parameters_str, parameters_list, codes)
+        run_code = get_exchange_define_str(import_module, interface_class, classname, parameters_str, annotations_str, annotations_list, codes)
 
     elif partition_type == 'data_structure':
         run_code = get_data_structure_define_str(interface_class, classname, codes)
