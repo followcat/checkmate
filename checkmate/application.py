@@ -1,7 +1,6 @@
 import zope.interface
 
 import checkmate.runs
-import checkmate._issue
 import checkmate._module
 import checkmate.component
 import checkmate.service_registry
@@ -135,8 +134,8 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-    @checkmate._issue.report('checkmate/issues/sandbox_final.rst')
-    @checkmate._issue.report('checkmate/issues/compare_final.rst')
+    @checkmate.report_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.report_issue('checkmate/issues/compare_final.rst')
     def compare_states(self, target):
         """Comparison between the states of the application's components and a target.
 
