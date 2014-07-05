@@ -7,7 +7,7 @@ import multiprocessing
 __all__ = ['report', 'fix']
 
 def runtest(failure_count, filename):
-    (failure_count, test_count) = doctest.testfile(
+    (failure_count.value, test_count) = doctest.testfile(
         os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]),
                          module_relative=False)
 
@@ -19,12 +19,14 @@ def _failed_doctest_file(filename):
     return failure_count
 
 def issue_record(filename):
-    if not _failed_doctest_file(filename):
-        raise doctest.DocTestFailure('Issue not occuring: '+filename, 'Failure', 'Success')
+    _synchronized = _failed_doctest_file(filename)
+    if _synchronized.value == 0:
+        raise doctest.DocTestFailure('Issue: '+filename, 'Expected: failure', 'Got: success')
 
 def issue_regression(filename):
-    if _failed_doctest_file(filename):
-        raise doctest.DocTestFailure('Issue regression: '+filename, 'Success', 'Failure')
+    _synchronized = _failed_doctest_file(filename)
+    if _synchronized.value > 0:
+        raise doctest.DocTestFailure('Issue regression: '+filename, 'Expected: success', 'Got: failure')
 
 
 def report(filename):

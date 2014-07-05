@@ -27,8 +27,5 @@ Setting the procedure.final from the sandbox does not work.
     >>> r.application.compare_states(proc.initial)
     True
     >>> proc(r)
-    Traceback (most recent call last):
-    ...
-    TypeError: toggle() missing 1 required positional argument: 'self'
     >>> r.stop_test()
     >>> 
