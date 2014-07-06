@@ -11,7 +11,7 @@ Coding guidelines
 
     Class names are CamelCased [1_]
 
-    Packages and mdoules names are underscore ('_') separated lower cased [1_]
+    Packages and modules names are underscore ('_') separated lower cased [1_]
 
     Variable, attribute and method names are underscore ('_') separated lower cased.
 
@@ -40,16 +40,6 @@ Coding guidelines
         use
             >>> manager.treatment.Manager.init()
 
-    Never use:
-        >>> from [...] import [...]
-
-    Never use:
-        >>> [...] import [...] as [...]
-
-    Never use relative path:
-        >>> import .[...]
-
-    No code in __init__.py
 
     Import are ordered as:
         - Import build-in modules first
@@ -76,6 +66,52 @@ Coding guidelines
         >>> import checkmate.runtime._runtime
         >>> 
         >>> 
+
+
+    **Never** use:
+        >>> [...] import [...] as [...]
+
+    Do not use:
+        >>> from [...] import [...]
+
+    Do not use relative path:
+        >>> import .[...]
+
+    No code in __init__.py
+
+    An exception is to handle problem in compatibility with external module.
+    For example the following code could be allowed in __init__.py,
+    to handle possible differences between python2 and python3.
+        >>> if sys.version_info[0] >= 3:
+        ... 
+
+    or
+        >>> try:
+        ...     import ...
+        ... except ImportError:
+        ...     #do something wise
+        ...
+        
+    The code to implement compatibility should be in a standalone module.
+
+    In order to import a module into __init__.py, the use of relative path
+    is required.
+        >>> import .[...]
+
+    Utility code (debug, sleep, ...) that can possibly be used anywhere
+    can be imported in __init__.py to simplify use (no import needed).
+    The syntax to import this code in __init__.py should be:
+        >>> from .[...] import *
+
+    The [...] should be directly under the same directory as __init__.py.
+    Consequently 'from .[...].[...] import ...' should not be used.
+    The imported module should define __all__ list of exported symbols.
+    An example from checkmate/_issue.py:
+        >>> __all__ = ['report_issue', 'fix_issue']
+        >>> 
+
+    The exported symbols are not embedded in code (for example decorators).
+    The imported module should not import other modules from the project.
 
 
 ----
