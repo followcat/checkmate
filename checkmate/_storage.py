@@ -180,6 +180,7 @@ class InternalStorage(object):
         self.arguments = checkmate._exec_tools.method_arguments(name, interface)
         self.resolve_logic = {}
 
+    @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     def factory(self, args=[], kwargs={}):
         """
             >>> import sample_app.application
