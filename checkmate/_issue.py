@@ -28,29 +28,26 @@ def _issue_regression(filename):
     if _synchronized.value > 0:
         raise doctest.DocTestFailure('Issue regression: '+filename, 'Expected: success', 'Got: failure')
 
-
-def report_issue(filename):
+def _add_issue_doctest(filename, doctest_function):
     def append_docstring(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+        #Need to destroy zmq context due to conflict
+        #between zmq threading and multiprocessing (src/mailbox.cpp)
         wrapper.__doc__ += """
             \n        FIXME: Outstanding issue
+            \n            >>> import zmq
             \n            >>> import checkmate._issue
-            \n            >>> checkmate._issue._issue_record('%s')
-            """%filename
+            \n            >>> zmq.Context.instance().destroy()
+            \n            >>> %s.%s('%s')
+            """ % (__name__, doctest_function.__name__, filename)
         return wrapper
     return append_docstring
 
+def report_issue(filename):
+    return _add_issue_doctest(filename, _issue_record)
+
 def fix_issue(filename):
-    def append_docstring(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-        wrapper.__doc__ += """
-            \n            >>> import checkmate._issue
-            \n            >>> checkmate._issue._issue_regression('%s')
-            """%filename
-        return wrapper
-    return append_docstring
+    return _add_issue_doctest(filename, _issue_regression)
 
