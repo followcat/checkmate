@@ -1,4 +1,3 @@
-import time
 import pickle
 import logging
 import threading
@@ -17,9 +16,7 @@ class Connector(checkmate.runtime.communication.Connector):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server, is_broadcast=is_broadcast)
         self._name = component.name
         self.port = -1
-        self.broadcast_port = -1
         self.socket = None
-        self.broadcast_socket = None
         self.zmq_context = zmq.Context.instance()
         self._initport = self.communication.get_initport()
 
