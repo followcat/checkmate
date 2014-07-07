@@ -221,14 +221,3 @@ class ThreadedStub(ThreadedComponent, Stub):
     def __init__(self, component):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
-
-    def run(self):
-        while True:
-            if self.check_for_stop():
-                break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for socket in s:
-                exchange = socket.recv_pyobj()
-                if exchange is not None:
-                    with self.validation_lock:
-                        self.process([exchange])
