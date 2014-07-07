@@ -29,7 +29,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.request_ports()
 
     def request_ports(self):
-        mode = zmq.PULL if not self.is_broadcast else zmq.SUB
+        mode = zmq.PULL if not self.is_broadcast else zmq.PUB
         self.socket = self.zmq_context.socket(mode)
         self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
 
@@ -41,7 +41,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def connect_ports(self):
         if not self.is_server:
-            mode = zmq.PUSH if not self.is_broadcast else zmq.PUB
+            mode = zmq.PUSH if not self.is_broadcast else zmq.SUB
             _socket = self.zmq_context.socket(zmq.REQ)
             _socket.connect("tcp://127.0.0.1:%i" % self._initport)
             _socket.send(pickle.dumps((self._name, self.is_broadcast)))
@@ -50,6 +50,8 @@ class Connector(checkmate.runtime.communication.Connector):
 
             self.socket = self.zmq_context.socket(mode)
             self.socket.connect("tcp://127.0.0.1:%i" % self.port)
+            if mode == zmq.SUB:
+                self.socket.setsockopt_string(zmq.SUBSCRIBE, '')
 
     def open(self):
         """"""
