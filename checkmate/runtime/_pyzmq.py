@@ -63,9 +63,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def send(self, exchange):
         """"""
-        if not self.is_server:
-            #no lock require to protect encoder (only pickle)
-            self.socket.send(checkmate.runtime.encoder.encode(exchange))
+        self.socket.send(checkmate.runtime.encoder.encode(exchange))
 
 
 class Registry(checkmate.runtime._threading.Thread):
