@@ -75,13 +75,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """"""
         for _c in self.connections:
             _c.initialize()
-            if _c.socket and _c.is_server and not _c.is_broadcast:
+            if hasattr(_c, 'socket') and _c.socket and _c.is_server and not _c.is_broadcast:
                 self.poller.register(_c.socket, zmq.POLLIN)
 
     def start(self):
         for _c in self.connections:
             _c.open()
-            if _c.socket and not _c.is_server and _c.is_broadcast:
+            if hasattr(_c, 'socket') and _c.socket and not _c.is_server and _c.is_broadcast:
                 self.poller.register(_c.socket, zmq.POLLIN)
         super(ThreadedClient, self).start()
 
