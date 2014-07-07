@@ -112,6 +112,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         It is up to the connector to manage the thread protection.
         """
         for _c in self.connections:
-            if _c._name == exchange.destination:
+            if _c._name in exchange.destination:
                 _c.send(exchange)
                 self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))

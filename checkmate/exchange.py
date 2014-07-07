@@ -74,7 +74,10 @@ class Exchange(checkmate.partition.Partition):
 
     def origin_destination(self, origin, destination):
         self._origin = origin
-        self._destination = destination
+        if type(destination) != list:
+            self._destination = [destination]
+        else:
+            self._destination = destination
 
     @property
     def origin(self):
@@ -95,7 +98,7 @@ class Exchange(checkmate.partition.Partition):
             >>> e = Exchange()
             >>> e.origin_destination("","destination")
             >>> e.destination
-            'destination'
+            ['destination']
         """
         try:
             return self._destination

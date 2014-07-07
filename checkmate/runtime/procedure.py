@@ -44,7 +44,7 @@ def _compatible_skip_test(procedure, message):
         >>> _incoming.value
         'RL'
 
-        >>> _outgoing = a.components[_incoming.destination].process([_incoming])
+        >>> _outgoing = a.components[_incoming.destination[0]].process([_incoming])
         >>> len(_outgoing)
         0
         >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_incoming, [checkmate._tree.Tree(_output, []) for _output in _outgoing]))
