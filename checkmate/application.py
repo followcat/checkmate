@@ -54,15 +54,6 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             namespace['component_classes'][key] = _class
             
-        for _name in namespace['component_classes']:
-            connecting_components = []
-            for _n in [_c for _c in namespace['component_classes'] if _c != _name]:
-                for service in namespace['component_classes'][_n].services:
-                    if service in namespace['component_classes'][_name].outgoings:
-                        connecting_components.extend(_n)
-                        break
-            setattr(namespace['component_classes'][_name], 'connecting_components', connecting_components)
-            
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
