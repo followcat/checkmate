@@ -15,18 +15,60 @@ import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
-def add_device_service(services):
+def add_device_service(services, component):
+    publishs = component.publish_exchange
+    subscribes = component.subscribe_exchange
+    broadcast_map = component.broadcast_map
+
     d = {}
+    code = """
+        \nimport PyTango
+        \ndef __init__(self, *args):
+        \n    super(self.__class__, self).__init__(*args)"""
+    for _publish in publishs:
+        code += """
+        \n    self.attr_%s_read = 1.0""" % (_publish)
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
+        code += """
+        \n    self.%s_value = 1.0
+        \n    self.dev_%s = PyTango.DeviceProxy('%s')""" % (_subscribe, component_name, device_name)
+
+    code += """
+            \n
+            \ndef always_executed_hook(self):"""
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        code += """
+            \n    new_%(sub)s_value = self.dev_%(name)s.%(sub)s
+            \n    if new_%(sub)s_value != self.%(sub)s_value:
+            \n        self.send(('%(sub)s', None))
+            \n        self.%(sub)s_value = new_%(sub)s_value""" % {'sub': _subscribe, 'name': component_name}
+    code += """
+            \n    pass
+            \n"""
+
     for _service in services:
         name = _service[0]
-        code = """
-            \ndef %s(self, param=None):
-            \n    self.send(('%s', param))""" % (name, name)
-        exec(code, d)
+        if name not in publishs:
+            code += """
+                \ndef %(name)s(self, param=None):
+                \n    self.send(('%(name)s', param))""" % {'name': name}
+
+    for _publish in publishs:
+        code += """
+            \n
+            \ndef read_%(pub)s(self, attr):
+            \n    attr.set_value(self.attr_%(pub)s_read)
+            \ndef write_%(pub)s(self, attr):
+            \n    self.attr_%(pub)s_read = attr.get_write_value()""" % {'pub': _publish}
+
+    exec(code, d)
     return d
 
 
-def add_device_interface(services):
+def add_device_interface(services, publishs):
     command = {}
     for _service in services:
         name = _service[0]
@@ -36,7 +78,10 @@ def add_device_interface(services):
             command[name] = [[_type], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
-    return {'cmd_list': command}
+    attribute = {}
+    for _publish in publishs:
+        attribute[_publish] = [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ_WRITE]]
+    return {'cmd_list': command, 'attr_list': attribute}
 
 
 def switch(_type=None):
@@ -79,7 +124,7 @@ class Device(PyTango.Device_4Impl):
         self.zmq_context = zmq.Context.instance()
         self.incoming = []
         self.socket = self.zmq_context.socket(zmq.PUSH)
-        self.socket.connect("tcp://127.0.0.1:%i"%self._initport)
+        self.socket.connect("tcp://127.0.0.1:%i" % self._initport)
 
     def send(self, exchange):
         dump = pickle.dumps(exchange)
@@ -106,8 +151,8 @@ class Connector(checkmate.runtime.communication.Connector):
         super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
-            self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services))
-            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
+            self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
+            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component.publish_exchange))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
         self.zmq_context = zmq.Context.instance()
@@ -133,14 +178,18 @@ class Connector(checkmate.runtime.communication.Connector):
         self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
-        attr = exchange.get_partition_attr()
-        param = None
-        if attr:
-            param_type = switch(type(attr[0]))
-            param = PyTango.DeviceData()
-            param.insert(param_type, attr)
-        call = getattr(self.device_client, exchange.action)
-        call(param)
+        if exchange.broadcast:
+            attr_read = getattr(self.device_client, exchange.action)
+            setattr(self.device_client, exchange.action, attr_read + 1)
+        else:
+            attr = exchange.get_partition_attr()
+            param = None
+            if attr:
+                param_type = switch(type(attr[0]))
+                param = PyTango.DeviceData()
+                param.insert(param_type, attr)
+            call = getattr(self.device_client, exchange.action)
+            call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):
