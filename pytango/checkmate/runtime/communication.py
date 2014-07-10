@@ -103,7 +103,7 @@ class DeviceInterface(PyTango.DeviceClass):
 
 class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
-        super().__init__(component, communication, is_server=is_server)
+        super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services))
