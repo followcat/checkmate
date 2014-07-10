@@ -16,6 +16,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
 
+        self.PA_value = 1.0
+
     def PBAC(self):
         #Execute asynchronously in case of nested called caused infinitely wait
         _R = ['AT1', 'NORM']
@@ -42,6 +44,11 @@ class Component_2(PyTango.Device_4Impl):
     def DR(self):
         self.user_dev.VODR()
 
+    def always_executed_hook(self):
+        new_PA_value = self.c1_dev.PA
+        if new_PA_value != self.PA_value:
+            self.PA()
+            self.PA_value = new_PA_value
 
 class C2Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
