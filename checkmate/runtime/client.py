@@ -115,9 +115,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             for _c in self.connections:
                 if _c.is_broadcast and _c.is_server and _c._name == exchange.origin:
                     _c.send(exchange)
-                    self.logger.info("%s use broadcast send exchange %s to %s" % (self, exchange.value, exchange.destination))
+                    self.logger.debug("%s use broadcast send exchange %s to %s" % (self, exchange.value, exchange.destination))
         else:
             for _c in self.connections:
                 if _c._name in exchange.destination and not _c.is_broadcast:
                     _c.send(exchange)
-                    self.logger.info("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
+                    self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
