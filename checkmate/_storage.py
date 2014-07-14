@@ -89,7 +89,7 @@ def store(type, interface, name, description=None):
             except AttributeError:
                 raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + code)
     else:
-        return checkmate._storage.InternalStorage(interface, name, description)
+        return checkmate._storage.InternalStorage(interface, name, description, checkmate._module.get_class_implementing(interface))
 
 
 class Data(object):
@@ -181,7 +181,7 @@ class IStorage(zope.interface.Interface):
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, name, description, function=None):
+    def __init__(self, interface, name, description, function):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -196,11 +196,7 @@ class InternalStorage(object):
         self.code = checkmate._exec_tools.get_method_basename(name)
         self.description = description
         self.interface = interface
-        self._class = checkmate._module.get_class_implementing(interface)
-        if function is None:
-            self.function = self._class
-        else:
-            self.function = function
+        self.function = function
 
         self.arguments = checkmate._exec_tools.method_arguments(name, interface)
         self.resolve_logic = {}
