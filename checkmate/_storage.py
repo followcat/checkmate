@@ -3,9 +3,21 @@ import collections
 
 import zope.interface
 
-import checkmate._exec_tools
 import checkmate._module
+import checkmate._exec_tools
 
+
+def _to_interface(_classname):
+    return 'I' + _classname
+
+def name_to_interface(name, modules):
+    for _m in modules:
+        if hasattr(_m, _to_interface(name)):
+            interface = getattr(_m, _to_interface(name))
+            break
+    else:
+        raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
+    return interface
 
 def _build_resolve_logic(transition, type, data):
     """
@@ -110,21 +122,34 @@ class Data(object):
 
 
 class TransitionData(collections.OrderedDict):
-    def __init__(self, initial, incoming, final, outgoing):
-        assert type(final) == list
-        assert type(initial) == list
-        assert type(incoming) == list
-        assert type(outgoing) == list
-
-        for item in initial + final + incoming + outgoing:
-            assert isinstance(item, Data)
-
-        super(TransitionData, self).__init__()
+    def __init__(self, items, module_dict):
         # OrderedDict to keep order ('initial', 'incoming', 'final', 'outgoing')
-        self['initial'] = initial
-        self['incoming'] = incoming
-        self['final'] = final
-        self['outgoing'] = outgoing
+        super(TransitionData, self).__init__()
+
+        self['final'] = []
+        self['initial'] = []
+        self['incoming'] = []
+        self['outgoing'] = []
+
+        for _k, _v in items.items():
+            if _k == 'initial' or _k == 'final':
+                module_type = 'states'
+            elif _k == 'incoming' or _k == 'outgoing':
+                module_type = 'exchanges'
+            elif _k == 'name':
+                continue
+            for each_item in _v:
+                for _name, _data in each_item.items():
+                    interface = name_to_interface(_name, module_dict[module_type])
+                    storage_data = Data(module_type, interface, [_data])
+                    if _k == 'initial':
+                        self['initial'].append(storage_data)
+                    elif _k == 'final':
+                        self['final'].append(storage_data)
+                    elif _k == 'incoming':
+                        self['incoming'].append(storage_data)
+                    elif _k == 'outgoing':
+                        self['outgoing'].append(storage_data)
 
 
 class PartitionStorage(Data):
