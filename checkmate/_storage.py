@@ -202,10 +202,10 @@ class InternalStorage(object):
             'True'
         """
         def wrapper(func, param, kwparam):
-            if type(args) == list and self.interface.implementedBy(self.function):
-                if len(self.arguments['values']) > 0 and len(args) > 0:
+            if type(param) == list and self.interface.implementedBy(self.function):
+                if len(self.arguments['values']) > 0 and len(param) > 0:
                     func = self.function.__init__
-                    state = args[0]
+                    state = param[0]
                     value = self.arguments['values'][0]
                     return func(state, value)
             else:
