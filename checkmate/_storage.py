@@ -122,15 +122,9 @@ class PartitionStorage(Data):
     """"""
 
 
-class TransitionStorage(collections.OrderedDict):
+class TransitionStorage(collections.defaultdict):
     def __init__(self, items, module_dict):
-        # OrderedDict to keep order ('initial', 'incoming', 'final', 'outgoing')
-        super(TransitionStorage, self).__init__()
-
-        self['final'] = []
-        self['initial'] = []
-        self['incoming'] = []
-        self['outgoing'] = []
+        super(TransitionStorage, self).__init__(list)
 
         for _k, _v in items.items():
             if _k == 'initial' or _k == 'final':
