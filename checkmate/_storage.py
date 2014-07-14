@@ -20,36 +20,37 @@ def name_to_interface(name, modules):
     return interface
 
 def _build_resolve_logic(transition, type, data):
-    """
+    """Build logic to resolve kwargs in TransitionStorage
+
         >>> import sample_app.application
         >>> import sample_app.exchanges
         >>> import checkmate._storage
         >>> a = sample_app.application.TestData()
         >>> t = a.components['C1'].state_machine.transitions[1]
-        >>> checkmate._storage._build_resolve_logic(t, 'final', t.final[0])
+        >>> t.final[0].resolve_logic
         {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
     """
     resolved_arguments = {}
-    entry = getattr(transition, type)
+    entry = transition[type]
     arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
-            for item in transition.initial:
+            for item in transition['initial']:
                 if arg == item.code:
                     resolved_arguments[arg] = ('initial', item.interface)
                     found = True
                     break
-        if ((not found) and len(transition.incoming) != 0):
+        if ((not found) and len(transition['incoming']) != 0):
             if type in ['final', 'outgoing']:
-                for item in transition.incoming:
+                for item in transition['incoming']:
                     if arg in list(item.arguments['attribute_values'].keys()):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
         if not found:
             if type in ['outgoing']:
-                for item in transition.final:
+                for item in transition['final']:
                     if arg == item.code:
                         resolved_arguments[arg] = ('final', item.interface)
                         found = True
@@ -117,10 +118,14 @@ class Data(object):
         return (None, None, None)
 
 
-class TransitionData(collections.OrderedDict):
+class PartitionStorage(Data):
+    """"""
+
+
+class TransitionStorage(collections.OrderedDict):
     def __init__(self, items, module_dict):
         # OrderedDict to keep order ('initial', 'incoming', 'final', 'outgoing')
-        super(TransitionData, self).__init__()
+        super(TransitionStorage, self).__init__()
 
         self['final'] = []
         self['initial'] = []
@@ -139,32 +144,16 @@ class TransitionData(collections.OrderedDict):
                     interface = name_to_interface(_name, module_dict[module_type])
                     storage_data = Data(module_type, interface, [_data])
                     if _k == 'initial':
-                        self['initial'].append(storage_data)
+                        self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':
-                        self['final'].append(storage_data)
+                        self['final'].append(storage_data.storage[0])
                     elif _k == 'incoming':
-                        self['incoming'].append(storage_data)
+                        self['incoming'].append(storage_data.storage[0])
                     elif _k == 'outgoing':
-                        self['outgoing'].append(storage_data)
-
-
-class PartitionStorage(Data):
-    """"""
-
-
-class TransitionStorage(object):
-    def __init__(self, transition):
-        """ Build the list of InternalStorage
-        """
-        assert isinstance(transition, TransitionData)
-        for key in iter(transition):
-            _list = []
-            for item in transition[key]:
-                _list.append(item.storage[0])
-            setattr(self, key, _list)
+                        self['outgoing'].append(storage_data.storage[0])
 
         for _attribute in ('incoming', 'final', 'outgoing'):
-            for item in getattr(self, _attribute):
+            for item in self[_attribute]:
                 item.resolve_logic = _build_resolve_logic(self, _attribute, item)
 
 

@@ -13,8 +13,8 @@ def make_transition(items, exchanges, state_modules):
     except KeyError:
         tran_name = 'unknown'
 
-    ts = checkmate._storage.TransitionStorage(checkmate._storage.TransitionData(items, module_dict))
-    t = checkmate.transition.Transition(tran_name=tran_name, initial=ts.initial, incoming=ts.incoming, final=ts.final, outgoing=ts.outgoing)
+    ts = checkmate._storage.TransitionStorage(items, module_dict)
+    t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
     return t
 
 class Declarator(object):
