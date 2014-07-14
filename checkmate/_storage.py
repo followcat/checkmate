@@ -181,7 +181,7 @@ class InternalStorage(object):
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
-    def factory(self, args=[], kwargs={}):
+    def factory(self, args=None, kwargs=None):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
@@ -211,9 +211,9 @@ class InternalStorage(object):
             else:
                 return func(*param, **kwparam)
 
-        if len(args) == 0:
+        if args is None:
             args = self.arguments['values']
-        if len(kwargs) == 0:
+        if kwargs is None:
             kwargs = self.arguments['attribute_values']
         else:
             _local_kwargs = copy.deepcopy(self.arguments['attribute_values'])
@@ -221,7 +221,7 @@ class InternalStorage(object):
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, arg, states=[], exchanges=[]):
+    def resolve(self, arg, states=None, exchanges=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -243,12 +243,12 @@ class InternalStorage(object):
         """
         if arg in self.resolve_logic.keys():
             (_type, _interface) = self.resolve_logic[arg]
-            if _type in ['initial', 'final']:
+            if _type in ['initial', 'final'] and states is not None:
                 for _state in states:
                     if _interface.providedBy(_state):
                         return {arg: _state.value}
                 raise AttributeError
-            else:
+            elif exchanges is not None:
                 for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
                     try:
                         return {arg: getattr(_exchange, arg)}
