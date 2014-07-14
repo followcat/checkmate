@@ -80,12 +80,12 @@ def store(type, interface, name, description=None):
         code = checkmate._exec_tools.get_method_basename(name)
         if type == 'exchanges':
             try:
-                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
+                return InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
             except AttributeError:
                 raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + code)
         else:
             try:
-                return checkmate._storage.InternalStorage(interface, name, description, getattr(checkmate._module.get_class_implementing(interface), code))
+                return InternalStorage(interface, name, description, getattr(checkmate._module.get_class_implementing(interface), code))
             except AttributeError:
                 raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + code)
     else:
