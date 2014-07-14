@@ -57,7 +57,7 @@ def _build_resolve_logic(transition, type, data):
     return resolved_arguments
 
 
-def store(type, interface, name, description=None):
+def store(type, interface, code, description=None):
     """
         >>> import checkmate._storage
         >>> import sample_app.application
@@ -76,20 +76,19 @@ def store(type, interface, name, description=None):
         >>> (ex.action, ex.R)
         ('AP', 'HIGH')
     """
-    if checkmate._exec_tools.method_unbound(name, interface) or type == 'exchanges':
-        code = checkmate._exec_tools.get_method_basename(name)
-        if type == 'exchanges':
-            try:
-                return InternalStorage(interface, name, description, getattr(checkmate._module.get_module_defining(interface), code))
-            except AttributeError:
-                raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + code)
-        else:
-            try:
-                return InternalStorage(interface, name, description, getattr(checkmate._module.get_class_implementing(interface), code))
-            except AttributeError:
-                raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + code)
+    name = checkmate._exec_tools.get_method_basename(code)
+    if type == 'exchanges':
+        try:
+            return InternalStorage(interface, code, description, getattr(checkmate._module.get_module_defining(interface), name))
+        except AttributeError:
+            raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
+    elif checkmate._exec_tools.method_unbound(code, interface):
+        try:
+            return InternalStorage(interface, code, description, getattr(checkmate._module.get_class_implementing(interface), name))
+        except AttributeError:
+            raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
     else:
-        return checkmate._storage.InternalStorage(interface, name, description, checkmate._module.get_class_implementing(interface))
+        return checkmate._storage.InternalStorage(interface, code, description, checkmate._module.get_class_implementing(interface))
 
 
 class Data(object):
@@ -99,19 +98,16 @@ class Data(object):
         self.codes = codes
         self.full_description = full_description
 
-    @property
-    def storage(self):
-        _list = []
+        self.storage = []
         for code in self.codes:
             try:
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None, None)
             _storage = store(self.type, self.interface, code, code_description)
-            _list.append(_storage)
-        if self.codes is None or len(self.codes) == 0:
-            _list.append(store(self.type, self.interface, ''))
-        return _list
+            self.storage.append(_storage)
+        if not self.storage:
+            self.storage = [store(self.type, self.interface, '')]
 
     def get_description(self, item):
         """ Return description corresponding to item """
