@@ -22,6 +22,7 @@ class Component_2(PyTango.Device_4Impl):
                 self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA)
                 break
             except:
+                time.sleep(1)
                 times += 1
 
     def PBAC(self):

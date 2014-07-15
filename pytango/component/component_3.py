@@ -1,4 +1,5 @@
 import sys
+import time
 
 import PyTango
 
@@ -22,8 +23,8 @@ class Component_3(PyTango.Device_4Impl):
                 self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA)
                 break
             except:
+                time.sleep(1)
                 times += 1
-
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
