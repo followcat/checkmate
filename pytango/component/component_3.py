@@ -16,7 +16,14 @@ class Component_3(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
 
-        self.PA_value = 1.0
+        times = 0
+        while times < 10:
+            try:
+                self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA)
+                break
+            except:
+                times += 1
+
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
@@ -31,15 +38,9 @@ class Component_3(PyTango.Device_4Impl):
             self.c2_dev.DR()
 
     def PA(self):
-        if self.attr_c_state == False:
-            pass
-
-    def always_executed_hook(self):
-        new_PA_value = self.c1_dev.PA
-        if new_PA_value != self.PA_value:
-            self.PA()
-            self.PA_value = new_PA_value
-
+        if self.c1_dev.PA > 1:
+            if self.attr_c_state == False:
+                pass
 
 class C3Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
@@ -54,8 +55,7 @@ class C3Interface(PyTango.DeviceClass):
  
 
     cmd_list = {'RE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
+                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }

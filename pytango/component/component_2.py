@@ -16,7 +16,13 @@ class Component_2(PyTango.Device_4Impl):
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
 
-        self.PA_value = 1.0
+        times = 0
+        while times < 10:
+            try:
+                self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA)
+                break
+            except:
+                times += 1
 
     def PBAC(self):
         #Execute asynchronously in case of nested called caused infinitely wait
@@ -36,7 +42,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):
-        self.user_dev.VOPA()
+        if self.c1_dev.PA > 1:
+            self.user_dev.VOPA()
 
     def DA(self):
         self.user_dev.VODA()
@@ -44,11 +51,6 @@ class Component_2(PyTango.Device_4Impl):
     def DR(self):
         self.user_dev.VODR()
 
-    def always_executed_hook(self):
-        new_PA_value = self.c1_dev.PA
-        if new_PA_value != self.PA_value:
-            self.PA()
-            self.PA_value = new_PA_value
 
 class C2Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
@@ -66,7 +68,6 @@ class C2Interface(PyTango.DeviceClass):
                 'PBRL': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'PBPP': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
