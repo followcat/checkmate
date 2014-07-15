@@ -257,9 +257,12 @@ class InternalStorage(object):
                 raise AttributeError
         raise AttributeError
 
-    def match(self, target_copy):
+    def match(self, target_copy, reference=None):
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
-            if _target == self.factory():
+            _initial = None
+            if reference is not None:
+                _initial = [_i for _i in reference if self.interface.providedBy(_i)]
+            if _target == self.factory(_initial):
                 target_copy.remove(_target)
                 break
         return target_copy

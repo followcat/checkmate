@@ -160,6 +160,7 @@ class Procedure(object):
             for _c in self.runtime.runtime_components.values():
                 _c.context.validation_list.clear()
 
+        initial_state_list = self.application.state_list()
         stub = self.runtime.runtime_components[current_node.root.owner]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
@@ -167,7 +168,7 @@ class Procedure(object):
         if hasattr(self, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.application.compare_states(self.final)
+                return self.application.compare_states(self.final, initial_state_list)
             try:
                 check_compare_states()
             except ValueError:
