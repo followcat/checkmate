@@ -2,6 +2,7 @@ import zope.interface
 
 import checkmate.runs
 import checkmate._module
+import checkmate.sandbox
 import checkmate.component
 import checkmate.service_registry
 import checkmate.partition_declarator
@@ -135,11 +136,17 @@ class Application(object):
                 self.stubs.pop(self.stubs.index(name))
 
     def state_list(self):
+        """Return a static list of the component state values
+
+        A sandbox is used to make copy of current application states.
+        """
         local_copy = []
-        for _component in list(self.components.values()):
+        sb = checkmate.sandbox.Sandbox(self)
+        for _component in list(sb.application.components.values()):
             local_copy += [_s for _s in _component.states]
         return local_copy
-    
+
+
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_states(self, target, reference_state_list=None):
