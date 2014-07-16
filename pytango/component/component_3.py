@@ -20,7 +20,7 @@ class Component_3(PyTango.Device_4Impl):
         times = 0
         while times < 10:
             try:
-                self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA)
+                self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
                 break
             except:
                 time.sleep(1)
@@ -38,10 +38,9 @@ class Component_3(PyTango.Device_4Impl):
             self.toggle()
             self.c2_dev.DR()
 
-    def PA(self, *args):
-        if self.c1_dev.PA > 1:
-            if self.attr_c_state == False:
-                pass
+    def PA_callback(self, *args):
+        if self.attr_c_state == False:
+            pass
 
 class C3Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):

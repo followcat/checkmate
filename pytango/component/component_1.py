@@ -33,15 +33,10 @@ class Component_1(PyTango.Device_4Impl):
     def PP(self, param):
         if self.attr_c_state == False:
             self.toggle()
-            self.attr_PA_read += 1
             self.push_change_event('PA', self.attr_PA_read)
 
     def read_PA(self, attr):
         attr.set_value(self.attr_PA_read)
-
-    def write_PA(self, attr):
-        self.attr_PA_read = attr.get_write_value()
-        self.push_change_event('PA', self.attr_PA_read)
 
 
 class C1Interface(PyTango.DeviceClass):
@@ -60,7 +55,7 @@ class C1Interface(PyTango.DeviceClass):
                 'PP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
                }
     attr_list = {
-                'PA': [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ_WRITE]],
+                'PA': [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ]],
                 }
 
 
