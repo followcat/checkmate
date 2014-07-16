@@ -17,6 +17,7 @@ class Component_3(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
 
+        self.is_sub = False
         times = 0
         while times < 10:
             try:
@@ -25,6 +26,7 @@ class Component_3(PyTango.Device_4Impl):
             except:
                 time.sleep(1)
                 times += 1
+        self.is_sub = True
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
@@ -39,8 +41,9 @@ class Component_3(PyTango.Device_4Impl):
             self.c2_dev.DR()
 
     def PA_callback(self, *args):
-        if self.attr_c_state == False:
-            pass
+        if self.is_sub:
+            if self.attr_c_state == False:
+                pass
 
 class C3Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):

@@ -17,6 +17,7 @@ class Component_2(PyTango.Device_4Impl):
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
 
+        self.is_sub = False
         times = 0
         while times < 10:
             try:
@@ -25,6 +26,7 @@ class Component_2(PyTango.Device_4Impl):
             except:
                 time.sleep(1)
                 times += 1
+        self.is_sub = True
 
     def PBAC(self):
         #Execute asynchronously in case of nested called caused infinitely wait
@@ -44,7 +46,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA_callback(self, *args):
-        self.user_dev.VOPA()
+        if self.is_sub:
+            self.user_dev.VOPA()
 
     def DA(self):
         self.user_dev.VODA()
