@@ -15,8 +15,8 @@ Using compare_state() with transition's final InternalStorage as target does not
     >>> box(_transition, foreign_transitions=True)
     True
     >>> proc = checkmate.runtime.test_plan.build_procedure(box, _transition)
-    >>> proc.final[0].function
-    <class 'sample_app.component.component_1_states.AnotherState'>
+    >>> proc.final[0].function #doctest: +ELLIPSIS
+    <function State.append at ...
     >>> proc2 = checkmate.runtime.test_plan.build_procedure(box, proc.transitions.nodes[0].root)
     >>> r.application.compare_states(proc2.initial)
     True

@@ -18,8 +18,8 @@ Setting the procedure.final from the sandbox does not work.
     >>> proc = checkmate.runtime.test_plan.build_procedure(box,  box)
     >>> len(proc.final)
     3
-    >>> proc.final[0].function
-    <class 'sample_app.component.component_1_states.State'>
+    >>> proc.final[0].function #doctest: +ELLIPSIS
+    <function State.__init__ at ...
     >>> proc.final[1].function #doctest: +ELLIPSIS
     <function State.toggle at ...
     >>> proc.final[2].function #doctest: +ELLIPSIS

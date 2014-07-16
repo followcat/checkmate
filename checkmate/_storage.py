@@ -100,6 +100,7 @@ class Data(object):
         self.full_description = full_description
 
         self.storage = []
+        #n items for PartitionStorage and 1 item for TransitionStorage
         for code in self.codes:
             try:
                 code_description = self.full_description[code]
@@ -140,6 +141,8 @@ class TransitionStorage(collections.defaultdict):
                     if _k == 'initial':
                         self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':
+                        if interface.implementedBy(storage_data.storage[0].function):
+                            storage_data.storage[0].function = storage_data.storage[0].function.__init__
                         self['final'].append(storage_data.storage[0])
                     elif _k == 'incoming':
                         self['incoming'].append(storage_data.storage[0])
@@ -195,19 +198,38 @@ class InternalStorage(object):
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
             ['AT2', 'HIGH']
-            >>> st = checkmate._storage.InternalStorage(sample_app.component.component_1_states.IState, 'M0(True)', None, sample_app.component.component_1_states.State)
-            >>> st.arguments['values'], st.arguments['attribute_values']
-            (('True',), {})
-            >>> st.factory().value
-            'True'
+
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> c = a.components['C1']   
+            >>> a.start()
+            >>> i = sample_app.exchanges.AP()
+            >>> c.process([i]) # doctest: +ELLIPSIS
+            [<sample_app.exchanges.ThirdAction object at ...
+            >>> i = sample_app.exchanges.AC()
+            >>> c.process([i]) # doctest: +ELLIPSIS
+            [<sample_app.exchanges.Reaction object at ...
+            >>> c.states[1].value
+            [{'R': ['AT1', 'NORM']}]
+            >>> t = c.state_machine.transitions[2]
+            >>> i = t.incoming[0].factory(); i.action
+            'PP'
+            >>> t.final[1].function # doctest: +ELLIPSIS
+            <function State.pop at ...
+            >>> t.final[1].factory([c.states[1]]) # doctest: +ELLIPSIS
+            <sample_app.component.component_1_states.AnotherState object at ...
+            >>> c.states[1].value
+            []
         """
         def wrapper(func, param, kwparam):
-            if type(param) == list and self.interface.implementedBy(self.function):
-                if len(self.arguments['values']) > 0 and len(param) > 0:
-                    func = self.function.__init__
-                    state = param[0]
+            if len(param) > 0 and self.interface.providedBy(param[0]):
+                state = param[0]
+                try:
                     value = self.arguments['values'][0]
-                    return func(state, value)
+                except IndexError:
+                    value = None
+                func(state, value, **kwparam)
+                return state
             else:
                 return func(*param, **kwparam)
 
@@ -258,6 +280,34 @@ class InternalStorage(object):
         raise AttributeError
 
     def match(self, target_copy, reference=None):
+        """
+            >>> import checkmate.runtime._runtime
+            >>> import checkmate.runtime.test_plan
+            >>> import sample_app.application
+            >>> import sample_app.component.component_1_states
+            >>> import sample_app.component.component_3_states
+            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+            >>> proc = [p[0] for p in gen][0]
+            >>> app = sample_app.application.TestData()
+            >>> app.start()
+            >>> saved = app.state_list()
+            >>> c1 = app.components['C1']
+            >>> c3 = app.components['C3']
+
+            >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_1_states.IState][0]
+            >>> t1 = c1.state_machine.transitions[0]
+            >>> c1.simulate(t1) #doctest: +ELLIPSIS
+            [<sample_app.exchanges.Reaction object at ...
+            >>> len(final.match(app.state_list(), saved)) != len(saved)
+            True
+
+            >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_3_states.IAcknowledge][0]
+            >>> t3 = c3.state_machine.transitions[0]
+            >>> c3.simulate(t3)
+            []
+            >>> len(proc.final[1].match(app.state_list(), saved)) != len(saved)
+            True
+        """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = None
             if reference is not None:
