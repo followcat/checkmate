@@ -43,7 +43,7 @@ class Component_2(PyTango.Device_4Impl):
         _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AP', _R)
 
-    def PA(self):
+    def PA(self, *args):
         if self.c1_dev.PA > 1:
             self.user_dev.VOPA()
 

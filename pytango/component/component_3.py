@@ -38,7 +38,7 @@ class Component_3(PyTango.Device_4Impl):
             self.toggle()
             self.c2_dev.DR()
 
-    def PA(self):
+    def PA(self, *args):
         if self.c1_dev.PA > 1:
             if self.attr_c_state == False:
                 pass
