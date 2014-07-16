@@ -22,57 +22,69 @@ def add_device_service(services, component):
 
     d = {}
     code = """
+        \nimport time
+        \n
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)"""
     for _publish in publishs:
         code += """
-        \n    self.attr_%s_read = 1.0""" % (_publish)
+        \n    self.attr_%(pub)s_read = False
+        \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
         code += """
-        \n    self.%s_value = 1.0
-        \n    self.dev_%s = PyTango.DeviceProxy('%s')""" % (_subscribe, component_name, device_name)
-
-    code += """
-            \n
-            \ndef always_executed_hook(self):"""
-    for _subscribe in subscribes:
-        component_name = broadcast_map[_subscribe]
-        code += """
-            \n    new_%(sub)s_value = self.dev_%(name)s.%(sub)s
-            \n    if new_%(sub)s_value != self.%(sub)s_value:
-            \n        self.send(('%(sub)s', None))
-            \n        self.%(sub)s_value = new_%(sub)s_value""" % {'sub': _subscribe, 'name': component_name}
-    code += """
-            \n    pass
-            \n"""
+        \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')
+        \n    self.is_sub = False
+        \n    times = 0
+        \n    while times < 10:
+        \n        try:
+        \n            #'omni_thread_fatal' and command this line, still pass
+        \n            self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s)
+        \n            break
+        \n        except:
+        \n            time.sleep(1)
+        \n            times += 1
+        \n    self.is_sub = True""" % {'sub': _subscribe, 'name': component_name, 'device': device_name}
 
     for _service in services:
         name = _service[0]
-        if name not in publishs:
+        if name not in publishs and name not in subscribes:
             code += """
                 \ndef %(name)s(self, param=None):
                 \n    self.send(('%(name)s', param))""" % {'name': name}
+
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        code += """
+            \ndef %(sub)s(self, *args):
+            \n    if self.is_sub:
+            \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
 
     for _publish in publishs:
         code += """
             \n
             \ndef read_%(pub)s(self, attr):
             \n    attr.set_value(self.attr_%(pub)s_read)
+            \n
             \ndef write_%(pub)s(self, attr):
-            \n    self.attr_%(pub)s_read = attr.get_write_value()""" % {'pub': _publish}
+            \n    self.attr_%(pub)s_read = attr.get_write_value()
+            \n    self.push_change_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
 
     exec(code, d)
     return d
 
 
-def add_device_interface(services, publishs):
+def add_device_interface(services, component):
+    publishs = component.publish_exchange
+    subscribes = component.subscribe_exchange
     command = {}
     for _service in services:
         name = _service[0]
         args = _service[1]
+        if name in publishs or name in subscribes:
+            continue
         if args is not None:
             _type = switch(type(args[0]))
             command[name] = [[_type], [PyTango.DevVoid]]
@@ -80,7 +92,7 @@ def add_device_interface(services, publishs):
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     attribute = {}
     for _publish in publishs:
-        attribute[_publish] = [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ_WRITE]]
+        attribute[_publish] = [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ_WRITE]]
     return {'cmd_list': command, 'attr_list': attribute}
 
 
@@ -152,7 +164,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
-            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component.publish_exchange))
+            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
         self.zmq_context = zmq.Context.instance()
@@ -180,7 +192,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         if exchange.broadcast:
             attr_read = getattr(self.device_client, exchange.action)
-            setattr(self.device_client, exchange.action, attr_read + 1)
+            setattr(self.device_client, exchange.action, False)
         else:
             attr = exchange.get_partition_attr()
             param = None
