@@ -38,7 +38,7 @@ def add_device_service(services, component):
         \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')
         \n    self.is_sub = False
         \n    times = 0
-        \n    while times < 10:
+        \n    while times < 5:
         \n        try:
         \n            #'omni_thread_fatal' and command this line, still pass
         \n            self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s)
