@@ -191,7 +191,6 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def send(self, exchange):
         if exchange.broadcast:
-            attr_read = getattr(self.device_client, exchange.action)
             setattr(self.device_client, exchange.action, False)
         else:
             attr = exchange.get_partition_attr()
