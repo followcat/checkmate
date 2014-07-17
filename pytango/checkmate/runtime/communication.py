@@ -162,7 +162,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
         super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
-        if self.is_server:
+        if (self.is_server and not self.is_broadcast) or (not self.is_server and self.is_broadcast):
             self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
@@ -170,7 +170,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
-        if self.is_server:
+        if (self.is_server and not self.is_broadcast) or (not self.is_server and self.is_broadcast):
             self.socket = self.zmq_context.socket(zmq.PULL)
             self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
             setattr(self.device_class, '_initport', self.port)
