@@ -133,6 +133,9 @@ class Component(object):
             self.states.append(state.storage[0].factory())
         self.service_registry.register(self, self.service_interfaces)
 
+    def reset(self):
+        self.validation_list = []
+
     def stop(self):
         pass
 

@@ -159,7 +159,7 @@ class Procedure(object):
                 
         if not self.is_setup:
             for _c in self.runtime.runtime_components.values():
-                _c.context.validation_list.clear()
+                _c.reset()
 
         saved_initial = checkmate.sandbox.Sandbox(self.application)
         stub = self.runtime.runtime_components[current_node.root.owner]
