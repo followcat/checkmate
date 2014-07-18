@@ -26,27 +26,25 @@ def add_device_service(services, component):
         \n
         \nimport PyTango
         \ndef __init__(self, *args):
-        \n    super(self.__class__, self).__init__(*args)"""
+        \n    super(self.__class__, self).__init__(*args)
+        \n    self.is_sub = False"""
     for _publish in publishs:
         code += """
         \n    self.attr_%(pub)s_read = False
         \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
+
+    code += """
+        \ndef subscribe_event_run(self):"""
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
         code += """
         \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')
-        \n    self.is_sub = False
-        \n    times = 0
-        \n    while times < 5:
-        \n        try:
-        \n            #'omni_thread_fatal' and command this line, still pass
-        \n            self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s)
-        \n            break
-        \n        except:
-        \n            time.sleep(1)
-        \n            times += 1
-        \n    self.is_sub = True""" % {'sub': _subscribe, 'name': component_name, 'device': device_name}
+        \n    #'omni_thread_fatal' and command this line, still pass
+        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name, 'device': device_name}
+    code += """
+        \n    self.is_sub = True
+        \n    pass"""
 
     for _service in services:
         name = _service[0]
@@ -113,15 +111,22 @@ class Registry(checkmate.runtime._threading.Thread):
         self.event = event
         self.pytango_util = PyTango.Util.instance()
 
-    def check_for_shutdown(self):
-        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
+    def event_loop(self):
+        for _device in self.pytango_util.get_device_list('*'):
+            if hasattr(_device, 'is_sub') and not _device.is_sub:
+                try:
+                    _device.subscribe_event_run()
+                except:
+                    continue
+            else:
+                time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
         if self.check_for_stop():
             sys.exit(0)
 
     def run(self):
         self.pytango_util.server_init()
         self.event.set()
-        self.pytango_util.server_set_event_loop(self.check_for_shutdown)
+        self.pytango_util.server_set_event_loop(self.event_loop)
         self.pytango_util.server_run()
 
 
