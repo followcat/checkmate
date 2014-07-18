@@ -33,14 +33,19 @@ def add_device_service(services, component):
         \n    self.attr_%(pub)s_read = False
         \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
 
-    code += """
-        \ndef subscribe_event_run(self):"""
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
         code += """
-        \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')
-        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name, 'device': device_name}
+        \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')""" % {'name': component_name, 'device': device_name}
+
+
+    code += """
+        \ndef subscribe_event_run(self):"""
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        code += """
+        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
     code += """
         \n    self.is_sub = True
         \n    pass"""
