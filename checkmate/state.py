@@ -58,6 +58,8 @@ class State(checkmate.partition.Partition):
         """
         return super(State, self).__eq__(other)
 
+
+    @checkmate.report_issue('checkmate/issues/first_append_result.rst')
     def append(self, *args, **kwargs):
         """
             >>> s = State()

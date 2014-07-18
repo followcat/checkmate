@@ -4,6 +4,7 @@ import zope.interface
 
 import nose.plugins.skip
 
+import checkmate.sandbox
 import checkmate.application
 import checkmate.timeout_manager
 import checkmate.runtime.interfaces
@@ -74,40 +75,50 @@ class Procedure(object):
         self.logger = logging.getLogger('checkmate.runtime.procedure')
 
     def __call__(self, runtime, result=None, *args):
-        """
+        """Run procedure in Runtime instance.
+
+        Provided that we use a defined procedure:
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
             >>> import sample_app.application
-            >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
-            >>> r1.setup_environment(['C1'])
-            >>> r1.start_test()
-            >>> r1_c1 = r1.runtime_components['C1']
-            >>> r1_c2 = r1.runtime_components['C2']
-            >>> r1_c3 = r1.runtime_components['C3']
-            >>> r2 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
-            >>> r2.setup_environment(['C3'])
-            >>> r2.start_test()
-            >>> r2_c1 = r2.runtime_components['C1']
-            >>> r2_c2 = r2.runtime_components['C2']
-            >>> r2_c3 = r2.runtime_components['C3']
             >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
             >>> procedures = []
             >>> for p in gen:
             ...     procedures.append(p[0])
 
-            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
-            ('True', 'False', 'True', 'False')
             >>> proc = procedures[0]
             >>> proc.transitions.root.outgoing[0].code
             'AC'
+
+        And we create two different Runtime instances:
+            >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r1.setup_environment(['C1'])
+            >>> r1.start_test()
+            >>> r1_c1 = r1.runtime_components['C1'].context.states[0]
+            >>> r1_c3 = r1.runtime_components['C3'].context.states[0]
+            >>> (r1_c1.value, r1_c3.value)
+            ('True', 'False')
+
+            >>> r2 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r2.setup_environment(['C3'])
+            >>> r2.start_test()
+            >>> r2_c1 = r2.runtime_components['C1'].context.states[0]
+            >>> r2_c3 = r2.runtime_components['C3'].context.states[0]
+            >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
+            True
+
+        When the procedure is run in the provided Runtime instance,
+        other instances' components are unaffected when not called.
             >>> proc(r1)
-            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
-            ('False', 'True', 'True', 'False')
+            >>> (r1_c1.value, r1_c3.value)
+            ('False', 'True')
+            >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
+            False
             >>> proc(r2)
-            >>> (r1_c1.context.states[0].value, r1_c3.context.states[0].value, r2_c1.context.states[0].value, r2_c3.context.states[0].value)
-            ('False', 'True', 'False', 'True')
-            >>> r1.stop_test()
-            >>> r2.stop_test()
+            >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
+            True
+
+            >>> r1.stop_test(); r2.stop_test()
         """
         self.result = result
         self.runtime = runtime
@@ -150,6 +161,7 @@ class Procedure(object):
             for _c in self.runtime.runtime_components.values():
                 _c.context.validation_list.clear()
 
+        saved_initial = checkmate.sandbox.Sandbox(self.application)
         stub = self.runtime.runtime_components[current_node.root.owner]
         stub.simulate(current_node.root)
         self._follow_up(current_node)
@@ -157,7 +169,7 @@ class Procedure(object):
         if hasattr(self, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.application.compare_states(self.final)
+                return self.application.compare_states(self.final, saved_initial.application.state_list())
             try:
                 check_compare_states()
             except ValueError:

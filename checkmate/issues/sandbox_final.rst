@@ -5,7 +5,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> import checkmate.runtime.test_plan
     >>> import sample_app.application
     >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
-     >>> r.setup_environment(['C1'])
+    >>> r.setup_environment(['C1'])
     >>> r.start_test()
     >>> c1 = r.runtime_components['C1']
     >>> _application = sample_app.application.TestData()
@@ -18,8 +18,8 @@ Setting the procedure.final from the sandbox does not work.
     >>> proc = checkmate.runtime.test_plan.build_procedure(box,  box)
     >>> len(proc.final)
     3
-    >>> proc.final[0].function
-    <class 'sample_app.component.component_1_states.State'>
+    >>> proc.final[0].function #doctest: +ELLIPSIS
+    <function State.__init__ at ...
     >>> proc.final[1].function #doctest: +ELLIPSIS
     <function State.toggle at ...
     >>> proc.final[2].function #doctest: +ELLIPSIS

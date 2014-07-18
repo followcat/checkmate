@@ -2,6 +2,7 @@ import zope.interface
 
 import checkmate.runs
 import checkmate._module
+import checkmate.sandbox
 import checkmate.component
 import checkmate.service_registry
 import checkmate.partition_declarator
@@ -134,9 +135,21 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-    @checkmate.report_issue('checkmate/issues/compare_final.rst')
-    @checkmate.report_issue('checkmate/issues/sandbox_final.rst')
-    def compare_states(self, target):
+    def state_list(self):
+        """Return a static list of the component state values
+
+        A sandbox is used to make copy of current application states.
+        """
+        local_copy = []
+        sb = checkmate.sandbox.Sandbox(self)
+        for _component in list(sb.application.components.values()):
+            local_copy += [_s for _s in _component.states]
+        return local_copy
+
+
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    def compare_states(self, target, reference_state_list=None):
         """Comparison between the states of the application's components and a target.
 
         This comparison is  taking the length of the target into account.
@@ -160,13 +173,11 @@ class Application(object):
         if len(target) == 0:
             return True
 
-        local_copy = []
-        for _component in list(self.components.values()):
-            local_copy += [_s for _s in _component.states]
+        local_copy = self.state_list()
 
         for _target in target:
             _length = len(local_copy)
-            local_copy = _target.match(local_copy)
+            local_copy = _target.match(local_copy, reference_state_list)
             if len(local_copy) == _length:
                 return False
         return True
