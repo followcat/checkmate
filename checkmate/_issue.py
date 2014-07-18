@@ -33,6 +33,8 @@ def _add_issue_doctest(filename, doctest_function):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+        if wrapper.__doc__ is None:
+            wrapper.__doc__ = ""
         #Need to destroy zmq context due to conflict
         #between zmq threading and multiprocessing (src/mailbox.cpp)
         wrapper.__doc__ += """
