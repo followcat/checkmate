@@ -34,7 +34,7 @@ Send 'AC' for append default 'R':
 
     >>> res = final.factory([saved.application.state_list()[2]])
     >>> res.value
-    ['R']
+    [{'R': ['AT1', 'NORM']}]
     >>> r.application.state_list()[2].value
     [{'R': ['AT1', 'NORM']}]
 
