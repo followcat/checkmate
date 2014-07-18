@@ -32,7 +32,8 @@ Send 'AC' for append default 'R':
     >>> final.function #doctest: +ELLIPSIS
     <function State.append at ...
 
-    >>> res = final.factory([saved.application.state_list()[2]])
+    >>> saved_final = [_f for _f in saved.application.state_list() if isinstance(_f, sample_app.component.component_1_states.AnotherState)][0]
+    >>> res = final.factory([saved_final])
     >>> res.value
     [{'R': ['AT1', 'NORM']}]
     >>> r.application.state_list()[2].value
