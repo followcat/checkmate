@@ -40,7 +40,6 @@ def add_device_service(services, component):
         device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
         code += """
         \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')
-        \n    #'omni_thread_fatal' and command this line, still pass
         \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name, 'device': device_name}
     code += """
         \n    self.is_sub = True
@@ -121,6 +120,9 @@ class Registry(checkmate.runtime._threading.Thread):
             else:
                 time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
         if self.check_for_stop():
+            dserver = self.pytango_util.get_dserver_device()
+            dserver.kill()
+            time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
             sys.exit(0)
 
     def run(self):
