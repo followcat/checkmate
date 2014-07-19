@@ -26,8 +26,6 @@ Send 'AC' for append default 'R':
     >>> saved = checkmate.sandbox.Sandbox(r.application)
     >>> user.simulate(proc.transitions.root) #doctest: +ELLIPSIS
     [<sample_app.exchanges.Action object at ...
-    >>> len(c2.context.validation_list) == 2
-    True
     >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_1_states.IAnotherState][0]
     >>> final.function #doctest: +ELLIPSIS
     <function State.append at ...
