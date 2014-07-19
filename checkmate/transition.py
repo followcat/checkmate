@@ -123,15 +123,7 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             {'R': ['AT1', 'NORM']}
         """
-        resolved_arguments = {}
-        entry = getattr(self, _type)
-        arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
-        for arg in arguments:
-            try:
-                resolved_arguments.update(data.resolve(arg, states=states, exchanges=incoming_exchange))
-            except AttributeError:
-                continue
-        return resolved_arguments
+        return data.resolve(_type, states, incoming_exchange)
 
 
     def generic_incoming(self, states, service_registry):
