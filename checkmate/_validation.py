@@ -16,22 +16,23 @@ class List(list):
             self[index] = []
             self.validated_items.append(list())
 
-    def record(self, transition, item):
+    def record(self, transition, item_list):
         """"""
         try:
-            self[self.transitions.index(transition)].append(item)
+            index = self.transitions.index(transition)
+            for _item in item_list:
+                self[index].append(_item)
+                self.validated_items[index].append(_item)
         except ValueError:
             self.append(list())
             self.validated_items.append(list())
             self.transitions.append(transition)
-            self.record(transition, item)
+            self.record(transition, item_list)
 
     def check(self, transition):
         """"""
         try:
-            index = self.transitions.index(transition)
-            item = self[index].pop()
-            self.validated_items[index].append(item)
+            self[self.transitions.index(transition)].pop()
             return True
         except IndexError:
             return False
