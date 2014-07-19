@@ -4,16 +4,20 @@ import functools
 import multiprocessing
 
 
-__all__ = ['report_issue', 'fix_issue']
+__all__ = ['report_issue', 'fix_issue', 'runtest']
 
-def runtest(failure_count, filename):
-    (failure_count.value, test_count) = doctest.testfile(
+
+def runtest(filename):
+    return doctest.testfile(
         os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]),
                          module_relative=False)
 
+def runtest_multiprocessing(failure_count, filename):
+    (failure_count.value, test_count) = runtest(filename)
+
 def _failed_doctest_file(filename):
     failure_count = multiprocessing.Value('i', 1)
-    process = multiprocessing.Process(target=runtest, args=(failure_count, filename))
+    process = multiprocessing.Process(target=runtest_multiprocessing, args=(failure_count, filename))
     process.start()
     process.join()
     return failure_count
