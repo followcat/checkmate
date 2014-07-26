@@ -94,14 +94,6 @@ CORBA::Any *RLClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA
 }
 
 
-CORBA::Any *PAClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
-{
-	cout2 << "PAClass::execute(): arrived" << endl;
-	((static_cast<Component_3 *>(device))->pa());
-	return new CORBA::Any();
-}
-
-
 
 Tango::DbDatum Component_3Class::get_class_property(string &prop_name)
 {
@@ -340,15 +332,6 @@ void Component_3Class::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pRLCmd);
-
-	//	Command PA
-	PAClass	*pPACmd =
-		new PAClass("PA",
-			Tango::DEV_VOID, Tango::DEV_VOID,
-			"",
-			"",
-			Tango::OPERATOR);
-	command_list.push_back(pPACmd);
 
 
 }

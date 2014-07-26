@@ -20,9 +20,14 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
+        self.is_sub = False
 
     def delete_device(self):
         app.exit(0)
+
+    def subscribe_event_run(self):
+        self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
+        self.is_sub = True
 
     def PBAC(self):
         button = get_button('ButtonAC')
@@ -51,8 +56,9 @@ class Component_2(PyTango.Device_4Impl):
         _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AP', _R)
 
-    def PA(self):
-        self.user_dev.VOPA()
+    def PA_callback(self, *args):
+        if self.is_sub:
+            self.user_dev.VOPA()
 
     def DA(self):
         self.user_dev.VODA()
@@ -80,7 +86,6 @@ class C2Interface(PyTango.DeviceClass):
                 'ButtonRL': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ButtonPP': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
@@ -112,10 +117,19 @@ def start_taurus_app():
     #panel.show()
     app.exec_()
 
+def event_loop():
+    pytango_util = PyTango.Util.instance()
+    for each in pytango_util.get_device_list_by_class('Component_2'):
+        if hasattr(each, 'is_sub') and not each.is_sub:
+            each.subscribe_event_run()
+        else:
+            time.sleep(1)
+
 if __name__ == '__main__':
     py = PyTango.Util(['component_2', 'C2'])
     py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
+    U.server_set_event_loop(event_loop)
     U.server_init()
     #wait for server initializing completed
     time.sleep(2)
