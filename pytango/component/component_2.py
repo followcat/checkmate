@@ -78,7 +78,10 @@ def event_loop():
     pytango_util = PyTango.Util.instance()
     for each in pytango_util.get_device_list_by_class('Component_2'):
         if hasattr(each, 'is_sub') and not each.is_sub:
-            each.subscribe_event_run()
+            try:
+                each.subscribe_event_run()
+            except:
+                continue
         else:
             time.sleep(1)
 
