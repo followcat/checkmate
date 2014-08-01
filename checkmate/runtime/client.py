@@ -75,14 +75,12 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """"""
         for _c in self.connections:
             _c.initialize()
-            if hasattr(_c, 'socket') and _c.socket and _c.is_server and not _c.is_broadcast:
-                self.poller.register(_c.socket, zmq.POLLIN)
 
     def start(self):
         for _c in self.connections:
             _c.open()
-            if hasattr(_c, 'socket') and _c.socket and not _c.is_server and _c.is_broadcast:
-                self.poller.register(_c.socket, zmq.POLLIN)
+            if hasattr(_c, 'socket_in') and _c.socket_in is not None:
+                self.poller.register(_c.socket_in, zmq.POLLIN)
         super(ThreadedClient, self).start()
 
     def run(self):
@@ -113,11 +111,11 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """
         if exchange.broadcast:
             for _c in self.connections:
-                if _c.is_broadcast and _c.is_server and _c._name == exchange.origin:
+                if _c._name == exchange.origin:
                     _c.send(exchange)
                     self.logger.debug("%s use broadcast send exchange %s to %s" % (self, exchange.value, exchange.destination))
         else:
             for _c in self.connections:
-                if _c._name in exchange.destination and not _c.is_broadcast:
+                if _c._name in exchange.destination:
                     _c.send(exchange)
                     self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))

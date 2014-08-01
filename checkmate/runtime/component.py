@@ -113,37 +113,29 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
-            if self.reading_internal_client:
-                connector = connector_factory(self.context, _communication, is_server=True)
-                self.client.add_connector(connector)
-            if self.context.is_publish:
-                connector = connector_factory(self.context, _communication, is_server=True, is_broadcast=True)
+            if self.reading_internal_client or self.context.is_publish:
+                connector = connector_factory(self.context, _communication, is_server=True,
+                                              is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if _component in self.runtime.application.system_under_test:
-                    for _c in _application.components[_component].connector_list:
-                        connector = connector_factory(_application.components[_component], _communication)
-                        self.client.add_connector(connector)
-                if len(set(self.context.subscribe_exchange) & set(_application.components[_component].outgoings)):
-                    connector = connector_factory(_application.components[_component], _communication, is_broadcast=True)
+                if (_component in self.runtime.application.system_under_test or
+                  len(set(self.context.subscribe_exchange) & set(_application.components[_component].outgoings))):
+                    connector = connector_factory(_application.components[_component], _communication,
+                                                  is_broadcast=len(set(self.context.subscribe_exchange) & set(_application.components[_component].outgoings)))
                     self.client.add_connector(connector)
 
         if self.using_external_client:
             for connector_factory in self.context.connector_list:
                 _communication = runtime.communication_list['']
-                connector = connector_factory(self.context, _communication, is_server=True)
+                connector = connector_factory(self.context, _communication, is_server=True,
+                                              is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
-                if self.context.is_publish:
-                    connector = connector_factory(self.context, _communication, is_server=True, is_broadcast=True)
-                    self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                 _communication = runtime.communication_list['']
                 for connector_factory in _application.components[_component].connector_list:
-                    connector = connector_factory(_application.components[_component], _communication)
+                    connector = connector_factory(_application.components[_component], _communication,
+                                                  is_broadcast=len(set(self.context.subscribe_exchange) & set(_application.components[_component].outgoings)))
                     self.client.add_connector(connector)
-                    if len(set(self.context.subscribe_exchange) & set(_application.components[_component].outgoings)):
-                        connector = connector_factory(_application.components[_component], _communication, is_broadcast=True)
-                        self.client.add_connector(connector)
 
     def start(self):
         Component.start(self)
