@@ -1,5 +1,6 @@
 import sys
 import time
+import thread
 
 import PyTango
 
@@ -119,19 +120,26 @@ def start_taurus_app():
 
 def event_loop():
     pytango_util = PyTango.Util.instance()
-    for each in pytango_util.get_device_list_by_class('Component_2'):
-        if hasattr(each, 'is_sub') and not each.is_sub:
-            each.subscribe_event_run()
-        else:
-            time.sleep(1)
+    initialized = False
+    while not initialized:
+        for each in pytango_util.get_device_list_by_class('Component_2'):
+            if hasattr(each, 'is_sub') and not each.is_sub:
+                try:
+                    each.subscribe_event_run()
+                    initialized = True
+                except:
+                    continue
+            else:
+                time.sleep(1)
+    thread.exit_thread()
 
 if __name__ == '__main__':
     py = PyTango.Util(['component_2', 'C2'])
     py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
-    U.server_set_event_loop(event_loop)
     U.server_init()
     #wait for server initializing completed
+    thread.start_new_thread(event_loop, ())
     time.sleep(2)
     start_taurus_app()
     U.server_run()
