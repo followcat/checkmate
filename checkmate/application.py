@@ -54,14 +54,14 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             namespace['component_classes'][key] = _class
             
-        pubilsh_map = {}
+        publish_map = {}
         for _name_tuple in namespace['component_classes']:
             for _name in _name_tuple:
-                pubilsh_map[_name] = namespace['component_classes'][_name_tuple].publish_exchange
+                publish_map[_name] = namespace['component_classes'][_name_tuple].publish_exchange
         for _c in namespace['component_classes']:
             broadcast_map = {}
             for _e in namespace['component_classes'][_c].subscribe_exchange:
-                for _name, _p in pubilsh_map.items():
+                for _name, _p in publish_map.items():
                     if _e in _p:
                         broadcast_map[_e] = _name
             setattr(namespace['component_classes'][_c], 'broadcast_map', broadcast_map)
