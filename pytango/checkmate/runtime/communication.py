@@ -27,7 +27,7 @@ def add_device_service(services, component):
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
-        \n    self.is_sub = False"""
+        \n    self.subscribe_event_done = False"""
     for _publish in publishs:
         code += """
         \n    self.attr_%(pub)s_read = False
@@ -47,7 +47,7 @@ def add_device_service(services, component):
         code += """
         \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
     code += """
-        \n    self.is_sub = True
+        \n    self.subscribe_event_done = True
         \n    pass"""
 
     for _service in services:
@@ -61,7 +61,7 @@ def add_device_service(services, component):
         component_name = broadcast_map[_subscribe]
         code += """
             \ndef %(sub)s(self, *args):
-            \n    if self.is_sub:
+            \n    if self.subscribe_event_done:
             \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
 
     for _publish in publishs:
@@ -117,7 +117,7 @@ class Registry(checkmate.runtime._threading.Thread):
 
     def event_loop(self):
         for _device in self.pytango_util.get_device_list('*'):
-            if hasattr(_device, 'is_sub') and not _device.is_sub:
+            if hasattr(_device, 'subscribe_event_done') and not _device.subscribe_event_done:
                 try:
                     _device.subscribe_event_run()
                 except:

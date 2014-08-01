@@ -17,11 +17,11 @@ class Component_3(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
         
-        self.is_sub = False
+        self.subscribe_event_done = False
 
     def subscribe_event_run(self):
         self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
-        self.is_sub = True
+        self.subscribe_event_done = True
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
@@ -36,7 +36,7 @@ class Component_3(PyTango.Device_4Impl):
             self.c2_dev.DR()
 
     def PA_callback(self, *args):
-        if self.is_sub:
+        if self.subscribe_event_done:
             if self.attr_c_state == False:
                 pass
 
@@ -62,7 +62,7 @@ class C3Interface(PyTango.DeviceClass):
 def event_loop():
     pytango_util = PyTango.Util.instance()
     for each in pytango_util.get_device_list_by_class('Component_3'):
-        if hasattr(each, 'is_sub') and not each.is_sub:
+        if hasattr(each, 'subscribe_event_done') and not each.subscribe_event_done:
             try:
                 each.subscribe_event_run()
             except:

@@ -17,11 +17,11 @@ class Component_2(PyTango.Device_4Impl):
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
         
-        self.is_sub = False
+        self.subscribe_event_done = False
 
     def subscribe_event_run(self):
         self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
-        self.is_sub = True
+        self.subscribe_event_done = True
 
     def PBAC(self):
         #Execute asynchronously in case of nested called caused infinitely wait
@@ -41,7 +41,7 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA_callback(self, *args):
-        if self.is_sub:
+        if self.subscribe_event_done:
             self.user_dev.VOPA()
 
     def DA(self):
@@ -77,7 +77,7 @@ class C2Interface(PyTango.DeviceClass):
 def event_loop():
     pytango_util = PyTango.Util.instance()
     for each in pytango_util.get_device_list_by_class('Component_2'):
-        if hasattr(each, 'is_sub') and not each.is_sub:
+        if hasattr(each, 'subscribe_event_done') and not each.subscribe_event_done:
             try:
                 each.subscribe_event_run()
             except:

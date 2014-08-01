@@ -21,14 +21,14 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
-        self.is_sub = False
+        self.subscribe_event_done = False
 
     def delete_device(self):
         app.exit(0)
 
     def subscribe_event_run(self):
         self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
-        self.is_sub = True
+        self.subscribe_event_done = True
 
     def PBAC(self):
         button = get_button('ButtonAC')
@@ -58,7 +58,7 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA_callback(self, *args):
-        if self.is_sub:
+        if self.subscribe_event_done:
             self.user_dev.VOPA()
 
     def DA(self):
@@ -123,7 +123,7 @@ def event_loop():
     initialized = False
     while not initialized:
         for each in pytango_util.get_device_list_by_class('Component_2'):
-            if hasattr(each, 'is_sub') and not each.is_sub:
+            if hasattr(each, 'subscribe_event_done') and not each.subscribe_event_done:
                 try:
                     each.subscribe_event_run()
                     initialized = True
