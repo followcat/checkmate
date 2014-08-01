@@ -45,6 +45,7 @@ import checkmate.runtime.component
 class Comp(checkmate.component.Component):
     name = ''
     is_publish = False
+    broadcast_map = {}
     subscribe_exchange = []
     service_interfaces = []
     outgoings = []
