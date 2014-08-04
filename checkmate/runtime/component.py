@@ -113,28 +113,28 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
-            if self.reading_internal_client:
-                connector = connector_factory(self.context, _communication, is_server=True)
+            if self.reading_internal_client or self.context.is_publish:
+                connector = connector_factory(self.context, _communication, is_server=True,
+                                              is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if not hasattr(_application.components[_component], 'connector_list'):
-                    continue
-                if _component in self.runtime.application.system_under_test:
-                    for _c in _application.components[_component].connector_list:
-                        connector = connector_factory(_application.components[_component], _communication, is_server=False)
-                        self.client.add_connector(connector)
+                if (_component in self.runtime.application.system_under_test or
+                  _component in self.context.broadcast_map.values()):
+                    connector = connector_factory(_application.components[_component], _communication,
+                                                  is_broadcast=_component in self.context.broadcast_map.values())
+                    self.client.add_connector(connector)
 
         if self.using_external_client:
             for connector_factory in self.context.connector_list:
                 _communication = runtime.communication_list['']
-                connector = connector_factory(self.context, _communication, is_server=True)
+                connector = connector_factory(self.context, _communication, is_server=True,
+                                              is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if not hasattr(_application.components[_component], 'connector_list'):
-                    continue
                 _communication = runtime.communication_list['']
                 for connector_factory in _application.components[_component].connector_list:
-                    connector = connector_factory(_application.components[_component], _communication, is_server=False)
+                    connector = connector_factory(_application.components[_component], _communication,
+                                                  is_broadcast=_component in self.context.broadcast_map.values())
                     self.client.add_connector(connector)
 
     def start(self):
@@ -213,14 +213,3 @@ class ThreadedStub(ThreadedComponent, Stub):
     def __init__(self, component):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
-
-    def run(self):
-        while True:
-            if self.check_for_stop():
-                break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for socket in s:
-                exchange = socket.recv_pyobj()
-                if exchange is not None:
-                    with self.validation_lock:
-                        self.process([exchange])

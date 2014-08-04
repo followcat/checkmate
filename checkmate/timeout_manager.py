@@ -44,7 +44,11 @@ import checkmate.runtime.component
 @zope.interface.implementer(checkmate.component.IComponent)
 class Comp(checkmate.component.Component):
     name = ''
+    is_publish = False
+    broadcast_map = {}
+    subscribe_exchange = []
     service_interfaces = []
+    outgoings = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 
@@ -67,8 +71,7 @@ runtime.start_test()
 
 e = checkmate.exchange.Exchange('Exchange')
 e.origin_destination('a', 'b')
-for each in sa.client.connections:
-    each.send(e)
+sa.client.send(e)
 #stop everything except the logger
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()

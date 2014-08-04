@@ -119,16 +119,19 @@ class Sandbox(object):
             'True'
         """
         for _exchange in exchanges:
-            _transition = self.application.components[_exchange.destination].get_transition_by_input([_exchange])
-            _outgoings = self.application.components[_exchange.destination].process([_exchange])
-            if len(_outgoings) == 0 and self.application.components[_exchange.destination].transition_not_found:
-                return None
+            for _name, _c in self.application.components.items():
+                if _name not in _exchange.destination:
+                    continue
+                _transition = _c.get_transition_by_input([_exchange])
+                _outgoings = _c.process([_exchange])
+                if len(_outgoings) == 0 and _c.transition_not_found:
+                    return None
 
-            self.update_required_states(_transition)
-            tmp_tree = self.generate(_outgoings, checkmate._tree.Tree(_transition, []))
-            if tmp_tree is None:
-                return None
-            tree.add_node(tmp_tree)
+                self.update_required_states(_transition)
+                tmp_tree = self.generate(_outgoings, checkmate._tree.Tree(_transition, []))
+                if tmp_tree is None:
+                    return None
+                tree.add_node(tmp_tree)
         return tree
 
     def fill_procedure(self, procedure):

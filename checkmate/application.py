@@ -55,14 +55,17 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             namespace['component_classes'][key] = _class
             
-        for _name in namespace['component_classes']:
-            connecting_components = []
-            for _n in [_c for _c in namespace['component_classes'] if _c != _name]:
-                for service in namespace['component_classes'][_n].services:
-                    if service in namespace['component_classes'][_name].outgoings:
-                        connecting_components.extend(_n)
-                        break
-            setattr(namespace['component_classes'][_name], 'connecting_components', connecting_components)
+        publish_map = {}
+        for _name_tuple in namespace['component_classes']:
+            for _name in _name_tuple:
+                publish_map[_name] = namespace['component_classes'][_name_tuple].publish_exchange
+        for _c in namespace['component_classes']:
+            broadcast_map = {}
+            for _e in namespace['component_classes'][_c].subscribe_exchange:
+                for _name, _p in publish_map.items():
+                    if _e in _p:
+                        broadcast_map[_e] = _name
+            setattr(namespace['component_classes'][_c], 'broadcast_map', broadcast_map)
             
         result = type.__new__(cls, name, bases, dict(namespace))
         return result

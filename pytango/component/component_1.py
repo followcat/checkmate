@@ -15,6 +15,9 @@ class Component_1(PyTango.Device_4Impl):
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
 
+        self.attr_PA_read = False
+        self.set_change_event('PA', True, False)
+
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
 
@@ -30,9 +33,10 @@ class Component_1(PyTango.Device_4Impl):
     def PP(self, param):
         if self.attr_c_state == False:
             self.toggle()
-            self.c2_dev.PA()
-            #Execute asynchronously in case of nested called caused infinitely wait(run C3.RL() while C1,C3 as SUT)
-            self.c3_dev.command_inout_asynch('PA')
+            self.push_change_event('PA', self.attr_PA_read)
+
+    def read_PA(self, attr):
+        attr.set_value(self.attr_PA_read)
 
 
 class C1Interface(PyTango.DeviceClass):
@@ -45,13 +49,13 @@ class C1Interface(PyTango.DeviceClass):
                 import traceback
                 dev.warn_stream("Failed to initialize dynamic attributes")
                 dev.debug_stream("Details: " + traceback.format_exc())
- 
 
     cmd_list = {'AC': [[PyTango.DevVarStringArray], [PyTango.DevVoid]],
                 'AP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]],
                 'PP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
                }
     attr_list = {
+                'PA': [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ]],
                 }
 
 

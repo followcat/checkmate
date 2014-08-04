@@ -29,7 +29,7 @@ python checkmate/nose_plugin/plugin.py --nocapture --with-checkmate --applicatio
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>pytango_C2</childProjects>
+      <childProjects>pytango_C3</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>

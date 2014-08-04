@@ -1,5 +1,6 @@
 import sys
 import time
+import thread
 
 import PyTango
 
@@ -20,9 +21,14 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
+        self.subscribe_event_done = False
 
     def delete_device(self):
         app.exit(0)
+
+    def subscribe_event_run(self):
+        self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
+        self.subscribe_event_done = True
 
     def PBAC(self):
         button = get_button('ButtonAC')
@@ -51,8 +57,9 @@ class Component_2(PyTango.Device_4Impl):
         _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AP', _R)
 
-    def PA(self):
-        self.user_dev.VOPA()
+    def PA_callback(self, *args):
+        if self.subscribe_event_done:
+            self.user_dev.VOPA()
 
     def DA(self):
         self.user_dev.VODA()
@@ -80,7 +87,6 @@ class C2Interface(PyTango.DeviceClass):
                 'ButtonRL': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ButtonPP': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
@@ -112,12 +118,28 @@ def start_taurus_app():
     #panel.show()
     app.exec_()
 
+def event_loop():
+    pytango_util = PyTango.Util.instance()
+    initialized = False
+    while not initialized:
+        for each in pytango_util.get_device_list_by_class('Component_2'):
+            if hasattr(each, 'subscribe_event_done') and not each.subscribe_event_done:
+                try:
+                    each.subscribe_event_run()
+                    initialized = True
+                except:
+                    continue
+            else:
+                time.sleep(1)
+    thread.exit_thread()
+
 if __name__ == '__main__':
     py = PyTango.Util(['component_2', 'C2'])
     py.add_class(C2Interface, Component_2, 'Component_2')
     U = PyTango.Util.instance()
     U.server_init()
     #wait for server initializing completed
+    thread.start_new_thread(event_loop, ())
     time.sleep(2)
     start_taurus_app()
     U.server_run()

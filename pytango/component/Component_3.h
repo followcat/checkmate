@@ -40,8 +40,6 @@ public:
 	virtual bool is_RE_allowed(const CORBA::Any &any);
 	virtual void rl();
 	virtual bool is_RL_allowed(const CORBA::Any &any);
-	virtual void pa();
-	virtual bool is_PA_allowed(const CORBA::Any &any);
 
 
 };

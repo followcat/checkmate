@@ -95,13 +95,4 @@ void Component_3::rl()
 	}
 }
 
-void Component_3::pa()
-{
-	DEBUG_STREAM << "Component_3::PA()  - " << device_name << endl;
-	if(attr_c_state == false)
-	{
-		//pass
-	}
-}
-
 } //	namespace

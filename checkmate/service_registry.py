@@ -18,10 +18,15 @@ class ServiceFactory(object):
 
     def __call__(self, origin, destinations):
         """"""
-        for _d in destinations:
+        if self.context.broadcast:
             exchange = copy.deepcopy(self.context)
-            exchange.origin_destination(origin, _d)
+            exchange.origin_destination(origin, destinations)
             yield exchange
+        else:
+            for _d in destinations:
+                exchange = copy.deepcopy(self.context)
+                exchange.origin_destination(origin, _d)
+                yield exchange
         yield from ()
 
 
@@ -61,7 +66,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> e = c1.state_machine.transitions[0].outgoing[0].factory()
             >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
             ...     print(_e.destination)
-            C3
+            ['C3']
         """
         _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
