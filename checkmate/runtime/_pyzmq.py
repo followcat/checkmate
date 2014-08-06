@@ -11,7 +11,39 @@ import checkmate.runtime.communication
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    """"""
+    """
+        >>> import zmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> a = sample_app.application.TestData()
+        >>> c = checkmate.runtime._pyzmq.Communication()
+        >>> c.initialize()
+        >>> c1 = a.components['C1']
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=True)
+        >>> connector.initialize()
+        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out.TYPE == zmq.PUB
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=False)
+        >>> connector.initialize()
+        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out == None
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=True)
+        >>> connector.open()
+        >>> connector.socket_in.TYPE == zmq.SUB, connector.socket_out.TYPE == zmq.PUSH
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=False)
+        >>> connector.open()
+        >>> connector.socket_in == None, connector.socket_out.TYPE == zmq.PUSH
+        (True, True)
+        >>> connector.close()
+        >>> c.close()
+    """
     def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
         super(Connector, self).__init__(component, communication=communication, is_server=is_server, is_broadcast=is_broadcast)
         self._name = component.name
@@ -58,7 +90,6 @@ class Connector(checkmate.runtime.communication.Connector):
                 self.socket_in = open_client_socket(zmq.SUB, self.is_broadcast)
                 self.socket_in.setsockopt_string(zmq.SUBSCRIBE, '')
             _socket.close()
-
 
     def open(self):
         """"""
