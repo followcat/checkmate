@@ -11,7 +11,6 @@ import checkmate.partition_declarator
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
-        >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.exchange_module #doctest: +ELLIPSIS
         <module 'sample_app.exchanges' from ...
@@ -21,6 +20,15 @@ class ApplicationMeta(type):
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         1
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> c1.broadcast_map
+        {}
+        >>> c2.broadcast_map
+        {'PA': 'C1'}
+        >>> c3.broadcast_map
+        {'PA': 'C1'}
         """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
