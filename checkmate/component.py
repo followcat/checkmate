@@ -12,11 +12,19 @@ class ComponentMeta(type):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> c = a.components['C1']
-        >>> c.exchange_module #doctest: +ELLIPSIS
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> c1.exchange_module #doctest: +ELLIPSIS
         <module 'sample_app.exchanges' from ...
-        >>> c.state_module #doctest: +ELLIPSIS
+        >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
+        >>> c1.is_publish, c2.is_publish, c3.is_publish
+        (True, False, False)
+        >>> c1.publish_exchange, c2.publish_exchange, c3.publish_exchange
+        (['PA'], [], [])
+        >>> c1.subscribe_exchange, c2.subscribe_exchange, c3.subscribe_exchange
+        ([], ['PA'], ['PA'])
         """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
