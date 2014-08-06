@@ -52,8 +52,74 @@ def _add_issue_doctest(filename, doctest_function):
     return append_docstring
 
 def report_issue(filename):
+    """
+        >>> import os
+        >>> import doctest
+        >>> import checkmate._issue
+        >>> filename = 'dt1.rst'
+
+    Hardcoded failed doctest:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        ...     n = f.write(\">>> print(False)\\nFalse\")
+        ... 
+        >>> @checkmate._issue.report_issue(filename)
+        ... def func():
+        ...     pass
+        ... 
+        >>> class Runner(doctest.DocTestRunner):
+        ...     def report_unexpected_exception(self, *args, **kwargs):
+        ...         \"\"\"Remove junk from failure output\"\"\"
+        ...         pass
+        >>> _r = Runner(verbose=False)
+        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None))
+        TestResults(failed=1, attempted=4)
+
+    Hardcoded successful doctest:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        ...     n = f.write(\">>> print(True)\\nFalse\")
+        ... 
+        >>> @checkmate._issue.report_issue(filename)
+        ... def func():
+        ...     pass
+        ... 
+        >>> doctest.run_docstring_examples(func, locals())
+        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
+    """
     return _add_issue_doctest(filename, _issue_record)
 
 def fix_issue(filename):
+    """
+        >>> import os
+        >>> import doctest
+        >>> import checkmate._issue
+        >>> filename = 'dt1.rst'
+
+    Hardcoded successful doctest:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        ...     n = f.write(\">>> print(False)\\nFalse\")
+        ... 
+        >>> @checkmate._issue.fix_issue(filename)
+        ... def func():
+        ...     pass
+        ... 
+        >>> doctest.run_docstring_examples(func, locals())
+
+    Hardcoded failed doctest:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        ...     n = f.write(\">>> print(True)\\nFalse\")
+        ... 
+        >>> @checkmate._issue.fix_issue(filename)
+        ... def func():
+        ...     pass
+        ... 
+        >>> class Runner(doctest.DocTestRunner):
+        ...     def report_unexpected_exception(self, *args, **kwargs):
+        ...         \"\"\"Remove junk from failure output\"\"\"
+        ...         pass
+        >>> _r = Runner(verbose=False)
+        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None))
+        TestResults(failed=1, attempted=4)
+        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
+    """
     return _add_issue_doctest(filename, _issue_regression)
 
