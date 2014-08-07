@@ -46,4 +46,6 @@ Result from compare_states():
     2
     >>> r.application.compare_states(proc.final, saved.application.state_list())
     True
+    >>> r.stop_test()
+    >>>
 
