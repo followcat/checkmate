@@ -48,7 +48,36 @@ class Client(object):
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
-    """"""
+    """
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> import checkmate.runtime._runtime
+        >>> import checkmate.runtime.component
+        >>> ac = sample_app.application.TestData
+        >>> cc = checkmate.runtime._pyzmq.Communication
+        >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded=True)
+        >>> r.setup_environment(['C3'])
+        >>> r.start_test()
+        >>> rc1 = r.runtime_components['C1']
+        >>> rc2 = r.runtime_components['C2']
+        >>> rc3 = r.runtime_components['C3']
+        >>> are = sample_app.exchanges.ARE()
+        >>> are._destination = ['C2']
+        >>> rc1.client.send(are)
+        >>> rc2.context.validation_list[0].incoming[0].code
+        'ARE'
+        >>> rc2.context.validation_list.clear()
+        >>> rc3.context.validation_list.clear()
+        >>> pa = sample_app.exchanges.PA()
+        >>> pa._origin = 'C1'
+        >>> pa.broadcast
+        True
+        >>> rc1.client.send(pa)
+        >>> rc2.context.validation_list[0].incoming[0].code
+        'PA'
+        >>> rc3.context.validation_list[0].incoming[0].code
+        'PA'
+    """
     def __init__(self, component):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
