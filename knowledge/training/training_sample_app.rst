@@ -1,7 +1,7 @@
 Sample application
 ==================
 checkmate is coming with a sample application. It is used for both testing and documentation.
-The sample application (often referenced as 'sample_app') is composed of three components C1, C2, C3.
+The sample application (often referenced as 'sample_app') is composed of four components C1, C2, C3 and USER.
 Each of them is powered by a state machine defined in checkmate using reStructuredText format.
 
 Given the limited number of component in sample_app, it is possible to consolidate the state machines by matching one component outgoing with other components' incoming.
@@ -9,45 +9,58 @@ The consolidated flows of exchange in the sample application are represented in 
 
 ::
 
-    Run 1                                   Run 2                               Run 3
-    -----                                   -----                               -----
-                 C1: True, Q()                       C1:                                 C1: False, Q(R)
-                 C2:                                 C2:                                 C2: 
-                 C3: False                           C3: True                            C3: False
+    Run 1                                 Run 2                             Run 3                            
+    -----                                 -----                             -----                           
+                 C1: True, Q()                     C1:                               C1: False, Q(R)       
+                 C2:                               C2:                               C2:                  
+                 C3: False                         C3: True                          C3: False           
 
-             +------+                            +------+                            +------+  
-             |  C2  |                            |  C2  |                            |  C2  |
-             +------+                            +------+                            +------+
-                |                                   |                                   |
-                | AC                                | RL                                | PP 
-                |                                   |                                   |    
-             +------+                            +------+                            +------+  
-             |  C1  | < C1 is True               |  C3  | < C3 is True               |  C1  | < C1 is False
-             +------+ > False, Q()               +------+ > toggle()                 +------+   C1 is Q  
-                |                                   |                                   |     > toggle(), Q.pop()
-        +---------------+                           | DR                       +----------------+   
-        |               |                           |                          |                |
-        | RE            | ARE                    +------+                      | PA             | PA
-        |               |                        |  C2  |                      |                |
-    +------+         +------+                    +------+                   +------+         +------+ 
-    |  C3  | < C3 is |  C2  |                                               |  C3  | < C3 is |  C2  |         
-    +------+   False +------+                        C1:                    +------+   False +------+    
-             > toggle() |                            C2:                             > False 
-                        | AP                         C3: False                                   C1: True, Q()  
-                        |                                                                        C2:
-                     +------+                                                                    C3: False  
-                     |  C1  | < C1 is Q               
-                     +------+ > Q.append()                                                                                
+             +------+                          +------+                          +------+                      
+             | USER |                          | USER |                          | USER |                     
+             +------+                          +------+                          +------+                     
+                |                                 |                                 |                         
+                | PBAC                            | PBRL                            | PBPP                   
+                |                                 |                                 |                       
+             +------+                          +------+                          +------+                  
+             |  C2  |                          |  C2  |                          |  C2  |                 
+             +------+                          +------+                          +------+                       
+                |                                 |                                 |                          
+                | AC                              | RL                              | PP                      
+                |                                 |                                 |                        
+             +------+                          +------+                          +------+                   
+             |  C1  | < C1 is True             |  C3  | < C3 is True             |  C1  | < C1 is False      
+             +------+ > False, Q()             +------+ > toggle()               +------+   C1 is Q         
+                |                                 |                                 |     > toggle(), Q.pop()   
+        +---------------+                         | DR                     +----------------+                   
+        |               |                         |                        |                |                  
+        | RE            | ARE                  +------+                    | PA             | PA              
+        |               |                      |  C2  |                    |                |                
+    +------+         +------+                  +------+                 +------+         +------+             
+    |  C3  | < C3 is |  C2  |                     |                     |  C3  | < C3 is |  C2  |             
+    +------+   False +------+                     | VODR                +------+   False +------+             
+             > toggle() |                         |                              > False    |                
+                        | AP                   +------+                                     | VOPA           
+                        |                      | USER |                                     |                
+                     +------+                  +------+                                  +------+           
+                     |  C1  | < C1 is Q                                                  | USER |
+                     +------+ > Q.append()         C1:                                   +------+             
+                        |                          C2:                                                       
+                        | DA                       C3: False                                 C1: True, Q()   
+                        |                                                                    C2:
+                     +------+                                                                C3: False
+                     |  C2  |                            
+                     +------+                            
                         |                 
-                        | DA
+                        | VODA
                         |                 
                      +------+                                         
-                     |  C2  |                            
+                     | USER |                            
                      +------+                            
 
                          C1: False, Q(R)
                          C2:
                          C3: True
+
 
 
 It is usually impossible to consolidate this kind of flow when number of component in an application increases.
