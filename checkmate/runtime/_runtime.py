@@ -77,8 +77,8 @@ class Runtime(object):
 
     def start_test(self):
         """
-            >>> import checkmate.runtime
             >>> import checkmate.component
+            >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
             >>> import sample_app.application
             >>> ac = sample_app.application.TestData
