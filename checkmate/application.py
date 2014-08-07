@@ -11,6 +11,7 @@ import checkmate.partition_declarator
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
+        >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.exchange_module #doctest: +ELLIPSIS
         <module 'sample_app.exchanges' from ...
