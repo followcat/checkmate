@@ -7,29 +7,28 @@ import multiprocessing
 __all__ = ['report_issue', 'fix_issue', 'runtest']
 
 
+class Runner(doctest.DocTestRunner):
+     def report_unexpected_exception(self, *args, **kwargs):
+         """Remove junk from failure output"""
+         pass
+     def report_failure(self, *args, **kwargs):
+         pass
+
+
 def runtest(filename):
-    return doctest.testfile(
-        os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]),
-                         module_relative=False)
-
-def runtest_multiprocessing(failure_count, filename):
-    (failure_count.value, test_count) = runtest(filename)
-
-def _failed_doctest_file(filename):
-    failure_count = multiprocessing.Value('i', 1)
-    process = multiprocessing.Process(target=runtest_multiprocessing, args=(failure_count, filename))
-    process.start()
-    process.join()
-    return failure_count
+    with open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename])) as _f:
+        test = _f.read()
+    _r = Runner(verbose=False)
+    return _r.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
 
 def _issue_record(filename):
-    _synchronized = _failed_doctest_file(filename)
-    if _synchronized.value == 0:
+    result = runtest(filename)
+    if result.failed == 0:
         raise doctest.DocTestFailure('Issue: '+filename, 'Expected: failure', 'Got: success')
 
 def _issue_regression(filename):
-    _synchronized = _failed_doctest_file(filename)
-    if _synchronized.value > 0:
+    result = runtest(filename)
+    if result.failed != 0:
         raise doctest.DocTestFailure('Issue regression: '+filename, 'Expected: success', 'Got: failure')
 
 def _add_issue_doctest(filename, doctest_function):
@@ -39,13 +38,7 @@ def _add_issue_doctest(filename, doctest_function):
             return func(*args, **kwargs)
         if wrapper.__doc__ is None:
             wrapper.__doc__ = ""
-        #Need to destroy zmq context due to conflict
-        #between zmq threading and multiprocessing (src/mailbox.cpp)
         wrapper.__doc__ += """
-            \n        FIXME: Outstanding issue
-            \n            >>> import zmq
-            \n            >>> import checkmate._issue
-            \n            >>> zmq.Context.instance().destroy()
             \n            >>> %s.%s('%s')
             """ % (__name__, doctest_function.__name__, filename)
         return wrapper
@@ -65,14 +58,9 @@ def report_issue(filename):
         >>> @checkmate._issue.report_issue(filename)
         ... def func():
         ...     pass
-        ... 
-        >>> class Runner(doctest.DocTestRunner):
-        ...     def report_unexpected_exception(self, *args, **kwargs):
-        ...         \"\"\"Remove junk from failure output\"\"\"
-        ...         pass
-        >>> _r = Runner(verbose=False)
-        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None))
-        TestResults(failed=1, attempted=4)
+        >>> _r = checkmate._issue.Runner(verbose=False)
+        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None)) # doctest: +ELLIPSIS
+        TestResults(failed=1, ...
 
     Hardcoded successful doctest:
         >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
@@ -111,14 +99,9 @@ def fix_issue(filename):
         >>> @checkmate._issue.fix_issue(filename)
         ... def func():
         ...     pass
-        ... 
-        >>> class Runner(doctest.DocTestRunner):
-        ...     def report_unexpected_exception(self, *args, **kwargs):
-        ...         \"\"\"Remove junk from failure output\"\"\"
-        ...         pass
-        >>> _r = Runner(verbose=False)
-        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None))
-        TestResults(failed=1, attempted=4)
+        >>> _r = checkmate._issue.Runner(verbose=False)
+        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None)) # doctest: +ELLIPSIS
+        TestResults(failed=1, ...
         >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     """
     return _add_issue_doctest(filename, _issue_regression)
