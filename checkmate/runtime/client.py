@@ -49,6 +49,7 @@ class Client(object):
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """
+        >>> import time
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
@@ -64,6 +65,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> are = sample_app.exchanges.ARE()
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
+        >>> time.sleep(0.5)
         >>> rc2.context.validation_list[0].incoming[0].code
         'ARE'
         >>> rc2.context.validation_list.clear()
@@ -73,10 +75,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> pa.broadcast
         True
         >>> rc1.client.send(pa)
+        >>> time.sleep(0.5)
+        >>> import time; time.sleep(1)
         >>> rc2.context.validation_list[0].incoming[0].code
         'PA'
         >>> rc3.context.validation_list[0].incoming[0].code
         'PA'
+        >>> r.stop_test()
     """
     def __init__(self, component):
         super(ThreadedClient, self).__init__(component)
