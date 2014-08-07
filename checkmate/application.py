@@ -146,6 +146,11 @@ class Application(object):
             local_copy += [_s for _s in _component.states]
         return local_copy
 
+    def validated_incoming_list(self):
+        incoming_list = []
+        for _component in list(self.components.values()):
+            incoming_list += _component.get_all_validated_incoming()
+        return incoming_list
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
@@ -175,9 +180,13 @@ class Application(object):
 
         local_copy = self.state_list()
 
+        incoming_list = []
+        if reference_state_list is not None:
+            incoming_list = self.validated_incoming_list()
+
         for _target in target:
             _length = len(local_copy)
-            local_copy = _target.match(local_copy, reference_state_list)
+            local_copy = _target.match(local_copy, reference_state_list, incoming_list)
             if len(local_copy) == _length:
                 return False
         return True

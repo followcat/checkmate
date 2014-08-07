@@ -30,19 +30,21 @@ Send 'AC' for append default 'R':
     >>> final.function #doctest: +ELLIPSIS
     <function State.append at ...
 
-    >>> saved_final = [_f for _f in saved.application.state_list() if isinstance(_f, sample_app.component.component_1_states.AnotherState)][0]
-    >>> res = final.factory([saved_final])
+    >>> validated_incoming = r.application.validated_incoming_list()
+    >>> saved_final = [_f for _f in saved.application.state_list() if final.interface.providedBy(_f)]
+    >>> saved_initial = [_s for _s in saved.application.state_list() if final.interface.providedBy(_s)]
+    >>> res = final.factory(saved_final, kwargs=final.resolve('final', saved_initial, validated_incoming))
     >>> res.value
     [{'R': ['AT1', 'NORM']}]
-    >>> r.application.state_list()[2].value
+    >>> r.application.components['C1'].states[1].value
     [{'R': ['AT1', 'NORM']}]
 
 Check the resulting final state compared to transition's final:
-    >>> r.application.state_list()[2] == res
+    >>> r.application.components['C1'].states[1] == res
     True
 
 Result from compare_states():
-    >>> len(final.match(r.application.state_list(), saved.application.state_list()))
+    >>> len(final.match(r.application.state_list(), saved.application.state_list(), validated_incoming))
     2
     >>> r.application.compare_states(proc.final, saved.application.state_list())
     True

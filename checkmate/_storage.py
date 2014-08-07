@@ -283,7 +283,7 @@ class InternalStorage(object):
                 continue
         return resolved_arguments
 
-    def match(self, target_copy, reference=None):
+    def match(self, target_copy, reference=None, incoming_list=None):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
@@ -314,9 +314,12 @@ class InternalStorage(object):
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = None
+            resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
-            if _target == self.factory(_initial):
+                resolved_arguments = self.resolve('final', _initial, incoming_list)
+            
+            if _target == self.factory(_initial, kwargs=resolved_arguments):
                 target_copy.remove(_target)
                 break
         return target_copy
