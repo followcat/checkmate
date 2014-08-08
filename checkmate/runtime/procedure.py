@@ -157,9 +157,8 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)
                 
-        if not self.is_setup:
-            for _c in self.runtime.runtime_components.values():
-                _c.reset()
+        for _c in self.runtime.runtime_components.values():
+            _c.reset()
 
         saved_initial = checkmate.sandbox.Sandbox(self.application)
         stub = self.runtime.runtime_components[current_node.root.owner]
