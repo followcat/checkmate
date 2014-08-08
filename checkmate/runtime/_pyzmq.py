@@ -1,4 +1,3 @@
-import time
 import pickle
 import logging
 import threading
@@ -12,12 +11,44 @@ import checkmate.runtime.communication
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    """"""
-    def __init__(self, component, communication=None, is_server=False):
-        super(Connector, self).__init__(component, communication=communication, is_server=is_server)
+    """
+        >>> import zmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> a = sample_app.application.TestData()
+        >>> c = checkmate.runtime._pyzmq.Communication()
+        >>> c.initialize()
+        >>> c1 = a.components['C1']
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=True)
+        >>> connector.initialize()
+        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out.TYPE == zmq.PUB
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=False)
+        >>> connector.initialize()
+        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out == None
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=True)
+        >>> connector.open()
+        >>> connector.socket_in.TYPE == zmq.SUB, connector.socket_out.TYPE == zmq.PUSH
+        (True, True)
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=False)
+        >>> connector.open()
+        >>> connector.socket_in == None, connector.socket_out.TYPE == zmq.PUSH
+        (True, True)
+        >>> connector.close()
+        >>> c.close()
+    """
+    def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
+        super(Connector, self).__init__(component, communication=communication, is_server=is_server, is_broadcast=is_broadcast)
         self._name = component.name
-        self.port = -1
-        self.socket = None
+        self.socket_in = None
+        self.socket_out = None
         self.zmq_context = zmq.Context.instance()
         self._initport = self.communication.get_initport()
 
@@ -27,38 +58,52 @@ class Connector(checkmate.runtime.communication.Connector):
             self.request_ports()
 
     def request_ports(self):
-        self.socket = self.zmq_context.socket(zmq.PULL)
-        self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
-
         _socket = self.zmq_context.socket(zmq.REQ)
         _socket.connect("tcp://127.0.0.1:%i" % self._initport)
-        _socket.send(pickle.dumps((self._name, self.port)))
-        return_code = pickle.loads(_socket.recv())
+
+        def open_server_socket(mode, is_broadcast=False):
+            server_socket = self.zmq_context.socket(mode)
+            _port = server_socket.bind_to_random_port("tcp://127.0.0.1")
+            _socket.send(pickle.dumps((self._name, _port, is_broadcast)))
+            return_code = pickle.loads(_socket.recv())
+            return server_socket
+
+        self.socket_in = open_server_socket(zmq.PULL)
+        if self.is_broadcast:
+            self.socket_out = open_server_socket(zmq.PUB, self.is_broadcast)
         _socket.close()
 
     def connect_ports(self):
         if not self.is_server:
             _socket = self.zmq_context.socket(zmq.REQ)
             _socket.connect("tcp://127.0.0.1:%i" % self._initport)
-            _socket.send(pickle.dumps((self._name,)))
-            self.port = pickle.loads(_socket.recv())
-            _socket.close()
 
-            self.socket = self.zmq_context.socket(zmq.PUSH)
-            self.socket.connect("tcp://127.0.0.1:%i" % self.port)
+            def open_client_socket(mode, is_broadcast=False):
+                _socket.send(pickle.dumps((self._name, is_broadcast)))
+                _port = pickle.loads(_socket.recv())
+                client_socket = self.zmq_context.socket(mode)
+                client_socket.connect("tcp://127.0.0.1:%i" % _port)
+                return client_socket
+
+            self.socket_out = open_client_socket(zmq.PUSH)
+            if self.is_broadcast:
+                self.socket_in = open_client_socket(zmq.SUB, self.is_broadcast)
+                self.socket_in.setsockopt_string(zmq.SUBSCRIBE, '')
+            _socket.close()
 
     def open(self):
         """"""
         self.connect_ports()
 
     def close(self):
-        self.socket.close()
+        for _socket in [self.socket_in, self.socket_out]:
+            if _socket is not None:
+                _socket.close()
 
     def send(self, exchange):
         """"""
-        if not self.is_server:
-            #no lock require to protect encoder (only pickle)
-            self.socket.send(checkmate.runtime.encoder.encode(exchange))
+        if self.socket_out is not None:
+            self.socket_out.send(checkmate.runtime.encoder.encode(exchange))
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -93,14 +138,20 @@ class Registry(checkmate.runtime._threading.Thread):
     def assign_ports(self):
         """"""
         _list = pickle.loads(self.socket.recv())
-        if len(_list) == 2:
-            (name, port) = _list
-            self.comp_sender[name] = port
+        if len(_list) == 3:
+            (name, port, is_broadcast) = _list
+            key = name
+            if is_broadcast:
+                key += '_broadcast'
+            self.comp_sender[key] = port
             self.logger.debug("%s bind port %i to send exchange to %s" % (self, port, name))
             self.socket.send(pickle.dumps(0))
         else:
-            (name,) = _list
-            port = self.comp_sender[name]
+            (name, is_broadcast) = _list
+            key = name
+            if is_broadcast:
+                key += '_broadcast'
+            port = self.comp_sender[key]
             self.socket.send(pickle.dumps(port))
 
     def stop(self):

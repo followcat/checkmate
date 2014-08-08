@@ -6,9 +6,14 @@ import checkmate.partition
 class IExchange(zope.interface.Interface):
     """"""
 
+
 @zope.interface.implementer(IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
+    def __init__(self, value=None, broadcast=False, *args, **kwargs):
+        super(Exchange, self).__init__(value, *args, **kwargs)
+        self._broadcast = broadcast
+
     def __eq__(self, other):
         """
         Now hasn't attribute:parameters,use dir() to get attribute.
@@ -43,7 +48,7 @@ class Exchange(checkmate.partition.Partition):
                     if key not in iter(dir(other)):
                         return False
                     if (getattr(self, key) is not None and
-                        getattr(other, key) is not None and 
+                        getattr(other, key) is not None and
                         getattr(self, key) != getattr(other, key)):
                         return False
                 return True
@@ -58,9 +63,21 @@ class Exchange(checkmate.partition.Partition):
         """
         return self.value
 
+    @property
+    def broadcast(self):
+        """
+            >>> e = Exchange('CA')
+            >>> e.broadcast
+            False
+        """
+        return self._broadcast
+
     def origin_destination(self, origin, destination):
         self._origin = origin
-        self._destination = destination
+        if type(destination) != list:
+            self._destination = [destination]
+        else:
+            self._destination = destination
 
     @property
     def origin(self):
@@ -81,10 +98,9 @@ class Exchange(checkmate.partition.Partition):
             >>> e = Exchange()
             >>> e.origin_destination("","destination")
             >>> e.destination
-            'destination'
+            ['destination']
         """
         try:
             return self._destination
         except AttributeError:
             return ""
-

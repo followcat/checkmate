@@ -15,28 +15,87 @@ import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
-def add_device_service(services):
+def add_device_service(services, component):
+    publishs = component.publish_exchange
+    subscribes = component.subscribe_exchange
+    broadcast_map = component.broadcast_map
+
     d = {}
+    code = """
+        \nimport time
+        \n
+        \nimport PyTango
+        \ndef __init__(self, *args):
+        \n    super(self.__class__, self).__init__(*args)
+        \n    self.subscribe_event_done = False"""
+    for _publish in publishs:
+        code += """
+        \n    self.attr_%(pub)s_read = False
+        \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
+
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
+        code += """
+        \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')""" % {'name': component_name, 'device': device_name}
+
+
+    code += """
+        \ndef subscribe_event_run(self):"""
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        code += """
+        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
+    code += """
+        \n    self.subscribe_event_done = True
+        \n    pass"""
+
     for _service in services:
         name = _service[0]
-        code = """
-            \ndef %s(self, param=None):
-            \n    self.send(('%s', param))""" % (name, name)
-        exec(code, d)
+        if name not in publishs and name not in subscribes:
+            code += """
+                \ndef %(name)s(self, param=None):
+                \n    self.send(('%(name)s', param))""" % {'name': name}
+
+    for _subscribe in subscribes:
+        component_name = broadcast_map[_subscribe]
+        code += """
+            \ndef %(sub)s(self, *args):
+            \n    if self.subscribe_event_done:
+            \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
+
+    for _publish in publishs:
+        code += """
+            \n
+            \ndef read_%(pub)s(self, attr):
+            \n    attr.set_value(self.attr_%(pub)s_read)
+            \n
+            \ndef write_%(pub)s(self, attr):
+            \n    self.attr_%(pub)s_read = attr.get_write_value()
+            \n    self.push_change_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
+
+    exec(code, d)
     return d
 
 
-def add_device_interface(services):
+def add_device_interface(services, component):
+    publishs = component.publish_exchange
+    subscribes = component.subscribe_exchange
     command = {}
     for _service in services:
         name = _service[0]
         args = _service[1]
+        if name in publishs or name in subscribes:
+            continue
         if args is not None:
             _type = switch(type(args[0]))
             command[name] = [[_type], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
-    return {'cmd_list': command}
+    attribute = {}
+    for _publish in publishs:
+        attribute[_publish] = [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ_WRITE]]
+    return {'cmd_list': command, 'attr_list': attribute}
 
 
 def switch(_type=None):
@@ -56,15 +115,25 @@ class Registry(checkmate.runtime._threading.Thread):
         self.event = event
         self.pytango_util = PyTango.Util.instance()
 
-    def check_for_shutdown(self):
-        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
+    def event_loop(self):
+        for _device in self.pytango_util.get_device_list('*'):
+            if hasattr(_device, 'subscribe_event_done') and not _device.subscribe_event_done:
+                try:
+                    _device.subscribe_event_run()
+                except:
+                    continue
+            else:
+                time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
         if self.check_for_stop():
+            dserver = self.pytango_util.get_dserver_device()
+            dserver.kill()
+            time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
             sys.exit(0)
 
     def run(self):
         self.pytango_util.server_init()
         self.event.set()
-        self.pytango_util.server_set_event_loop(self.check_for_shutdown)
+        self.pytango_util.server_set_event_loop(self.event_loop)
         self.pytango_util.server_run()
 
 
@@ -78,12 +147,12 @@ class Device(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.zmq_context = zmq.Context.instance()
         self.incoming = []
-        self.socket = self.zmq_context.socket(zmq.PUSH)
-        self.socket.connect("tcp://127.0.0.1:%i"%self._initport)
+        self.socket_in = self.zmq_context.socket(zmq.PUSH)
+        self.socket_in.connect("tcp://127.0.0.1:%i" % self._initport)
 
     def send(self, exchange):
         dump = pickle.dumps(exchange)
-        self.socket.send(dump)
+        self.socket_in.send(dump)
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -102,20 +171,20 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, is_server=False):
-        super().__init__(component, communication, is_server=is_server)
+    def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
+        super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
-            self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services))
-            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services))
+            self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
+            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
         self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
         if self.is_server:
-            self.socket = self.zmq_context.socket(zmq.PULL)
-            self.port = self.socket.bind_to_random_port("tcp://127.0.0.1")
+            self.socket_in = self.zmq_context.socket(zmq.PULL)
+            self.port = self.socket_in.bind_to_random_port("tcp://127.0.0.1")
             setattr(self.device_class, '_initport', self.port)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
@@ -133,14 +202,17 @@ class Connector(checkmate.runtime.communication.Connector):
         self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
-        attr = exchange.get_partition_attr()
-        param = None
-        if attr:
-            param_type = switch(type(attr[0]))
-            param = PyTango.DeviceData()
-            param.insert(param_type, attr)
-        call = getattr(self.device_client, exchange.action)
-        call(param)
+        if exchange.broadcast:
+            setattr(self.device_client, exchange.action, False)
+        else:
+            attr = exchange.get_partition_attr()
+            param = None
+            if attr:
+                param_type = switch(type(attr[0]))
+                param = PyTango.DeviceData()
+                param.insert(param_type, attr)
+            call = getattr(self.device_client, exchange.action)
+            call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):
