@@ -24,8 +24,7 @@ Send 'AC' for append default 'R':
     >>> proc = [_p for _p in procedures if len(_p.transitions.root.incoming) > 0 and _p.transitions.root.incoming[0].code == 'PBAC'][0]
     >>> import checkmate.sandbox
     >>> saved = checkmate.sandbox.Sandbox(r.application)
-    >>> user.simulate(proc.transitions.root) #doctest: +ELLIPSIS
-    [<sample_app.exchanges.Action object at ...
+    >>> proc(r)
     >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_1_states.IAnotherState][0]
     >>> final.function #doctest: +ELLIPSIS
     <function State.append at ...
@@ -48,6 +47,7 @@ Result from compare_states():
     2
     >>> r.application.compare_states(proc.final, saved.application.state_list())
     True
+    >>> 
     >>> r.stop_test()
     >>>
 
