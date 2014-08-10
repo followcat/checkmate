@@ -243,7 +243,7 @@ class InternalStorage(object):
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, arg, states=None, exchanges=None):
+    def resolve(self, _type, states=None, exchanges=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -251,35 +251,39 @@ class InternalStorage(object):
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
-            >>> t.final[0].resolve('R', states=[states])
-            Traceback (most recent call last):
-            ...
-            AttributeError
-            >>> t.final[0].resolve('R', exchanges=[inc])
+            >>> t.final[0].resolve('final', states=[states])
+            {}
+            >>> t.final[0].resolve('final', exchanges=[inc])
             {'R': ['AT1', 'NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)
-            >>> t.final[0].resolve('R', exchanges=[inc])  # doctest: +ELLIPSIS
+            >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
         """
-        if arg in self.resolve_logic.keys():
-            (_type, _interface) = self.resolve_logic[arg]
-            if _type in ['initial', 'final'] and states is not None:
-                for _state in states:
-                    if _interface.providedBy(_state):
-                        return {arg: _state.value}
-                raise AttributeError
-            elif exchanges is not None:
-                for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                    try:
-                        return {arg: getattr(_exchange, arg)}
-                    except AttributeError:
-                        raise AttributeError
-                raise AttributeError
-        raise AttributeError
+        resolved_arguments = {}
+        arguments = list(self.arguments['attribute_values'].keys()) + list(self.arguments['values'])
+        for arg in arguments:
+            try:
+                if arg in self.resolve_logic.keys():
+                    (_type, _interface) = self.resolve_logic[arg]
+                    if _type in ['initial', 'final'] and states is not None:
+                        for _state in states:
+                            if _interface.providedBy(_state):
+                                resolved_arguments.update({arg: _state.value})
+                                break
+                    elif exchanges is not None:
+                        for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
+                            try:
+                                resolved_arguments.update({arg: getattr(_exchange, arg)})
+                                break
+                            except AttributeError:
+                                continue
+            except AttributeError:
+                continue
+        return resolved_arguments
 
-    def match(self, target_copy, reference=None):
+    def match(self, target_copy, reference=None, incoming_list=None):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
@@ -310,9 +314,12 @@ class InternalStorage(object):
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = None
+            resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
-            if _target == self.factory(_initial):
+                resolved_arguments = self.resolve('final', _initial, incoming_list)
+            
+            if _target == self.factory(_initial, kwargs=resolved_arguments):
                 target_copy.remove(_target)
                 break
         return target_copy

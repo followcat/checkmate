@@ -3,6 +3,7 @@ import os
 import zope.interface
 
 import checkmate._module
+import checkmate._validation
 import checkmate.state_machine
 import checkmate.partition_declarator
 
@@ -88,7 +89,7 @@ class Component(object):
         """
         self.states = []
         self.name = name
-        self.validation_list = []
+        self.validation_list = checkmate._validation.List(self.state_machine.transitions)
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
@@ -149,6 +150,9 @@ class Component(object):
             self.states.append(state.storage[0].factory())
         self.service_registry.register(self, self.service_interfaces)
 
+    def reset(self):
+        self.validation_list.clear()
+
     def stop(self):
         pass
 
@@ -173,7 +177,7 @@ class Component(object):
         if _transition is None:
             return []
         output = []
-        self.validation_list.append(_transition)
+        self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)
@@ -222,13 +226,10 @@ class Component(object):
             >>> c1.validate(transition)
             False
         """
-        result = False
-        try:
-            self.validation_list.remove(_transition)
-            result = True
-        except:
-            result = False
-        return result
+        return self.validation_list.check(_transition)
+
+    def get_all_validated_incoming(self):
+        return self.validation_list.all_items()
 
     @property
     def transition_not_found(self):

@@ -46,6 +46,9 @@ class Component(object):
         self.context.start()
         self.client.start()
 
+    def reset(self):
+        self.context.reset()
+
     def stop(self):
         self.context.stop()
         self.client.stop()

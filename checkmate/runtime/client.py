@@ -66,10 +66,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
-        >>> rc2.context.validation_list[0].incoming[0].code
+        >>> rc2.context.validation_list.all_items()[0].action
         'ARE'
-        >>> rc2.context.validation_list.clear()
-        >>> rc3.context.validation_list.clear()
+        >>> rc2.reset()
+        >>> rc3.reset()
         >>> pa = sample_app.exchanges.PA()
         >>> pa._origin = 'C1'
         >>> pa.broadcast
@@ -77,9 +77,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> rc1.client.send(pa)
         >>> time.sleep(0.5)
         >>> import time; time.sleep(1)
-        >>> rc2.context.validation_list[0].incoming[0].code
+        >>> rc2.context.validation_list.all_items()[0].action
         'PA'
-        >>> rc3.context.validation_list[0].incoming[0].code
+        >>> rc3.context.validation_list.all_items()[0].action
         'PA'
         >>> r.stop_test()
     """

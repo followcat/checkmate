@@ -157,9 +157,8 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)
                 
-        if not self.is_setup:
-            for _c in self.runtime.runtime_components.values():
-                _c.context.validation_list.clear()
+        for _c in self.runtime.runtime_components.values():
+            _c.reset()
 
         saved_initial = checkmate.sandbox.Sandbox(self.application)
         stub = self.runtime.runtime_components[current_node.root.owner]
@@ -170,9 +169,7 @@ class Procedure(object):
             @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
                 return self.application.compare_states(self.final, saved_initial.application.state_list())
-            try:
-                check_compare_states()
-            except ValueError:
+            if not check_compare_states():
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
         if not self.is_setup:
