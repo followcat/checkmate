@@ -2,6 +2,7 @@ import zope.interface
 
 import checkmate.runs
 import checkmate._module
+import checkmate.sandbox
 import checkmate.component
 import checkmate.service_registry
 import checkmate.partition_declarator
@@ -20,6 +21,15 @@ class ApplicationMeta(type):
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         1
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> c1.broadcast_map
+        {}
+        >>> c2.broadcast_map
+        {'PA': 'C1'}
+        >>> c3.broadcast_map
+        {'PA': 'C1'}
         """
         exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
@@ -137,7 +147,26 @@ class Application(object):
             else:
                 self.stubs.pop(self.stubs.index(name))
 
-    def compare_states(self, target):
+    def state_list(self):
+        """Return a static list of the component state values
+
+        A sandbox is used to make copy of current application states.
+        """
+        local_copy = []
+        sb = checkmate.sandbox.Sandbox(self)
+        for _component in list(sb.application.components.values()):
+            local_copy += [_s for _s in _component.states]
+        return local_copy
+
+    def validated_incoming_list(self):
+        incoming_list = []
+        for _component in list(self.components.values()):
+            incoming_list += _component.get_all_validated_incoming()
+        return incoming_list
+
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    def compare_states(self, target, reference_state_list=None):
         """Comparison between the states of the application's components and a target.
 
         This comparison is  taking the length of the target into account.
@@ -161,13 +190,15 @@ class Application(object):
         if len(target) == 0:
             return True
 
-        local_copy = []
-        for _component in list(self.components.values()):
-            local_copy += [_s for _s in _component.states]
+        local_copy = self.state_list()
+
+        incoming_list = []
+        if reference_state_list is not None:
+            incoming_list = self.validated_incoming_list()
 
         for _target in target:
             _length = len(local_copy)
-            local_copy = _target.match(local_copy)
+            local_copy = _target.match(local_copy, reference_state_list, incoming_list)
             if len(local_copy) == _length:
                 return False
         return True

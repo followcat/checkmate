@@ -46,8 +46,16 @@ class Runtime(object):
                                                                        (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
+        args_to_log = sys.argv[:]
+        for index, arg in enumerate(args_to_log):
+            if '--components=' in arg or '--sut=' in arg:
+                args_to_log[index] = '--sut=' + ','.join(sut)
+                break
+        else:
+            args_to_log.append('--sut=' + ','.join(sut))
+            
         checkmate.logger.global_logger.start_exchange_logger()
-        logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s"%(sys.argv))
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s" % args_to_log)
         self.application.sut(sut)
 
         for component in self.application.stubs:
@@ -69,8 +77,8 @@ class Runtime(object):
 
     def start_test(self):
         """
-            >>> import checkmate.runtime
             >>> import checkmate.component
+            >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
             >>> import sample_app.application
             >>> ac = sample_app.application.TestData

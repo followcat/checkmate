@@ -136,15 +136,15 @@ class Sandbox(object):
 
     def fill_procedure(self, procedure):
         if self.is_run:
+            procedure.final = self.final
             procedure.initial = self.initial
             procedure.transitions = self.transitions
             procedure.components = list(self.application.components.keys())
 
     def update_required_states(self, transition):
-        for _initial in transition.initial:
-            index = transition.initial.index(_initial)
+        """
+        """
+        for index, _initial in enumerate(transition.initial):
             if _initial.interface not in [_temp_init.interface for _temp_init in self.initial]:
                 self.initial.append(_initial)
-            _final = transition.final[index]
-            if _final.interface not in [_temp_final.interface for _temp_final in self.final]:
-                self.final.append(_final)
+                self.final.append(transition.final[index])

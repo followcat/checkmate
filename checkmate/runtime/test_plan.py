@@ -11,7 +11,6 @@ import checkmate.parser.feature_visitor
 def build_procedure(sandbox, transition):
     proc = checkmate.runtime.procedure.Procedure()
     sandbox.fill_procedure(proc)
-    proc.final = transition.final
     return proc
 
 def get_transitions_from_test(application):
