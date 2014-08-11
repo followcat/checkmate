@@ -93,6 +93,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     using_external_client = True
     reading_external_client = True
 
+    @checkmate.report_issue('checkmate/issues/needless_socket.rst')
     def __init__(self, component):
         #Need to call both ancestors
         Component.__init__(self, component)
