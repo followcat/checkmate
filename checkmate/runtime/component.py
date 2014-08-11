@@ -93,6 +93,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     using_external_client = True
     reading_external_client = True
 
+    @checkmate.fix_issue('checkmate/issues/needless_socket.rst')
     def __init__(self, component):
         #Need to call both ancestors
         Component.__init__(self, component)
@@ -121,8 +122,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                                               is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if (_component in self.runtime.application.system_under_test or
-                  _component in self.context.broadcast_map.values()):
+                if _component in self.runtime.application.system_under_test:
                     connector = connector_factory(_application.components[_component], _communication,
                                                   is_broadcast=_component in self.context.broadcast_map.values())
                     self.client.add_connector(connector)
@@ -179,6 +179,13 @@ class ThreadedSut(ThreadedComponent, Sut):
 
     def setup(self, runtime):
         super().setup(runtime)
+        connector_factory = checkmate.runtime._pyzmq.Connector
+        _communication = runtime.communication_list['default']
+        for _component in [_c for _c in runtime.application.components.keys() if _c != self.context.name]:
+            if _component in self.context.broadcast_map.values():
+                connector = connector_factory(runtime.application.components[_component], _communication, is_broadcast=_component in self.context.broadcast_map.values())
+                self.client.add_connector(connector)
+
         if hasattr(self.context, 'launch_command'):
             for communication_class in self.runtime.application.communication_list:
                 communication_class(self.context)
