@@ -1,4 +1,5 @@
 import re
+import inspect
 import collections
 
 import checkmate._module
@@ -86,6 +87,28 @@ def get_function_parameters_list(signature):
     found_label = signature.find('(')
     parameter_str = signature[found_label:][1:-1]
     return get_parameters_list(parameter_str)
+
+
+def get_exec_signature(signature, dependent_module):
+    """
+        >>> import sample_app.application
+        >>> import checkmate._exec_tools
+        >>> exec_sig = checkmate._exec_tools.get_exec_signature("Action(R:ActionRequest)->str", sample_app.data_structure)
+        >>> exec_sig['_sig_'] # doctest: +ELLIPSIS
+        <inspect.Signature object at ...
+    """
+    exec_dict = {}
+    method_name = get_method_basename(signature)
+    if not is_method(signature):
+        signature += '()'
+    run_code = """
+    \ndef exec_%s:
+    \n    pass
+    \nfn = exec_%s
+        """ % (signature, method_name)
+    exec(run_code, dependent_module.__dict__, locals())
+    exec_dict = dict((['_sig', inspect.Signature.from_function(locals()['fn'])], ))
+    return exec_dict
 
 
 def method_arguments(signature, interface):
