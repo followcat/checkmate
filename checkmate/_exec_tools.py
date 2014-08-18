@@ -133,7 +133,7 @@ def method_arguments(signature, interface):
         parameters_list = get_parameters_list(signature)
     for each in parameters_list:
         if '=' not in each:
-            if each in cls.__init__.__annotations__.keys():
+            if each in cls._sig.parameters.keys():
                 kwargs[each] = None
             else:
                 args.append(each)
@@ -168,9 +168,12 @@ def get_exchange_define_str(import_module, interface_class, classname, parameter
             \n            if _v.annotation == inspect._empty:
             \n                continue
             \n            if _k in kwargs:
-            \n                setattr(self, _k, kwargs[_k])
+            \n                if kwargs[_k] is None:
+            \n                    setattr(self, _k, _v.annotation())
+            \n                else:
+            \n                    setattr(self, _k, kwargs[_k])
             \n                kwargs.pop(_k)
-            \n            elif hasattr(_v, 'annotation'):
+            \n            else:
             \n                setattr(self, _k, _v.annotation())
             \n            partition_attribute.append(_k)
             \n        super().__init__(value, *args, **kwargs)
