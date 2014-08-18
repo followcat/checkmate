@@ -166,6 +166,7 @@ def get_exchange_define_str(import_module, interface_class, classname, parameter
             \n        partition_attribute = []
             \n        for _k,_v in self._sig.parameters.items():
             \n            if _v.annotation == inspect._empty:
+            \n                kwargs[_k] = _v.default
             \n                continue
             \n            if _k in kwargs:
             \n                if kwargs[_k] is None:
