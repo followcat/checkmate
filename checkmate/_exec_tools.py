@@ -94,7 +94,7 @@ def get_exec_signature(signature, dependent_module):
         >>> import sample_app.application
         >>> import checkmate._exec_tools
         >>> exec_sig = checkmate._exec_tools.get_exec_signature("Action(R:ActionRequest)->str", sample_app.data_structure)
-        >>> exec_sig['_sig_'] # doctest: +ELLIPSIS
+        >>> exec_sig['_sig'] # doctest: +ELLIPSIS
         <inspect.Signature object at ...
     """
     exec_dict = {}
