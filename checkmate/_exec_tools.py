@@ -161,19 +161,14 @@ def get_exchange_define_str(interface_class, classname, codes):
             \n    def __init__(self, value=None, *args, **kwargs):
             \n        partition_attribute = []
             \n        for _k,_v in self._sig.parameters.items():
-            \n            if _v.annotation == inspect._empty:
-            \n                kwargs[_k] = _v.default
-            \n                continue
-            \n            if _k in kwargs:
-            \n                if kwargs[_k] is None:
-            \n                    setattr(self, _k, _v.annotation())
+            \n            if _k not in kwargs or kwargs[_k] is None:
+            \n                if _v.annotation == inspect._empty:
+            \n                    kwargs[_k] = _v.default
             \n                else:
-            \n                    setattr(self, _k, kwargs[_k])
-            \n                kwargs.pop(_k)
-            \n            else:
-            \n                setattr(self, _k, _v.annotation())
-            \n            partition_attribute.append(_k)
-            \n        super().__init__(value, *args, **kwargs)
+            \n                    kwargs[_k] = _v.annotation()
+            \n                    partition_attribute.append(_k)
+            \n        bound = self._sig.bind(*args, **kwargs)
+            \n        super().__init__(value, **bound.arguments)
             \n        self.partition_attribute = tuple(partition_attribute)
             \n
             """.format(e=element)
