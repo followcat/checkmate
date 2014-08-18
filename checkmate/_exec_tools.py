@@ -266,10 +266,8 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     elif partition_type == 'states':
         valid_values_list = []
         for _c in codes[0]:
-            if is_method(_c):
-                valid_values_list.extend(get_function_parameters_list(_c))
-            else:
-                valid_values_list.extend(get_parameters_list(_c))
+            if not is_method(_c):
+                valid_values_list.append(_c)
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     sig_dict = get_exec_signature(signature, data_structure_module)
