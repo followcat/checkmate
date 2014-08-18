@@ -145,16 +145,14 @@ def method_arguments(signature, interface):
     return argument
 
 
-def get_exchange_define_str(import_module, interface_class, classname, parameters_str, annotations_str, annotations_list, codes):
-    parameters_keys = re.compile(r'=[\w]+').sub('', parameters_str)
-    class_element = collections.namedtuple('class_element', ['import_module', 'interface_class', 'classname', 'parameters_str', 'parameters_keys', 'annotations_str'])
-    element = class_element(import_module, interface_class, classname, parameters_str, parameters_keys, annotations_str)
+def get_exchange_define_str(interface_class, classname, codes):
+    class_element = collections.namedtuple('class_element', ['interface_class', 'classname'])
+    element = class_element(interface_class, classname)
     run_code = """
             \nimport inspect
             \nimport zope.interface
             \n
             \nimport checkmate.exchange
-            \n{e.import_module}
             \n
             \nclass {e.interface_class}(checkmate.exchange.IExchange):
             \n    \"\"\"\"\"\"
@@ -245,24 +243,9 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     interface_class = 'I' + classname
 
     if partition_type == 'exchanges':
-        import_module = ''
-        annotations_str = ''
-        annotations_list = []
-        parameters_str = ''
-        for _p in get_function_parameters_list(signature):
-            if ':' in _p:
-                temp_p = _p.replace(':', ':' + data_structure_module.__name__ + '.')
-                annotations_list.append(temp_p)
-                annotations_str += ', ' + temp_p + '=None'
-            else:
-                parameters_str += ', ' + _p
-        if annotations_list:
-            import_module = "import " + data_structure_module.__name__
-        run_code = get_exchange_define_str(import_module, interface_class, classname, parameters_str, annotations_str, annotations_list, codes)
-
+        run_code = get_exchange_define_str(interface_class, classname, codes)
     elif partition_type == 'data_structure':
         run_code = get_data_structure_define_str(interface_class, classname, codes)
-
     elif partition_type == 'states':
         valid_values_list = []
         for _c in codes[0]:
