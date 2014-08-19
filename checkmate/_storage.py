@@ -262,23 +262,21 @@ class InternalStorage(object):
             {'R': 1}
         """
         resolved_arguments = {}
-        arguments = list(self.arguments['attribute_values'].keys()) + list(self.arguments['values'])
-        for arg in arguments:
+        for arg in self.resolve_logic.keys():
             try:
-                if arg in self.resolve_logic.keys():
-                    (_type, _interface) = self.resolve_logic[arg]
-                    if _type in ['initial', 'final'] and states is not None:
-                        for _state in states:
-                            if _interface.providedBy(_state):
-                                resolved_arguments.update({arg: _state.value})
-                                break
-                    elif exchanges is not None:
-                        for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                            try:
-                                resolved_arguments.update({arg: getattr(_exchange, arg)})
-                                break
-                            except AttributeError:
-                                continue
+                (_type, _interface) = self.resolve_logic[arg]
+                if _type in ['initial', 'final'] and states is not None:
+                    for _state in states:
+                        if _interface.providedBy(_state):
+                            resolved_arguments.update({arg: _state.value})
+                            break
+                elif exchanges is not None:
+                    for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
+                        try:
+                            resolved_arguments.update({arg: getattr(_exchange, arg)})
+                            break
+                        except AttributeError:
+                            continue
             except AttributeError:
                 continue
         return resolved_arguments
