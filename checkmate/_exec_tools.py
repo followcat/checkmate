@@ -89,14 +89,15 @@ def get_function_parameters_list(signature):
     return get_parameters_list(parameter_str)
 
 
-def get_exec_signature(signature, dependent_module):
+def get_exec_signature(signature, dependent_modules):
     """
         >>> import sample_app.application
         >>> import checkmate._exec_tools
-        >>> checkmate._exec_tools.get_exec_signature("Action(R:ActionRequest)->str", sample_app.data_structure) # doctest: +ELLIPSIS
+        >>> checkmate._exec_tools.get_exec_signature("Action(R:ActionRequest)->str", [sample_app.data_structure]) #doctest: +ELLIPSIS
         <inspect.Signature object at ...
     """
     exec_dict = {}
+    dependent_dict = {}
     method_name = get_method_basename(signature)
     if not is_method(signature):
         signature += '()'
@@ -105,7 +106,10 @@ def get_exec_signature(signature, dependent_module):
     \n    pass
     \nfn = exec_%s
         """ % (signature, method_name)
-    exec(run_code, dependent_module.__dict__, locals())
+    for _dep in dependent_modules:
+        dependent_dict.update(_dep.__dict__)
+    exec(run_code, dependent_dict, locals())
+    exec(run_code, dependent_dict, locals())
     return inspect.Signature.from_function(locals()['fn'])
 
 
@@ -248,6 +252,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
-    setattr(define_class, '_sig', get_exec_signature(signature, data_structure_module))
+    setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module]))
     define_interface = getattr(exec_module, interface_class)
     return define_class, define_interface
