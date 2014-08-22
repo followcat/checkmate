@@ -32,7 +32,7 @@ def _build_resolve_logic(transition, type, data):
     """
     resolved_arguments = {}
     entry = transition[type]
-    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
+    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys()) + list(entry[entry.index(data)].arguments.values)
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -44,7 +44,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition['incoming']) != 0):
             if type in ['final', 'outgoing']:
                 for item in transition['incoming']:
-                    if arg in list(item.arguments['attribute_values'].keys()):
+                    if arg in list(item.arguments.attribute_values.keys()):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -168,7 +168,7 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
-            >>> st.arguments['values'], st.arguments['attribute_values']
+            >>> tuple(st.arguments)
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
@@ -180,7 +180,8 @@ class InternalStorage(object):
         self.interface = interface
         self.function = function
 
-        self.arguments = checkmate._exec_tools.method_arguments(name, interface)
+        argument = collections.namedtuple('argument', ['values', 'attribute_values'])
+        self.arguments = argument(*checkmate._exec_tools.method_arguments(name, interface))
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
@@ -190,7 +191,7 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
-            >>> st.arguments['values'], st.arguments['attribute_values']
+            >>> tuple(st.arguments)
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
@@ -225,7 +226,7 @@ class InternalStorage(object):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
-                    value = self.arguments['values'][0]
+                    value = self.arguments.values[0]
                 except IndexError:
                     value = None
                 func(state, value, **kwparam)
@@ -234,11 +235,11 @@ class InternalStorage(object):
                 return func(*param, **kwparam)
 
         if args is None:
-            args = self.arguments['values']
+            args = self.arguments.values
         if kwargs is None:
-            kwargs = self.arguments['attribute_values']
+            kwargs = self.arguments.attribute_values
         else:
-            _local_kwargs = copy.deepcopy(self.arguments['attribute_values'])
+            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)

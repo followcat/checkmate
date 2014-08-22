@@ -76,17 +76,42 @@ def get_parameters_list(parameter_str):
     return temp_list
 
 
-def get_function_parameters_list(signature):
+@checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
+def method_arguments(signature, interface):
     """
         >>> import checkmate._exec_tools
-        >>> checkmate._exec_tools.get_function_parameters_list("A0('AT1')")
-        ['AT1']
-        >>> checkmate._exec_tools.get_function_parameters_list("Action(R = ActionRequest(['AT2', 'HIGH']))")
-        ["R = ActionRequest(['AT2', 'HIGH'])"]
+        >>> import sample_app.application
+        >>> import sample_app.exchanges
+        >>> interface = sample_app.exchanges.IAction
+        >>> checkmate._exec_tools.method_arguments("A0('AT1')", interface)
+        (('AT1',), {})
+
+        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R = None)", interface)
+        (('False',), {'R': None})
+        >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
+        ((), {'R': None})
     """
-    found_label = signature.find('(')
-    parameter_str = signature[found_label:][1:-1]
-    return get_parameters_list(parameter_str)
+    if is_method(signature):
+        found_label = signature.find('(')
+        parameter_str = signature[found_label:][1:-1]
+        parameters = get_parameters_list(parameter_str)
+    else:
+        parameters = get_parameters_list(signature)
+
+    args = []
+    kwargs = {}
+    cls = checkmate._module.get_class_implementing(interface)
+    for each in parameters:
+        if '=' not in each:
+            if each in cls._sig.parameters.keys():
+                kwargs[each] = None
+            else:
+                args.append(each)
+        else:
+            label = each.find('=')
+            _k, _v = each[:label].strip(), each[label + 1:].strip()
+            exec("kwargs['%s'] = %s" % (_k, _v), locals(), locals())
+    return tuple(args), kwargs
 
 
 def get_exec_signature(signature, dependent_modules):
@@ -111,40 +136,6 @@ def get_exec_signature(signature, dependent_modules):
     exec(run_code, dependent_dict, locals())
     exec(run_code, dependent_dict, locals())
     return inspect.Signature.from_function(locals()['fn'])
-
-
-def method_arguments(signature, interface):
-    """
-        >>> import checkmate._exec_tools
-        >>> import sample_app.application
-        >>> interface = sample_app.exchanges.IAction
-        >>> argument = checkmate._exec_tools.method_arguments("ActionMix(False, R = None)", interface)
-        >>> argument['attribute_values'], argument['values']
-        ({'R': None}, ('False',))
-        >>> argument = checkmate._exec_tools.method_arguments("AP('R')", interface)
-        >>> argument['attribute_values'], argument['values']
-        ({'R': None}, ())
-    """
-    args = []
-    kwargs = {}
-    cls = checkmate._module.get_class_implementing(interface)
-    argument = {'values': None, 'attribute_values': kwargs}
-    if is_method(signature):
-        parameters_list = get_function_parameters_list(signature)
-    else:
-        parameters_list = get_parameters_list(signature)
-    for each in parameters_list:
-        if '=' not in each:
-            if each in cls._sig.parameters.keys():
-                kwargs[each] = None
-            else:
-                args.append(each)
-        else:
-            label = each.find('=')
-            _k, _v = each[:label].strip(), each[label + 1:].strip()
-            exec("kwargs['%s'] = %s" % (_k, _v))
-    argument['values'] = tuple(args)
-    return argument
 
 
 def get_exchange_define_str(interface_class, classname, codes):
