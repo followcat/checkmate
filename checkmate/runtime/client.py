@@ -113,6 +113,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def start(self):
         for _c in self.connections:
             _c.open()
+            if not _c.is_reading:
+                continue
             if hasattr(_c, 'socket_in') and _c.socket_in is not None:
                 self.poller.register(_c.socket_in, zmq.POLLIN)
         super(ThreadedClient, self).start()
