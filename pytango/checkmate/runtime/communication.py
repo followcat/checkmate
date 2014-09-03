@@ -31,8 +31,10 @@ def add_device_service(services, component):
         \n    self.subscribe_event_done = False"""
     for _publish in publishs:
         code += """
-        \n    self.attr_%(pub)s_read = False
-        \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
+        \n    self.attr_%(pub)s_read = 1
+        \n    self.%(pub)s_counter = 0
+        \n    %(pub)s = self.get_device_attr().get_attr_by_name('%(pub)s')
+        \n    %(pub)s.set_data_ready_event(True)""" % {'pub': _publish}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -74,7 +76,8 @@ def add_device_service(services, component):
             \n
             \ndef write_%(pub)s(self, attr):
             \n    self.attr_%(pub)s_read = attr.get_write_value()
-            \n    self.push_change_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
+            \n    self.%(pub)s_counter += 1
+            \n    self.push_data_ready_event('%(pub)s', self.%(pub)s_counter)""" % {'pub': _publish}
 
     exec(code, d)
     return d
