@@ -27,7 +27,7 @@ class Component_2(PyTango.Device_4Impl):
         app.exit(0)
 
     def subscribe_event_run(self):
-        self.c1_dev.subscribe_event('PA', PyTango.EventType.CHANGE_EVENT, self.PA_callback)
+        self.c1_dev.subscribe_event('PA', PyTango.EventType.DATA_READY_EVENT, self.PA_callback)
         self.subscribe_event_done = True
 
     def PBAC(self):

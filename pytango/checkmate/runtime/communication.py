@@ -45,7 +45,7 @@ def add_device_service(services, component):
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
-        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
+        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.DATA_READY_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
     code += """
         \n    self.subscribe_event_done = True
         \n    pass"""
