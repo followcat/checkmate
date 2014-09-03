@@ -27,6 +27,7 @@ def add_device_service(services, component):
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
+        \n    self.subscribe_event_id_dict = {}
         \n    self.subscribe_event_done = False"""
     for _publish in publishs:
         code += """
@@ -45,7 +46,8 @@ def add_device_service(services, component):
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
-        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.DATA_READY_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
+        \n    id = self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.DATA_READY_EVENT, self.%(sub)s, stateless=False)
+        \n    self.subscribe_event_id_dict[id] = self.dev_%(name)s""" % {'sub': _subscribe, 'name': component_name}
     code += """
         \n    self.subscribe_event_done = True
         \n    pass"""
@@ -243,6 +245,11 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def close(self):
         pytango_util = PyTango.Util.instance()
+        for _device in pytango_util.get_device_list('*'):
+            if _device.get_name() == pytango_util.get_dserver_device().get_name():
+                continue
+            for _id, _dev in _device.subscribe_event_id_dict.items():
+                _dev.unsubscribe_event(_id)
         try:
             pytango_util.unregister_server()
         except PyTango.DevFailed as e:
