@@ -44,8 +44,8 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> connector.close()
         >>> c.close()
     """
-    def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
-        super(Connector, self).__init__(component, communication=communication, is_server=is_server, is_broadcast=is_broadcast)
+    def __init__(self, component, communication=None, is_server=False, is_reading=True, is_broadcast=False):
+        super(Connector, self).__init__(component, communication=communication, is_server=is_server, is_reading=is_reading, is_broadcast=is_broadcast)
         self._name = component.name
         self.socket_in = None
         self.socket_out = None
@@ -86,7 +86,7 @@ class Connector(checkmate.runtime.communication.Connector):
                 return client_socket
 
             self.socket_out = open_client_socket(zmq.PUSH)
-            if self.is_broadcast:
+            if self.is_broadcast and self.is_reading:
                 self.socket_in = open_client_socket(zmq.SUB, self.is_broadcast)
                 self.socket_in.setsockopt_string(zmq.SUBSCRIBE, '')
             _socket.close()

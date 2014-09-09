@@ -15,8 +15,10 @@ class Component_1(PyTango.Device_4Impl):
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
 
-        self.attr_PA_read = False
-        self.set_change_event('PA', True, False)
+        self.attr_PA_read = 1
+        self.PA_counter = 0
+        pa = self.get_device_attr().get_attr_by_name('PA')
+        pa.set_data_ready_event(True)
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
@@ -33,7 +35,8 @@ class Component_1(PyTango.Device_4Impl):
     def PP(self, param):
         if self.attr_c_state == False:
             self.toggle()
-            self.push_change_event('PA', self.attr_PA_read)
+            self.PA_counter += 1
+            self.push_data_ready_event('PA', self.PA_counter)
 
     def read_PA(self, attr):
         attr.set_value(self.attr_PA_read)
@@ -55,7 +58,7 @@ class C1Interface(PyTango.DeviceClass):
                 'PP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
                }
     attr_list = {
-                'PA': [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ]],
+                'PA': [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ]],
                 }
 
 

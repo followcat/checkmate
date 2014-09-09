@@ -119,11 +119,13 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['default']
             if self.reading_internal_client or self.context.is_publish:
                 connector = connector_factory(self.context, _communication, is_server=True,
+                                              is_reading=self.reading_internal_client,
                                               is_broadcast=self.context.is_publish)
                 self.client.add_connector(connector)
             for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
                 if _component in self.runtime.application.system_under_test:
                     connector = connector_factory(_application.components[_component], _communication,
+                                                  is_reading=self.reading_internal_client,
                                                   is_broadcast=_component in self.context.broadcast_map.values())
                     self.client.add_connector(connector)
 

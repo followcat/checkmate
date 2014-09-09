@@ -105,10 +105,11 @@ public class Component_1 {
         this.deviceManager = deviceManager;
     }
 
-	@Attribute(name="PA", pushChangeEvent = true)
-	private Boolean pA;
+	@Attribute(name="PA", pushDataReady = true)
+	private double pA;
+    private int pA_counter = 0;
 
-	public Boolean getPA() {
+	public double getPA() {
 		return pA;
 	}
 
@@ -135,8 +136,8 @@ public class Component_1 {
         xlogger.entry();
         if (c_state == false) {
             toggle();
-            deviceManager.pushEvent("PA", new AttributeValue(pA), EventType.CHANGE_EVENT);
-
+            pA_counter++;
+            deviceManager.pushDataReadyEvent("PA", pA_counter);
         }
         xlogger.exit();
     }

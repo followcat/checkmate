@@ -27,11 +27,14 @@ def add_device_service(services, component):
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
+        \n    self.subscribe_event_id_dict = {}
         \n    self.subscribe_event_done = False"""
     for _publish in publishs:
         code += """
-        \n    self.attr_%(pub)s_read = False
-        \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
+        \n    self.attr_%(pub)s_read = 1
+        \n    self.%(pub)s_counter = 0
+        \n    %(pub)s = self.get_device_attr().get_attr_by_name('%(pub)s')
+        \n    %(pub)s.set_data_ready_event(True)""" % {'pub': _publish}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -45,7 +48,8 @@ def add_device_service(services, component):
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
-        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
+        \n    id = self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.DATA_READY_EVENT, self.%(sub)s, stateless=False)
+        \n    self.subscribe_event_id_dict[id] = self.dev_%(name)s""" % {'sub': _subscribe, 'name': component_name}
     code += """
         \n    self.subscribe_event_done = True
         \n    pass"""
@@ -72,7 +76,8 @@ def add_device_service(services, component):
             \n
             \ndef write_%(pub)s(self, attr):
             \n    self.attr_%(pub)s_read = attr.get_write_value()
-            \n    self.push_change_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
+            \n    self.%(pub)s_counter += 1
+            \n    self.push_data_ready_event('%(pub)s', self.%(pub)s_counter)""" % {'pub': _publish}
 
     exec(code, d)
     return d
@@ -171,8 +176,8 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
-        super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
+    def __init__(self, component, communication=None, is_server=False, is_reading=True, is_broadcast=False):
+        super().__init__(component, communication, is_server=is_server, is_reading=is_reading, is_broadcast=is_broadcast)
         self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
         if self.is_server:
             self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
@@ -243,6 +248,11 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def close(self):
         pytango_util = PyTango.Util.instance()
+        for _device in pytango_util.get_device_list('*'):
+            if _device.get_name() == pytango_util.get_dserver_device().get_name():
+                continue
+            for _id, _dev in _device.subscribe_event_id_dict.items():
+                _dev.unsubscribe_event(_id)
         try:
             pytango_util.unregister_server()
         except PyTango.DevFailed as e:
