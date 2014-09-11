@@ -68,16 +68,16 @@ class Connector(checkmate.runtime.communication.Connector):
             server_socket.connect("tcp://127.0.0.1:%i" % self._routerport)
             return server_socket
 
-        def open_server_socket(mode, is_broadcast=False):
+        def open_server_socket(mode):
             server_socket = self.zmq_context.socket(mode)
             _port = server_socket.bind_to_random_port("tcp://127.0.0.1")
-            _socket.send(pickle.dumps((self._name, _port, is_broadcast)))
+            _socket.send(pickle.dumps((self._name, _port)))
             return_code = pickle.loads(_socket.recv())
             return server_socket
 
         self.socket_in = open_server_socket_router(zmq.PULL)
         if self.is_broadcast:
-            self.socket_out = open_server_socket(zmq.PUB, self.is_broadcast)
+            self.socket_out = open_server_socket(zmq.PUB)
         _socket.close()
 
     def connect_ports(self):
@@ -90,8 +90,8 @@ class Connector(checkmate.runtime.communication.Connector):
                 server_socket.connect("tcp://127.0.0.1:%i" % self._routerport)
                 return server_socket
 
-            def open_client_socket(mode, is_broadcast=False):
-                _socket.send(pickle.dumps((self._name, is_broadcast)))
+            def open_client_socket(mode):
+                _socket.send(pickle.dumps((self._name, )))
                 _port = pickle.loads(_socket.recv())
                 client_socket = self.zmq_context.socket(mode)
                 client_socket.connect("tcp://127.0.0.1:%i" % _port)
@@ -99,7 +99,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
             self.socket_out = open_client_socket_router(zmq.PUSH)
             if self.is_broadcast and self.is_reading:
-                self.socket_in = open_client_socket(zmq.SUB, self.is_broadcast)
+                self.socket_in = open_client_socket(zmq.SUB)
                 self.socket_in.setsockopt_string(zmq.SUBSCRIBE, '')
             _socket.close()
 
@@ -160,19 +160,15 @@ class Registry(checkmate.runtime._threading.Thread):
     def assign_ports(self):
         """"""
         _list = pickle.loads(self.socket.recv())
-        if len(_list) == 3:
-            (name, port, is_broadcast) = _list
+        if len(_list) == 2:
+            (name, port) = _list
             key = name
-            if is_broadcast:
-                key += '_broadcast'
             self.comp_sender[key] = port
             self.logger.debug("%s bind port %i to send exchange to %s" % (self, port, name))
             self.socket.send(pickle.dumps(0))
         else:
-            (name, is_broadcast) = _list
+            (name, ) = _list
             key = name
-            if is_broadcast:
-                key += '_broadcast'
             port = self.comp_sender[key]
             self.socket.send(pickle.dumps(port))
 
