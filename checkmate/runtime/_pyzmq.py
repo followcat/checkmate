@@ -59,37 +59,23 @@ class Connector(checkmate.runtime.communication.Connector):
         if self.is_server:
             self.request_ports()
 
+    def open_router_socket(self, mode, port):
+        new_socket = self.zmq_context.socket(mode)
+        new_socket.connect("tcp://127.0.0.1:%i" % port)
+        return new_socket
+
     def request_ports(self):
-        def open_server_socket_router(mode):
-            server_socket = self.zmq_context.socket(mode)
-            server_socket.setsockopt(zmq.IDENTITY, self._name.encode())
-            server_socket.connect("tcp://127.0.0.1:%i" % self._routerport)
-            return server_socket
-
-        def open_server_socket_broadcast(mode):
-            server_socket = self.zmq_context.socket(mode)
-            server_socket.connect("tcp://127.0.0.1:%i" % self._broadcast_routerport)
-            return server_socket
-
-        self.socket_in = open_server_socket_router(zmq.DEALER)
+        self.socket_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_in.setsockopt(zmq.IDENTITY, self._name.encode())
+        self.socket_in.connect("tcp://127.0.0.1:%i" % self._routerport)
         if self.is_broadcast:
-            self.socket_out = open_server_socket_broadcast(zmq.DEALER)
+            self.socket_out = self.open_router_socket(zmq.DEALER, self._broadcast_routerport)
 
     def connect_ports(self):
         if not self.is_server:
-            def open_client_socket_router(mode):
-                server_socket = self.zmq_context.socket(mode)
-                server_socket.connect("tcp://127.0.0.1:%i" % self._routerport)
-                return server_socket
-
-            def open_client_socket_broadcast(mode):
-                client_socket = self.zmq_context.socket(mode)
-                client_socket.connect("tcp://127.0.0.1:%i" % self._publishport)
-                return client_socket
-
-            self.socket_out = open_client_socket_router(zmq.DEALER)
+            self.socket_out = self.open_router_socket(zmq.DEALER, self._routerport)
             if self.is_broadcast and self.is_reading:
-                self.socket_in = open_client_socket_broadcast(zmq.SUB)
+                self.socket_in = self.open_router_socket(zmq.SUB, self._publishport)
                 self.socket_in.setsockopt(zmq.SUBSCRIBE, self._name.encode())
 
     def open(self):
