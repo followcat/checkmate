@@ -1,4 +1,3 @@
-import pickle
 import logging
 import threading
 
@@ -102,7 +101,6 @@ class Registry(checkmate.runtime._threading.Thread):
         """"""
         super(Registry, self).__init__(name=name)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
-        self.comp_sender = {}
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
