@@ -50,7 +50,6 @@ class Connector(checkmate.runtime.communication.Connector):
         self.socket_in = None
         self.socket_out = None
         self.zmq_context = zmq.Context.instance()
-        self._initport = self.communication.get_initport()
         self._routerport = self.communication.get_routerport()
         self._broadcast_routerport = self.communication.get_broadcast_routerport()
         self._publishport = self.communication.get_publishport()
@@ -61,9 +60,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.request_ports()
 
     def request_ports(self):
-        _socket = self.zmq_context.socket(zmq.REQ)
-        _socket.connect("tcp://127.0.0.1:%i" % self._initport)
-
         def open_server_socket_router(mode):
             server_socket = self.zmq_context.socket(mode)
             server_socket.setsockopt(zmq.IDENTITY, self._name.encode())
@@ -78,13 +74,9 @@ class Connector(checkmate.runtime.communication.Connector):
         self.socket_in = open_server_socket_router(zmq.PULL)
         if self.is_broadcast:
             self.socket_out = open_server_socket_broadcast(zmq.PUSH)
-        _socket.close()
 
     def connect_ports(self):
         if not self.is_server:
-            _socket = self.zmq_context.socket(zmq.REQ)
-            _socket.connect("tcp://127.0.0.1:%i" % self._initport)
-
             def open_client_socket_router(mode):
                 server_socket = self.zmq_context.socket(mode)
                 server_socket.connect("tcp://127.0.0.1:%i" % self._routerport)
@@ -99,7 +91,6 @@ class Connector(checkmate.runtime.communication.Connector):
             if self.is_broadcast and self.is_reading:
                 self.socket_in = open_client_socket_broadcast(zmq.SUB)
                 self.socket_in.setsockopt(zmq.SUBSCRIBE, self._name.encode())
-            _socket.close()
 
     def open(self):
         """"""
@@ -128,24 +119,19 @@ class Registry(checkmate.runtime._threading.Thread):
         self.comp_sender = {}
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
-        self.socket = self.zmq_context.socket(zmq.REP)
         self.router = self.zmq_context.socket(zmq.ROUTER)
         self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
         self.publish = self.zmq_context.socket(zmq.PUB)
         self.logger.debug("%s init" % self)
         self.get_assign_port_lock = threading.Lock()
 
-        self._initport = self.pickfreeport()
         self._routerport = self.pickfreeport()
         self._broadcast_routerport = self.pickfreeport()
         self._publishport = self.pickfreeport()
-        self.socket.bind("tcp://127.0.0.1:%i" % self._initport)
         self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
         self.broadcast_router.bind("tcp://127.0.0.1:%i" % self._broadcast_routerport)
         self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
 
-        self.logger.debug("%s bind port %i to listen port request" % (self, self._initport))
-        self.poller.register(self.socket, zmq.POLLIN)
         self.poller.register(self.router, zmq.POLLIN)
         self.poller.register(self.broadcast_router, zmq.POLLIN)
 
@@ -157,29 +143,12 @@ class Registry(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for sock in iter(socks):
-                if sock == self.socket:
-                    self.assign_ports()
                 if sock == self.router:
                     message = self.router.recv_multipart()
                     self.router.send_multipart([message[1], message[2]])
                 if sock == self.broadcast_router:
                     message = self.broadcast_router.recv_multipart()
                     self.publish.send_multipart(message[1:])
-
-    def assign_ports(self):
-        """"""
-        _list = pickle.loads(self.socket.recv())
-        if len(_list) == 2:
-            (name, port) = _list
-            key = name
-            self.comp_sender[key] = port
-            self.logger.debug("%s bind port %i to send exchange to %s" % (self, port, name))
-            self.socket.send(pickle.dumps(0))
-        else:
-            (name, ) = _list
-            key = name
-            port = self.comp_sender[key]
-            self.socket.send(pickle.dumps(port))
 
     def stop(self):
         self.logger.debug("%s stop" % self)
@@ -233,9 +202,6 @@ class Communication(checkmate.runtime.communication.Communication):
     def close(self):
         self.registry.stop()
         self.logger.info("%s close" % self)
-
-    def get_initport(self):
-        return self.registry._initport
 
     def get_routerport(self):
         return self.registry._routerport
