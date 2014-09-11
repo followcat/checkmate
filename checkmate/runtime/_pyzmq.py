@@ -21,25 +21,25 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> c1 = a.components['C1']
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=True)
         >>> connector.initialize()
-        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out.TYPE == zmq.PUB
+        >>> connector.socket_in.TYPE == zmq.DEALER, connector.socket_out.TYPE == zmq.DEALER
         (True, True)
         >>> connector.close()
 
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=False)
         >>> connector.initialize()
-        >>> connector.socket_in.TYPE == zmq.PULL, connector.socket_out == None
+        >>> connector.socket_in.TYPE == zmq.DEALER, connector.socket_out == None
         (True, True)
         >>> connector.close()
 
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=True)
         >>> connector.open()
-        >>> connector.socket_in.TYPE == zmq.SUB, connector.socket_out.TYPE == zmq.PUSH
+        >>> connector.socket_in.TYPE == zmq.SUB, connector.socket_out.TYPE == zmq.DEALER
         (True, True)
         >>> connector.close()
 
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=False)
         >>> connector.open()
-        >>> connector.socket_in == None, connector.socket_out.TYPE == zmq.PUSH
+        >>> connector.socket_in == None, connector.socket_out.TYPE == zmq.DEALER
         (True, True)
         >>> connector.close()
         >>> c.close()
@@ -71,9 +71,9 @@ class Connector(checkmate.runtime.communication.Connector):
             server_socket.connect("tcp://127.0.0.1:%i" % self._broadcast_routerport)
             return server_socket
 
-        self.socket_in = open_server_socket_router(zmq.PULL)
+        self.socket_in = open_server_socket_router(zmq.DEALER)
         if self.is_broadcast:
-            self.socket_out = open_server_socket_broadcast(zmq.PUSH)
+            self.socket_out = open_server_socket_broadcast(zmq.DEALER)
 
     def connect_ports(self):
         if not self.is_server:
@@ -87,7 +87,7 @@ class Connector(checkmate.runtime.communication.Connector):
                 client_socket.connect("tcp://127.0.0.1:%i" % self._publishport)
                 return client_socket
 
-            self.socket_out = open_client_socket_router(zmq.PUSH)
+            self.socket_out = open_client_socket_router(zmq.DEALER)
             if self.is_broadcast and self.is_reading:
                 self.socket_in = open_client_socket_broadcast(zmq.SUB)
                 self.socket_in.setsockopt(zmq.SUBSCRIBE, self._name.encode())
