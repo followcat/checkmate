@@ -75,9 +75,8 @@ def add_device_service(services, component):
             \n    attr.set_value(self.attr_%(pub)s_read)
             \n
             \ndef write_%(pub)s(self, attr):
-            \n    self.attr_%(pub)s_read = attr.get_write_value()
-            \n    self.%(pub)s_counter += 1
-            \n    self.push_data_ready_event('%(pub)s', self.%(pub)s_counter)""" % {'pub': _publish}
+            \n    self.attr_%(pub)s_read += 1
+            \n    self.push_data_ready_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
 
     exec(code, d)
     return d

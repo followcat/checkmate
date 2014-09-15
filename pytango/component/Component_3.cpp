@@ -6,6 +6,12 @@ static const char *RcsId = "$Id:  $";
 
 namespace Component_3_ns
 {
+void PA_callback::push_event(Tango::DataReadyEventData *event)
+{
+	 (static_cast<Component_3 *>(device))->pa(event);
+	
+}
+
 
 Component_3::Component_3(Tango::DeviceClass *cl, string &s)
  : TANGO_BASE_CLASS(cl, s.c_str())
@@ -43,12 +49,14 @@ void Component_3::init_device()
 	attr_c_state = false;
 	c1_dev = new Tango::DeviceProxy("sys/component_1/C1");
 	c2_dev = new Tango::DeviceProxy("sys/component_2/C2");
+    pa_callback = new PA_callback(this);
 }
 
 
 void Component_3::always_executed_hook()
 {
 	INFO_STREAM << "Component_3::always_executed_hook()  " << device_name << endl;
+	c1_dev->subscribe_event("PA", Tango::DATA_READY_EVENT, static_cast<Tango::CallBack *>(pa_callback));
 }
 
 //--------------------------------------------------------
@@ -93,6 +101,12 @@ void Component_3::rl()
 		toggle();
 		c2_dev->command_inout("dr");
 	}
+}
+
+void Component_3::pa(Tango::DataReadyEventData *event)
+{
+	DEBUG_STREAM << "Component_3::pa()  - " << device_name << endl;
+	attr_c_state = false;
 }
 
 } //	namespace
