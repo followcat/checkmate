@@ -4,6 +4,7 @@ import time
 import shlex
 import pickle
 import random
+import socket
 import threading
 
 import zmq
@@ -28,7 +29,8 @@ def add_device_service(services, component):
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
         \n    self.subscribe_event_id_dict = {}
-        \n    self.subscribe_event_done = False"""
+        \n    self.subscribe_event_done = False
+        \n    self._name = '%s'""" % component.name
     for _publish in publishs:
         code += """
         \n    self.attr_%(pub)s_read = 1
@@ -41,7 +43,6 @@ def add_device_service(services, component):
         device_name = '/'.join(['sys', 'component_' + component_name.lstrip('C'), component_name])
         code += """
         \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')""" % {'name': component_name, 'device': device_name}
-
 
     code += """
         \ndef subscribe_event_run(self):"""
@@ -114,6 +115,43 @@ def switch(_type=None):
         return PyTango.DevVoid
 
 
+class Router(checkmate.runtime._threading.Thread):
+    """"""
+    def __init__(self, name=None):
+        """"""
+        super(Router, self).__init__(name=name)
+        self.poller = zmq.Poller()
+        self.zmq_context = zmq.Context.instance()
+        self.get_assign_port_lock = threading.Lock()
+
+        self.router = self.zmq_context.socket(zmq.ROUTER)
+        self._routerport = self.pickfreeport()
+        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
+        self.poller.register(self.router, zmq.POLLIN)
+
+    def run(self):
+        """"""
+        while True:
+            if self.check_for_stop():
+                break
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+            for sock in iter(socks):
+                if sock == self.router:
+                    message = self.router.recv_multipart()
+                    self.router.send_multipart([message[1], message[2]])
+
+    def stop(self):
+        super(Router, self).stop()
+
+    def pickfreeport(self):
+        with self.get_assign_port_lock:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.bind(('127.0.0.1', 0))
+            addr, port = _socket.getsockname()
+            _socket.close()
+        return port
+
+
 class Registry(checkmate.runtime._threading.Thread):
     def __init__(self, event):
         super(Registry, self).__init__()
@@ -153,11 +191,11 @@ class Device(PyTango.Device_4Impl):
         self.zmq_context = zmq.Context.instance()
         self.incoming = []
         self.socket_in = self.zmq_context.socket(zmq.PUSH)
-        self.socket_in.connect("tcp://127.0.0.1:%i" % self._initport)
+        self.socket_in.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def send(self, exchange):
         dump = pickle.dumps(exchange)
-        self.socket_in.send(dump)
+        self.socket_in.send_multipart([self._name.encode(), dump])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -184,13 +222,15 @@ class Connector(checkmate.runtime.communication.Connector):
             self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
             self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
+        self._routerport = self.communication.get_routerport()
         self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
         if self.is_server:
             self.socket_in = self.zmq_context.socket(zmq.PULL)
-            self.port = self.socket_in.bind_to_random_port("tcp://127.0.0.1")
-            setattr(self.device_class, '_initport', self.port)
+            self.socket_in.setsockopt(zmq.IDENTITY, self._name.encode())
+            self.socket_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+            setattr(self.device_class, '_routerport', self._routerport)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
@@ -233,16 +273,21 @@ class Communication(checkmate.runtime.communication.Communication):
             self.device_family = type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
+        self.router = Router()
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
         self.pytango_server = PyTango.Util(shlex.split(__file__ + ' ' + self.server_name))
 
+    def get_routerport(self):
+        return self.router._routerport
+
     def start(self):
         self.event = threading.Event()
         self.registry = Registry(self.event)
         self.registry.start()
+        self.router.start()
         #wait for server initialized
         self.event.wait(timeout=2)
 
@@ -260,6 +305,7 @@ class Communication(checkmate.runtime.communication.Communication):
             pass
         self.delete_tango_device('/'.join(('dserver', self.device_family, self.server_name)))
         self.registry.stop()
+        self.router.stop()
 
     def create_tango_server(self, server_name):
         comp = PyTango.DbDevInfo()
