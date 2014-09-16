@@ -130,7 +130,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for _s in socks:
-                msg = _s.recv()
+                msg = _s.recv_multipart()
+                msg = msg[-1]
                 exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
                 self.sender.send_pyobj(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
