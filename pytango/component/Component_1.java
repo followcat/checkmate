@@ -106,10 +106,9 @@ public class Component_1 {
     }
 
 	@Attribute(name="PA", pushDataReady = true)
-	private double pA;
-    private int pA_counter = 0;
+	private int pA = 1;
 
-	public double getPA() {
+	public int getPA() {
 		return pA;
 	}
 
@@ -136,8 +135,8 @@ public class Component_1 {
         xlogger.entry();
         if (c_state == false) {
             toggle();
-            pA_counter++;
-            deviceManager.pushDataReadyEvent("PA", pA_counter);
+            pA++;
+            deviceManager.pushDataReadyEvent("PA", pA);
         }
         xlogger.exit();
     }
