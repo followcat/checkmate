@@ -127,7 +127,7 @@ class Registry(checkmate.runtime._threading.Thread):
                 if sock == self.router:
                     package = self.router.recv_multipart()
                     message = pickle.loads(package[1])
-                    self.router.send_multipart([message[0], package[0], message[1]])
+                    self.router.send_multipart([message[0], message[1]])
                 if sock == self.broadcast_router:
                     package = self.broadcast_router.recv_multipart()
                     message = pickle.loads(package[1])
