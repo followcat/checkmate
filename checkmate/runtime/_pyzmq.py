@@ -19,29 +19,26 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> c = checkmate.runtime._pyzmq.Communication()
         >>> c.initialize()
         >>> c1 = a.components['C1']
-        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=True)
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c)
         >>> connector.initialize()
-        >>> connector.socket_in.TYPE == zmq.DEALER, connector.socket_out.TYPE == zmq.DEALER
-        (True, True)
+        >>> connector.socket_dealer.TYPE == zmq.DEALER, connector.socket_pub.Type == zmq.DEALER, connector.socket_sub == None
+        (True, True, True)
         >>> connector.close()
 
-        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=True, is_broadcast=False)
+        >>> connector = checkmate.runtime._pyzmq.Connector(c2, c)
         >>> connector.initialize()
-        >>> connector.socket_in.TYPE == zmq.DEALER, connector.socket_out == None
-        (True, True)
+        >>> connector.socket_dealer.TYPE == zmq.DEALER, connector.socket_pub == None, connector.socket_sub.TYPE == zmq.SUB
+        (True, True, True)
         >>> connector.close()
 
-        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=True)
-        >>> connector.open()
-        >>> connector.socket_in.TYPE == zmq.SUB, connector.socket_out.TYPE == zmq.DEALER
-        (True, True)
+        >>> connector = checkmate.runtime._pyzmq.Connector(c3, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer.TYPE == zmq.DEALER, connector.socket_pub == None, connector.socket_sub.TYPE == zmq.SUB
+        (True, True, True)
         >>> connector.close()
 
-        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c, is_server=False, is_broadcast=False)
-        >>> connector.open()
-        >>> connector.socket_in == None, connector.socket_out.TYPE == zmq.DEALER
-        (True, True)
-        >>> connector.close()
         >>> c.close()
     """
     def __init__(self, component, communication=None, is_reading=True):
