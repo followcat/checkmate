@@ -3,15 +3,15 @@ title: "State identification"
 data:
   - Definition and accessibility: 'State'
     Value partitions:
-    # [Partition,   State,          Valid value,        Comment]
-    - [S-STATE-01,  'True',       True valid value,   State true value]
-    - [S-STATE-02,  'False',      False valid value,  State false value]
+    # [Partition,   State,      Valid value,    Comment]
+    - [S-STATE-01,  State1(),   'True',         State true value]
+    - [S-STATE-02,  State2(),   'False',        State false value]
 
   - Definition and accessibility: 'AnotherState'
     Value partitions:
-    # [Partition,   State,      Valid value,        Comment]
-    - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
-    - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
+    # [Partition,   State,            Valid value,    Comment]
+    - [S-ANOST-01,  AnotherState1(),  Q(None),        First valid value,  AnotherState first value]
+    - [S-ANOST-02,  AnotherState2(),  Q(),            Second valid value, AnotherState second value]
 
 ---
 title: "State machine"
