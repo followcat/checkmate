@@ -109,7 +109,7 @@ class Visitor():
         for _k, _v in content.items():
             if _k == "Value partitions":
                 codes_list, values_list, code_value_list = self.value_partitions(_v)
-                self.codes_list.append(codes_list)
+                self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
                 self.code_value_list.extend(code_value_list)
 
@@ -117,7 +117,7 @@ class Visitor():
         for _k, _v in content.items():
             if _k == "Value partitions":
                 codes_list, values_list, code_value_list = self.value_partitions(_v)
-                self.codes_list.append(codes_list)
+                self.codes_list.extend(codes_list)
                 self.values_list.append(values_list)
                 self.code_value_list.extend(code_value_list)
 
@@ -131,7 +131,7 @@ class Visitor():
             if _k == "Value partitions":
                 for _list in _v:
                     codes_list, values_list, code_value_list = self.value_partitions(_list)
-                    self.codes_list.append(codes_list)
+                    self.codes_list.extend(codes_list)
                     self.values_list.append(values_list)
                     self.code_value_list.extend(code_value_list)
 

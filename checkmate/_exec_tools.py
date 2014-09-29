@@ -184,7 +184,7 @@ def get_exchange_define_str(interface_class, classname, codes):
             """.format(e=element)
 
     class_action = collections.namedtuple('class_action', ['classname', 'code'])
-    for _c in codes[0]:
+    for _c in codes:
         internal_code = get_method_basename(_c)
         action = class_action(classname, internal_code)
         run_code += """
