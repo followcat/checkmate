@@ -45,15 +45,15 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['NORM']], full_description=collections.OrderedDict([('NORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> par = de.new_partition('data_structure', "TestActionRequest", codes_list=[['TestActionRequestNORM']], values_list=[['NORM']], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=collections.OrderedDict([('TestActionRequestNORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> par  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> par[1].get_description(checkmate.data.TestActionRequest('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> sp = de.new_partition('states', "TestState", codes_list=[["True"]])
+        >>> sp = de.new_partition('states', "TestState", codes_list=[['TestStateTrue']], values_list=[["True"]], code_value_list=[('TestStateTrue', 'True')])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=[['AP(R)']])
+        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=[['AP(R)']], values_list=[['Append action']], code_value_list=[('AP(R)', 'Append action')])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R._valid_values
