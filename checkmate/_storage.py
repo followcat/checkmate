@@ -58,7 +58,7 @@ def _build_resolve_logic(transition, type, data):
     return resolved_arguments
 
 
-def store(type, interface, code, description=None):
+def store(type, interface, code, value, description=None):
     """
         >>> import checkmate._storage
         >>> import sample_app.application
@@ -89,24 +89,25 @@ def store(type, interface, code, description=None):
         except AttributeError:
             raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
     else:
-        return checkmate._storage.InternalStorage(interface, code, description, checkmate._module.get_class_implementing(interface))
+        return checkmate._storage.InternalStorage(interface, value, description, checkmate._module.get_class_implementing(interface))
 
 
 class Data(object):
-    def __init__(self, type, interface, codes, full_description=None):
+    def __init__(self, type, interface, code_value_list, full_description=None):
         self.type = type
         self.interface = interface
-        self.codes = codes
         self.full_description = full_description
 
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
-        for code in self.codes:
+        for data in code_value_list:
+            code = data[0]
+            value = data[1]
             try:
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None, None)
-            _storage = store(self.type, self.interface, code, code_description)
+            _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
         if not self.storage:
             self.storage = [store(self.type, self.interface, '')]
@@ -137,7 +138,7 @@ class TransitionStorage(collections.defaultdict):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     interface = name_to_interface(_name, module_dict[module_type])
-                    storage_data = Data(module_type, interface, [_data])
+                    storage_data = Data(module_type, interface, [(_data, _data)])
                     if _k == 'initial':
                         self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':

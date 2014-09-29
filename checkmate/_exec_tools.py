@@ -241,19 +241,19 @@ def get_states_define_str(interface_class, classname, valid_values_list):
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
     if partition_type == 'exchanges':
         run_code = get_exchange_define_str(interface_class, classname, codes)
     elif partition_type == 'data_structure':
-        run_code = get_data_structure_define_str(interface_class, classname, codes)
+        run_code = get_data_structure_define_str(interface_class, classname, values)
     elif partition_type == 'states':
         valid_values_list = []
-        for _c in codes[0]:
-            if not is_method(_c):
-                valid_values_list.append(_c)
+        for _v in values:
+            if not is_method(_v):
+                valid_values_list.append(_v)
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     sig_dict = get_exec_signature(signature, [data_structure_module])
