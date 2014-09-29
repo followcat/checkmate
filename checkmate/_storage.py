@@ -68,11 +68,11 @@ def store(type, interface, code, value, description=None):
         >>> acr = sample_app.data_structure.ActionRequest()
         >>> acr
         ['AT1', 'NORM']
-        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
+        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
-        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.action, ex.R)
         ('AP', 'HIGH')
