@@ -106,7 +106,7 @@ class Data(object):
             try:
                 code_description = self.full_description[code]
             except:
-                code_description = (None, None, None)
+                code_description = (None, None)
             _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
         if not self.storage:
@@ -117,7 +117,7 @@ class Data(object):
         for stored_item in list(self.storage):
             if item == stored_item.factory():
                 return stored_item.description
-        return (None, None, None)
+        return (None, None)
 
 
 class PartitionStorage(Data):
