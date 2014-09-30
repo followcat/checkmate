@@ -118,7 +118,7 @@ class Visitor():
             if _k == "Value partitions":
                 codes_list, values_list, code_value_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
-                self.values_list.append(values_list)
+                self.values_list.extend(values_list)
                 self.code_value_list.extend(code_value_list)
 
     def state_machine_or_test_procedure(self, content):
