@@ -53,7 +53,7 @@ class Declarator(object):
         >>> sp = de.new_partition('states', "TestState", codes_list=['TestStateTrue'], values_list=[["True"]], code_value_list=[('TestStateTrue', 'True')])
         >>> sp # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=[['Append action']], code_value_list=[('AP(R)', 'Append action')])
+        >>> ac = de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], code_value_list=[('AP(R)', 'AP')])
         >>> ac # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> ac[-1].storage[0].factory().R._valid_values
