@@ -27,7 +27,7 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
         >>> r.stop_test()
 
     """
-    exchange_definition_file = 'sample_app/exchanges.yaml'
+    exchange_definition_file = 'pytango/checkmate/exchanges.yaml'
 
     component_classes = {('C1',): ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
                          ('C2',): ('Component_2', {'launch_command': "python ./pytango/component/component_2.py {component.name}"}),

@@ -99,4 +99,19 @@ bool Component_3::is_RL_allowed(TANGO_UNUSED(const CORBA::Any &any))
 	return true;
 }
 
+//--------------------------------------------------------
+/**
+ *	Method      : Component_3::is_PA_allowed()
+ *	Description : Execution allowed for PA attribute
+ */
+//--------------------------------------------------------
+bool Component_3::is_PA_allowed(TANGO_UNUSED(const CORBA::Any &any))
+{
+	//	Not any excluded states for PA command.
+	/*----- PROTECTED REGION ID(Component_3::PAStateAllowed) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	Component_3::PAStateAllowed
+	return true;
+}
+
 }	//	End of namespace

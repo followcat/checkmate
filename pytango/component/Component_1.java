@@ -15,16 +15,12 @@ import org.tango.server.annotation.Command;
 import org.tango.server.annotation.Delete;
 import org.tango.server.annotation.Device;
 import org.tango.server.annotation.DeviceProperty;
-import org.tango.server.annotation.DeviceManagement;
 import org.tango.server.annotation.DynamicManagement;
 import org.tango.server.annotation.Init;
 import org.tango.server.annotation.State;
 import org.tango.server.annotation.StateMachine;
 import org.tango.server.annotation.Status;
-import org.tango.server.attribute.AttributeValue;
-import org.tango.server.device.DeviceManager;
 import org.tango.server.dynamic.DynamicManager;
-import org.tango.server.events.EventType;
 import org.tango.utils.DevFailedUtils;
 
 import fr.esrf.Tango.*;
@@ -98,20 +94,6 @@ public class Component_1 {
     
     private static Boolean c_state = true;
 
-    @DeviceManagement
-    DeviceManager deviceManager;
-
-    public void setDeviceManager(final DeviceManager deviceManager) {
-        this.deviceManager = deviceManager;
-    }
-
-	@Attribute(name="PA", pushDataReady = true)
-	private int pA = 1;
-
-	public int getPA() {
-		return pA;
-	}
-
     @Command(name="AC", inTypeDesc="param", outTypeDesc="")
     public void AC(String[] param) throws DevFailed {
         xlogger.entry();
@@ -135,8 +117,8 @@ public class Component_1 {
         xlogger.entry();
         if (c_state == false) {
             toggle();
-            pA++;
-            deviceManager.pushDataReadyEvent("PA", pA);
+            c2_dev.command_inout("PA");
+            c3_dev.command_inout_asynch("PA");
         }
         xlogger.exit();
     }
