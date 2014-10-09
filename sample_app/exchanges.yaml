@@ -21,7 +21,7 @@ data:
     - [X-ACT-CODE-01,   OK(),     OK action code,     Comment]
     - [X-ACT-CODE-02,   ER(),     Error action code,  Comment]
 
-  - Definition and accessibility: 'Action(R:ActionRequest)'
+  - Definition and accessibility: 'Action(R:ActionRequest)->ActionCode'
     Value partitions:
     # [Partition,     State,  Valid value,    Comment]
     - [X-ACTION-01,   AC(),   Action action,  Comment AC action]

@@ -169,7 +169,7 @@ class Component(object):
         >>> output[0].action
         'RE'
         >>> output[1].action
-        'ARE'
+        'OK'
         >>> transition.is_matching_initial(c.states)
         False
         """
@@ -179,8 +179,12 @@ class Component(object):
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
-            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
-                output.append(_e)
+            if isinstance(_outgoing, exchange[0].return_type):
+                _outgoing.origin_destination('', self.name)
+                output.append(_outgoing)
+            else:
+                for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+                    output.append(_e)
         return output
 
     def simulate(self, _transition):

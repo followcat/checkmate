@@ -9,6 +9,7 @@ class Transition(object):
         self.incoming = []
         self.final = []
         self.outgoing = []
+        self.returned = []
         try:
             self.name = argc['tran_name']
         except KeyError:
@@ -16,7 +17,7 @@ class Transition(object):
         finally:
             if self.name == '':
                 self.name = 'unknown'
-        for item in ['initial', 'incoming', 'final', 'outgoing']:
+        for item in ['initial', 'incoming', 'final', 'outgoing', 'returned']:
             if (item in argc) == False:
                 continue
             setattr(self, item, argc[item])

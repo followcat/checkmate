@@ -6,7 +6,15 @@ data:
         incoming:
           - ExchangeButton:     PBAC()
         outgoing:
+          - Action:             AC() 
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - ActionCode:         ER()
+        returned:
           - Action:             AC()
+        outgoing:
+          - ValidateOutput:     VOER()
 
       - name: '[Input/Final state/Output]'
         incoming:
@@ -44,10 +52,3 @@ data:
           - ThirdAction:        DA()
         outgoing:
           - ValidateOutput:     VODA()
-
-      - name: '[Input/Final state/Output]'
-        incoming:
-          - ActionCode:         ER()
-        outgoing:
-          - ValidateOutput:     VOER()
-

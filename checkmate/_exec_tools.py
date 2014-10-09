@@ -183,6 +183,12 @@ def get_exchange_define_str(interface_class, classname, codes):
             \n
             """.format(e=element)
 
+    run_code += """
+            \n    @property
+            \n    def return_type(self):
+            \n        return self._sig.return_annotation
+        """
+
     class_action = collections.namedtuple('class_action', ['classname', 'code'])
     for _c in codes[0]:
         internal_code = get_method_basename(_c)
@@ -256,7 +262,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
                 valid_values_list.append(_c)
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
-    sig_dict = get_exec_signature(signature, [data_structure_module])
+    sig_dict = get_exec_signature(signature, [data_structure_module, exec_module])
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     setattr(define_class, '_sig', sig_dict['_sig'])

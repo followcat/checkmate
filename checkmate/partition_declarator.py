@@ -14,7 +14,7 @@ def make_transition(items, exchanges, state_modules):
         tran_name = 'unknown'
 
     ts = checkmate._storage.TransitionStorage(items, module_dict)
-    t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
+    t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'], returned=ts['returned'])
     return t
 
 class Declarator(object):

@@ -29,7 +29,7 @@ def _compatible_skip_test(procedure, message):
 
     If you expect to output an exchange using generic_incoming(), strange things can happen:
     You select the transition that outputs an 'RL':
-        >>> transition = c2.state_machine.transitions[2]
+        >>> transition = c2.state_machine.transitions[3]
 
     You execute it:
         >>> _incoming = c2.process(transition.generic_incoming(c2.states, c2.service_registry))[0]
