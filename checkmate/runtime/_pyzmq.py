@@ -149,6 +149,7 @@ class Registry(checkmate.runtime._threading.Thread):
 
 class Communication(checkmate.runtime.communication.Communication):
     """
+        >>> import time
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime
@@ -167,6 +168,7 @@ class Communication(checkmate.runtime.communication.Communication):
         True
         >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
         True
+        >>> time.sleep(1)
         >>> r.stop_test()
     """
     connector_class = Connector

@@ -1,10 +1,12 @@
+import copy
+
 import checkmate._tree
 import checkmate.transition
 
 
 class TransitionTree(checkmate._tree.Tree):
     """"""
-    def __init__(self, transition):
+    def __init__(self, transition, nodes=None):
         """
             >>> import checkmate._storage
             >>> import checkmate.transition
@@ -21,7 +23,9 @@ class TransitionTree(checkmate._tree.Tree):
             <checkmate.transition.Transition object at ...
         """
         assert type(transition) == checkmate.transition.Transition
-        super(TransitionTree, self).__init__(transition, [])
+        if nodes is None:
+            nodes = []
+        super(TransitionTree, self).__init__(transition, nodes)
 
     def merge(self, tree):
         """
@@ -56,7 +60,7 @@ class TransitionTree(checkmate._tree.Tree):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> t1 = a.components['C1'].state_machine.transitions[0]
-            >>> t2 = a.components['C3'].state_machine.transitions[0]  
+            >>> t2 = a.components['C3'].state_machine.transitions[0]
             >>> tree1 = checkmate.runs.TransitionTree(t1)
             >>> tree2 = checkmate.runs.TransitionTree(t2)
             >>> tree1.match_parent(tree2)
@@ -72,6 +76,7 @@ class TransitionTree(checkmate._tree.Tree):
                 return True
         return False
 
+
 class RunCollection(list):
     def build_trees_from_application(self, application):
         """
@@ -80,13 +85,12 @@ class RunCollection(list):
             >>> runs = checkmate.runs.RunCollection()
             >>> runs.build_trees_from_application(sample_app.application.TestData())
             >>> len(runs)
-            3
-            >>> for _run in runs:
-            ...     len(_run.walk())
-            8
-            5
-            6
-            >>> [run.incoming[0].code for run in runs[1].walk() if len(run.incoming) > 0]
+            4
+            >>> run_lenght = [len(_run.walk()) for _run in runs]
+            >>> run_lenght.sort()
+            >>> run_lenght
+            [5, 5, 6, 8]
+            >>> [run.incoming[0].code for run in runs[0].walk() if len(run.incoming) > 0]
             ['PBRL', 'RL', 'DR', 'VODR']
 
         """
@@ -94,6 +98,76 @@ class RunCollection(list):
             for _transition in _component.state_machine.transitions:
                 _tree = TransitionTree(_transition)
                 self._add_tree(_tree)
+        self.add_return_code_run()
+
+    def add_return_code_run(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> run = checkmate.runs.RunCollection()
+            >>> a = sample_app.application.TestData()
+            >>> tree0 = checkmate.runs.TransitionTree(a.components['C2'].state_machine.transitions[0])
+            >>> tree1 = checkmate.runs.TransitionTree(a.components['C1'].state_machine.transitions[0])
+            >>> tree2 = checkmate.runs.TransitionTree(a.components['C1'].state_machine.transitions[3])
+            >>> (tree0.root.incoming[0].code, tree1.root.incoming[0].code, tree2.root.incoming[0].code, tree1.root.outgoing[1].code, tree2.root.outgoing[1].code)
+            ('PBAC', 'AC', 'AC', 'ARE', 'ER')
+            >>> run._add_tree(tree0)
+            >>> run._add_tree(tree1)
+            >>> run._add_tree(tree2)
+            >>> len(run)
+            1
+            >>> len(run[0].nodes)
+            2
+            >>> run.add_return_code_run()
+            >>> len(run)
+            2
+            >>> len(run[0].nodes), len(run[1].nodes)
+            (1, 1)
+            >>> l = [run[0].nodes[0].root.outgoing[1].code, run[1].nodes[0].root.outgoing[1].code]
+            >>> l.sort()
+            >>> l
+            ['ARE', 'ER']
+        """
+        return_code_node_list = list()
+        append_runs = []
+
+        def walk_find(current_node):
+            check_return_code_run(current_node)
+            for _node in current_node.nodes:
+                walk_find(_node)
+
+        def check_return_code_run(tree):
+            set_list = []
+            return_code_node_set = set()
+            for node in tree.nodes:
+                node_set = set([_i.interface for _i in node.root.initial])
+                set_list.append(node_set)
+            for index, compare_set in enumerate(set_list):
+                for _s in set_list:
+                    if compare_set is _s:
+                        continue
+                    if len(compare_set & _s):
+                        return_code_node_set.add(tree.nodes[index])
+            if len(return_code_node_set):
+                return_code_node_list.append(list(return_code_node_set))
+
+        def walk_process(run, current_node, process):
+            if process[0] in current_node.nodes:
+                for _p in process:
+                    temp_process = copy.copy(process)
+                    temp_process.remove(_p)
+                    append_runs.append(run.copy(temp_process))
+                return True
+            for _node in current_node.nodes:
+                return walk_process(run, _node, process)
+
+        for _r in self:
+            return_code_node_list.clear()
+            walk_find(_r)
+            for _process in return_code_node_list:
+                if walk_process(_r, _r, _process):
+                    self.remove(_r)
+        self.extend(append_runs)
 
     def _add_tree(self, des_tree):
         """
@@ -110,7 +184,7 @@ class RunCollection(list):
             >>> run._add_tree(tree3)
             >>> len(run)
             1
-            >>> tree2 in tree1.nodes, tree3 in tree1.nodes 
+            >>> tree2 in tree1.nodes, tree3 in tree1.nodes
             (True, True)
         """
         is_merged = False

@@ -7,7 +7,7 @@ class List(list):
             >>> c1 = app.components['C1']
             >>> l = checkmate._validation.List(c1.state_machine.transitions)
             >>> len(l)
-            3
+            4
         """
         super().__init__(range(len(transitions)))
         self.transitions = transitions

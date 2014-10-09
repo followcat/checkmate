@@ -26,3 +26,7 @@ data:
         incoming:
           - ValidateOutput:             VOPA()
 
+      - name: "Validate C2's Output ER"
+        incoming:
+          - ValidateOutput:             VOER()
+

@@ -9,43 +9,43 @@ The consolidated flows of exchange in the sample application are represented in 
 
 ::
 
-    Run 1                                 Run 2                             Run 3                            
-    -----                                 -----                             -----                           
-                 C1: True, Q()                     C1:                               C1: False, Q(R)       
-                 C2:                               C2:                               C2:                  
-                 C3: False                         C3: True                          C3: False           
+    Run 1                                 Run 2                             Run 3                             Run 4                         
+    -----                                 -----                             -----                             -----                        
+                 C1: True, Q()                     C1:                               C1: False, Q(R)                   C1: False 
+                 C2:                               C2:                               C2:                               C2:               
+                 C3: False                         C3: True                          C3: False                         C3: 
 
-             +------+                          +------+                          +------+                      
-             | USER |                          | USER |                          | USER |                     
-             +------+                          +------+                          +------+                     
-                |                                 |                                 |                         
-                | PBAC                            | PBRL                            | PBPP                   
-                |                                 |                                 |                       
-             +------+                          +------+                          +------+                  
-             |  C2  |                          |  C2  |                          |  C2  |                 
-             +------+                          +------+                          +------+                       
-                |                                 |                                 |                          
-                | AC                              | RL                              | PP                      
-                |                                 |                                 |                        
-             +------+                          +------+                          +------+                   
-             |  C1  | < C1 is True             |  C3  | < C3 is True             |  C1  | < C1 is False      
-             +------+ > False, Q()             +------+ > toggle()               +------+   C1 is Q         
-                |                                 |                                 |     > toggle(), Q.pop()   
-        +---------------+                         | DR                     +----------------+                   
-        |               |                         |                        |                |                  
-        | RE            | ARE                  +------+                    | PA             | PA              
-        |               |                      |  C2  |                    |                |                
-    +------+         +------+                  +------+                 +------+         +------+             
-    |  C3  | < C3 is |  C2  |                     |                     |  C3  | < C3 is |  C2  |             
-    +------+   False +------+                     | VODR                +------+   False +------+             
-             > toggle() |                         |                              > False    |                
-                        | AP                   +------+                                     | VOPA           
-                        |                      | USER |                                     |                
-                     +------+                  +------+                                  +------+           
+             +------+                          +------+                          +------+                          +------+ 
+             | USER |                          | USER |                          | USER |                          | USER |   
+             +------+                          +------+                          +------+                          +------+    
+                |                                 |                                 |                                 |           
+                | PBAC                            | PBRL                            | PBPP                            | PBAC  
+                |                                 |                                 |                                 |          
+             +------+                          +------+                          +------+                          +------+  
+             |  C2  |                          |  C2  |                          |  C2  |                          |  C2  | 
+             +------+                          +------+                          +------+                          +------+                  
+                |                                 |                                 |                                 |                     
+                | AC                              | RL                              | PP                              | AC  
+                |                                 |                                 |                                 |   
+             +------+                          +------+                          +------+                          +------+ 
+             |  C1  | < C1 is True             |  C3  | < C3 is True             |  C1  | < C1 is False            |  C1  | < C1 is False
+             +------+ > False, Q()             +------+ > toggle()               +------+   C1 is Q                +------+ 
+                |                                 |                                 |     > toggle(), Q.pop()         |    
+        +---------------+                         | DR                     +----------------+                         | ER
+        |               |                         |                        |                |                         |     
+        | RE            | ARE                  +------+                    | PA             | PA                   +------+                  
+        |               |                      |  C2  |                    |                |                      |  C2  |                 
+    +------+         +------+                  +------+                 +------+         +------+                  +------+                
+    |  C3  | < C3 is |  C2  |                     |                     |  C3  | < C3 is |  C2  |                     |                   
+    +------+   False +------+                     | VODR                +------+   False +------+                     | VOER             
+             > toggle() |                         |                              > False    |                         |
+                        | AP                   +------+                                     | VOPA                 +------+    
+                        |                      | USER |                                     |                      | USER |      
+                     +------+                  +------+                                  +------+                  +------+      
                      |  C1  | < C1 is Q                                                  | USER |
-                     +------+ > Q.append()         C1:                                   +------+             
-                        |                          C2:                                                       
-                        | DA                       C3: False                                 C1: True, Q()   
+                     +------+ > Q.append()         C1:                                   +------+                      C1: False     
+                        |                          C2:                                                                 C2:
+                        | DA                       C3: False                                 C1: True, Q()             C3:
                         |                                                                    C2:
                      +------+                                                                C3: False
                      |  C2  |                            

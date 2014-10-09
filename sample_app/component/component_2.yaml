@@ -44,3 +44,10 @@ data:
           - ThirdAction:        DA()
         outgoing:
           - ValidateOutput:     VODA()
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - ActionCode:         ER()
+        outgoing:
+          - ValidateOutput:     VOER()
+

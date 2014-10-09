@@ -51,3 +51,16 @@ data:
           - AnotherState:     pop()
         outgoing:
           - Pause:            PA()
+
+  - Transitions:
+      - name: 'Toggle state tran02'
+        initial: 
+          - State:            __init__(False)
+        incoming:
+          - Action:           AC()
+        final:
+          - State:            __init__(False)
+        outgoing:
+          - Reaction:         RE()
+          - ActionCode:       ER()
+
