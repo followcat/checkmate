@@ -52,3 +52,8 @@ data:
           - ThirdAction:        DA()
         outgoing:
           - ValidateOutput:     VODA()
+
+  - Transitions:
+      - name: 'Return code OK'
+        incoming:
+          - ActionCode:         OK()
