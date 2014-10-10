@@ -179,12 +179,10 @@ class Component(object):
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
-            if isinstance(_outgoing, exchange[0].return_type):
-                _outgoing.origin_destination('', exchange[0].origin)
-                output.append(_outgoing)
-            else:
-                for _e in self.service_registry.server_exchanges(_outgoing, self.name):
-                    output.append(_e)
+            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+                if isinstance(_e, exchange[0].return_type):
+                    _e._return_code = True
+                output.append(_e)
         return output
 
     def simulate(self, _transition):
