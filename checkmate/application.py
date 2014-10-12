@@ -87,6 +87,7 @@ class IApplication(zope.interface.Interface):
 class Application(object):
     component_classes = {}
     communication_list = ()
+    feature_definition_path = None
 
     def __init__(self):
         """

@@ -172,10 +172,10 @@ def get_transitions_from_features(exchange_module, state_modules, path=None):
             >>> transitions # doctest: +ELLIPSIS
             [<checkmate.transition.Transition object at ...
         """
-    if path is None:
+    try:
+        path = os.path.join(os.getenv('CHECKMATE_HOME'), path)
+    except AttributeError:
         path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')
-    else:
-        path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(path), 'itp')
     try:
         array_list = get_array_list([path])
     except FileNotFoundError:
