@@ -76,15 +76,14 @@ e.origin_destination('a', 'b')
 
 runtime_log = logging.getLogger('checkmate')
 runtime_log.handlers[0].setLevel(logging.ERROR)
-for i in range(0, 10000):
-    sa.client.send(e)
+sa.client.send(e)
 runtime_log.handlers[0].setLevel(logging.INFO)
 
 #stop everything except the logger
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
 """)
-        TimeoutManager.timeout_value = round(max(test_code.repeat(1, 1))/4, 2)
+        TimeoutManager.timeout_value = round(max(test_code.repeat(5, 1))/1, 2)
         TimeoutManager.processing_benchmark = False
         TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
 
