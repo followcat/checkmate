@@ -155,7 +155,11 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                 if condition.wait_for(check_recv, checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC):
                     exchange = self.exchange_deque.popleft()
                     with self.validation_lock:
-                        self.process([exchange])
+                        try:
+                            self.process([exchange])
+                        except Exception as e:
+                            if not self.check_for_stop():
+                                raise e
 
     def simulate(self, transition):
         return super().simulate(transition)
