@@ -1,5 +1,4 @@
 import sys
-import time
 
 import PyTango
 
@@ -16,12 +15,6 @@ class Component_3(PyTango.Device_4Impl):
         self.attr_c_state = False
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c2_dev = PyTango.DeviceProxy('sys/component_2/C2')
-        
-        self.subscribe_event_done = False
-
-    def subscribe_event_run(self):
-        self.c1_dev.subscribe_event('PA', PyTango.EventType.DATA_READY_EVENT, self.PA_callback)
-        self.subscribe_event_done = True
 
     def toggle(self):
         self.attr_c_state = not self.attr_c_state
@@ -35,10 +28,10 @@ class Component_3(PyTango.Device_4Impl):
             self.toggle()
             self.c2_dev.DR()
 
-    def PA_callback(self, *args):
-        if self.subscribe_event_done:
-            if self.attr_c_state == False:
-                pass
+    def PA(self):
+        if self.attr_c_state == False:
+            pass
+
 
 class C3Interface(PyTango.DeviceClass):
     def dyn_attr(self, dev_list):
@@ -53,29 +46,17 @@ class C3Interface(PyTango.DeviceClass):
  
 
     cmd_list = {'RE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]]
+                'RL': [[PyTango.DevVoid], [PyTango.DevVoid]],
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }
     attr_list = {
                 }
-
-
-def event_loop():
-    pytango_util = PyTango.Util.instance()
-    for each in pytango_util.get_device_list_by_class('Component_3'):
-        if hasattr(each, 'subscribe_event_done') and not each.subscribe_event_done:
-            try:
-                each.subscribe_event_run()
-            except:
-                continue
-        else:
-            time.sleep(1)
 
 
 if __name__ == '__main__':
     py = PyTango.Util(sys.argv)
     py.add_class(C3Interface, Component_3, 'Component_3')
     U = PyTango.Util.instance()
-    U.server_set_event_loop(event_loop)
     U.server_init()
     U.server_run()
 
