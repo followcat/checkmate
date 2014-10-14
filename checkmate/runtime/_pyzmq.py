@@ -48,10 +48,6 @@ class Connector(checkmate.runtime.communication.Connector):
         self.broadcast_map = component.broadcast_map
         self.is_publish = component.is_publish
 
-        self.socket_dealer = None
-        self.socket_pub = None
-        self.socket_sub = None
-
         self.zmq_context = zmq.Context.instance()
         self._routerport = self.communication.get_routerport()
         self._broadcast_routerport = self.communication.get_broadcast_routerport()
