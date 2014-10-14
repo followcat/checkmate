@@ -8,21 +8,6 @@
 namespace Component_3_ns
 {
 
-class PA_callback : public Tango::CallBack
-{
-	public:
-		PA_callback(Tango::DeviceImpl *c3) : CallBack()
-		{device = c3;};
-		~PA_callback() {};
-
-	private:
-		Tango::DeviceImpl *device;
-
-	public:
-		virtual void push_event(Tango::DataReadyEventData *event);
-};
-
-
 class Component_3 : public TANGO_BASE_CLASS
 {
 
@@ -30,7 +15,6 @@ private:
 	bool attr_c_state;
 	Tango::DeviceProxy *c1_dev;
 	Tango::DeviceProxy *c2_dev;
-    PA_callback *pa_callback;
 
 public:
 	Component_3(Tango::DeviceClass *cl,string &s);
@@ -56,7 +40,8 @@ public:
 	virtual bool is_RE_allowed(const CORBA::Any &any);
 	virtual void rl();
 	virtual bool is_RL_allowed(const CORBA::Any &any);
-    void pa(Tango::DataReadyEventData *event);
+	virtual void pa();
+	virtual bool is_PA_allowed(const CORBA::Any &any);
 
 
 };

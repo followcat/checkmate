@@ -154,12 +154,16 @@ class Checkmate(nose.plugins.Plugin):
     def loadTestsFromGenerator(self, generator, module):
         """"""
         def generate(g=generator, m=module):
+            generated = False
             try:
                 for test in g(self.application_class):
                     test_func, arg = self.loader.parseGeneratedTest(test)
                     if not isinstance(test_func, collections.Callable):
                         test_func = getattr(m, test_func)
+                    generated = True
                     yield checkmate.nose_plugin.suite.FunctionTestCase(test_func, config=self.config, arg=arg, descriptor=g)
+                if not generated:
+                    yield self.no_generate
             except KeyboardInterrupt:
                 raise
             except:
@@ -167,6 +171,10 @@ class Checkmate(nose.plugins.Plugin):
                 yield nose.failure.Failure(exc[0], exc[1], exc[2],
                               address=nose.util.test_address(generator))
         return self.suiteClass(generate, context=generator, can_split=False)
+    
+    def no_generate(self, args):
+        """this function is defined to skip test if a generator create nothing to test"""
+        pass
 
 
 class TestRunner(nose.core.TextTestRunner):
