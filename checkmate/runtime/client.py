@@ -116,11 +116,11 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         if self.internal_connector and self.internal_connector.is_reading:
             if self.internal_connector.socket_sub:
                 self.poller.register(self.internal_connector.socket_sub, zmq.POLLIN)
-            self.poller.register(self.internal_connector.socket_dealer, zmq.POLLIN)
+            self.poller.register(self.internal_connector.socket_dealer_in, zmq.POLLIN)
         if self.external_connector and self.external_connector.is_reading:
             if self.external_connector.socket_sub:
                 self.poller.register(self.external_connector.socket_sub, zmq.POLLIN)
-            self.poller.register(self.external_connector.socket_dealer, zmq.POLLIN)
+            self.poller.register(self.external_connector.socket_dealer_in, zmq.POLLIN)
         super(ThreadedClient, self).start()
 
     def run(self):

@@ -12,7 +12,8 @@ class Connector(object):
         self.is_reading = is_reading
         self.is_broadcast = is_broadcast
         self.communication = communication
-        self.socket_dealer = None
+        self.socket_dealer_in = None
+        self.socket_dealer_out = None
         self.socket_pub = None
         self.socket_sub = None
 

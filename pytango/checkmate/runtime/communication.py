@@ -189,12 +189,12 @@ class Device(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.zmq_context = zmq.Context.instance()
         self.incoming = []
-        self.socket_dealer = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer.connect("tcp://127.0.0.1:%i" % self._routerport)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def send(self, exchange):
         dump = pickle.dumps(exchange)
-        self.socket_dealer.send_multipart([self._name.encode(), dump])
+        self.socket_dealer_out.send_multipart([self._name.encode(), dump])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -225,9 +225,11 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def initialize(self):
         if self.is_server:
-            self.socket_dealer = self.zmq_context.socket(zmq.DEALER)
-            self.socket_dealer.setsockopt(zmq.IDENTITY, self._name.encode())
-            self.socket_dealer.connect("tcp://127.0.0.1:%i" % self._routerport)
+            self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+            self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+            self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+            self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+            self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
             setattr(self.device_class, '_routerport', self._routerport)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
@@ -236,7 +238,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def send(self, exchange):
         if exchange.broadcast:
-            self.socket_dealer.send(pickle.dumps([self.device_name, exchange]))
+            self.socket_dealer_out.send(pickle.dumps([self.device_name, exchange]))
         else:
             attr = exchange.get_partition_attr()
             param = None
