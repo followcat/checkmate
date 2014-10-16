@@ -128,7 +128,7 @@ def TestProcedureFeaturesGenerator(application_class):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.exchange_definition_file)
+    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])

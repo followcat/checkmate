@@ -1,0 +1,47 @@
+---
+title: "Test procedure"
+data:
+  - Procedures:
+      - name: 'Toggle C1 state with AC'
+        initial: 
+          - State:              __init__(True)
+          - AnotherState:       __init__()
+          - Acknowledge:        __init__(False)
+        incoming:
+          - Action:             AC()
+        final:
+          - State:              __init__(False)
+          - AnotherState:       __init__()
+          - Acknowledge:        __init__(True)
+
+  # Always run
+  - Procedures:
+      - name: 'Append request C1 with AP'
+        initial: 
+          - AnotherState:       __init__()
+        incoming:
+          - Action:             AP(R)
+        final:
+          - AnotherState:       __init__(R)
+
+  - Procedures:
+      - name: 'Toggle acknowledge with RL'
+        initial: 
+          - Acknowledge:        __init__(True)
+        incoming:
+          - Reaction:           RL()
+        final:
+          - Acknowledge:        __init__(False)
+
+  - Procedures:
+      - name: 'Toggle C1 state back (RL)'
+        initial: 
+          - State:              __init__(False)
+          - Acknowledge:        __init__(False)
+          - AnotherState:       __init__()
+        incoming:
+          - Action:             PP()
+        final:
+          - State:              __init__(True)
+          - Acknowledge:        __init__(False)
+          - AnotherState:       __init__(None)
