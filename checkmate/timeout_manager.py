@@ -32,6 +32,8 @@ class TimeoutManager():
             return
         TimeoutManager.processing_benchmark = True
         test_code = timeit.Timer("""
+import logging
+
 import zope.interface
 
 import checkmate.exchange
@@ -72,8 +74,13 @@ runtime.start_test()
 
 e = checkmate.exchange.Exchange('Exchange')
 e.origin_destination('a', 'b')
+
+runtime_log = logging.getLogger('checkmate')
+logging.disable(logging.INFO)
 for i in range(0, 10000):
     sa.client.send(e)
+logging.disable(logging.NOTSET)
+
 #stop everything except the logger
 sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
 sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
