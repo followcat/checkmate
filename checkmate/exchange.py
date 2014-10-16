@@ -13,6 +13,7 @@ class Exchange(checkmate.partition.Partition):
     def __init__(self, value=None, broadcast=False, *args, **kwargs):
         super(Exchange, self).__init__(value, *args, **kwargs)
         self._broadcast = broadcast
+        self._return_code = False
 
     def __eq__(self, other):
         """
@@ -71,6 +72,15 @@ class Exchange(checkmate.partition.Partition):
             False
         """
         return self._broadcast
+
+    @property
+    def return_code(self):
+        """
+            >>> e = Exchange('CA')
+            >>> e.return_code
+            False
+        """
+        return self._return_code
 
     def origin_destination(self, origin, destination):
         self._origin = origin
