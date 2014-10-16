@@ -26,6 +26,7 @@ data:
           - State:            __init__(False)
         outgoing:
           - Reaction:         RE()
+          - ActionCode:       OK()
           - AnotherReaction:  ARE()
 
   - Transitions:

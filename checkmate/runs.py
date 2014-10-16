@@ -110,7 +110,7 @@ class RunCollection(list):
             >>> tree1 = checkmate.runs.TransitionTree(a.components['C1'].state_machine.transitions[0])
             >>> tree2 = checkmate.runs.TransitionTree(a.components['C1'].state_machine.transitions[3])
             >>> (tree0.root.incoming[0].code, tree1.root.incoming[0].code, tree2.root.incoming[0].code, tree1.root.outgoing[1].code, tree2.root.outgoing[1].code)
-            ('PBAC', 'AC', 'AC', 'ARE', 'ER')
+            ('PBAC', 'AC', 'AC', 'OK', 'ER')
             >>> run._add_tree(tree0)
             >>> run._add_tree(tree1)
             >>> run._add_tree(tree2)
@@ -126,7 +126,7 @@ class RunCollection(list):
             >>> l = [run[0].nodes[0].root.outgoing[1].code, run[1].nodes[0].root.outgoing[1].code]
             >>> l.sort()
             >>> l
-            ['ARE', 'ER']
+            ['ER', 'OK']
         """
         return_code_node_list = list()
         append_runs = []
@@ -176,7 +176,7 @@ class RunCollection(list):
             >>> a = sample_app.application.TestData()
             >>> tree1 = checkmate.runs.TransitionTree(a.components['C1'].state_machine.transitions[0])
             >>> tree2 = checkmate.runs.TransitionTree(a.components['C3'].state_machine.transitions[0])
-            >>> tree3 = checkmate.runs.TransitionTree(a.components['C2'].state_machine.transitions[1])
+            >>> tree3 = checkmate.runs.TransitionTree(a.components['C2'].state_machine.transitions[2])
             >>> (tree1.root.incoming[0].code, tree2.root.incoming[0].code, tree3.root.incoming[0].code)
             ('AC', 'RE', 'ARE')
             >>> run._add_tree(tree1)
