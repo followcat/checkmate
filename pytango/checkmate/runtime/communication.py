@@ -60,14 +60,14 @@ def add_device_service(services, component):
         if name not in publishs and name not in subscribes:
             code += """
                 \ndef %(name)s(self, param=None):
-                \n    self.send(('%(name)s', param))""" % {'name': name}
+                \n    self.send(('%(name)s', param, ''))""" % {'name': name}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
             \ndef %(sub)s(self, *args):
             \n    if self.subscribe_event_done:
-            \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
+            \n        self.send(('%(sub)s', None, ''))""" % {'sub': _subscribe}
 
     for _publish in publishs:
         code += """

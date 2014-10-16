@@ -89,7 +89,7 @@ class RunCollection(list):
             >>> run_lenght = [len(_run.walk()) for _run in runs]
             >>> run_lenght.sort()
             >>> run_lenght
-            [5, 5, 6, 8]
+            [5, 5, 6, 9]
             >>> [run.incoming[0].code for run in runs[0].walk() if len(run.incoming) > 0]
             ['PBRL', 'RL', 'DR', 'VODR']
 
