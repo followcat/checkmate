@@ -16,7 +16,8 @@ POLLING_TIMEOUT_MILLSEC = 1000
 THREAD_STOP_SEC = 1
 
 class TimeoutManager():
-    timeout_value = None
+    #set it to None to use timeit computation
+    timeout_value = 1
     processing_benchmark = False
     logger = logging.getLogger('checkmate.timeout_manager.TimeoutManager')
     @staticmethod
