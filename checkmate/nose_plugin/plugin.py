@@ -205,7 +205,7 @@ class TestRunner(nose.core.TextTestRunner):
             runtime = checkmate.runtime._runtime.Runtime(application_class, self.plugin_config['communication_class'], threaded=True)
             runtime.setup_environment(_sut)
             runtime.start_test()
-            time.sleep(3)
+            time.sleep(5)
             setattr(test.config, 'runtime', runtime)
             if len(components) > 1:
                 #do some dirty print
