@@ -118,13 +118,7 @@ if __name__ == '__main__':
     U = PyTango.Util.instance()
     U.server_init()
     #wait for server initializing completed
-    times = 0
-    while True and times < 30:
-        try:
-            start_taurus_app()
-            break
-        except:
-            time.sleep(0.1)
-            times += 1
+    time.sleep(0.2)
+    start_taurus_app()
     U.server_run()
 
