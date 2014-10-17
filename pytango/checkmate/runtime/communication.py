@@ -233,6 +233,16 @@ class Connector(checkmate.runtime.communication.Connector):
             setattr(self.device_class, '_routerport', self._routerport)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
+    def open(self):
+        @checkmate.timeout_manager.WaitOnException(timeout=10)
+        def check(dev_proxy):
+            dev_proxy.attribute_list_query()
+        for dev_name in list(self.communication.comp_device.values()): 
+            if dev_name != self.device_name:
+                print(self.device_name, " dev_name: ", dev_name)
+                dev_proxy = self.communication.get_device_proxy(dev_name)
+                check(dev_proxy)
+
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
@@ -288,14 +298,10 @@ class Communication(checkmate.runtime.communication.Communication):
         self.event.wait(timeout=2)
 
     def get_device_proxy(self, device_name):
-        @checkmate.timeout_manager.WaitOnException(timeout=10)
-        def check(dev_proxy):
-            dev_proxy.attribute_list_query()
         if device_name in list(self.dev_proxies.keys()):
             return self.dev_proxies[device_name]
         else:
             dev_proxy = PyTango.DeviceProxy(device_name)
-            check(dev_proxy)
             self.dev_proxies[device_name] = dev_proxy
             return dev_proxy
 

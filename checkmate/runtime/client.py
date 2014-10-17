@@ -121,6 +121,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             if self.external_connector.socket_sub:
                 self.poller.register(self.external_connector.socket_sub, zmq.POLLIN)
             self.poller.register(self.external_connector.socket_dealer_in, zmq.POLLIN)
+        if self.internal_connector:
+            self.internal_connector.open()
+        if self.external_connector:
+            self.external_connector.open()
         super(ThreadedClient, self).start()
 
     def run(self):
