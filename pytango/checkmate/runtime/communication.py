@@ -239,7 +239,6 @@ class Connector(checkmate.runtime.communication.Connector):
             dev_proxy.attribute_list_query()
         for dev_name in list(self.communication.comp_device.values()): 
             if dev_name != self.device_name:
-                print(self.device_name, " dev_name: ", dev_name)
                 dev_proxy = self.communication.get_device_proxy(dev_name)
                 check(dev_proxy)
 
