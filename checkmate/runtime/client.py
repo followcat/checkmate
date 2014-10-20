@@ -1,10 +1,12 @@
 import time
 import logging
+import collections
 
 import zmq
 import zope.interface
 
 import checkmate.logger
+import checkmate.timeout_manager
 import checkmate.runtime.encoder
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
@@ -26,6 +28,7 @@ class Client(object):
         """"""
         self.name = component.name
         self.component = component
+        self.return_code_list = collections.deque()
 
     def initialize(self):
         """"""
@@ -89,6 +92,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.name = component.name
         self.component = component
         self.exchange_deque = exchange_deque
+        self.return_code_list = collections.deque()
+        self.unprocess_list = collections.deque()
 
         self.connections = []
         self.zmq_context = zmq.Context.instance()
@@ -113,7 +118,32 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 continue
             if hasattr(_c, 'socket_in') and _c.socket_in is not None:
                 self.poller.register(_c.socket_in, zmq.POLLIN)
+            if hasattr(_c, 'socket_out') and _c.socket_out is not None and _c.socket_out.TYPE == zmq.DEALER:
+                self.poller.register(_c.socket_out, zmq.POLLIN)
         super(ThreadedClient, self).start()
+
+    @checkmate.timeout_manager.WaitOnFalse(0.1, 100)
+    def process_return_code(self):
+        if not self.unprocess_list:
+            return True
+        if not self.return_code_list:
+            return False
+        unprocess = self.unprocess_list[0]
+        incoming = self.return_code_list[0][0]
+        return_code = self.return_code_list[0][1]
+        if incoming.action == unprocess[1]:
+            if incoming.broadcast:
+                self.return_code_list.popleft()
+                self.unprocess_list.popleft()
+                return True
+            else:
+                for _c in self.connections:
+                    if _c.socket_in and _c.socket_in.IDENTITY == unprocess[2]:
+                        _c.socket_in.send_multipart([return_code.destination[0].encode(), checkmate.runtime.encoder.encode(return_code)])
+                self.return_code_list.popleft()
+                self.unprocess_list.popleft()
+                return True
+        return False
 
     def run(self):
         """"""
@@ -124,12 +154,17 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                     _c.close()
                 self.logger.debug("%s stop" % self)
                 break
+            if self.unprocess_list:
+                continue
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for _s in socks:
                 msg = _s.recv_multipart()
-                msg = msg[-1]
-                exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
-                self.exchange_deque.append(exchange)
+                exchange = msg[-1]
+                exchange = checkmate.runtime.encoder.decode(exchange, self.exchange_module)
+                if len(msg) == 2:
+                    self.unprocess_list.append([msg[0], exchange.action, _s.IDENTITY])
+                    self.exchange_deque.append(exchange)
+                    self.process_return_code()
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):

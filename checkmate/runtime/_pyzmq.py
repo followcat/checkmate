@@ -129,7 +129,7 @@ class Registry(checkmate.runtime._threading.Thread):
             for sock in iter(socks):
                 if sock == self.router:
                     message = self.router.recv_multipart()
-                    self.router.send_multipart([message[1], message[2]])
+                    self.router.send_multipart([message[1], message[0], message[2]])
                 if sock == self.broadcast_router:
                     message = self.broadcast_router.recv_multipart()
                     self.publish.send_multipart(message[1:])

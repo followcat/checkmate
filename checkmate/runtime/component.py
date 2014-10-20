@@ -56,9 +56,14 @@ class Component(object):
         output = self.context.process(exchanges)
         self.logger.info("%s process exchange %s" % (self.context.name, exchanges[0].value))
         for _o in output:
-            self.client.send(_o)
+            if _o.return_code:
+                self.client.return_code_list.append([exchanges[0], _o])
+            else:
+                self.client.send(_o)
             checkmate.logger.global_logger.log_exchange(_o)
             self.logger.info("%s send exchange %s to %s" % (self.context.name, _o.value, _o.destination))
+        if not [_o for _o in output if _o.return_code]:
+            self.client.unprocess_list.popleft()
         return output
 
     def simulate(self, transition):
