@@ -84,13 +84,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         'PA'
         >>> r.stop_test()
     """
-    def __init__(self, component):
+    def __init__(self, component, exchange_deque):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
+        self.exchange_deque = exchange_deque
 
-        self.sender = None
         self.connections = []
         self.zmq_context = zmq.Context.instance()
         self.poller = Poller()
@@ -98,9 +98,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.external_connector = None
         self.logger.debug("%s initial" % self)
 
-    def set_sender(self, address):
-        self.sender = self.zmq_context.socket(zmq.PUSH)
-        self.sender.connect(address)
+    def add_connector(self, connector):
+        self.connections.append(connector)
 
     def set_exchange_module(self, exchange_module):
         self.exchange_module = exchange_module
@@ -141,9 +140,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for _s in socks:
                 msg = _s.recv_multipart()
-                exchange = msg[-1]
-                exchange = checkmate.runtime.encoder.decode(exchange, self.exchange_module)
-                self.sender.send_pyobj(exchange)
+                msg = msg[-1]
+                exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
+                self.exchange_deque.append(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):

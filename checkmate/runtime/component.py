@@ -1,8 +1,7 @@
 import copy
 import logging
 import threading
-
-import zmq
+import collections
 
 import zope.interface
 import zope.component
@@ -99,19 +98,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
-        self.client = checkmate.runtime.client.ThreadedClient(self.context)
+        self.exchange_deque = collections.deque()
+        self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_deque)
         self.validation_lock = threading.Lock()
-        self.zmq_context = zmq.Context.instance()
-        self.poller = zmq.Poller()
 
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
 
-        _socket = self.zmq_context.socket(zmq.PULL)
-        port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        self.client.set_sender("tcp://127.0.0.1:%i" % port)
-        self.poller.register(_socket, zmq.POLLIN)
         self.client.set_exchange_module(_application.exchange_module)
 
         if self.using_internal_client:
@@ -132,15 +126,21 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
+        def check_recv():
+            return len(self.exchange_deque) > 0
+        condition = threading.Condition()
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for socket in iter(s):
-                exchange = socket.recv_pyobj()
-                if exchange is not None:
+            with condition:
+                if condition.wait_for(check_recv, checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC):
+                    exchange = self.exchange_deque.popleft()
                     with self.validation_lock:
-                        self.process([exchange])
+                        try:
+                            self.process([exchange])
+                        except Exception as e:
+                            if not self.check_for_stop():
+                                raise e
 
     def simulate(self, transition):
         return super().simulate(transition)
