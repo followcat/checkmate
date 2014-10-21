@@ -161,11 +161,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 msg = _s.recv_multipart()
                 exchange = msg[-1]
                 exchange = checkmate.runtime.encoder.decode(exchange, self.exchange_module)
-                if len(msg) == 2:
-                    self.unprocess_list.append([msg[0], exchange.action, _s.IDENTITY])
-                    self.exchange_deque.append(exchange)
-                    self.process_return_code()
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
+                self.unprocess_list.append([msg[0], exchange.action, _s.IDENTITY])
+                self.exchange_deque.append(exchange)
+                self.process_return_code()
 
     def stop(self):
         """"""
