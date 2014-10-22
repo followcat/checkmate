@@ -59,7 +59,7 @@ class C2Interface(PyTango.DeviceClass):
                 'PBRL': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'PBPP': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'ARE': [[PyTango.DevVoid], [PyTango.DevVoid]],
-                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]]
+                'PA': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DR': [[PyTango.DevVoid], [PyTango.DevVoid]],
                 'DA': [[PyTango.DevVoid], [PyTango.DevVoid]]
                }

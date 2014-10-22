@@ -98,28 +98,33 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.connections = []
         self.zmq_context = zmq.Context.instance()
         self.poller = Poller()
+        self.internal_connector = None
+        self.external_connector = None
         self.logger.debug("%s initial" % self)
-
-    def add_connector(self, connector):
-        self.connections.append(connector)
 
     def set_exchange_module(self, exchange_module):
         self.exchange_module = exchange_module
 
     def initialize(self):
         """"""
-        for _c in self.connections:
-            _c.initialize()
+        if self.internal_connector:
+            self.internal_connector.initialize()
+        if self.external_connector:
+            self.external_connector.initialize()
 
     def start(self):
-        for _c in self.connections:
-            _c.open()
-            if not _c.is_reading:
-                continue
-            if hasattr(_c, 'socket_in') and _c.socket_in is not None:
-                self.poller.register(_c.socket_in, zmq.POLLIN)
-            if hasattr(_c, 'socket_out') and _c.socket_out is not None and _c.socket_out.TYPE == zmq.DEALER:
-                self.poller.register(_c.socket_out, zmq.POLLIN)
+        if self.internal_connector and self.internal_connector.is_reading:
+            if self.internal_connector.socket_sub:
+                self.poller.register(self.internal_connector.socket_sub, zmq.POLLIN)
+            self.poller.register(self.internal_connector.socket_dealer_in, zmq.POLLIN)
+        if self.external_connector and self.external_connector.is_reading:
+            if self.external_connector.socket_sub:
+                self.poller.register(self.external_connector.socket_sub, zmq.POLLIN)
+            self.poller.register(self.external_connector.socket_dealer_in, zmq.POLLIN)
+        if self.internal_connector:
+            self.internal_connector.open()
+        if self.external_connector:
+            self.external_connector.open()
         super(ThreadedClient, self).start()
 
     @checkmate.timeout_manager.WaitOnFalse(0.1, 100)
@@ -131,15 +136,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         unprocess = self.unprocess_list[0]
         incoming = self.return_code_list[0][0]
         return_code = self.return_code_list[0][1]
-        if incoming.action == unprocess[1]:
+        if incoming.action == unprocess[0]:
             if incoming.broadcast:
                 self.return_code_list.popleft()
                 self.unprocess_list.popleft()
                 return True
             else:
-                for _c in self.connections:
-                    if _c.socket_in and _c.socket_in.IDENTITY == unprocess[2]:
-                        _c.socket_in.send_multipart([return_code.destination[0].encode(), checkmate.runtime.encoder.encode(return_code)])
+                self.send(return_code)
                 self.return_code_list.popleft()
                 self.unprocess_list.popleft()
                 return True
@@ -150,8 +153,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
-                for _c in self.connections:
-                    _c.close()
+                if self.internal_connector:
+                    self.internal_connector.close()
+                if self.external_connector:
+                    self.external_connector.close()
                 self.logger.debug("%s stop" % self)
                 break
             if self.unprocess_list:
@@ -162,7 +167,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 exchange = msg[-1]
                 exchange = checkmate.runtime.encoder.decode(exchange, self.exchange_module)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
-                self.unprocess_list.append([msg[0], exchange.action, _s.IDENTITY])
+                self.unprocess_list.append([exchange.action])
                 self.exchange_deque.append(exchange)
                 self.process_return_code()
 
@@ -176,13 +181,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         It is up to the connector to manage the thread protection.
         """
-        if exchange.broadcast:
-            for _c in self.connections:
-                if _c._name == exchange.origin:
-                    _c.send(exchange)
-                    self.logger.debug("%s use broadcast send exchange %s to %s" % (self, exchange.value, exchange.destination))
-        else:
-            for _c in self.connections:
-                if _c._name in exchange.destination:
-                    _c.send(exchange)
-                    self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
+        if self.internal_connector:
+            self.internal_connector.send(exchange)
+        if self.external_connector:
+            self.external_connector.send(exchange)
+        self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))

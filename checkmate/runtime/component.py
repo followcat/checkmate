@@ -116,30 +116,11 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
-            if self.reading_internal_client or self.context.is_publish:
-                connector = connector_factory(self.context, _communication, is_server=True,
-                                              is_reading=self.reading_internal_client,
-                                              is_broadcast=self.context.is_publish)
-                self.client.add_connector(connector)
-            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if _component in self.runtime.application.system_under_test:
-                    connector = connector_factory(_application.components[_component], _communication,
-                                                  is_reading=self.reading_internal_client,
-                                                  is_broadcast=_component in self.context.broadcast_map.values())
-                    self.client.add_connector(connector)
-
+            self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
-            for connector_factory in self.context.connector_list:
-                _communication = runtime.communication_list['']
-                connector = connector_factory(self.context, _communication, is_server=True,
-                                              is_broadcast=self.context.is_publish)
-                self.client.add_connector(connector)
-            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                _communication = runtime.communication_list['']
-                for connector_factory in _application.components[_component].connector_list:
-                    connector = connector_factory(_application.components[_component], _communication,
-                                                  is_broadcast=_component in self.context.broadcast_map.values())
-                    self.client.add_connector(connector)
+            _communication = runtime.communication_list['']
+            connector_factory = _communication.connector_class
+            self.client.external_connector = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
 
     def start(self):
         Component.start(self)
@@ -186,13 +167,6 @@ class ThreadedSut(ThreadedComponent, Sut):
 
     def setup(self, runtime):
         super().setup(runtime)
-        connector_factory = checkmate.runtime._pyzmq.Connector
-        _communication = runtime.communication_list['default']
-        for _component in [_c for _c in runtime.application.components.keys() if _c != self.context.name]:
-            if _component in self.context.broadcast_map.values():
-                connector = connector_factory(runtime.application.components[_component], _communication, is_broadcast=_component in self.context.broadcast_map.values())
-                self.client.add_connector(connector)
-
         if hasattr(self.context, 'launch_command'):
             for communication_class in self.runtime.application.communication_list:
                 communication_class(self.context)
