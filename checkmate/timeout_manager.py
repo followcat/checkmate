@@ -78,7 +78,8 @@ e.origin_destination('a', 'b')
 
 runtime_log = logging.getLogger('checkmate')
 logging.disable(logging.INFO)
-sa.client.send(e
+for i in range(0, 10000):
+    sa.client.send(e)
 logging.disable(logging.NOTSET)
 
 #stop everything except the logger
