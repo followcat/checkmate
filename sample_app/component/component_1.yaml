@@ -10,8 +10,8 @@ data:
   - Definition and accessibility: 'AnotherState'
     Value partitions:
     # [Partition,   State,            Valid value,    Comment]
-    - [S-ANOST-01,  AnotherState1(),  Q(None),        First valid value,  AnotherState first value]
-    - [S-ANOST-02,  AnotherState2(),  Q(),            Second valid value, AnotherState second value]
+    - [S-ANOST-01,  AnotherState1(),  Q(None),        AnotherState first value]
+    - [S-ANOST-02,  AnotherState2(),  Q(),            AnotherState second value]
 
 ---
 title: "State machine"
