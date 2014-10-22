@@ -134,12 +134,6 @@ SVC_INHERITANCE_OBJ =  \
 
 
 #=============================================================================
-#	include java targets
-#
-include java_target.opt
-
-
-#=============================================================================
 #	include common targets
 #
 include $(MAKE_ENV)/common_target.opt
