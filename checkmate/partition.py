@@ -109,7 +109,7 @@ class Partition(object):
         try:
             return (self.partition_storage.get_description(self))
         except AttributeError:
-            return (None, None, None)
+            return (None, None)
 
     @property
     def partition_id(self):

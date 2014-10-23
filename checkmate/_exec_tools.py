@@ -1,4 +1,3 @@
-import re
 import inspect
 import collections
 
@@ -13,7 +12,9 @@ def is_method(signature):
         >>> checkmate._exec_tools.is_method('M0()')
         True
     """
-    return '(' in signature
+    if isinstance(signature, str):
+        return '(' in signature
+    return False
 
 
 def method_unbound(signature, interface):
@@ -132,25 +133,26 @@ def method_arguments(signature, interface):
     argument = {'values': None, 'attribute_values': kwargs}
     if is_method(signature):
         parameters_list = get_function_parameters_list(signature)
-    else:
-        parameters_list = get_parameters_list(signature)
-    for each in parameters_list:
-        if '=' not in each:
-            if each in cls._sig.parameters.keys():
-                kwargs[each] = None
+        for each in parameters_list:
+            if '=' not in each:
+                if each in cls._sig.parameters.keys():
+                    kwargs[each] = None
+                else:
+                    args.append(each)
             else:
-                args.append(each)
-        else:
-            label = each.find('=')
-            _k, _v = each[:label].strip(), each[label + 1:].strip()
-            exec("kwargs['%s'] = %s" % (_k, _v))
+                label = each.find('=')
+                _k, _v = each[:label].strip(), each[label + 1:].strip()
+                exec("kwargs['%s'] = %s" % (_k, _v))
+    else:
+        args = [signature]
     argument['values'] = tuple(args)
     return argument
 
 
-def get_exchange_define_str(interface_class, classname, codes):
-    class_element = collections.namedtuple('class_element', ['interface_class', 'classname'])
-    element = class_element(interface_class, classname)
+def get_exchange_define_str(interface_class, classname, codes, values):
+    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'codes', 'values'])
+    internal_codes = [get_method_basename(_c) for _c in codes]
+    element = class_element(interface_class, classname, internal_codes, values)
     run_code = """
             \nimport inspect
             \nimport zope.interface
@@ -163,7 +165,9 @@ def get_exchange_define_str(interface_class, classname, codes):
             \n
             \n@zope.interface.implementer({e.interface_class})
             \nclass {e.classname}(checkmate.exchange.Exchange):
-            \n    def __init__(self, value=None, *args, **kwargs):
+            \n    _valid_values = {e.values}
+            \n    _codes = {e.codes}
+            \n    def __init__(self, action=None, *args, **kwargs):
             \n        partition_attribute = []
             \n        for _k,_v in self._sig.parameters.items():
             \n            if _v.annotation == inspect._empty:
@@ -178,19 +182,21 @@ def get_exchange_define_str(interface_class, classname, codes):
             \n            else:
             \n                setattr(self, _k, _v.annotation())
             \n            partition_attribute.append(_k)
-            \n        super().__init__(value, *args, **kwargs)
+            \n        super().__init__(action, *args, **kwargs)
             \n        self.partition_attribute = tuple(partition_attribute)
             \n
             """.format(e=element)
 
     class_action = collections.namedtuple('class_action', ['classname', 'code'])
-    for _c in codes[0]:
-        internal_code = get_method_basename(_c)
-        action = class_action(classname, internal_code)
+    for _c, _v in zip(internal_codes, values):
+        action = class_action(classname, _c)
+        sep = ''
+        if type(_v) == str:
+            sep = "'"
         run_code += """
         \ndef {a.code}(*args, **kwargs):
-        \n    return {a.classname}('{a.code}', *args, **kwargs)
-        """.format(a=action)
+        \n    return {a.classname}('{code}', {sep}{value}{sep}, *args, **kwargs)
+        """.format(a=action, code=_c, sep=sep, value=_v)
     return run_code
 
 
@@ -241,19 +247,19 @@ def get_states_define_str(interface_class, classname, valid_values_list):
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
     if partition_type == 'exchanges':
-        run_code = get_exchange_define_str(interface_class, classname, codes)
+        run_code = get_exchange_define_str(interface_class, classname, codes, values)
     elif partition_type == 'data_structure':
-        run_code = get_data_structure_define_str(interface_class, classname, codes)
+        run_code = get_data_structure_define_str(interface_class, classname, values)
     elif partition_type == 'states':
         valid_values_list = []
-        for _c in codes[0]:
-            if not is_method(_c):
-                valid_values_list.append(_c)
+        for _v in values:
+            if not is_method(_v):
+                valid_values_list.append(_v)
         run_code = get_states_define_str(interface_class, classname, valid_values_list)
 
     sig_dict = get_exec_signature(signature, [data_structure_module])
