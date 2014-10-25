@@ -125,7 +125,9 @@ class Sandbox(object):
                 _transition = _c.get_transition_by_input([_exchange])
                 _outgoings = _c.process([_exchange])
                 if len(_outgoings) == 0 and _c.transition_not_found:
-                    continue
+                    if _exchange.return_code:
+                        break
+                    return None
 
                 self.update_required_states(_transition)
                 tmp_tree = self.generate(_outgoings, checkmate._tree.Tree(_transition, []))
