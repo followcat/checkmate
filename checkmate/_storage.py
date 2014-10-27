@@ -110,7 +110,7 @@ class Data(object):
             _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
         if not self.storage:
-            self.storage = [store(self.type, self.interface, '')]
+            self.storage = [store(self.type, self.interface, '', '')]
 
     def get_description(self, item):
         """ Return description corresponding to item """
