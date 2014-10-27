@@ -55,7 +55,9 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         c2 = box.application.components['C2']
         box(c2.state_machine.transitions[0])
         new_box = checkmate.sandbox.Sandbox(box.application)
-        new_box(c2.state_machine.transitions[3])
+        transition_rl_index = [_t for _t in c2.state_machine.transitions
+                               if _t.outgoing and _t.outgoing[0].code == 'RL']
+        new_box(transition_rl_index[0])
         new_box.fill_procedure(self)
 
 
