@@ -206,8 +206,8 @@ class InternalStorage(object):
             >>> c = a.components['C1']   
             >>> a.start()
             >>> i = sample_app.exchanges.AP()
-            >>> c.process([i]) # doctest: +ELLIPSIS
-            [<sample_app.exchanges.ThirdAction object at ...
+            >>> c.process([i])[-1] # doctest: +ELLIPSIS
+            <sample_app.exchanges.ThirdAction object at ...
             >>> i = sample_app.exchanges.AC()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

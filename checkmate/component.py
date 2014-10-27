@@ -93,6 +93,8 @@ class Component(object):
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
+        self.pending_incoming = []
+        self.expected_return_code = None
 
     def get_transition_by_input(self, exchange):
         """
@@ -151,6 +153,8 @@ class Component(object):
         self.service_registry.register(self, self.service_interfaces)
 
     def reset(self):
+        self.pending_incoming = []
+        self.expected_return_code = None
         self.validation_list.clear()
 
     def stop(self):
@@ -173,6 +177,33 @@ class Component(object):
         >>> transition.is_matching_initial(c.states)
         False
         """
+        def process_pending_incoming(self, output):
+            for _incoming in self.pending_incoming[:]:
+                _incremental_output = self._do_process(_incoming)
+                output.extend(_incremental_output)
+                self.pending_incoming.pop(_incoming)
+                if len([_ex for _e in _incremental_output if _ex.data_returned]) == 0:
+                    break
+            return output
+
+        output = []
+        if self.expected_return_code is None:
+            if len(self.pending_incoming) > 0:
+                output = self.process_pending_incoming(output)
+            output.extend(self._do_process(exchange))
+        else:
+            if isinstance(exchange[0], self.expected_return_code.return_type):
+                self.expected_return_code = None
+                output = self._do_process(exchange)
+                output = self.process_pending_incoming(output)
+            else:
+                self.pending_incoming.append(exchange[0])
+
+        assert(self.expected_return_code is None or len(output) == 0)
+        return output
+
+    def _do_process(self, exchange):
+        """"""
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
             return []
@@ -183,6 +214,10 @@ class Component(object):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
+        if exchange[0].data_returned:
+            if len([_o for _o in output if _o.return_code]) == 0:
+                output.insert(0, exchange[0].return_type())
+                output[0].origin_destination(self.name, [exchange[0].destination])
         return output
 
     def simulate(self, _transition):

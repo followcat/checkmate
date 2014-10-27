@@ -114,3 +114,15 @@ class Exchange(checkmate.partition.Partition):
             return self._destination
         except AttributeError:
             return ""
+
+    @property
+    def data_returned(self):
+        """
+            >>> Exchange().data_returned
+            False
+        """
+        try:
+            return IExchange.implementedBy(self.return_type)
+        except AttributeError:
+            return False
+
