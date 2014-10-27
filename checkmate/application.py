@@ -42,8 +42,10 @@ class ApplicationMeta(type):
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
             matrix = _file.read()
+        with open(namespace['test_data_definition_file'], 'r') as _file:
+            test_data = _file.read()
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix, data=test_data)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']

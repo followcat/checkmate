@@ -6,14 +6,19 @@ class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
-    def __init__(self, stream):
+    def __init__(self, stream, data):
         """
             >>> import os
             >>> import checkmate.parser.yaml_visitor
             >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
-            >>> file=open(input_file,'r')
-            >>> c = file.read()
-            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c)
+            >>> file1=open(input_file,'r')
+            >>> c1 = file1.read()
+            >>> file1.close()
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+            >>> file2=open(input_file,'r')
+            >>> c2 = file2.read()
+            >>> file2.close()
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1, c2)
             >>> len(visitor._data_structure_partitions)
             1
             >>> len(visitor._exchange_partitions)
@@ -31,13 +36,15 @@ class Visitor():
         self.code_value_list = []
         self.tran_items = []
 
-        self.read_document(stream)
+        self.read_document(stream, data)
 
-    def read_document(self, stream):
+    def read_document(self, stream, data):
+        if data is not None:
+            data = yaml.load(data)
         for each in yaml.load_all(stream):
-            self.parser_chunk(each)
+            self.parser_chunk(each, data)
 
-    def parser_chunk(self, chunk):
+    def parser_chunk(self, chunk, data):
         """
             >>> import os
             >>> import yaml
@@ -46,23 +53,27 @@ class Visitor():
             >>> f = open(input_file,'r')
             >>> c1 = f.read()
             >>> f.close()
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
             >>> f = open(input_file,'r')
             >>> c2 = f.read()
             >>> f.close()
-            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> f = open(input_file,'r')
+            >>> c3 = f.read()
+            >>> f.close()
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1, c2)
             >>> len(visitor._state_partitions)
             0
-            >>> list(yaml.load_all(c2))[0]['title']
+            >>> list(yaml.load_all(c3))[0]['title']
             'State identification'
-            >>> visitor.parser_chunk(list(yaml.load_all(c2))[0])
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[0], None)
             >>> len(visitor._state_partitions)
             2
             >>> len(visitor._transitions)
             0
-            >>> list(yaml.load_all(c2))[1]['title']
+            >>> list(yaml.load_all(c3))[1]['title']
             'State machine'
-            >>> visitor.parser_chunk(list(yaml.load_all(c2))[1])
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[1], None)
             >>> len(visitor._transitions)
             4
         """
@@ -81,7 +92,7 @@ class Visitor():
                                                 'code_value_list': self.code_value_list,
                                                 'full_desc': self.full_description})
             elif title == "Data structure":
-                self.data_structure(_d)
+                self.data_structure(data)
                 self._data_structure_partitions.append({'clsname': self._classname,
                                                 'codes_list': self.codes_list,
                                                 'values_list': self.values_list,
@@ -126,14 +137,15 @@ class Visitor():
             if _k in self.exchanges_kind_list:
                 self.tran_items.extend(_v)
 
-    def data_structure(self, content):
-        for _k, _v in content.items():
-            if _k == "Value partitions":
-                for _list in _v:
-                    codes_list, values_list, code_value_list = self.value_partitions(_list)
-                    self.codes_list.extend(codes_list)
-                    self.values_list.append(values_list)
-                    self.code_value_list.extend(code_value_list)
+    def data_structure(self, data):
+        if self._classname in data:
+            content = data.get(self._classname)
+        for _l in content:
+            code = _l[0]
+            val = _l[1]
+            self.codes_list.append(code)
+            self.values_list.append(val)
+            self.code_value_list.append((code, val))
 
     def definition_and_accessibility(self, data):
         self._classname = data
@@ -154,15 +166,19 @@ class Visitor():
         return codes_list, values_list, code_value_list
 
 
-def call_visitor(stream):
+def call_visitor(stream, data=None):
     """
         >>> import os
         >>> import checkmate.parser.yaml_visitor
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
-        >>> c = f1.read()
+        >>> c1 = f1.read()
         >>> f1.close()
-        >>> output = checkmate.parser.yaml_visitor.call_visitor(c)
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+        >>> f2 = open(input_file,'r')
+        >>> c2 = f2.read()
+        >>> f2.close()
+        >>> output = checkmate.parser.yaml_visitor.call_visitor(c1, c2)
         >>> len(output['data_structure'])
         1
         >>> len(output['exchanges'])
@@ -175,7 +191,7 @@ def call_visitor(stream):
         >>> len(output['states'])
         2
     """
-    visitor = Visitor(stream)
+    visitor = Visitor(stream, data)
     return {'states': visitor._state_partitions,
             'data_structure': visitor._data_structure_partitions,
             'exchanges': visitor._exchange_partitions,

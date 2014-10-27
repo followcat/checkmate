@@ -2,12 +2,7 @@
 title: 'Data structure'
 data:
   - Definition: 'TESTActionRequest'
-    Value partitions:
-      -
-      #Priority:
-        # [Partition, State,                      Valid value,      Comment]
-        - [D-PRIO-01, TESTActionRequestNORM,      'NORM',           NORM priority value]
-        - [D-PRIO-02, TESTActionRequestHIGH,      'HIGH',           HIGH priority value]
+
 ---
 title: 'Exchange identification'
 data:

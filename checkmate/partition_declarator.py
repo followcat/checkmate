@@ -18,8 +18,7 @@ def make_transition(items, exchanges, state_modules):
     return t
 
 class Declarator(object):
-    def __init__(self, data_module, exchange_module, state_module=None,
-                       transition_module=None, content=None):
+    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None, content=None, data=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
@@ -30,8 +29,9 @@ class Declarator(object):
         self.basic_modules['states'] = [data_module]
         self.basic_modules['exchanges'] = [data_module, state_module]
         self.content = content
+        self.data = data
         if self.content is not None:
-            self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content)
+            self.data_source = checkmate.parser.yaml_visitor.call_visitor(self.content, self.data)
         self.output = {}
 
     def new_partition(self, partition_type, signature, codes_list, values_list, code_value_list, full_description=None):
@@ -81,7 +81,11 @@ class Declarator(object):
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()
-        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c)
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+        >>> f2 = open(input_file,'r')
+        >>> c2 = f2.read()
+        >>> f2.close()
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, content=c, data=c2)
         >>> de.get_partitions()
         >>> de.output['states']
         []
