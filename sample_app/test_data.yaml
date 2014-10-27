@@ -1,0 +1,3 @@
+ActionRequest: 
+  - ['Channel', ['AT1', 'AT2']]
+  - ['Priority', ['NORM', 'HIGH']]
