@@ -1,2 +1,2 @@
 TESTActionRequest: 
-  - ['NORM', 'HIGH']
+  - ['R1', ['AT1', 'NORM']]

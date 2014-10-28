@@ -64,6 +64,10 @@ class Visitor():
             >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1, c2)
             >>> len(visitor._state_partitions)
             0
+            >>> visitor._data_structure_partitions[0]['codes_list']
+            ['R1']
+            >>> visitor._data_structure_partitions[0]['values_list']
+            [['AT1', 'NORM']]
             >>> list(yaml.load_all(c3))[0]['title']
             'State identification'
             >>> visitor.parser_chunk(list(yaml.load_all(c3))[0], None)

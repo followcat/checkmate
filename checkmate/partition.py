@@ -24,18 +24,18 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
-        factory will set R = sample_app.data_structure.ActionRequest('HIGH')
+        factory will set R = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest('HIGH')})
+            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])})
             >>> ac.R
-            ['AT1', 'HIGH']
+            ['AT2', 'HIGH']
 
         We can define a partition by passing an instance for attribute.
-            >>> re = sample_app.data_structure.ActionRequest('HIGH')
+            >>> re = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
             >>> ac2.R
-            ['AT1', 'HIGH']
+            ['AT2', 'HIGH']
         """
         if type(value) == list:
             self.value = list(value)
