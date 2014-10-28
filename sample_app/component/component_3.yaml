@@ -28,7 +28,7 @@ data:
         final:
           - Acknowledge:        toggle()
         outgoing:
-          - Action:             DR()
+          - ThirdReaction:      DR()
 
   - Transitions:
       - name: 'C3 pause process'
