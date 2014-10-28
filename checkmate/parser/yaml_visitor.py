@@ -6,7 +6,7 @@ class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
-    def __init__(self, stream, data):
+    def __init__(self, define_content, value_content):
         """
             >>> import os
             >>> import checkmate.parser.yaml_visitor
@@ -36,13 +36,13 @@ class Visitor():
         self.code_value_list = []
         self.tran_items = []
 
-        self.read_document(stream, data)
+        self.read_document(define_content, value_content)
 
-    def read_document(self, stream, data):
-        if data is not None:
-            data = yaml.load(data)
-        for each in yaml.load_all(stream):
-            self.parser_chunk(each, data)
+    def read_document(self, define_content, value_content):
+        if value_content is not None:
+            value_content = yaml.load(value_content)
+        for each in yaml.load_all(define_content):
+            self.parser_chunk(each, value_content)
 
     def parser_chunk(self, chunk, data):
         """
@@ -166,7 +166,7 @@ class Visitor():
         return codes_list, values_list, code_value_list
 
 
-def call_visitor(stream, data=None):
+def call_visitor(define_content, value_content=None):
     """
         >>> import os
         >>> import checkmate.parser.yaml_visitor
@@ -191,7 +191,7 @@ def call_visitor(stream, data=None):
         >>> len(output['states'])
         2
     """
-    visitor = Visitor(stream, data)
+    visitor = Visitor(define_content, value_content)
     return {'states': visitor._state_partitions,
             'data_structure': visitor._data_structure_partitions,
             'exchanges': visitor._exchange_partitions,

@@ -41,11 +41,11 @@ class ApplicationMeta(type):
             #will also be used to look for components' stae_machine yaml and itp.yaml
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
-            matrix = _file.read()
+            define_data = _file.read()
         with open(namespace['test_data_definition_file'], 'r') as _file:
-            test_data = _file.read()
+            value_data = _file.read()
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix, data=test_data)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, define_content=define_data, value_content=value_data)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']
