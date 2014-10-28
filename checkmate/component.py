@@ -8,6 +8,9 @@ import checkmate.state_machine
 import checkmate.partition_declarator
 
 
+class NoTransitionFound(RuntimeError):
+    """"""
+
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
@@ -109,9 +112,7 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_incoming(exchange)):
-                self._transition_found = True
                 return _t
-        self._transition_found = False
         return None
 
             
@@ -131,9 +132,7 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_outgoing(exchange)):
-                self._transition_found = True
                 return _t
-        self._transition_found = False
         return None
 
             
@@ -206,7 +205,7 @@ class Component(object):
         """"""
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
-            return []
+            raise NoTransitionFound("No transition for incoming %s" %(exchange[0]))
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
@@ -267,8 +266,4 @@ class Component(object):
 
     def get_all_validated_incoming(self):
         return self.validation_list.all_items()
-
-    @property
-    def transition_not_found(self):
-        return not self._transition_found
 

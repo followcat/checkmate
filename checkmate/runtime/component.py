@@ -53,7 +53,10 @@ class Component(object):
         self.client.stop()
 
     def process(self, exchanges):
-        output = self.context.process(exchanges)
+        try:
+            output = self.context.process(exchanges)
+        except checkmate.component.NoTransitionFound:
+            output = []
         self.logger.info("%s process exchange %s" % (self.context.name, exchanges[0].value))
         for _o in output:
             self.client.send(_o)
