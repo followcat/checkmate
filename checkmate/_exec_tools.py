@@ -214,13 +214,12 @@ def get_data_structure_define_str(interface_class, classname, valid_values_list)
         \nclass {e.classname}(list):
         \n    _valid_values = {e.valid_values}
         \n    def __init__(self, *args):
-        \n        for _l in self._valid_values:
-        \n            for _argv in args:
-        \n                if _argv in _l:
-        \n                    self.append(_argv)
-        \n                    break
-        \n            else:
-        \n                self.append(_l[0])
+        \n        for _arg in args:
+        \n            if _arg in self._valid_values:
+        \n                self.extend(_arg)
+        \n                break
+        \n        else:
+        \n            self.extend(self._valid_values[0])
         """.format(e=element)
     return run_code
 
