@@ -4,5 +4,5 @@ Feature: Second run RL
 
     Scenario: Toggle C3 state with RL
         Given Component state C3.Acknowledge at value __init__(True)
-        When Component C2 sends exchange Action RL()
+        When Component C2 sends exchange Reaction RL()
         Then Component state C3.Acknowledge should change to value __init__(False)
