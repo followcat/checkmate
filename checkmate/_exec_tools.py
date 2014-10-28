@@ -180,7 +180,13 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \n                    setattr(self, _k, kwargs[_k])
             \n                kwargs.pop(_k)
             \n            else:
-            \n                setattr(self, _k, _v.annotation())
+            \n                for _arg in args:
+            \n                    for _s in _v.annotation.partition_storage.storage:
+            \n                        if _arg == _s.code:
+            \n                            setattr(self, _k, _s.factory())
+            \n                            break
+            \n                if not hasattr(self, _k):
+            \n                    setattr(self, _k, _v.annotation())
             \n            partition_attribute.append(_k)
             \n        super().__init__(action, *args, **kwargs)
             \n        self.partition_attribute = tuple(partition_attribute)
