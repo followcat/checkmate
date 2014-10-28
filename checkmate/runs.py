@@ -97,9 +97,9 @@ class RunCollection(list):
             >>> runs.build_trees_from_application(sample_app.application.TestData())
             >>> len(runs)
             4
-            >>> run_lenght = [len(_run.walk()) for _run in runs]
-            >>> run_lenght.sort()
-            >>> run_lenght
+            >>> run_length = [len(_run.walk()) for _run in runs]
+            >>> run_length.sort()
+            >>> run_length
             [5, 6, 6, 9]
             >>> sorted([_t.incoming[0].code for _t in runs.get_runs_from_code('PBRL')[0].walk() if len(_t.incoming) > 0])
             ['DR', 'PBRL', 'RL', 'VODR']
@@ -146,10 +146,8 @@ class RunCollection(list):
             2
             >>> len(run[0].nodes), len(run[1].nodes)
             (1, 1)
-            >>> l = [run[0].nodes[0].root.outgoing[1].code, run[1].nodes[0].root.outgoing[1].code]
-            >>> l.sort()
-            >>> l
-            ['ER', 'OK']
+            >>> [run[0].nodes[0].root.outgoing[1].code, run[1].nodes[0].root.outgoing[1].code]
+            ['OK', 'ER']
         """
         return_code_node_list = list()
         append_runs = []
@@ -191,6 +189,17 @@ class RunCollection(list):
                 if walk_process(_r, _r, _process):
                     self.remove(_r)
         self.extend(append_runs)
+        #FIXME this is required to have runs sorted
+        def _ugly_sort_function(x):
+            """tree building should be done by keeping order"""
+            if len(x.nodes[0].nodes) == 0:
+                #required by above function doctest 
+                return x.nodes[0].root.outgoing[1].code
+            elif len(x.nodes[0].nodes[0].root.outgoing) < 2:
+                return x.nodes[0].root.outgoing[0].code
+            else:
+                return x.nodes[0].nodes[0].root.outgoing[1].code
+        self.sort(key=lambda x:_ugly_sort_function(x), reverse=True)
 
     def get_runs_from_code(self, code):
         """
