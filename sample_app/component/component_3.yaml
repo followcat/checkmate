@@ -3,9 +3,9 @@ title: "State identification"
 data:
   - Definition and accessibility: 'Acknowledge'
     Value partitions:
-    # [Partition,   State,      Valid value,        Comment]
-    - [S-ACK-01,    'False',  False valid value,  State false value]
-    - [S-ACK-02,    'True',   True valid value,   State true value]
+    # [Partition,     State,            Valid value,      Comment]
+    - [S-ACK-01,      Acknowledge1(),   'False',          False valid value,  State false value]
+    - [S-ACK-02,      Acknowledge2(),   'True',           True valid value,   State true value]
 
 ---
 title: "State machine"
@@ -28,7 +28,7 @@ data:
         final:
           - Acknowledge:        toggle()
         outgoing:
-          - Action:             DR()
+          - ThirdReaction:      DR()
 
   - Transitions:
       - name: 'C3 pause process'

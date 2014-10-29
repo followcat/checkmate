@@ -58,7 +58,7 @@ def _build_resolve_logic(transition, type, data):
     return resolved_arguments
 
 
-def store(type, interface, code, description=None):
+def store(type, interface, code, value, description=None):
     """
         >>> import checkmate._storage
         >>> import sample_app.application
@@ -68,11 +68,11 @@ def store(type, interface, code, description=None):
         >>> acr = sample_app.data_structure.ActionRequest()
         >>> acr
         ['AT1', 'NORM']
-        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()')
+        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
-        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)')
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.action, ex.R)
         ('AP', 'HIGH')
@@ -80,33 +80,34 @@ def store(type, interface, code, description=None):
     name = checkmate._exec_tools.get_method_basename(code)
     if type == 'exchanges':
         try:
-            return InternalStorage(interface, code, description, getattr(checkmate._module.get_module_defining(interface), name))
+            return InternalStorage(interface, code, code, description, getattr(checkmate._module.get_module_defining(interface), name))
         except AttributeError:
             raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
     elif checkmate._exec_tools.method_unbound(code, interface):
         try:
-            return InternalStorage(interface, code, description, getattr(checkmate._module.get_class_implementing(interface), name))
+            return InternalStorage(interface, code, code, description, getattr(checkmate._module.get_class_implementing(interface), name))
         except AttributeError:
             raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
     else:
-        return checkmate._storage.InternalStorage(interface, code, description, checkmate._module.get_class_implementing(interface))
+        return checkmate._storage.InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
 
 
 class Data(object):
-    def __init__(self, type, interface, codes, full_description=None):
+    def __init__(self, type, interface, code_value_list, full_description=None):
         self.type = type
         self.interface = interface
-        self.codes = codes
         self.full_description = full_description
 
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
-        for code in self.codes:
+        for data in code_value_list:
+            code = data[0]
+            value = data[1]
             try:
                 code_description = self.full_description[code]
             except:
-                code_description = (None, None, None)
-            _storage = store(self.type, self.interface, code, code_description)
+                code_description = (None, None)
+            _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
         if not self.storage:
             self.storage = [store(self.type, self.interface, '')]
@@ -116,7 +117,7 @@ class Data(object):
         for stored_item in list(self.storage):
             if item == stored_item.factory():
                 return stored_item.description
-        return (None, None, None)
+        return (None, None)
 
 
 class PartitionStorage(Data):
@@ -137,7 +138,7 @@ class TransitionStorage(collections.defaultdict):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     interface = name_to_interface(_name, module_dict[module_type])
-                    storage_data = Data(module_type, interface, [_data])
+                    storage_data = Data(module_type, interface, [(_data, _data)])
                     if _k == 'initial':
                         self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':
@@ -165,11 +166,11 @@ class IStorage(zope.interface.Interface):
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, name, description, function):
+    def __init__(self, interface, code, value, description, function):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
-            >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", "AP(R)", None, sample_app.exchanges.Action)
             >>> st.arguments['values'], st.arguments['attribute_values']
             ((), {'R': None})
             >>> dir(st.factory())
@@ -177,12 +178,12 @@ class InternalStorage(object):
             >>> st.factory().R
             ['AT1', 'NORM']
         """
-        self.code = checkmate._exec_tools.get_method_basename(name)
+        self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
         self.function = function
 
-        self.arguments = checkmate._exec_tools.method_arguments(name, interface)
+        self.arguments = checkmate._exec_tools.method_arguments(value, interface)
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
@@ -191,7 +192,7 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action)
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", "AP(R)",None, sample_app.exchanges.Action)
             >>> st.arguments['values'], st.arguments['attribute_values']
             ((), {'R': None})
             >>> dir(st.factory())
@@ -203,7 +204,7 @@ class InternalStorage(object):
 
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> c = a.components['C1']   
+            >>> c = a.components['C1']
             >>> a.start()
             >>> i = sample_app.exchanges.AP()
             >>> c.process([i])[-1] # doctest: +ELLIPSIS
