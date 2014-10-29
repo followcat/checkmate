@@ -149,6 +149,7 @@ def method_arguments(signature, interface):
     return argument
 
 
+@checkmate.report_issue('checkmate/issues/exchange_value_args.rst')
 def get_exchange_define_str(interface_class, classname, codes, values):
     class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'codes', 'values'])
     internal_codes = [get_method_basename(_c) for _c in codes]
