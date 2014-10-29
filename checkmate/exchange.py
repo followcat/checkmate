@@ -10,9 +10,10 @@ class IExchange(zope.interface.Interface):
 @zope.interface.implementer(IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
-    def __init__(self, value=None, broadcast=False, *args, **kwargs):
+    def __init__(self, action=None, value=None, broadcast=False, *args, **kwargs):
         super(Exchange, self).__init__(value, *args, **kwargs)
         self._broadcast = broadcast
+        self._action = action
 
     def __eq__(self, other):
         """
@@ -40,7 +41,7 @@ class Exchange(checkmate.partition.Partition):
             >>> ca_1 == ca_2
             False
         """
-        if self.value == other.value:
+        if self.value == other.value and self.action == other.action:
             if (len(dir(self)) == 0 or len(dir(other)) == 0):
                 return True
             elif (len(dir(self)) == len(dir(other))):
@@ -61,7 +62,7 @@ class Exchange(checkmate.partition.Partition):
             >>> e.action
             'CA'
         """
-        return self.value
+        return self._action
 
     @property
     def broadcast(self):
