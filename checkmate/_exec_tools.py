@@ -149,7 +149,7 @@ def method_arguments(signature, interface):
     return argument
 
 
-@checkmate.report_issue('checkmate/issues/exchange_value_args.rst')
+@checkmate.fix_issue('checkmate/issues/exchange_value_args.rst')
 def get_exchange_define_str(interface_class, classname, codes, values):
     class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'codes', 'values'])
     internal_codes = [get_method_basename(_c) for _c in codes]
@@ -168,7 +168,7 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \nclass {e.classname}(checkmate.exchange.Exchange):
             \n    _valid_values = {e.values}
             \n    _codes = {e.codes}
-            \n    def __init__(self, action=None, *args, **kwargs):
+            \n    def __init__(self, action=None, value=None, *args, **kwargs):
             \n        partition_attribute = []
             \n        for _k,_v in self._sig.parameters.items():
             \n            if _v.annotation == inspect._empty:
@@ -183,7 +183,7 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \n            else:
             \n                setattr(self, _k, _v.annotation())
             \n            partition_attribute.append(_k)
-            \n        super().__init__(action, *args, **kwargs)
+            \n        super().__init__(action, value, *args, **kwargs)
             \n        self.partition_attribute = tuple(partition_attribute)
             \n
             """.format(e=element)
