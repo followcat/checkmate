@@ -1,0 +1,53 @@
+---
+title: "State identification"
+data:
+  - Definition and accessibility: 'State'
+    Value partitions:
+    # [Partition,   State,          Valid value,        Comment]
+    - [S-STATE-01,  'True',       True valid value,   State true value]
+    - [S-STATE-02,  'False',      False valid value,  State false value]
+
+  - Definition and accessibility: 'AnotherState'
+    Value partitions:
+    # [Partition,   State,      Valid value,        Comment]
+    - [S-ANOST-01,  Q(None),    First valid value,  AnotherState first value]
+    - [S-ANOST-02,  Q(),        Second valid value, AnotherState second value]
+
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: 'Toggle state tran01'
+        initial: 
+          - State:            __init__(True)
+        incoming:
+          - Action:           AC()
+        final:
+          - State:            __init__(False)
+        outgoing:
+          - Reaction:         RE()
+          - AnotherReaction:  ARE()
+
+  - Transitions:
+      - name: 'Append element ok tran01'
+        initial: 
+          - AnotherState:     __init__()
+        incoming:
+          - Action:           AP(R)
+        final:
+          - AnotherState:     append(R)
+        outgoing:
+          - ThirdAction:      DA()
+
+  - Transitions:
+      - name: 'Append element ok tran02'
+        initial: 
+          - State:            __init__(False)
+          - AnotherState:     __init__()
+        incoming:
+          - Action:           PP()
+        final:
+          - State:            __init__(True)
+          - AnotherState:     pop()
+        outgoing:
+          - Pause:            PA()

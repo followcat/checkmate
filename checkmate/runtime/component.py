@@ -1,8 +1,7 @@
 import copy
 import logging
 import threading
-
-import zmq
+import collections
 
 import zope.interface
 import zope.component
@@ -99,46 +98,24 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
-        self.client = checkmate.runtime.client.ThreadedClient(self.context)
+        self.exchange_deque = collections.deque()
+        self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_deque)
         self.validation_lock = threading.Lock()
-        self.zmq_context = zmq.Context.instance()
-        self.poller = zmq.Poller()
 
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
 
-        _socket = self.zmq_context.socket(zmq.PULL)
-        port = _socket.bind_to_random_port("tcp://127.0.0.1")
-        self.client.set_sender("tcp://127.0.0.1:%i" % port)
-        self.poller.register(_socket, zmq.POLLIN)
         self.client.set_exchange_module(_application.exchange_module)
 
         if self.using_internal_client:
             connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['default']
-            if self.reading_internal_client or self.context.is_publish:
-                connector = connector_factory(self.context, _communication, is_server=True,
-                                              is_broadcast=self.context.is_publish)
-                self.client.add_connector(connector)
-            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                if _component in self.runtime.application.system_under_test:
-                    connector = connector_factory(_application.components[_component], _communication,
-                                                  is_broadcast=_component in self.context.broadcast_map.values())
-                    self.client.add_connector(connector)
-
+            self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
-            for connector_factory in self.context.connector_list:
-                _communication = runtime.communication_list['']
-                connector = connector_factory(self.context, _communication, is_server=True,
-                                              is_broadcast=self.context.is_publish)
-                self.client.add_connector(connector)
-            for _component in [_c for _c in _application.components.keys() if _c != self.context.name]:
-                _communication = runtime.communication_list['']
-                for connector_factory in _application.components[_component].connector_list:
-                    connector = connector_factory(_application.components[_component], _communication,
-                                                  is_broadcast=_component in self.context.broadcast_map.values())
-                    self.client.add_connector(connector)
+            _communication = runtime.communication_list['']
+            connector_factory = _communication.connector_class
+            self.client.external_connector = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
 
     def start(self):
         Component.start(self)
@@ -149,15 +126,21 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
+        def check_recv():
+            return len(self.exchange_deque) > 0
+        condition = threading.Condition()
         while True:
             if self.check_for_stop():
                 break
-            s = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for socket in iter(s):
-                exchange = socket.recv_pyobj()
-                if exchange is not None:
+            with condition:
+                if condition.wait_for(check_recv, checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC):
+                    exchange = self.exchange_deque.popleft()
                     with self.validation_lock:
-                        self.process([exchange])
+                        try:
+                            self.process([exchange])
+                        except Exception as e:
+                            if not self.check_for_stop():
+                                raise e
 
     def simulate(self, transition):
         return super().simulate(transition)
@@ -179,13 +162,6 @@ class ThreadedSut(ThreadedComponent, Sut):
 
     def setup(self, runtime):
         super().setup(runtime)
-        connector_factory = checkmate.runtime._pyzmq.Connector
-        _communication = runtime.communication_list['default']
-        for _component in [_c for _c in runtime.application.components.keys() if _c != self.context.name]:
-            if _component in self.context.broadcast_map.values():
-                connector = connector_factory(runtime.application.components[_component], _communication, is_broadcast=_component in self.context.broadcast_map.values())
-                self.client.add_connector(connector)
-
         if hasattr(self.context, 'launch_command'):
             for communication_class in self.runtime.application.communication_list:
                 communication_class(self.context)

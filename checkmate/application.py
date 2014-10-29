@@ -87,6 +87,7 @@ class IApplication(zope.interface.Interface):
 class Application(object):
     component_classes = {}
     communication_list = ()
+    feature_definition_path = None
 
     def __init__(self):
         """
@@ -149,12 +150,9 @@ class Application(object):
 
     def state_list(self):
         """Return a static list of the component state values
-
-        A sandbox is used to make copy of current application states.
         """
         local_copy = []
-        sb = checkmate.sandbox.Sandbox(self)
-        for _component in list(sb.application.components.values()):
+        for _component in list(self.components.values()):
             local_copy += [_s for _s in _component.states]
         return local_copy
 
@@ -190,7 +188,7 @@ class Application(object):
         if len(target) == 0:
             return True
 
-        local_copy = self.state_list()
+        local_copy = self.state_list()[:]
 
         incoming_list = []
         if reference_state_list is not None:

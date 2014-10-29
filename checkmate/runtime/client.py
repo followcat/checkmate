@@ -5,6 +5,7 @@ import zmq
 import zope.interface
 
 import checkmate.logger
+import checkmate.timeout_manager
 import checkmate.runtime.encoder
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
@@ -83,38 +84,46 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         'PA'
         >>> r.stop_test()
     """
-    def __init__(self, component):
+    def __init__(self, component, exchange_deque):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
+        self.exchange_deque = exchange_deque
 
-        self.sender = None
         self.connections = []
         self.zmq_context = zmq.Context.instance()
         self.poller = Poller()
+        self.internal_connector = None
+        self.external_connector = None
         self.logger.debug("%s initial" % self)
 
     def add_connector(self, connector):
         self.connections.append(connector)
-
-    def set_sender(self, address):
-        self.sender = self.zmq_context.socket(zmq.PUSH)
-        self.sender.connect(address)
 
     def set_exchange_module(self, exchange_module):
         self.exchange_module = exchange_module
 
     def initialize(self):
         """"""
-        for _c in self.connections:
-            _c.initialize()
+        if self.internal_connector:
+            self.internal_connector.initialize()
+        if self.external_connector:
+            self.external_connector.initialize()
 
     def start(self):
-        for _c in self.connections:
-            _c.open()
-            if hasattr(_c, 'socket_in') and _c.socket_in is not None:
-                self.poller.register(_c.socket_in, zmq.POLLIN)
+        if self.internal_connector and self.internal_connector.is_reading:
+            if self.internal_connector.socket_sub:
+                self.poller.register(self.internal_connector.socket_sub, zmq.POLLIN)
+            self.poller.register(self.internal_connector.socket_dealer_in, zmq.POLLIN)
+        if self.external_connector and self.external_connector.is_reading:
+            if self.external_connector.socket_sub:
+                self.poller.register(self.external_connector.socket_sub, zmq.POLLIN)
+            self.poller.register(self.external_connector.socket_dealer_in, zmq.POLLIN)
+        if self.internal_connector:
+            self.internal_connector.open()
+        if self.external_connector:
+            self.external_connector.open()
         super(ThreadedClient, self).start()
 
     def run(self):
@@ -122,15 +131,18 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
-                for _c in self.connections:
-                    _c.close()
+                if self.internal_connector:
+                    self.internal_connector.close()
+                if self.external_connector:
+                    self.external_connector.close()
                 self.logger.debug("%s stop" % self)
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for _s in socks:
-                msg = _s.recv()
+                msg = _s.recv_multipart()
+                msg = msg[-1]
                 exchange = checkmate.runtime.encoder.decode(msg, self.exchange_module)
-                self.sender.send_pyobj(exchange)
+                self.exchange_deque.append(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
@@ -143,13 +155,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         It is up to the connector to manage the thread protection.
         """
-        if exchange.broadcast:
-            for _c in self.connections:
-                if _c._name == exchange.origin:
-                    _c.send(exchange)
-                    self.logger.debug("%s use broadcast send exchange %s to %s" % (self, exchange.value, exchange.destination))
-        else:
-            for _c in self.connections:
-                if _c._name in exchange.destination:
-                    _c.send(exchange)
-                    self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
+        if self.internal_connector:
+            self.internal_connector.send(exchange)
+        if self.external_connector:
+            self.external_connector.send(exchange)
+        self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))

@@ -4,6 +4,7 @@ import time
 import shlex
 import pickle
 import random
+import socket
 import threading
 
 import zmq
@@ -27,11 +28,15 @@ def add_device_service(services, component):
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
-        \n    self.subscribe_event_done = False"""
+        \n    self.subscribe_event_id_dict = {}
+        \n    self.subscribe_event_done = False
+        \n    self._name = '%s'""" % component.name
     for _publish in publishs:
         code += """
-        \n    self.attr_%(pub)s_read = False
-        \n    self.set_change_event('%(pub)s', True, False)""" % {'pub': _publish}
+        \n    self.attr_%(pub)s_read = 1
+        \n    self.%(pub)s_counter = 0
+        \n    %(pub)s = self.get_device_attr().get_attr_by_name('%(pub)s')
+        \n    %(pub)s.set_data_ready_event(True)""" % {'pub': _publish}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -39,13 +44,13 @@ def add_device_service(services, component):
         code += """
         \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')""" % {'name': component_name, 'device': device_name}
 
-
     code += """
         \ndef subscribe_event_run(self):"""
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
-        \n    self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.CHANGE_EVENT, self.%(sub)s, stateless=False)""" % {'sub': _subscribe, 'name': component_name}
+        \n    id = self.dev_%(name)s.subscribe_event('%(sub)s', PyTango.EventType.DATA_READY_EVENT, self.%(sub)s, stateless=False)
+        \n    self.subscribe_event_id_dict[id] = self.dev_%(name)s""" % {'sub': _subscribe, 'name': component_name}
     code += """
         \n    self.subscribe_event_done = True
         \n    pass"""
@@ -71,8 +76,8 @@ def add_device_service(services, component):
             \n    attr.set_value(self.attr_%(pub)s_read)
             \n
             \ndef write_%(pub)s(self, attr):
-            \n    self.attr_%(pub)s_read = attr.get_write_value()
-            \n    self.push_change_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
+            \n    self.attr_%(pub)s_read += 1
+            \n    self.push_data_ready_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
 
     exec(code, d)
     return d
@@ -107,6 +112,43 @@ def switch(_type=None):
                }[_type]
     except KeyError:
         return PyTango.DevVoid
+
+
+class Router(checkmate.runtime._threading.Thread):
+    """"""
+    def __init__(self, name=None):
+        """"""
+        super(Router, self).__init__(name=name)
+        self.poller = zmq.Poller()
+        self.zmq_context = zmq.Context.instance()
+        self.get_assign_port_lock = threading.Lock()
+
+        self.router = self.zmq_context.socket(zmq.ROUTER)
+        self._routerport = self.pickfreeport()
+        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
+        self.poller.register(self.router, zmq.POLLIN)
+
+    def run(self):
+        """"""
+        while True:
+            if self.check_for_stop():
+                break
+            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+            for sock in iter(socks):
+                if sock == self.router:
+                    message = self.router.recv_multipart()
+                    self.router.send_multipart([message[1], message[2]])
+
+    def stop(self):
+        super(Router, self).stop()
+
+    def pickfreeport(self):
+        with self.get_assign_port_lock:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.bind(('127.0.0.1', 0))
+            addr, port = _socket.getsockname()
+            _socket.close()
+        return port
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -147,12 +189,12 @@ class Device(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.zmq_context = zmq.Context.instance()
         self.incoming = []
-        self.socket_in = self.zmq_context.socket(zmq.PUSH)
-        self.socket_in.connect("tcp://127.0.0.1:%i" % self._initport)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def send(self, exchange):
         dump = pickle.dumps(exchange)
-        self.socket_in.send(dump)
+        self.socket_dealer_out.send_multipart([self._name.encode(), dump])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -171,39 +213,41 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, is_server=False, is_broadcast=False):
-        super().__init__(component, communication, is_server=is_server, is_broadcast=is_broadcast)
-        self.device_name = '/'.join(['sys', type(self.component).__module__.split(os.extsep)[-1], self.component.name])
-        if self.is_server:
-            self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
-            self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
-            self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
+    def __init__(self, component, communication=None, is_reading=True, is_broadcast=False):
+        super().__init__(component, communication, is_server=True, is_reading=is_reading, is_broadcast=is_broadcast)
+        self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
+        self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
+        self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
+        self.communication.comp_device[component.name] = self.device_name
+        self._routerport = self.communication.get_routerport()
         self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
         if self.is_server:
-            self.socket_in = self.zmq_context.socket(zmq.PULL)
-            self.port = self.socket_in.bind_to_random_port("tcp://127.0.0.1")
-            setattr(self.device_class, '_initport', self.port)
+            self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+            self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+            self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+            self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+            self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
+            setattr(self.device_class, '_routerport', self._routerport)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
-        def check():
-            self.device_client.attribute_list_query()
-        self.registry = PyTango.Util.instance()
-        self.device_client = PyTango.DeviceProxy(self.device_name)
-        check()
-        if self.is_server:
-            self.device_server = self.registry.get_device_by_name(self.device_name)
+        def check(dev_proxy):
+            dev_proxy.attribute_list_query()
+        for dev_name in list(self.communication.comp_device.values()): 
+            if dev_name != self.device_name:
+                dev_proxy = self.communication.get_device_proxy(dev_name)
+                check(dev_proxy)
 
     def close(self):
         self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
         if exchange.broadcast:
-            setattr(self.device_client, exchange.action, False)
+            self.socket_dealer_out.send(pickle.dumps([self.device_name, exchange]))
         else:
             attr = exchange.get_partition_attr()
             param = None
@@ -211,12 +255,16 @@ class Connector(checkmate.runtime.communication.Connector):
                 param_type = switch(type(attr[0]))
                 param = PyTango.DeviceData()
                 param.insert(param_type, attr)
-            call = getattr(self.device_client, exchange.action)
-            call(param)
+            for des in exchange.destination:
+                device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
+                call = getattr(device_proxy, exchange.action)
+                call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):
     connector_class = Connector
+    #dictionary to contain all component-device name pairs
+    comp_device = {}
 
     def __init__(self, component=None):
         super(Communication, self).__init__(component)
@@ -228,21 +276,42 @@ class Communication(checkmate.runtime.communication.Communication):
             self.device_family = type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
+            self.comp_device[component.name] = _device_name
+        self.router = Router()
+        self.dev_proxies = {}
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
         self.pytango_server = PyTango.Util(shlex.split(__file__ + ' ' + self.server_name))
 
+    def get_routerport(self):
+        return self.router._routerport
+
     def start(self):
         self.event = threading.Event()
         self.registry = Registry(self.event)
         self.registry.start()
+        self.router.start()
         #wait for server initialized
         self.event.wait(timeout=2)
 
+    def get_device_proxy(self, device_name):
+        if device_name in list(self.dev_proxies.keys()):
+            return self.dev_proxies[device_name]
+        else:
+            dev_proxy = PyTango.DeviceProxy(device_name)
+            self.dev_proxies[device_name] = dev_proxy
+            return dev_proxy
+
+
     def close(self):
         pytango_util = PyTango.Util.instance()
+        for _device in pytango_util.get_device_list('*'):
+            if _device.get_name() == pytango_util.get_dserver_device().get_name():
+                continue
+            for _id, _dev in _device.subscribe_event_id_dict.items():
+                _dev.unsubscribe_event(_id)
         try:
             pytango_util.unregister_server()
         except PyTango.DevFailed as e:
@@ -250,6 +319,7 @@ class Communication(checkmate.runtime.communication.Communication):
             pass
         self.delete_tango_device('/'.join(('dserver', self.device_family, self.server_name)))
         self.registry.stop()
+        self.router.stop()
 
     def create_tango_server(self, server_name):
         comp = PyTango.DbDevInfo()
