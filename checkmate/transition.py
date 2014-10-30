@@ -33,7 +33,7 @@ class Transition(object):
             >>> c.state_machine.transitions[0].name
             'Toggle state tran01'
             >>> i = c.state_machine.transitions[0].incoming[0].factory()
-            >>> i.action
+            >>> i.value
             'AC'
             >>> c.state_machine.transitions[0].is_matching_incoming([i])
             True
@@ -63,7 +63,7 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C2']
             >>> i = c.state_machine.transitions[0].outgoing[0].factory()
-            >>> i.action
+            >>> i.value
             'AC'
             >>> c.state_machine.transitions[0].is_matching_outgoing([i])
             True
@@ -118,7 +118,7 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
             {'R': 1}
             >>> i = t.incoming[0].factory()
-            >>> (i.action, i.R)
+            >>> (i.value, i.R)
             ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             {'R': ['AT1', 'NORM']}

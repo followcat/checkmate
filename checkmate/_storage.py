@@ -74,7 +74,7 @@ def store(type, interface, code, value, description=None):
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
-        >>> (ex.action, ex.R)
+        >>> (ex.value, ex.R)
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
@@ -214,7 +214,7 @@ class InternalStorage(object):
             >>> c.states[1].value
             [{'R': ['AT1', 'NORM']}]
             >>> t = c.state_machine.transitions[2]
-            >>> i = t.incoming[0].factory(); i.action
+            >>> i = t.incoming[0].factory(); i.value
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
@@ -258,7 +258,7 @@ class InternalStorage(object):
             >>> t.final[0].resolve('final', exchanges=[inc])
             {'R': ['AT1', 'NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
+            >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
