@@ -78,7 +78,7 @@ def get_parameters_list(parameter_str):
     return temp_list
 
 
-#@checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
+@checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
 def method_arguments(signature, interface):
     """
         >>> import checkmate._exec_tools
