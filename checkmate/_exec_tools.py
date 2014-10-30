@@ -158,7 +158,7 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \nclass {e.classname}(checkmate.exchange.Exchange):
             \n    _valid_values = {e.values}
             \n    _codes = {e.codes}
-            \n    def __init__(self, action=None, value=None, *args, **kwargs):
+            \n    def __init__(self, value=None, *args, **kwargs):
             \n        partition_attribute = []
             \n        for _k,_v in self._sig.parameters.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
@@ -168,21 +168,19 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \n                    kwargs[_k] = _v.annotation()
             \n                    partition_attribute.append(_k)
             \n        bound = self._sig.bind(*args, **kwargs)
-            \n        super().__init__(action, value, **bound.arguments)
+            \n        super().__init__(value, **bound.arguments)
             \n        self.partition_attribute = tuple(partition_attribute)
             \n
             """.format(e=element)
 
-    class_action = collections.namedtuple('class_action', ['classname', 'code'])
     for _c, _v in zip(internal_codes, values):
-        action = class_action(classname, _c)
         sep = ''
         if type(_v) == str:
             sep = "'"
         run_code += """
-        \ndef {a.code}(*args, **kwargs):
-        \n    return {a.classname}('{code}', {sep}{value}{sep}, *args, **kwargs)
-        """.format(a=action, code=_c, sep=sep, value=_v)
+        \ndef {code}(*args, **kwargs):
+        \n    return {cls}({sep}{value}{sep}, *args, **kwargs)
+        """.format(cls=classname, code=_c, sep=sep, value=_v)
     return run_code
 
 
