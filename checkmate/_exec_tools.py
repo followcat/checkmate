@@ -93,26 +93,25 @@ def method_arguments(signature, interface):
         >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
         ((), {'R': None})
     """
+    args = []
+    kwargs = {}
     if is_method(signature):
+        cls = checkmate._module.get_class_implementing(interface)
         found_label = signature.find('(')
         parameter_str = signature[found_label:][1:-1]
         parameters = get_parameters_list(parameter_str)
-    else:
-        parameters = get_parameters_list(signature)
-
-    args = []
-    kwargs = {}
-    cls = checkmate._module.get_class_implementing(interface)
-    for each in parameters:
-        if '=' not in each:
-            if each in cls._sig.parameters.keys():
-                kwargs[each] = None
+        for each in parameters:
+            if '=' not in each:
+                if each in cls._sig.parameters.keys():
+                    kwargs[each] = None
+                else:
+                    args.append(each)
             else:
-                args.append(each)
-        else:
-            label = each.find('=')
-            _k, _v = each[:label].strip(), each[label + 1:].strip()
-            exec("kwargs['%s'] = %s" % (_k, _v), locals(), locals())
+                label = each.find('=')
+                _k, _v = each[:label].strip(), each[label + 1:].strip()
+                exec("kwargs['%s'] = %s" % (_k, _v), locals(), locals())
+    else:
+        args = [signature]
     return tuple(args), kwargs
 
 
