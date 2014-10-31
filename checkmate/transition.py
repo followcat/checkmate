@@ -1,5 +1,7 @@
 import zope.interface
 
+import checkmate
+
 
 class Transition(object):
     """Driving a change of state inside a state machine
@@ -140,6 +142,7 @@ class Transition(object):
         return incoming_exchanges
             
 
+    @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
     def process(self, states, _incoming):
         """
             >>> import sample_app.application
@@ -153,10 +156,6 @@ class Transition(object):
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': ['AT1', 'NORM']}]
-            >>> i = c.state_machine.transitions[1].incoming[0].factory(kwargs={'R': 1})
-            >>> o = c.state_machine.transitions[1].process(c.states, [i])
-            >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': ['AT1', 'NORM']}, {'R': 1}]
         """
         _outgoing_list = []		
         if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
