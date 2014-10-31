@@ -32,7 +32,7 @@ def _build_resolve_logic(transition, type, data):
     """
     resolved_arguments = {}
     entry = transition[type]
-    arguments = list(entry[entry.index(data)].arguments['attribute_values'].keys()) + list(entry[entry.index(data)].arguments['values'])
+    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys()) + list(entry[entry.index(data)].arguments.values)
     for arg in arguments:
         found = False
         if type in ['final', 'incoming']:
@@ -44,7 +44,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition['incoming']) != 0):
             if type in ['final', 'outgoing']:
                 for item in transition['incoming']:
-                    if arg in list(item.arguments['attribute_values'].keys()):
+                    if arg in list(item.arguments.attribute_values.keys()):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -74,7 +74,7 @@ def store(type, interface, code, value, description=None):
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
-        >>> (ex.action, ex.R)
+        >>> (ex.value, ex.R)
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
@@ -169,7 +169,7 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", "AP(R)", None, sample_app.exchanges.Action)
-            >>> st.arguments['values'], st.arguments['attribute_values']
+            >>> tuple(st.arguments)
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
@@ -181,7 +181,8 @@ class InternalStorage(object):
         self.interface = interface
         self.function = function
 
-        self.arguments = checkmate._exec_tools.method_arguments(value, interface)
+        argument = collections.namedtuple('argument', ['values', 'attribute_values'])
+        self.arguments = argument(*checkmate._exec_tools.method_arguments(value, interface))
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
@@ -190,8 +191,8 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", "AP(R)",None, sample_app.exchanges.Action)
-            >>> st.arguments['values'], st.arguments['attribute_values']
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)","AP(R)", None, sample_app.exchanges.Action)
+            >>> tuple(st.arguments)
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
@@ -213,7 +214,7 @@ class InternalStorage(object):
             >>> c.states[1].value
             [{'R': ['AT1', 'NORM']}]
             >>> t = c.state_machine.transitions[2]
-            >>> i = t.incoming[0].factory(); i.action
+            >>> i = t.incoming[0].factory(); i.value
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
@@ -226,7 +227,7 @@ class InternalStorage(object):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
-                    value = self.arguments['values'][0]
+                    value = self.arguments.values[0]
                 except IndexError:
                     value = None
                 func(state, value, **kwparam)
@@ -235,11 +236,11 @@ class InternalStorage(object):
                 return func(*param, **kwparam)
 
         if args is None:
-            args = self.arguments['values']
+            args = self.arguments.values
         if kwargs is None:
-            kwargs = self.arguments['attribute_values']
+            kwargs = self.arguments.attribute_values
         else:
-            _local_kwargs = copy.deepcopy(self.arguments['attribute_values'])
+            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
@@ -257,29 +258,27 @@ class InternalStorage(object):
             >>> t.final[0].resolve('final', exchanges=[inc])
             {'R': ['AT1', 'NORM']}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.action, inc.R)  # doctest: +ELLIPSIS
+            >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
             {'R': 1}
         """
         resolved_arguments = {}
-        arguments = list(self.arguments['attribute_values'].keys()) + list(self.arguments['values'])
-        for arg in arguments:
+        for arg in self.resolve_logic.keys():
             try:
-                if arg in self.resolve_logic.keys():
-                    (_type, _interface) = self.resolve_logic[arg]
-                    if _type in ['initial', 'final'] and states is not None:
-                        for _state in states:
-                            if _interface.providedBy(_state):
-                                resolved_arguments.update({arg: _state.value})
-                                break
-                    elif exchanges is not None:
-                        for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                            try:
-                                resolved_arguments.update({arg: getattr(_exchange, arg)})
-                                break
-                            except AttributeError:
-                                continue
+                (_type, _interface) = self.resolve_logic[arg]
+                if _type in ['initial', 'final'] and states is not None:
+                    for _state in states:
+                        if _interface.providedBy(_state):
+                            resolved_arguments.update({arg: _state.value})
+                            break
+                elif exchanges is not None:
+                    for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
+                        try:
+                            resolved_arguments.update({arg: getattr(_exchange, arg)})
+                            break
+                        except AttributeError:
+                            continue
             except AttributeError:
                 continue
         return resolved_arguments

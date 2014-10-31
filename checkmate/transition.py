@@ -1,5 +1,7 @@
 import zope.interface
 
+import checkmate
+
 
 class Transition(object):
     """Driving a change of state inside a state machine
@@ -33,7 +35,7 @@ class Transition(object):
             >>> c.state_machine.transitions[0].name
             'Toggle state tran01'
             >>> i = c.state_machine.transitions[0].incoming[0].factory()
-            >>> i.action
+            >>> i.value
             'AC'
             >>> c.state_machine.transitions[0].is_matching_incoming([i])
             True
@@ -63,7 +65,7 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C2']
             >>> i = c.state_machine.transitions[0].outgoing[0].factory()
-            >>> i.action
+            >>> i.value
             'AC'
             >>> c.state_machine.transitions[0].is_matching_outgoing([i])
             True
@@ -118,7 +120,7 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
             {'R': 1}
             >>> i = t.incoming[0].factory()
-            >>> (i.action, i.R)
+            >>> (i.value, i.R)
             ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             {'R': ['AT1', 'NORM']}
@@ -140,6 +142,7 @@ class Transition(object):
         return incoming_exchanges
             
 
+    @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
     def process(self, states, _incoming):
         """
             >>> import sample_app.application
@@ -150,10 +153,6 @@ class Transition(object):
             >>> c.state_machine.transitions[0].process(c.states, [i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
-            >>> o = c.state_machine.transitions[1].process(c.states, [i])
-            >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': ['AT1', 'NORM']}]
-            >>> i = c.state_machine.transitions[1].incoming[0].factory(kwargs={'R': 1})
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': ['AT1', 'NORM']}]

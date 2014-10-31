@@ -2,7 +2,7 @@ import pickle
 
 
 def encode(exchange):
-    dump = (exchange.action, exchange.get_partition_attr())
+    dump = (exchange.value, exchange.get_partition_attr())
     return pickle.dumps(dump)
 
 
