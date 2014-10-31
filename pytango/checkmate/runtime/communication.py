@@ -257,7 +257,7 @@ class Connector(checkmate.runtime.communication.Connector):
                 param.insert(param_type, attr)
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
-                call = getattr(device_proxy, exchange.action)
+                call = getattr(device_proxy, exchange.value)
                 call(param)
 
 

@@ -169,9 +169,9 @@ class Component(object):
         >>> transition.is_matching_initial(c.states)
         True
         >>> output = transition.process(c.states, [sample_app.exchanges.AC()])
-        >>> output[0].action
+        >>> output[0].value
         'RE'
-        >>> output[1].action
+        >>> output[1].value
         'OK'
         >>> transition.is_matching_initial(c.states)
         False
@@ -235,7 +235,7 @@ class Component(object):
         Registration is done when the destination component is started:
             >>> a.components['C1'].start()
             >>> out = c2.simulate(transition)
-            >>> out[0].action == 'AC'
+            >>> out[0].value == 'AC'
             True
         """
         output = []
