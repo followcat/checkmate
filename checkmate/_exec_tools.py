@@ -1,4 +1,3 @@
-import re
 import inspect
 import collections
 
@@ -156,20 +155,14 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \n
             \n@zope.interface.implementer({e.interface_class})
             \nclass {e.classname}(checkmate.exchange.Exchange):
+            \n    import inspect
             \n    _valid_values = {e.values}
             \n    _codes = {e.codes}
             \n    def __init__(self, value=None, *args, **kwargs):
-            \n        partition_attribute = []
-            \n        for _k,_v in self._sig.parameters.items():
+            \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
-            \n                if _v.annotation == inspect._empty:
-            \n                    kwargs[_k] = _v.default
-            \n                else:
-            \n                    kwargs[_k] = _v.annotation()
-            \n                    partition_attribute.append(_k)
-            \n        bound = self._sig.bind(*args, **kwargs)
-            \n        super().__init__(value, **bound.arguments)
-            \n        self.partition_attribute = tuple(partition_attribute)
+            \n                kwargs[_k] = _v()
+            \n        super().__init__(value, *args, **kwargs)
             \n
             """.format(e=element)
 
@@ -248,6 +241,14 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
-    setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module]))
     define_interface = getattr(exec_module, interface_class)
+    setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module]))
+    exec("_annotated_values = dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()])\
+         \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty]))\
+         \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty])",
+         dict(define_class.__dict__), globals())
+    setattr(define_class, '_annotated_values', globals()['_annotated_values'])
+    setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
     return define_class, define_interface
