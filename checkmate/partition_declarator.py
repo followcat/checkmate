@@ -17,6 +17,7 @@ def make_transition(items, exchanges, state_modules):
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
     return t
 
+
 class Declarator(object):
     def __init__(self, data_module, exchange_module, state_module=None, transition_module=None, data_source=None):
         self.module = {}
@@ -25,7 +26,11 @@ class Declarator(object):
         self.module['exchanges'] = exchange_module
 
         self.data_source = data_source
-        self.output = {}
+        self.output = {
+            'data_structure': [],
+            'states': [],
+            'exchanges': [],
+            'transitions': []}
 
     def new_partition(self, partition_type, signature, codes_list, values_list, code_value_list, full_description=None):
         """
@@ -59,7 +64,7 @@ class Declarator(object):
         return (defined_interface, partition_storage)
 
     def new_transition(self, item):
-        return make_transition(item, [self.module['exchanges']], [self.module['states']])
+        self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']]))
 
     @checkmate.report_issue("checkmate/issues/new_partition_in_doctest.rst")
     def get_partitions(self):
@@ -91,10 +96,8 @@ class Declarator(object):
         [(<InterfaceClass checkmate.exchanges.ITESTAction>, <checkmate._storage.PartitionStorage object ...
         """
         for partition_type in ('states', 'data_structure', 'exchanges'):
-            partitions = []
             for data in self.data_source[partition_type]:
-                partitions.append(self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['code_value_list'], data['full_desc']))
-            self.output[partition_type] = partitions
+                self.output[partition_type].append(self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['code_value_list'], data['full_desc']))
 
     def get_transitions(self):
         """
@@ -119,12 +122,8 @@ class Declarator(object):
         >>> len(de.output['transitions'])
         4
         """
-        transitions = []
         for data in self.data_source['transitions']:
-            transitions.append(self.new_transition(data))
-        self.output['transitions'] = transitions
+            self.new_transition(data)
 
     def get_output(self):
-        self.get_partitions()
-        self.get_transitions()
         return self.output

@@ -41,6 +41,8 @@ class ComponentMeta(type):
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, data_source=data_source)
+            declarator.get_partitions()
+            declarator.get_transitions()
             declarator_output = declarator.get_output()
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
             services = []
