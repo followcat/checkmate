@@ -68,6 +68,7 @@ class Declarator(object):
     def new_transition(self, item):
         return make_transition(item, [self.module['exchanges']], [self.module['states']])
 
+    @checkmate.report_issue("checkmate/issues/new_partition_in_doctest.rst")
     def get_partitions(self):
         """
         >>> import os
