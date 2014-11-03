@@ -24,10 +24,6 @@ class Declarator(object):
         self.module['states'] = state_module
         self.module['exchanges'] = exchange_module
 
-        self.basic_modules = {}
-        self.basic_modules['data_structure'] = [data_module]
-        self.basic_modules['states'] = [data_module]
-        self.basic_modules['exchanges'] = [data_module, state_module]
         self.data_source = data_source
         self.output = {}
 
@@ -57,7 +53,7 @@ class Declarator(object):
         [['NORM']]
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.basic_modules['data_structure'][0], partition_type, _module, signature, codes_list, values_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_value_list, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         return (defined_interface, partition_storage)
