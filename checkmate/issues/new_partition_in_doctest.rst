@@ -11,11 +11,10 @@ without any reference to yaml file.
     >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
     >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
     >>> par = de.new_partition('exchanges', "RC", codes_list=['P1'], values_list=[['TRUE']], code_value_list=[('P1', 'FALSE')])
-    >>> de.get_partitions()
 
 The partition should be returned by get_output()
 even if no transition is provided.
 
-    >>> de.get_output() # doctest: +ELLIPSIS
-    {'exchanges': [(<InterfaceClass checkmate.exchanges.IRC>, <checkmate._storage.PartitionStorage object at ...
+    >>> de.get_output()['exchanges'] # doctest: +ELLIPSIS
+    [(<InterfaceClass checkmate.exchanges.IRC>, <checkmate._storage.PartitionStorage object at ...
 

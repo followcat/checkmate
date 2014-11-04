@@ -5,6 +5,7 @@ import zope.interface
 import checkmate._module
 import checkmate._validation
 import checkmate.state_machine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -37,8 +38,10 @@ class ComponentMeta(type):
         filename = name.lower() + '.yaml'
         with open(os.sep.join([path, 'component', filename]), 'r') as _file:
             define_data = _file.read()
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, define_content=define_data)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module)
+            declarator.new_definitions(data_source)
             declarator_output = declarator.get_output()
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
             services = []

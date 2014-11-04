@@ -5,6 +5,7 @@ import checkmate._module
 import checkmate.sandbox
 import checkmate.component
 import checkmate.service_registry
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -44,8 +45,10 @@ class ApplicationMeta(type):
             define_data = _file.read()
         with open(namespace['test_data_definition_file'], 'r') as _file:
             value_data = _file.read()
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data, value_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, define_content=define_data, value_content=value_data)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
+            declarator.new_definitions(data_source)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']
