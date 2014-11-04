@@ -118,7 +118,7 @@ class Transition(object):
             >>> t = c.state_machine.transitions[1]
             >>> i = t.incoming[0].factory(kwargs={'R': 1})
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
-            {'R': 1}
+            {}
             >>> i = t.incoming[0].factory()
             >>> (i.value, i.R)
             ('AP', ['AT1', 'NORM'])

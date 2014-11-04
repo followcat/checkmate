@@ -44,7 +44,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition['incoming']) != 0):
             if type in ['final', 'outgoing']:
                 for item in transition['incoming']:
-                    if arg in list(item.arguments.attribute_values.keys()):
+                    if arg in list(item.arguments.attribute_values.keys()) + list(item.arguments.values):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -249,6 +249,7 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
+            >>> import checkmate._storage
             >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
@@ -257,11 +258,18 @@ class InternalStorage(object):
             {}
             >>> t.final[0].resolve('final', exchanges=[inc])
             {'R': ['AT1', 'NORM']}
+            >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
+            >>> inc.R
+            ['AT2', 'HIGH']
+            >>> t.final[0].resolve_logic.keys()
+            dict_keys(['R'])
+            >>> t.final[0].resolve('final', exchanges=[inc])
+            {}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
-            {'R': 1}
+            {}
         """
         resolved_arguments = {}
         for arg in self.resolve_logic.keys():
@@ -275,8 +283,12 @@ class InternalStorage(object):
                 elif exchanges is not None:
                     for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
                         try:
-                            resolved_arguments.update({arg: getattr(_exchange, arg)})
-                            break
+                            for attr in dir(_exchange):
+                                storages = type(getattr(_exchange, attr)).partition_storage.storage
+                                for storage in storages:
+                                    if arg == storage.code or getattr(_exchange, attr) == storage.factory():
+                                        resolved_arguments.update({attr: storage.factory()})
+                                        break
                         except AttributeError:
                             continue
             except AttributeError:
