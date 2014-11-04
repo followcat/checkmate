@@ -30,7 +30,7 @@ class Declarator(object):
             'exchanges': [],
             'transitions': []}
 
-    @checkmate.report_issue("checkmate/issues/new_partition_in_doctest.rst")
+    @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
     def new_partition(self, partition_type, signature, codes_list, values_list, code_value_list, full_description=None):
         """
         >>> import collections
