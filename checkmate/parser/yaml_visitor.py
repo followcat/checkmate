@@ -196,7 +196,8 @@ def call_visitor(define_content, value_content=None):
         2
     """
     visitor = Visitor(define_content, value_content)
-    return {'states': visitor._state_partitions,
-            'data_structure': visitor._data_structure_partitions,
-            'exchanges': visitor._exchange_partitions,
-            'transitions': visitor._transitions}
+    return collections.OrderedDict([
+        ('data_structure', visitor._data_structure_partitions),
+        ('states', visitor._state_partitions),
+        ('exchanges', visitor._exchange_partitions),
+        ('transitions', visitor._transitions)])
