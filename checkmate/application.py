@@ -47,8 +47,8 @@ class ApplicationMeta(type):
             value_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data, value_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, data_source=data_source)
-            declarator.new_definitions()
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
+            declarator.new_definitions(data_source)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']

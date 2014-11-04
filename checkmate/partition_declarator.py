@@ -18,13 +18,12 @@ def make_transition(items, exchanges, state_modules):
 
 
 class Declarator(object):
-    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None, data_source=None):
+    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
         self.module['exchanges'] = exchange_module
 
-        self.data_source = data_source
         self.output = {
             'data_structure': [],
             'states': [],
@@ -84,7 +83,7 @@ class Declarator(object):
         """
         self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']]))
 
-    def new_definitions(self):
+    def new_definitions(self, data_source):
         """
         >>> import collections
         >>> import checkmate._module
@@ -114,13 +113,13 @@ class Declarator(object):
         ...    'code_value_list': [('AP(R)', 'AP')],
         ...    'full_desc': None}])
         ... ])
-        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, data_source=data_source)
-        >>> de.new_definitions()
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
+        >>> de.new_definitions(data_source)
         >>> output = de.get_output()
         >>> output['data_structure'][0][0], output['states'][0][0], output['exchanges'][0][0], output['transitions']
         (<InterfaceClass checkmate.data.ITestActionRequest>, <InterfaceClass checkmate.states.ITestState>, <InterfaceClass checkmate.exchanges.ITestAction>, [])
         """
-        for partition_type, chunk in self.data_source.items():
+        for partition_type, chunk in data_source.items():
             for data in chunk:
                 if partition_type == 'transitions':
                     self.new_transition(data)
