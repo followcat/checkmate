@@ -12,7 +12,6 @@ def make_transition(items, exchanges, state_modules):
         tran_name = items['name']
     except KeyError:
         tran_name = 'unknown'
-
     ts = checkmate._storage.TransitionStorage(items, module_dict)
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
     return t
@@ -65,9 +64,62 @@ class Declarator(object):
         self.output[partition_type].append((defined_interface, partition_storage))
 
     def new_transition(self, item):
+        """
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.data_structure
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
+        >>> de.new_partition('data_structure', "TestActionRequest", codes_list=['TestActionRequestNORM'], values_list=[['NORM']], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=None)
+        >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue()', 'TestStateFalse()'], values_list=['True', 'False'], code_value_list=[('TestStateTrue()', 'True'), ('TestStateFalse()', 'False')])
+        >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], code_value_list=[('AP(R)', 'AP')])
+        >>> de.new_partition('exchanges', 'TestReturn()', codes_list=['DA()'], values_list=['DA'], code_value_list=[('DA()', 'DA')])
+        >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'TestState': '__init__(True)'}], 'outgoing': [{'TestReturn': 'DA()'}], 'incoming': [{'TestAction': 'AP(R)'}], 'final': [{'TestState': '__init__(False)'}]}
+        >>> de.new_transition(item)
+        >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
+        [<checkmate.transition.Transition object at ...
+        """
         self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']]))
 
     def new_definitions(self):
+        """
+        >>> import collections
+        >>> import checkmate._module
+        >>> import checkmate.application
+        >>> import checkmate.data_structure
+        >>> import checkmate.partition_declarator
+        >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
+        >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
+        >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
+        >>> data_source = collections.OrderedDict([
+        ... ('data_structure',[{
+        ...     'clsname': 'TestActionRequest',
+        ...     'codes_list': ['TestActionRequestNORM'],
+        ...     'values_list': [['NORM']],
+        ...     'code_value_list': [('TestActionRequestNORM', 'NORM')],
+        ...     'full_desc': None}]),
+        ... ('states', [{
+        ...    'clsname': 'TestState',
+        ...    'codes_list': ['TestStateTrue'],
+        ...    'values_list': [['True']],
+        ...    'code_value_list': [('TestStateTrue', 'True')],
+        ...    'full_desc': None}]),
+        ... ('exchanges', [{
+        ...    'clsname': 'TestAction(R:TestActionRequest)',
+        ...    'codes_list': ['AP(R)'],
+        ...    'values_list': ['AP'],
+        ...    'code_value_list': [('AP(R)', 'AP')],
+        ...    'full_desc': None}])
+        ... ])
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module, data_source=data_source)
+        >>> de.new_definitions()
+        >>> output = de.get_output()
+        >>> output['data_structure'][0][0], output['states'][0][0], output['exchanges'][0][0], output['transitions']
+        (<InterfaceClass checkmate.data.ITestActionRequest>, <InterfaceClass checkmate.states.ITestState>, <InterfaceClass checkmate.exchanges.ITestAction>, [])
+        """
         for partition_type, chunk in self.data_source.items():
             for data in chunk:
                 if partition_type == 'transitions':
