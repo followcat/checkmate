@@ -120,7 +120,7 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
             {}
             >>> i = t.incoming[0].factory()
-            >>> (i.value, i.R.value)
+            >>> (i.value, [i.R.C.value[0], i.R.P.value[0]])
             ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
@@ -155,7 +155,7 @@ class Transition(object):
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
             >>> o = c.state_machine.transitions[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': ['AT1', 'NORM']}]
+            [{'R': None}]
         """
         _outgoing_list = []		
         if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
