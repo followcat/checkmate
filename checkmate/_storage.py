@@ -186,6 +186,7 @@ class InternalStorage(object):
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
+    @checkmate.report_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
     def factory(self, args=None, kwargs=None):
         """
             >>> import sample_app.application
