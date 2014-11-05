@@ -66,8 +66,8 @@ def store(type, interface, code, value, description=None):
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
         >>> acr = sample_app.data_structure.ActionRequest()
-        >>> acr
-        ['AT1', 'NORM']
+        >>> acr #doctest: +ELLIPSIS
+        <sample_app.data_structure.ActionRequest object at ...
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
@@ -173,7 +173,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R
+            >>> st.factory().R.value
             ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(code)
@@ -196,7 +196,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R
+            >>> st.factory().R.value
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
             ['AT2', 'HIGH']
@@ -255,8 +255,8 @@ class InternalStorage(object):
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve('final', states=[states])
             {}
-            >>> t.final[0].resolve('final', exchanges=[inc])
-            {'R': ['AT1', 'NORM']}
+            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
             ('AP', 1)
