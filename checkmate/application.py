@@ -21,7 +21,7 @@ class ApplicationMeta(type):
         >>> a.exchange_definition_file
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
-        1
+        3
         >>> c1 = a.components['C1']
         >>> c2 = a.components['C2']
         >>> c3 = a.components['C3']
