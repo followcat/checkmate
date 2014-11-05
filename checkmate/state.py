@@ -52,9 +52,6 @@ class State(checkmate.partition.Partition):
             >>> r = s1.pop(); q = s1.pop(); s1.append(R=None)
             >>> s1 == s2
             False
-            >>> r = s2.pop(); s1.append(R=1)
-            >>> s1 == s2
-            False
         """
         return super(State, self).__eq__(other)
 
@@ -81,11 +78,11 @@ class State(checkmate.partition.Partition):
                     return
                 if value not in self.value:
                     self.value.append(value)
+                    setattr(self, key, value)
             else:
                 for key, value in list(kwargs.items()):
-                    if {key: value} not in self.value:
-                        self.value.append({key: value})
-                        setattr(self, key, value)
+                    if {key: value.value} not in self.value:
+                        self.value.append({key: value.value})
         except:
             pass
 
@@ -197,6 +194,6 @@ class State(checkmate.partition.Partition):
                     return self.value.pop(self.value.index(value))
             else:
                 for value in list(kwargs.items()):
-                    return self.value.pop(self.value.index({value[0]: value[1]}))
+                    return self.value.pop(self.value.index({value[0]: value[1].value}))
         except:
             return None

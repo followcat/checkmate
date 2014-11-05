@@ -93,7 +93,7 @@ def add_device_interface(services, component):
         if name in publishs or name in subscribes:
             continue
         if args is not None:
-            _type = switch(type(args[0]))
+            _type = switch(type(args.value[0]))
             command[name] = [[_type], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
@@ -252,9 +252,9 @@ class Connector(checkmate.runtime.communication.Connector):
             attr = exchange.get_partition_attr()
             param = None
             if attr:
-                param_type = switch(type(attr[0]))
+                param_type = switch(type(attr.value[0]))
                 param = PyTango.DeviceData()
-                param.insert(param_type, attr)
+                param.insert(param_type, attr.value)
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
                 call = getattr(device_proxy, exchange.value)

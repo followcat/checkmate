@@ -96,7 +96,7 @@ class Visitor():
                                                 'code_value_list': self.code_value_list,
                                                 'full_desc': self.full_description})
             elif title == "Data structure":
-                self.data_structure(data)
+                self.data_structure(_d, data)
                 self._data_structure_partitions.append({'clsname': self._classname,
                                                 'codes_list': self.codes_list,
                                                 'values_list': self.values_list,
@@ -141,15 +141,23 @@ class Visitor():
             if _k in self.exchanges_kind_list:
                 self.tran_items.extend(_v)
 
-    def data_structure(self, data):
-        if self._classname in data:
-            content = data.get(self._classname)
-        for _l in content:
-            code = _l[0]
-            val = _l[1]
-            self.codes_list.append(code)
-            self.values_list.append(val)
-            self.code_value_list.append((code, val))
+    def data_structure(self, content, data):
+        for _k, _v in content.items():
+            if _k == "Value partitions":
+                for _list in _v:
+                    codes_list, values_list, code_value_list = self.value_partitions(_list)
+                    self.codes_list.extend(codes_list)
+                    self.values_list.append(values_list)
+                    self.code_value_list.extend((code_value_list))
+            else:
+                if self._classname in data:
+                    data_value = data.get(self._classname)
+                    for _l in data_value:
+                        code = _l[0]
+                        val = _l[1]
+                        self.codes_list.append(code)
+                        self.values_list.append(val)
+                        self.code_value_list.append((code, val))
 
     def definition_and_accessibility(self, data):
         self._classname = data

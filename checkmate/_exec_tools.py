@@ -1,3 +1,4 @@
+import os.path
 import inspect
 import collections
 
@@ -140,22 +141,19 @@ def get_exec_signature(signature, dependent_modules):
 
 
 @checkmate._issue.report_issue('checkmate/issues/exchange_different_data.rst')
-def get_exchange_define_str(interface_class, classname, codes, values):
-    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'codes', 'values'])
-    internal_codes = [get_method_basename(_c) for _c in codes]
-    element = class_element(interface_class, classname, internal_codes, values)
+def get_define_str(element):
     run_code = """
             \nimport inspect
             \nimport zope.interface
             \n
-            \nimport checkmate.exchange
+            \nimport {i}
             \n
-            \nclass {e.interface_class}(checkmate.exchange.IExchange):
+            \nclass {e.interface_class}({e.interface_ancestor_class}):
             \n    \"\"\"\"\"\"
             \n
             \n
             \n@zope.interface.implementer({e.interface_class})
-            \nclass {e.classname}(checkmate.exchange.Exchange):
+            \nclass {e.classname}({e.ancestor_class}):
             \n    import inspect
             \n    _valid_values = {e.values}
             \n    _codes = {e.codes}
@@ -165,62 +163,17 @@ def get_exchange_define_str(interface_class, classname, codes, values):
             \n                kwargs[_k] = _v()
             \n        super().__init__(value, *args, **kwargs)
             \n
-            """.format(e=element)
+            """.format(i=os.path.splitext(element.ancestor_class)[0],
+                       e=element)
 
-    for _c, _v in zip(internal_codes, values):
+    for _c, _v in zip(element.codes, element.values):
         sep = ''
         if type(_v) == str:
             sep = "'"
         run_code += """
         \ndef {code}(*args, **kwargs):
         \n    return {cls}({sep}{value}{sep}, *args, **kwargs)
-        """.format(cls=classname, code=_c, sep=sep, value=_v)
-    return run_code
-
-
-def get_data_structure_define_str(interface_class, classname, valid_values_list):
-    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
-    element = class_element(interface_class, classname, valid_values_list)
-    run_code = """
-        \nimport zope.interface
-        \n
-        \nclass {e.interface_class}(zope.interface.Interface):
-        \n    \"\"\"\"\"\"
-        \n
-        \n
-        \n@zope.interface.implementer({e.interface_class})
-        \nclass {e.classname}(list):
-        \n    _valid_values = {e.valid_values}
-        \n    def __init__(self, *args):
-        \n        for _arg in args:
-        \n            if _arg in self._valid_values:
-        \n                self.extend(_arg)
-        \n                break
-        \n        else:
-        \n            self.extend(self._valid_values[0])
-        """.format(e=element)
-    return run_code
-
-
-def get_states_define_str(interface_class, classname, valid_values_list):
-    class_element = collections.namedtuple('class_element', ['interface_class', 'classname', 'valid_values'])
-    element = class_element(interface_class, classname, valid_values_list)
-    run_code = """
-        \nimport zope.interface
-        \n
-        \nimport checkmate.state
-        \n
-        \n
-        \nclass {e.interface_class}(checkmate.state.IState):
-        \n    \"\"\"\"\"\"
-        \n
-        \n
-        \n@zope.interface.implementer({e.interface_class})
-        \nclass {e.classname}(checkmate.state.State):
-        \n    _valid_values = {e.valid_values}
-        \n    def __init__(self, *args, **kwargs):
-        \n        super().__init__(*args, **kwargs)
-        """.format(e=element)
+        """.format(cls=element.classname, code=_c, sep=sep, value=_v)
     return run_code
 
 
@@ -228,16 +181,29 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
+    class_element = collections.namedtuple('class_element',
+                    ['interface_ancestor_class', 'interface_class',
+                     'ancestor_class', 'classname',
+                     'codes', 'values'])
     if partition_type == 'exchanges':
-        run_code = get_exchange_define_str(interface_class, classname, codes, values)
+        element = class_element('checkmate.exchange.IExchange', interface_class,
+                                'checkmate.exchange.Exchange', classname, 
+                                [get_method_basename(_c) for _c in codes], values)
+        run_code = get_define_str(element)
     elif partition_type == 'data_structure':
-        run_code = get_data_structure_define_str(interface_class, classname, values)
+        element = class_element('zope.interface.Interface', interface_class,
+                                'checkmate.data_structure.DataStructure', classname, 
+                                [], values)
+        run_code = get_define_str(element)
     elif partition_type == 'states':
         valid_values_list = []
         for _v in values:
             if not is_method(_v):
                 valid_values_list.append(_v)
-        run_code = get_states_define_str(interface_class, classname, valid_values_list)
+        element = class_element('checkmate.state.IState', interface_class,
+                                'checkmate.state.State', classname, 
+                                [], valid_values_list)
+        run_code = get_define_str(element)
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)

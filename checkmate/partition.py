@@ -28,13 +28,13 @@ class Partition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])})
-            >>> ac.R
+            >>> ac.R.value
             ['AT2', 'HIGH']
 
         We can define a partition by passing an instance for attribute.
             >>> re = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
-            >>> ac2.R
+            >>> ac2.R.value
             ['AT2', 'HIGH']
         """
         if type(value) == list:
@@ -63,8 +63,8 @@ class Partition(object):
             >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
             >>> dir(ac)
             ['R']
-            >>> ac.get_partition_attr()
-            ['AT1', 'NORM']
+            >>> ac.get_partition_attr() #doctest: +ELLIPSIS
+            <sample_app.data_structure.ActionRequest object at ...
             >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
             >>> dir(dr)
             []
@@ -84,7 +84,7 @@ class Partition(object):
             >>> r2 = sample_app.exchanges.Action()
             >>> r1 == r2
             True
-            >>> r1.R
+            >>> r1.R.value
             ['AT1', 'NORM']
             >>> r1.R = ['HIGH']
             >>> r1 == r2
