@@ -103,7 +103,19 @@ class Partition(object):
             return False
         if None in [self.value, other.value]:
             return True
-        return self.value==other.value
+        if self.value == other.value:
+            if (len(dir(self)) == 0 or len(dir(other)) == 0):
+                return True
+            elif (len(dir(self)) == len(dir(other))):
+                for key in iter(dir(self)):
+                    if key not in iter(dir(other)):
+                        return False
+                    if (getattr(self, key) is not None and
+                        getattr(other, key) is not None and
+                        getattr(self, key) != getattr(other, key)):
+                        return False
+                return True
+        return False
 
     def description(self):
         try:
