@@ -13,7 +13,7 @@ data:
     - [X-PRIOR-01,   NORM(),       'NORM',           Comment NORM action]
     - [X-PRIOR-02,   HIGH(),       'HIGH',           Comment HIGH action]
 
-  - Definition: 'ActionRequest'
+  - Definition: 'ActionRequest(C:Channel, P:Priority)'
 
 ---
 title: "Exchange identification"

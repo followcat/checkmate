@@ -34,9 +34,9 @@ Send 'AC' for append default 'R':
     >>> saved_initial = [_s for _s in saved.application.state_list() if final.interface.providedBy(_s)]
     >>> res = final.factory(saved_final, kwargs=final.resolve('final', saved_initial, validated_incoming))
     >>> res.value
-    [{'R': ['AT1', 'NORM']}]
+    [{'R': ''}]
     >>> r.application.components['C1'].states[1].value
-    [{'R': ['AT1', 'NORM']}]
+    [{'R': ''}]
 
 Check the resulting final state compared to transition's final:
     >>> r.application.components['C1'].states[1] == res

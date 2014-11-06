@@ -84,9 +84,7 @@ class Partition(object):
             >>> r2 = sample_app.exchanges.Action()
             >>> r1 == r2
             True
-            >>> r1.R.value
-            ['AT1', 'NORM']
-            >>> r1.R = ['HIGH']
+            >>> r1.value = ['HIGH']
             >>> r1 == r2
             False
             >>> s1 = sample_app.component.component_1_states.State()
