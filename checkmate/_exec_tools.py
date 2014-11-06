@@ -2,7 +2,6 @@ import os.path
 import inspect
 import collections
 
-import checkmate._issue
 import checkmate._module
 
 
@@ -140,7 +139,7 @@ def get_exec_signature(signature, dependent_modules):
     return inspect.Signature.from_function(locals()['fn'])
 
 
-@checkmate._issue.report_issue('checkmate/issues/exchange_different_data.rst')
+@checkmate.report_issue('checkmate/issues/exchange_different_data.rst')
 def get_define_str(element):
     run_code = """
             \nimport inspect
