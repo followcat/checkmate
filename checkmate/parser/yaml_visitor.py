@@ -87,30 +87,22 @@ class Visitor():
                 if inside_title in self.definition_kind_list:
                     self.definition_and_accessibility(_d[inside_title])
 
-            if title == "State identification":
-                self.state_identification(_d)
-                self._state_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "Data structure":
-                self.data_structure(_d)
-                self._data_structure_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "Exchange identification":
-                self.exchange_identification(_d)
-                self._exchange_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "State machine" or title == "Test procedure":
+            if title == "State machine" or title == "Test procedure":
                 self.state_machine_or_test_procedure(_d)
                 self._transitions.extend(self.tran_items)
+            else:
+                self.partition_identification(_d)
+                if title == "State identification":
+                    _partitions = self._state_partitions
+                elif title == "Data structure":
+                    _partitions = self._data_structure_partitions
+                elif title == "Exchange identification":
+                    _partitions = self._exchange_partitions
+                _partitions.append({'clsname': self._classname,
+                                    'codes_list': self.codes_list,
+                                    'values_list': self.values_list,
+                                    'code_value_list': self.code_value_list,
+                                    'full_desc': self.full_description})
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
@@ -119,15 +111,7 @@ class Visitor():
             self.tran_items = []
             self.code_value_list = []
 
-    def state_identification(self, content):
-        for _k, _v in content.items():
-            if _k == "Value partitions":
-                codes_list, values_list, code_value_list = self.value_partitions(_v)
-                self.codes_list.extend(codes_list)
-                self.values_list.extend(values_list)
-                self.code_value_list.extend(code_value_list)
-
-    def exchange_identification(self, content):
+    def partition_identification(self, content):
         for _k, _v in content.items():
             if _k == "Value partitions":
                 codes_list, values_list, code_value_list = self.value_partitions(_v)
@@ -139,14 +123,6 @@ class Visitor():
         for _k, _v in content.items():
             if _k in self.exchanges_kind_list:
                 self.tran_items.extend(_v)
-
-    def data_structure(self, content):
-        for _k, _v in content.items():
-            if _k == "Value partitions":
-                codes_list, values_list, code_value_list = self.value_partitions(_v)
-                self.codes_list.extend(codes_list)
-                self.values_list.extend(values_list)
-                self.code_value_list.extend((code_value_list))
 
     def definition_and_accessibility(self, data):
         self._classname = data
