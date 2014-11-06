@@ -173,7 +173,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R.value
+            >>> [st.factory().R.C.value[0], st.factory().R.P.value[0]]
             ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(code)
@@ -197,7 +197,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R.value
+            >>> [st.factory().R.C.value[0], st.factory().R.P.value[0]]
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
             ['AT2', 'HIGH']
@@ -213,7 +213,7 @@ class InternalStorage(object):
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value
-            [{'R': ['AT1', 'NORM']}]
+            [{'R': ''}]
             >>> t = c.state_machine.transitions[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
