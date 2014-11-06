@@ -36,6 +36,7 @@ class ApplicationMeta(type):
         namespace['exchange_module'] = exchange_module
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
+        data_value_module = checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition_file' not in namespace:
@@ -45,7 +46,10 @@ class ApplicationMeta(type):
             define_data = _file.read()
         with open(namespace['test_data_definition_file'], 'r') as _file:
             value_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data, value_data)
+        value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        for code, structure in value_source.items():
+            setattr(data_value_module, code, structure)
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
             declarator.new_definitions(data_source)

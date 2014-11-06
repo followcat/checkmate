@@ -173,7 +173,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> [st.factory().R.C.value[0], st.factory().R.P.value[0]]
+            >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(code)
@@ -197,7 +197,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> [st.factory().R.C.value[0], st.factory().R.P.value[0]]
+            >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
             ['AT2', 'HIGH']

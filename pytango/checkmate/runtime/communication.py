@@ -93,25 +93,13 @@ def add_device_interface(services, component):
         if name in publishs or name in subscribes:
             continue
         if args is not None:
-            _type = switch(type(args.value[0]))
-            command[name] = [[_type], [PyTango.DevVoid]]
+            command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     attribute = {}
     for _publish in publishs:
         attribute[_publish] = [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ_WRITE]]
     return {'cmd_list': command, 'attr_list': attribute}
-
-
-def switch(_type=None):
-    try:
-        return {str:      PyTango.DevVarStringArray,
-                int:      PyTango.DevVarLongArray,
-                float:    PyTango.DevVarFloatArray,
-                bool:     PyTango.DevVarBooleanArray,
-               }[_type]
-    except KeyError:
-        return PyTango.DevVoid
 
 
 class Router(checkmate.runtime._threading.Thread):
@@ -251,10 +239,10 @@ class Connector(checkmate.runtime.communication.Connector):
         else:
             attr = exchange.get_partition_attr()
             param = None
-            if attr:
-                param_type = switch(type(attr.value[0]))
+            if attr is not None:
+                param_type = PyTango.DevVarStringArray
                 param = PyTango.DeviceData()
-                param.insert(param_type, attr.value)
+                param.insert(param_type, [_a.value for _a in attr.partition_attribute])
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
                 call = getattr(device_proxy, exchange.value)

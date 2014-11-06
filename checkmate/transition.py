@@ -120,7 +120,7 @@ class Transition(object):
             >>> t.resolve_arguments('final', t.final[0], c.states, [i])
             {}
             >>> i = t.incoming[0].factory()
-            >>> (i.value, [i.R.C.value[0], i.R.P.value[0]])
+            >>> (i.value, [i.R.C.value, i.R.P.value])
             ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...

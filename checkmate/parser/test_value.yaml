@@ -1,2 +1,13 @@
-TESTActionRequest: 
-  - ['R1', ['AT1', 'NORM']]
+R1:
+  type: ActionRequest
+  value:
+    Channel: AT1
+    Priority: NORM
+
+R2:
+  type: ActionRequest
+  value:
+    Channel: AT2
+    Priority: HIGH
+
+

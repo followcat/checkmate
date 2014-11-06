@@ -6,7 +6,7 @@ class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
-    def __init__(self, define_content, value_content):
+    def __init__(self, define_content):
         """
             >>> import os
             >>> import checkmate.parser.yaml_visitor
@@ -18,7 +18,7 @@ class Visitor():
             >>> file2=open(input_file,'r')
             >>> c2 = file2.read()
             >>> file2.close()
-            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1, c2)
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
             >>> len(visitor._data_structure_partitions)
             1
             >>> len(visitor._exchange_partitions)
@@ -36,15 +36,13 @@ class Visitor():
         self.code_value_list = []
         self.tran_items = []
 
-        self.read_document(define_content, value_content)
+        self.read_document(define_content)
 
-    def read_document(self, define_content, value_content):
-        if value_content is not None:
-            value_content = yaml.load(value_content)
+    def read_document(self, define_content):
         for each in yaml.load_all(define_content):
-            self.parser_chunk(each, value_content)
+            self.parser_chunk(each)
 
-    def parser_chunk(self, chunk, data):
+    def parser_chunk(self, chunk):
         """
             >>> import os
             >>> import yaml
@@ -61,23 +59,24 @@ class Visitor():
             >>> f = open(input_file,'r')
             >>> c3 = f.read()
             >>> f.close()
-            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1, c2)
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
             >>> len(visitor._state_partitions)
             0
-            >>> visitor._data_structure_partitions[0]['codes_list']
-            ['R1']
-            >>> visitor._data_structure_partitions[0]['values_list']
-            [['AT1', 'NORM']]
+            >>> value_source = checkmate.parser.yaml_visitor.call_data_visitor(c2)
+            >>> 'R1' in value_source
+            True
+            >>> [value_source['R1']['value']['Channel'], value_source['R1']['value']['Priority']]
+            ['AT1', 'NORM']
             >>> list(yaml.load_all(c3))[0]['title']
             'State identification'
-            >>> visitor.parser_chunk(list(yaml.load_all(c3))[0], None)
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[0])
             >>> len(visitor._state_partitions)
             2
             >>> len(visitor._transitions)
             0
             >>> list(yaml.load_all(c3))[1]['title']
             'State machine'
-            >>> visitor.parser_chunk(list(yaml.load_all(c3))[1], None)
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[1])
             >>> len(visitor._transitions)
             4
         """
@@ -96,7 +95,7 @@ class Visitor():
                                                 'code_value_list': self.code_value_list,
                                                 'full_desc': self.full_description})
             elif title == "Data structure":
-                self.data_structure(_d, data)
+                self.data_structure(_d)
                 self._data_structure_partitions.append({'clsname': self._classname,
                                                 'codes_list': self.codes_list,
                                                 'values_list': self.values_list,
@@ -141,22 +140,13 @@ class Visitor():
             if _k in self.exchanges_kind_list:
                 self.tran_items.extend(_v)
 
-    def data_structure(self, content, data):
+    def data_structure(self, content):
         for _k, _v in content.items():
             if _k == "Value partitions":
                 codes_list, values_list, code_value_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
-                self.values_list.append(values_list)
+                self.values_list.extend(values_list)
                 self.code_value_list.extend((code_value_list))
-            else:
-                if self._classname in data:
-                    data_value = data.get(self._classname)
-                    for _l in data_value:
-                        code = _l[0]
-                        val = _l[1]
-                        self.codes_list.append(code)
-                        self.values_list.append(val)
-                        self.code_value_list.append((code, val))
 
     def definition_and_accessibility(self, data):
         self._classname = data
@@ -177,7 +167,7 @@ class Visitor():
         return codes_list, values_list, code_value_list
 
 
-def call_visitor(define_content, value_content=None):
+def call_visitor(define_content):
     """
         >>> import os
         >>> import checkmate.parser.yaml_visitor
@@ -189,7 +179,7 @@ def call_visitor(define_content, value_content=None):
         >>> f2 = open(input_file,'r')
         >>> c2 = f2.read()
         >>> f2.close()
-        >>> output = checkmate.parser.yaml_visitor.call_visitor(c1, c2)
+        >>> output = checkmate.parser.yaml_visitor.call_visitor(c1)
         >>> len(output['data_structure'])
         1
         >>> len(output['exchanges'])
@@ -202,9 +192,27 @@ def call_visitor(define_content, value_content=None):
         >>> len(output['states'])
         2
     """
-    visitor = Visitor(define_content, value_content)
+    visitor = Visitor(define_content)
     return collections.OrderedDict([
         ('data_structure', visitor._data_structure_partitions),
         ('states', visitor._state_partitions),
         ('exchanges', visitor._exchange_partitions),
         ('transitions', visitor._transitions)])
+
+
+class DataVisitor(collections.OrderedDict):
+    def __init__(self, value_content):
+        super().__init__()
+        self.read_document(value_content)
+
+    def read_document(self, value_content):
+        value_content = yaml.load(value_content)
+        self.parser_chunk(value_content)
+
+    def parser_chunk(self, chunk):
+        for code, structure in chunk.items():
+            self[code] = structure
+
+
+def call_data_visitor(stream):
+    return DataVisitor(stream)
