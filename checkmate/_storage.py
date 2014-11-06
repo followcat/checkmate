@@ -257,8 +257,8 @@ class InternalStorage(object):
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve('final', states=[states])
             {}
-            >>> t.final[0].resolve('final', exchanges=[inc])
-            {'R': 
+            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
             >>> inc.R
             ['AT2', 'HIGH']
