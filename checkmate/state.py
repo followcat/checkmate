@@ -78,7 +78,6 @@ class State(checkmate.partition.Partition):
                     return
                 if value not in self.value:
                     self.value.append(value)
-                    setattr(self, key, value)
             else:
                 for key, value in list(kwargs.items()):
                     if {key: value.value} not in self.value:
