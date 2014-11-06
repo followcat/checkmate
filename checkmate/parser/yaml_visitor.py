@@ -144,11 +144,10 @@ class Visitor():
     def data_structure(self, content, data):
         for _k, _v in content.items():
             if _k == "Value partitions":
-                for _list in _v:
-                    codes_list, values_list, code_value_list = self.value_partitions(_list)
-                    self.codes_list.extend(codes_list)
-                    self.values_list.append(values_list)
-                    self.code_value_list.extend((code_value_list))
+                codes_list, values_list, code_value_list = self.value_partitions(_v)
+                self.codes_list.extend(codes_list)
+                self.values_list.append(values_list)
+                self.code_value_list.extend((code_value_list))
             else:
                 if self._classname in data:
                     data_value = data.get(self._classname)
