@@ -160,6 +160,16 @@ def get_define_str(element):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
             \n                kwargs[_k] = _v()
+            \n            elif not isinstance(kwargs[_k], _v):
+            \n                if isinstance(kwargs[_k], tuple):
+            \n                    if isinstance(kwargs[_k][0], tuple):
+            \n                        kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n                    else:
+            \n                        kwargs[_k] = _v(*kwargs[_k])
+            \n                elif isinstance(kwargs[_k], dict):
+            \n                    kwargs[_k] = _v(**kwargs[_k])
+            \n                else:
+            \n                    kwargs[_k] = _v(kwargs[_k])
             \n        super().__init__(value, *args, **kwargs)
             \n
             """.format(i=os.path.splitext(element.ancestor_class)[0],

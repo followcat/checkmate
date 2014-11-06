@@ -74,7 +74,7 @@ def store(type, interface, code, value, description=None):
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
-        >>> (ex.value, ex.R)
+        >>> (ex.value, ex.R.value)
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
@@ -199,7 +199,7 @@ class InternalStorage(object):
             ['R']
             >>> [st.factory().R.C.value[0], st.factory().R.P.value[0]]
             ['AT1', 'NORM']
-            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
+            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
             ['AT2', 'HIGH']
 
             >>> import sample_app.application
@@ -260,14 +260,14 @@ class InternalStorage(object):
             >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
-            >>> inc.R
+            >>> inc.R.value
             ['AT2', 'HIGH']
             >>> t.final[0].resolve_logic.keys()
             dict_keys(['R'])
             >>> t.final[0].resolve('final', exchanges=[inc])
             {}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
+            >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
             {}
