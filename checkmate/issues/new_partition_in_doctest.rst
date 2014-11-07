@@ -10,7 +10,7 @@ without any reference to yaml file.
     >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
     >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
     >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-    >>> par = de.new_partition('exchanges', "RC", codes_list=['P1'], values_list=['TRUE'], code_value_list=[('P1', 'FALSE')])
+    >>> par = de.new_partition('exchanges', "RC", codes_list=['P1'], values_list=['TRUE'])
 
 The partition should be returned by get_output()
 even if no transition is provided.

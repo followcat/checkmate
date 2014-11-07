@@ -33,7 +33,6 @@ class Visitor():
         self._classname = ''
         self.codes_list = []
         self.values_list = []
-        self.code_value_list = []
         self.tran_items = []
 
         self.read_document(define_content)
@@ -101,7 +100,6 @@ class Visitor():
                 _partitions.append({'clsname': self._classname,
                                     'codes_list': self.codes_list,
                                     'values_list': self.values_list,
-                                    'code_value_list': self.code_value_list,
                                     'full_desc': self.full_description})
 
             self.full_description = collections.OrderedDict()
@@ -109,15 +107,13 @@ class Visitor():
             self.codes_list = []
             self.values_list = []
             self.tran_items = []
-            self.code_value_list = []
 
     def partition_identification(self, content):
         for _k, _v in content.items():
             if _k == "Value partitions":
-                codes_list, values_list, code_value_list = self.value_partitions(_v)
+                codes_list, values_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
-                self.code_value_list.extend(code_value_list)
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
@@ -130,7 +126,6 @@ class Visitor():
     def value_partitions(self, data):
         codes_list = []
         values_list = []
-        code_value_list = []
         for _list in data:
             id = _list[0]
             code = _list[1]
@@ -138,9 +133,8 @@ class Visitor():
             com = _list[3]
             codes_list.append(code)
             values_list.append(val)
-            code_value_list.append((code, val))
             self.full_description[code] = (id, com)
-        return codes_list, values_list, code_value_list
+        return codes_list, values_list
 
 
 def call_visitor(define_content):
