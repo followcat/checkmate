@@ -2,11 +2,11 @@ import pickle
 
 
 def encode(exchange):
-    dump = (exchange.value, exchange.get_partition_attr())
-    return pickle.dumps(dump)
+    pickle_dump = pickle.dumps((type(exchange), exchange.value))
+    return pickle_dump
 
 
 def decode(message, exchange_module):
     load = pickle.loads(message)
-    exchange = getattr(exchange_module, load[0])()
+    exchange = load[0](load[1])
     return exchange

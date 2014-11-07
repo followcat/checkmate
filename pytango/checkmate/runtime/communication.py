@@ -57,10 +57,11 @@ def add_device_service(services, component):
 
     for _service in services:
         name = _service[0]
+        send_dump = pickle.dumps((type(_service[1]), _service[1].value))
         if name not in publishs and name not in subscribes:
             code += """
                 \ndef %(name)s(self, param=None):
-                \n    self.send(('%(name)s', param))""" % {'name': name}
+                \n    self.send(%(send_dump)s)""" % {'name': name, 'send_dump': send_dump}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -89,7 +90,7 @@ def add_device_interface(services, component):
     command = {}
     for _service in services:
         name = _service[0]
-        args = _service[1]
+        args = _service[1].get_partition_attr()
         if name in publishs or name in subscribes:
             continue
         if args is not None:
@@ -180,8 +181,7 @@ class Device(PyTango.Device_4Impl):
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def send(self, exchange):
-        dump = pickle.dumps(exchange)
+    def send(self, dump):
         self.socket_dealer_out.send_multipart([self._name.encode(), dump])
 
 
