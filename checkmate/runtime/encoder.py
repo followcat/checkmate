@@ -6,7 +6,7 @@ def encode(exchange):
     return dump_data
 
 
-def decode(message, exchange_module):
+def decode(message):
     exchange_type, exchange_value = pickle.loads(message)
     exchange = exchange_type(exchange_value)
     return exchange
