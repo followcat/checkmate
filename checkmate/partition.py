@@ -101,7 +101,8 @@ class Partition(object):
         """
         if type(self) != type(other):
             return False
-        if None in [self.value, other.value]:
+        if ((self.value is None and len(dir(self)) == 0) or
+            (other.value is None and len(dir(other)) == 0)):
             return True
         if self.value == other.value:
             if (len(dir(self)) == 0 or len(dir(other)) == 0):
