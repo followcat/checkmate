@@ -42,19 +42,19 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> de.new_partition('data_structure', "TestActionRequest", codes_list=['TestActionRequestNORM'], values_list=[['NORM']], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=collections.OrderedDict([('TestActionRequestNORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
+        >>> de.new_partition('data_structure', "TestActionRequest", codes_list=['TestActionRequestNORM'], values_list=['NORM'], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=collections.OrderedDict([('TestActionRequestNORM',('D-PRIO-01', 'NORM valid value', 'NORM priority value'))]))
         >>> de.get_output()['data_structure'][0]  # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.data.ITestActionRequest>, <checkmate._storage.PartitionStorage object at ...
         >>> de.get_output()['data_structure'][0][1].get_description(checkmate.data.TestActionRequest('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
-        >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue'], values_list=[["True"]], code_value_list=[('TestStateTrue', 'True')])
+        >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue'], values_list=["True"], code_value_list=[('TestStateTrue', 'True')])
         >>> de.get_output()['states'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
         >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], code_value_list=[('AP(R)', 'AP')])
         >>> de.get_output()['exchanges'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> de.get_output()['exchanges'][0][-1].storage[0].factory().R._valid_values
-        [['NORM']]
+        ['NORM']
         """
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
@@ -72,7 +72,7 @@ class Declarator(object):
         >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
         >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-        >>> de.new_partition('data_structure', "TestActionRequest", codes_list=['TestActionRequestNORM'], values_list=[['NORM']], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=None)
+        >>> de.new_partition('data_structure', "TestActionRequest", codes_list=['TestActionRequestNORM'], values_list=['NORM'], code_value_list=[('TestActionRequestNORM', 'NORM')], full_description=None)
         >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue()', 'TestStateFalse()'], values_list=['True', 'False'], code_value_list=[('TestStateTrue()', 'True'), ('TestStateFalse()', 'False')])
         >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], code_value_list=[('AP(R)', 'AP')])
         >>> de.new_partition('exchanges', 'TestReturn()', codes_list=['DA()'], values_list=['DA'], code_value_list=[('DA()', 'DA')])
@@ -97,13 +97,13 @@ class Declarator(object):
         ... ('data_structure',[{
         ...     'clsname': 'TestActionRequest',
         ...     'codes_list': ['TestActionRequestNORM'],
-        ...     'values_list': [['NORM']],
+        ...     'values_list': ['NORM'],
         ...     'code_value_list': [('TestActionRequestNORM', 'NORM')],
         ...     'full_desc': None}]),
         ... ('states', [{
         ...    'clsname': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
-        ...    'values_list': [['True']],
+        ...    'values_list': ['True'],
         ...    'code_value_list': [('TestStateTrue', 'True')],
         ...    'full_desc': None}]),
         ... ('exchanges', [{
