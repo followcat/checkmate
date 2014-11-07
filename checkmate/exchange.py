@@ -11,6 +11,17 @@ class IExchange(zope.interface.Interface):
 class Exchange(checkmate.partition.Partition):
     """"""
     def __init__(self, value=None, broadcast=False, *args, **kwargs):
+        """
+            >>> import sample_app.application
+            >>> sorted(sample_app._data.R2['value'].items())
+            [('C', 'AT2'), ('P', 'HIGH')]
+            >>> ap = sample_app.exchanges.Action('AP', R=sample_app._data.R2['value'])
+            >>> ap.R.C.value
+            'AT2'
+            >>> ap.R.P.value
+            'HIGH'
+
+        """
         super(Exchange, self).__init__(value, *args, **kwargs)
         self._broadcast = broadcast
 

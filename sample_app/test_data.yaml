@@ -1,13 +1,13 @@
 R1:
   type: ActionRequest
   value:
-    Channel: AT1
-    Priority: NORM
+    C: AT1
+    P: NORM
 
 R2:
   type: ActionRequest
   value:
-    Channel: AT2
-    Priority: HIGH
+    C: AT2
+    P: HIGH
 
 
