@@ -175,6 +175,12 @@ def get_define_str(element):
             """.format(i=os.path.splitext(element.ancestor_class)[0],
                        e=element)
 
+    run_code += """
+            \n    @property
+            \n    def return_type(self):
+            \n        return self._sig.return_annotation
+        """
+
     for _c, _v in zip(element.codes, element.values):
         sep = ''
         if type(_v) == str:
@@ -217,7 +223,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
-    setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module]))
+    setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
     exec("_annotated_values = dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()])\
          \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty]))\

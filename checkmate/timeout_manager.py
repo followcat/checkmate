@@ -29,7 +29,7 @@ class TimeoutManager():
     @staticmethod
     def machine_benchmark():
         if TimeoutManager.processing_benchmark:
-            TimeoutManager.timeout_value = 0
+            TimeoutManager.timeout_value = 1
             return
         TimeoutManager.processing_benchmark = True
         test_code = timeit.Timer("""

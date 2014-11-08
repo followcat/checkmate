@@ -1,6 +1,6 @@
+import pickle
 import logging
 import threading
-import pickle
 
 import zmq
 import socket
@@ -47,6 +47,11 @@ class Connector(checkmate.runtime.communication.Connector):
         self.is_reading = is_reading
         self.broadcast_map = component.broadcast_map
         self.is_publish = component.is_publish
+
+        self.socket_pub = None
+        self.socket_sub = None
+        self.socket_dealer_in = None
+        self.socket_dealer_out = None
 
         self.zmq_context = zmq.Context.instance()
         self._routerport = self.communication.get_routerport()

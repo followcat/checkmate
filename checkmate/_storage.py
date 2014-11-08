@@ -42,14 +42,14 @@ def _build_resolve_logic(transition, type, data):
                     found = True
                     break
         if ((not found) and len(transition['incoming']) != 0):
-            if type in ['final', 'outgoing']:
+            if type in ['final', 'outgoing', 'returned']:
                 for item in transition['incoming']:
                     if arg in list(item.arguments.attribute_values.keys()) + list(item.arguments.values):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
         if not found:
-            if type in ['outgoing']:
+            if type in ['outgoing', 'returned']:
                 for item in transition['final']:
                     if arg == item.code:
                         resolved_arguments[arg] = ('final', item.interface)
@@ -131,7 +131,7 @@ class TransitionStorage(collections.defaultdict):
         for _k, _v in items.items():
             if _k == 'initial' or _k == 'final':
                 module_type = 'states'
-            elif _k == 'incoming' or _k == 'outgoing':
+            elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
                 module_type = 'exchanges'
             elif _k == 'name':
                 continue
@@ -149,8 +149,10 @@ class TransitionStorage(collections.defaultdict):
                         self['incoming'].append(storage_data.storage[0])
                     elif _k == 'outgoing':
                         self['outgoing'].append(storage_data.storage[0])
+                    elif _k == 'returned':
+                        self['returned'].append(storage_data.storage[0])
 
-        for _attribute in ('incoming', 'final', 'outgoing'):
+        for _attribute in ('incoming', 'final', 'outgoing', 'returned'):
             for item in self[_attribute]:
                 item.resolve_logic = _build_resolve_logic(self, _attribute, item)
 
@@ -207,8 +209,8 @@ class InternalStorage(object):
             >>> c = a.components['C1']
             >>> a.start()
             >>> i = sample_app.exchanges.AP()
-            >>> c.process([i]) # doctest: +ELLIPSIS
-            [<sample_app.exchanges.ThirdAction object at ...
+            >>> c.process([i])[-1] # doctest: +ELLIPSIS
+            <sample_app.exchanges.ThirdAction object at ...
             >>> i = sample_app.exchanges.AC()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

@@ -24,6 +24,7 @@ class Exchange(checkmate.partition.Partition):
         """
         super(Exchange, self).__init__(value, *args, **kwargs)
         self._broadcast = broadcast
+        self._return_code = False
 
     def __eq__(self, other):
         """
@@ -62,6 +63,15 @@ class Exchange(checkmate.partition.Partition):
         """
         return self._broadcast
 
+    @property
+    def return_code(self):
+        """
+            >>> e = Exchange('CA')
+            >>> e.return_code
+            False
+        """
+        return self._return_code
+
     def origin_destination(self, origin, destination):
         self._origin = origin
         if type(destination) != list:
@@ -94,3 +104,15 @@ class Exchange(checkmate.partition.Partition):
             return self._destination
         except AttributeError:
             return ""
+
+    @property
+    def data_returned(self):
+        """
+            >>> Exchange().data_returned
+            False
+        """
+        try:
+            return IExchange.implementedBy(self.return_type)
+        except AttributeError:
+            return False
+

@@ -145,11 +145,11 @@ def TestProcedureRunsGenerator(application_class):
         >>> for p in checkmate.runtime.test_plan.TestProcedureRunsGenerator(sample_app.application.TestData):
         ...     procedures.append(p[0])
         >>> procedures[0].transitions.root.outgoing[0].code
-        'PBAC'
-        >>> procedures[1].transitions.root.outgoing[0].code
         'PBRL'
-        >>> procedures[2].transitions.root.outgoing[0].code
+        >>> procedures[1].transitions.root.outgoing[0].code
         'PBPP'
+        >>> procedures[2].transitions.root.outgoing[0].code
+        'PBAC'
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C2'])
         >>> r.start_test()

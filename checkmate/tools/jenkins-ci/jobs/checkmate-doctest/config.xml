@@ -11,7 +11,7 @@
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
     <hudson.triggers.TimerTrigger>
-      <spec>0,12,24,36,48 * * * *
+      <spec>*/12 * * * *
 </spec>
     </hudson.triggers.TimerTrigger>
   </triggers>
@@ -23,6 +23,7 @@
 if [ -z "$CHECKMATE_CI_REV" ];
     then (hg pull; hg up -C);
 fi
+hg id
 nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>

@@ -15,11 +15,11 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
             >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
-            >>> proc.transitions.nodes[0].nodes[0].nodes[1].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[2].root.incoming[0].code
             'ARE'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[1].nodes[0].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code
             'AP'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[1].nodes[0].nodes[0].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[0].root.incoming[0].code
             'DA'
             >>> proc(result=None, runtime=r)
             >>> r.stop_test()
@@ -55,7 +55,9 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         c2 = box.application.components['C2']
         box(c2.state_machine.transitions[0])
         new_box = checkmate.sandbox.Sandbox(box.application)
-        new_box(c2.state_machine.transitions[2])
+        transition_rl_index = [_t for _t in c2.state_machine.transitions
+                               if _t.outgoing and _t.outgoing[0].code == 'RL']
+        new_box(transition_rl_index[0])
         new_box.fill_procedure(self)
 
 

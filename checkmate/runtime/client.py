@@ -1,5 +1,6 @@
 import time
 import logging
+import collections
 
 import zmq
 import zope.interface
@@ -98,9 +99,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.external_connector = None
         self.logger.debug("%s initial" % self)
 
-    def add_connector(self, connector):
-        self.connections.append(connector)
-
     def set_exchange_module(self, exchange_module):
         self.exchange_module = exchange_module
 
@@ -140,8 +138,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for _s in socks:
                 msg = _s.recv_multipart()
-                msg = msg[-1]
-                exchange = checkmate.runtime.encoder.decode(msg)
+                exchange = msg[-1]
+                exchange = checkmate.runtime.encoder.decode(exchange)
                 self.exchange_deque.append(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 

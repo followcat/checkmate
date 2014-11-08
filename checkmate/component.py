@@ -9,6 +9,9 @@ import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
+class NoTransitionFound(RuntimeError):
+    """"""
+
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
@@ -96,6 +99,8 @@ class Component(object):
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
+        self.pending_incoming = []
+        self.expected_return_code = None
 
     def get_transition_by_input(self, exchange):
         """
@@ -110,9 +115,7 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_incoming(exchange)):
-                self._transition_found = True
                 return _t
-        self._transition_found = False
         return None
 
             
@@ -132,9 +135,7 @@ class Component(object):
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_outgoing(exchange)):
-                self._transition_found = True
                 return _t
-        self._transition_found = False
         return None
 
             
@@ -154,6 +155,8 @@ class Component(object):
         self.service_registry.register(self, self.service_interfaces)
 
     def reset(self):
+        self.pending_incoming = []
+        self.expected_return_code = None
         self.validation_list.clear()
 
     def stop(self):
@@ -172,18 +175,51 @@ class Component(object):
         >>> output[0].value
         'RE'
         >>> output[1].value
-        'ARE'
+        True
         >>> transition.is_matching_initial(c.states)
         False
         """
+        def process_pending_incoming(self, output):
+            for _incoming in self.pending_incoming[:]:
+                _incremental_output = self._do_process(_incoming)
+                output.extend(_incremental_output)
+                self.pending_incoming.pop(_incoming)
+                if len([_ex for _e in _incremental_output if _ex.data_returned]) == 0:
+                    break
+            return output
+
+        output = []
+        if self.expected_return_code is None:
+            if len(self.pending_incoming) > 0:
+                output = self.process_pending_incoming(output)
+            output.extend(self._do_process(exchange))
+        else:
+            if isinstance(exchange[0], self.expected_return_code.return_type):
+                self.expected_return_code = None
+                output = self._do_process(exchange)
+                output = self.process_pending_incoming(output)
+            else:
+                self.pending_incoming.append(exchange[0])
+
+        assert(self.expected_return_code is None or len(output) == 0)
+        return output
+
+    def _do_process(self, exchange):
+        """"""
         _transition = self.get_transition_by_input(exchange)
         if _transition is None:
-            return []
+            raise NoTransitionFound("No transition for incoming %s" %(exchange[0]))
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+                if isinstance(_e, exchange[0].return_type):
+                    _e._return_code = True
                 output.append(_e)
+        if exchange[0].data_returned:
+            if len([_o for _o in output if _o.return_code]) == 0:
+                output.insert(0, exchange[0].return_type())
+                output[0].origin_destination(self.name, [exchange[0].destination])
         return output
 
     def simulate(self, _transition):
@@ -233,8 +269,4 @@ class Component(object):
 
     def get_all_validated_incoming(self):
         return self.validation_list.all_items()
-
-    @property
-    def transition_not_found(self):
-        return not self._transition_found
 

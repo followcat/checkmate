@@ -18,6 +18,13 @@ data:
 ---
 title: "Exchange identification"
 data:
+data:
+  - Definition and accessibility: 'ActionCode'
+    Value partitions:
+    # [Partition,       State,    Valid value,        Comment]
+    - [X-ACT-CODE-01,   OK(),     True,           OK action code]
+    - [X-ACT-CODE-02,   ER(),     False,          Error action code]
+
   - Definition and accessibility: 'Action(R:ActionRequest)'
     Value partitions:
     # [Partition,     State,      Valid value,    Comment]
@@ -67,3 +74,5 @@ data:
     - [X-VLOUTPUT-01,   VODA(),   'VODA',          Validate Output DA]
     - [X-VLOUTPUT-02,   VODR(),   'VODR',          Validate Output DR]
     - [X-VLOUTPUT-03,   VOPA(),   'VOPA',          Validate Output PA]
+    - [X-VLOUTPUT-04,   VOER(),   'VOER',          Validate Output ER]
+

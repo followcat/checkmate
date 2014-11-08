@@ -1,4 +1,5 @@
 import checkmate._tree
+import checkmate.component
 
 
 class Sandbox(object):
@@ -123,8 +124,11 @@ class Sandbox(object):
                 if _name not in _exchange.destination:
                     continue
                 _transition = _c.get_transition_by_input([_exchange])
-                _outgoings = _c.process([_exchange])
-                if len(_outgoings) == 0 and _c.transition_not_found:
+                try:
+                    _outgoings = _c.process([_exchange])
+                except checkmate.component.NoTransitionFound:
+                    if _exchange.return_code:
+                        break
                     return None
 
                 self.update_required_states(_transition)

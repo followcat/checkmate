@@ -44,6 +44,32 @@ class Tree(object):
         assert ITree.providedBy(tree)
         self.nodes.append(tree)
 
+    def copy(self, exclude_nodes=None):
+        """
+            >>> t = Tree('archer', [])
+            >>> t.add_node(Tree('captain', [Tree('marshal', [])]))
+            >>> t.add_node(Tree('hero', [Tree('champion', [])]))
+            >>> t2 = t.copy()
+            >>> t2.root
+            'archer'
+            >>> t2.nodes[0].nodes[0].root
+            'marshal'
+            >>> t3 = t.copy([t.nodes[0]])
+            >>> len(t3.nodes)
+            1
+            >>> t3.nodes[0].nodes[0].root
+            'champion'
+        """
+        if exclude_nodes is None:
+            exclude_nodes = []
+        _copy = self.__class__(self.root, [])
+        for _node in self.nodes:
+            if _node in exclude_nodes:
+                exclude_nodes.remove(_node)
+                continue
+            _copy.nodes.append(_node.copy(exclude_nodes))
+        return _copy
+
     def walk(self):
         """
             visit the tree by depth, and return a list of all nodes
