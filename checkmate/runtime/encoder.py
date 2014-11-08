@@ -1,14 +1,24 @@
 import pickle
 
+import checkmate
+
 
 def encode(exchange):
-    dump = (exchange.value, exchange.get_partition_attr())
-    return pickle.dumps(dump)
+    dump_data = pickle.dumps((type(exchange), exchange.value))
+    return dump_data
 
 
-def decode(message, exchange_module):
-    load = pickle.loads(message)
-    exchange = getattr(exchange_module, load[0])()
-    if exchange.partition_attribute:
-        setattr(exchange, dir(exchange)[0], load[1])
+@checkmate.report_issue("checkmate/issues/decode_attribute.rst")
+def decode(message):
+    """
+    >>> import sample_app.application
+    >>> import checkmate.runtime.encoder
+    >>> ac = sample_app.exchanges.AC()
+    >>> encode_exchange = checkmate.runtime.encoder.encode(ac)
+    >>> decode_exchange = checkmate.runtime.encoder.decode(encode_exchange)
+    >>> ac == decode_exchange
+    True
+    """
+    exchange_type, exchange_value = pickle.loads(message)
+    exchange = exchange_type(exchange_value)
     return exchange

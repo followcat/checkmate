@@ -52,9 +52,6 @@ class State(checkmate.partition.Partition):
             >>> r = s1.pop(); q = s1.pop(); s1.append(R=None)
             >>> s1 == s2
             False
-            >>> r = s2.pop(); s1.append(R=1)
-            >>> s1 == s2
-            False
         """
         return super(State, self).__eq__(other)
 
@@ -85,7 +82,6 @@ class State(checkmate.partition.Partition):
                 for key, value in list(kwargs.items()):
                     if {key: value} not in self.value:
                         self.value.append({key: value})
-                        setattr(self, key, value)
         except:
             pass
 

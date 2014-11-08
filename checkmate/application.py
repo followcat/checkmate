@@ -5,6 +5,7 @@ import checkmate._module
 import checkmate.sandbox
 import checkmate.component
 import checkmate.service_registry
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -20,7 +21,7 @@ class ApplicationMeta(type):
         >>> a.exchange_definition_file
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
-        1
+        3
         >>> c1 = a.components['C1']
         >>> c2 = a.components['C2']
         >>> c3 = a.components['C3']
@@ -35,15 +36,23 @@ class ApplicationMeta(type):
         namespace['exchange_module'] = exchange_module
 
         data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
+        data_value_module = checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition_file' not in namespace:
             #will also be used to look for components' stae_machine yaml and itp.yaml
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
-            matrix = _file.read()
+            define_data = _file.read()
+        with open(namespace['test_data_definition_file'], 'r') as _file:
+            value_data = _file.read()
+        value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        for code, structure in value_source.items():
+            setattr(data_value_module, code, structure)
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
+            declarator.new_definitions(data_source)
             output = declarator.get_output()
 
             namespace['data_structure'] = output['data_structure']

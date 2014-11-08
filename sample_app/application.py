@@ -7,6 +7,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
     __test__ = False
 
     exchange_definition_file = 'sample_app/exchanges.yaml'
+    test_data_definition_file = 'sample_app/test_data.yaml'
 
     component_classes = {('C1',): ('Component_1', {}),
                          ('C2',): ('Component_2', {}),
@@ -31,8 +32,8 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> i = sample_app.exchanges.AP()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.ThirdAction object at ...
-            >>> c.states[1].value
-            [{'R': ['AT1', 'NORM']}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> i = sample_app.exchanges.AC()
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming([i])

@@ -74,7 +74,7 @@ class Sandbox(object):
             >>> box(sample_app.application.TestData().components['C3'].state_machine.transitions[1])
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
-            [{'R': ['AT1', 'NORM']}]
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> box.application.components['C3'].states[0].value
             'False'
         """

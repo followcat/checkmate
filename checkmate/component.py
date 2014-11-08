@@ -5,6 +5,7 @@ import zope.interface
 import checkmate._module
 import checkmate._validation
 import checkmate.state_machine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -36,9 +37,11 @@ class ComponentMeta(type):
         path = os.path.dirname(os.path.join(namespace['exchange_definition_file']))
         filename = name.lower() + '.yaml'
         with open(os.sep.join([path, 'component', filename]), 'r') as _file:
-            matrix = _file.read()
+            define_data = _file.read()
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module, content=matrix)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module)
+            declarator.new_definitions(data_source)
             declarator_output = declarator.get_output()
             namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
             services = []
@@ -50,7 +53,7 @@ class ComponentMeta(type):
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
                     if _i.code not in [_service[0] for _service in services]:
-                        services.append((_i.code, _i.factory().get_partition_attr()))
+                        services.append((_i.code, _i.factory()))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
                     if _i.factory().broadcast:

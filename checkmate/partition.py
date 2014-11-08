@@ -24,18 +24,18 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
-        factory will set R = sample_app.data_structure.ActionRequest('HIGH')
+        factory will set R = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
-            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest('HIGH')})
-            >>> ac.R
-            ['AT1', 'HIGH']
+            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])})
+            >>> ac.R.value
+            ['AT2', 'HIGH']
 
         We can define a partition by passing an instance for attribute.
-            >>> re = sample_app.data_structure.ActionRequest('HIGH')
+            >>> re = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
             >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
-            >>> ac2.R
-            ['AT1', 'HIGH']
+            >>> ac2.R.value
+            ['AT2', 'HIGH']
         """
         if type(value) == list:
             self.value = list(value)
@@ -63,8 +63,8 @@ class Partition(object):
             >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
             >>> dir(ac)
             ['R']
-            >>> ac.get_partition_attr()
-            ['AT1', 'NORM']
+            >>> ac.get_partition_attr() #doctest: +ELLIPSIS
+            <sample_app.data_structure.ActionRequest object at ...
             >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
             >>> dir(dr)
             []
@@ -84,9 +84,7 @@ class Partition(object):
             >>> r2 = sample_app.exchanges.Action()
             >>> r1 == r2
             True
-            >>> r1.R
-            ['AT1', 'NORM']
-            >>> r1.R = ['HIGH']
+            >>> r1.value = ['HIGH']
             >>> r1 == r2
             False
             >>> s1 = sample_app.component.component_1_states.State()
@@ -101,9 +99,27 @@ class Partition(object):
         """
         if type(self) != type(other):
             return False
-        if None in [self.value, other.value]:
+        if self.value is None:
+            if len(dir(self)) == 0:
+                return True
+        elif other.value is None:
+            if len(dir(other)) == 0:
+                return True
+        elif self.value == other.value:
+            if (len(dir(self)) == 0 or len(dir(other)) == 0):
+                return True
+        else:
+            return False
+        if (len(dir(self)) == len(dir(other))):
+            for key in iter(dir(self)):
+                if key not in iter(dir(other)):
+                    return False
+                if (getattr(self, key) is not None and
+                    getattr(other, key) is not None and
+                    getattr(self, key) != getattr(other, key)):
+                    return False
             return True
-        return self.value==other.value
+        return False
 
     def description(self):
         try:
