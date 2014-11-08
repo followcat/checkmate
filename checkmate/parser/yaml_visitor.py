@@ -6,14 +6,19 @@ class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
-    def __init__(self, stream):
+    def __init__(self, define_content):
         """
             >>> import os
             >>> import checkmate.parser.yaml_visitor
             >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
-            >>> file=open(input_file,'r')
-            >>> c = file.read()
-            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c)
+            >>> file1=open(input_file,'r')
+            >>> c1 = file1.read()
+            >>> file1.close()
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+            >>> file2=open(input_file,'r')
+            >>> c2 = file2.read()
+            >>> file2.close()
+            >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
             >>> len(visitor._data_structure_partitions)
             1
             >>> len(visitor._exchange_partitions)
@@ -28,13 +33,12 @@ class Visitor():
         self._classname = ''
         self.codes_list = []
         self.values_list = []
-        self.code_value_list = []
         self.tran_items = []
 
-        self.read_document(stream)
+        self.read_document(define_content)
 
-    def read_document(self, stream):
-        for each in yaml.load_all(stream):
+    def read_document(self, define_content):
+        for each in yaml.load_all(define_content):
             self.parser_chunk(each)
 
     def parser_chunk(self, chunk):
@@ -46,23 +50,32 @@ class Visitor():
             >>> f = open(input_file,'r')
             >>> c1 = f.read()
             >>> f.close()
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
             >>> f = open(input_file,'r')
             >>> c2 = f.read()
+            >>> f.close()
+            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> f = open(input_file,'r')
+            >>> c3 = f.read()
             >>> f.close()
             >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
             >>> len(visitor._state_partitions)
             0
-            >>> list(yaml.load_all(c2))[0]['title']
+            >>> value_source = checkmate.parser.yaml_visitor.call_data_visitor(c2)
+            >>> 'R1' in value_source
+            True
+            >>> [value_source['R1']['value']['Channel'], value_source['R1']['value']['Priority']]
+            ['AT1', 'NORM']
+            >>> list(yaml.load_all(c3))[0]['title']
             'State identification'
-            >>> visitor.parser_chunk(list(yaml.load_all(c2))[0])
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[0])
             >>> len(visitor._state_partitions)
             2
             >>> len(visitor._transitions)
             0
-            >>> list(yaml.load_all(c2))[1]['title']
+            >>> list(yaml.load_all(c3))[1]['title']
             'State machine'
-            >>> visitor.parser_chunk(list(yaml.load_all(c2))[1])
+            >>> visitor.parser_chunk(list(yaml.load_all(c3))[1])
             >>> len(visitor._transitions)
             4
         """
@@ -73,67 +86,39 @@ class Visitor():
                 if inside_title in self.definition_kind_list:
                     self.definition_and_accessibility(_d[inside_title])
 
-            if title == "State identification":
-                self.state_identification(_d)
-                self._state_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "Data structure":
-                self.data_structure(_d)
-                self._data_structure_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "Exchange identification":
-                self.exchange_identification(_d)
-                self._exchange_partitions.append({'clsname': self._classname,
-                                                'codes_list': self.codes_list,
-                                                'values_list': self.values_list,
-                                                'code_value_list': self.code_value_list,
-                                                'full_desc': self.full_description})
-            elif title == "State machine" or title == "Test procedure":
+            if title == "State machine" or title == "Test procedure":
                 self.state_machine_or_test_procedure(_d)
                 self._transitions.extend(self.tran_items)
+            else:
+                self.partition_identification(_d)
+                if title == "State identification":
+                    _partitions = self._state_partitions
+                elif title == "Data structure":
+                    _partitions = self._data_structure_partitions
+                elif title == "Exchange identification":
+                    _partitions = self._exchange_partitions
+                _partitions.append({'clsname': self._classname,
+                                    'codes_list': self.codes_list,
+                                    'values_list': self.values_list,
+                                    'full_desc': self.full_description})
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
             self.codes_list = []
             self.values_list = []
             self.tran_items = []
-            self.code_value_list = []
 
-    def state_identification(self, content):
+    def partition_identification(self, content):
         for _k, _v in content.items():
             if _k == "Value partitions":
-                codes_list, values_list, code_value_list = self.value_partitions(_v)
+                codes_list, values_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
-                self.code_value_list.extend(code_value_list)
-
-    def exchange_identification(self, content):
-        for _k, _v in content.items():
-            if _k == "Value partitions":
-                codes_list, values_list, code_value_list = self.value_partitions(_v)
-                self.codes_list.extend(codes_list)
-                self.values_list.extend(values_list)
-                self.code_value_list.extend(code_value_list)
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
             if _k in self.exchanges_kind_list:
                 self.tran_items.extend(_v)
-
-    def data_structure(self, content):
-        for _k, _v in content.items():
-            if _k == "Value partitions":
-                for _list in _v:
-                    codes_list, values_list, code_value_list = self.value_partitions(_list)
-                    self.codes_list.extend(codes_list)
-                    self.values_list.append(values_list)
-                    self.code_value_list.extend(code_value_list)
 
     def definition_and_accessibility(self, data):
         self._classname = data
@@ -141,7 +126,6 @@ class Visitor():
     def value_partitions(self, data):
         codes_list = []
         values_list = []
-        code_value_list = []
         for _list in data:
             id = _list[0]
             code = _list[1]
@@ -149,20 +133,23 @@ class Visitor():
             com = _list[3]
             codes_list.append(code)
             values_list.append(val)
-            code_value_list.append((code, val))
             self.full_description[code] = (id, com)
-        return codes_list, values_list, code_value_list
+        return codes_list, values_list
 
 
-def call_visitor(stream):
+def call_visitor(define_content):
     """
         >>> import os
         >>> import checkmate.parser.yaml_visitor
         >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
-        >>> c = f1.read()
+        >>> c1 = f1.read()
         >>> f1.close()
-        >>> output = checkmate.parser.yaml_visitor.call_visitor(c)
+        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+        >>> f2 = open(input_file,'r')
+        >>> c2 = f2.read()
+        >>> f2.close()
+        >>> output = checkmate.parser.yaml_visitor.call_visitor(c1)
         >>> len(output['data_structure'])
         1
         >>> len(output['exchanges'])
@@ -175,8 +162,27 @@ def call_visitor(stream):
         >>> len(output['states'])
         2
     """
-    visitor = Visitor(stream)
-    return {'states': visitor._state_partitions,
-            'data_structure': visitor._data_structure_partitions,
-            'exchanges': visitor._exchange_partitions,
-            'transitions': visitor._transitions}
+    visitor = Visitor(define_content)
+    return collections.OrderedDict([
+        ('data_structure', visitor._data_structure_partitions),
+        ('states', visitor._state_partitions),
+        ('exchanges', visitor._exchange_partitions),
+        ('transitions', visitor._transitions)])
+
+
+class DataVisitor(collections.OrderedDict):
+    def __init__(self, value_content):
+        super().__init__()
+        self.read_document(value_content)
+
+    def read_document(self, value_content):
+        value_content = yaml.load(value_content)
+        self.parser_chunk(value_content)
+
+    def parser_chunk(self, chunk):
+        for code, structure in chunk.items():
+            self[code] = structure
+
+
+def call_data_visitor(stream):
+    return DataVisitor(stream)

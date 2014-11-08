@@ -57,17 +57,18 @@ def add_device_service(services, component):
 
     for _service in services:
         name = _service[0]
+        dump_data = pickle.dumps((type(_service[1]), _service[1].value))
         if name not in publishs and name not in subscribes:
             code += """
                 \ndef %(name)s(self, param=None):
-                \n    self.send(('%(name)s', param, ''))""" % {'name': name}
+                \n    self.send(%(dump_data)s)""" % {'name': name, 'dump_data': dump_data}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
         code += """
             \ndef %(sub)s(self, *args):
             \n    if self.subscribe_event_done:
-            \n        self.send(('%(sub)s', None, ''))""" % {'sub': _subscribe}
+            \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
 
     for _publish in publishs:
         code += """
@@ -89,29 +90,17 @@ def add_device_interface(services, component):
     command = {}
     for _service in services:
         name = _service[0]
-        args = _service[1]
+        args = _service[1].get_partition_attr()
         if name in publishs or name in subscribes:
             continue
         if args is not None:
-            _type = switch(type(args[0]))
-            command[name] = [[_type], [PyTango.DevVoid]]
+            command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     attribute = {}
     for _publish in publishs:
         attribute[_publish] = [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ_WRITE]]
     return {'cmd_list': command, 'attr_list': attribute}
-
-
-def switch(_type=None):
-    try:
-        return {str:      PyTango.DevVarStringArray,
-                int:      PyTango.DevVarLongArray,
-                float:    PyTango.DevVarFloatArray,
-                bool:     PyTango.DevVarBooleanArray,
-               }[_type]
-    except KeyError:
-        return PyTango.DevVoid
 
 
 class Router(checkmate.runtime._threading.Thread):
@@ -192,9 +181,8 @@ class Device(PyTango.Device_4Impl):
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def send(self, exchange):
-        dump = pickle.dumps(exchange)
-        self.socket_dealer_out.send_multipart([self._name.encode(), dump])
+    def send(self, dump_data):
+        self.socket_dealer_out.send_multipart([self._name.encode(), dump_data])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -251,10 +239,10 @@ class Connector(checkmate.runtime.communication.Connector):
         else:
             attr = exchange.get_partition_attr()
             param = None
-            if attr:
-                param_type = switch(type(attr[0]))
+            if attr is not None:
+                param_type = PyTango.DevVarStringArray
                 param = PyTango.DeviceData()
-                param.insert(param_type, attr)
+                param.insert(param_type, [_a.value for _a in attr.partition_attribute])
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
                 call = getattr(device_proxy, exchange.value)

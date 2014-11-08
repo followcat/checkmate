@@ -1,17 +1,20 @@
 ---
 title: "Data structure"
 data:
-  - Definition: 'ActionRequest'
+  - Definition: 'Channel'
     Value partitions:
-      #   [Partition,   State,                Valid value,    Comment]
-      -
-      #Attribute:
-        - [D-ATTR-01,   ActionRequestAT1(),   'AT1',          AT1 attribute value]
-        - [D-ATTR-02,   ActionRequestAT2(),   'AT2',          AT2 attribute value]
-      -
-      #Priority:
-        - [D-PRIO-01,   ActionRequestNORM(),  'NORM',         NORM priority value]
-        - [D-PRIO-02,   ActionRequestHIGH(),  'HIGH',         HIGH priority value]
+    # [Partition,     State,      Valid value,    Comment]
+    - [X-CHANN-01,   AT1(),       'AT1',           Comment AT1 action]
+    - [X-CHANN-02,   AT2(),       'AT2',           Comment AT2 action]
+
+  - Definition: 'Priority'
+    Value partitions:
+    # [Partition,     State,      Valid value,    Comment]
+    - [X-PRIOR-01,   NORM(),       'NORM',           Comment NORM action]
+    - [X-PRIOR-02,   HIGH(),       'HIGH',           Comment HIGH action]
+
+  - Definition: 'ActionRequest(C:Channel, P:Priority)'
+
 ---
 title: "Exchange identification"
 data:

@@ -44,7 +44,7 @@ def _build_resolve_logic(transition, type, data):
         if ((not found) and len(transition['incoming']) != 0):
             if type in ['final', 'outgoing', 'returned']:
                 for item in transition['incoming']:
-                    if arg in list(item.arguments.attribute_values.keys()):
+                    if arg in list(item.arguments.attribute_values.keys()) + list(item.arguments.values):
                         resolved_arguments[arg] = ('incoming', item.interface)
                         found = True
                         break
@@ -66,15 +66,15 @@ def store(type, interface, code, value, description=None):
         >>> import sample_app.component.component_1_states
         >>> a = sample_app.application.TestData()
         >>> acr = sample_app.data_structure.ActionRequest()
-        >>> acr
-        ['AT1', 'NORM']
+        >>> acr #doctest: +ELLIPSIS 
+        <sample_app.data_structure.ActionRequest object at ...
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> print(state.value)
         None
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
-        >>> (ex.value, ex.R)
+        >>> (ex.value, ex.R.value)
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
@@ -110,7 +110,7 @@ class Data(object):
             _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
         if not self.storage:
-            self.storage = [store(self.type, self.interface, '')]
+            self.storage = [store(self.type, self.interface, '', '')]
 
     def get_description(self, item):
         """ Return description corresponding to item """
@@ -175,7 +175,7 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R
+            >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(code)
@@ -188,6 +188,7 @@ class InternalStorage(object):
         self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
+    @checkmate.report_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
     def factory(self, args=None, kwargs=None):
         """
             >>> import sample_app.application
@@ -198,9 +199,9 @@ class InternalStorage(object):
             ((), {'R': None})
             >>> dir(st.factory())
             ['R']
-            >>> st.factory().R
+            >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
-            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R
+            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
             ['AT2', 'HIGH']
 
             >>> import sample_app.application
@@ -213,8 +214,8 @@ class InternalStorage(object):
             >>> i = sample_app.exchanges.AC()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> c.states[1].value
-            [{'R': ['AT1', 'NORM']}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> t = c.state_machine.transitions[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
@@ -251,19 +252,27 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
+            >>> import checkmate._storage
             >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve('final', states=[states])
             {}
+            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
+            >>> inc.R.value
+            ['AT2', 'HIGH']
+            >>> t.final[0].resolve_logic.keys()
+            dict_keys(['R'])
             >>> t.final[0].resolve('final', exchanges=[inc])
-            {'R': ['AT1', 'NORM']}
+            {}
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
-            >>> (inc.value, inc.R)  # doctest: +ELLIPSIS
+            >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
-            {'R': 1}
+            {}
         """
         resolved_arguments = {}
         for arg in self.resolve_logic.keys():
@@ -277,8 +286,12 @@ class InternalStorage(object):
                 elif exchanges is not None:
                     for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
                         try:
-                            resolved_arguments.update({arg: getattr(_exchange, arg)})
-                            break
+                            for attr in dir(_exchange):
+                                storages = type(getattr(_exchange, attr)).partition_storage.storage
+                                for storage in storages:
+                                    if arg == storage.code or getattr(_exchange, attr) == storage.factory():
+                                        resolved_arguments.update({attr: storage.factory()})
+                                        break
                         except AttributeError:
                             continue
             except AttributeError:

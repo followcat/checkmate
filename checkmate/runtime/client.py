@@ -139,9 +139,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             for _s in socks:
                 msg = _s.recv_multipart()
                 exchange = msg[-1]
-                exchange = checkmate.runtime.encoder.decode(exchange, self.exchange_module)
-                self.logger.debug("%s receive exchange %s" % (self, exchange.value))
+                exchange = checkmate.runtime.encoder.decode(exchange)
                 self.exchange_deque.append(exchange)
+                self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
         """"""

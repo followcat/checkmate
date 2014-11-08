@@ -11,6 +11,17 @@ class IExchange(zope.interface.Interface):
 class Exchange(checkmate.partition.Partition):
     """"""
     def __init__(self, value=None, broadcast=False, *args, **kwargs):
+        """
+            >>> import sample_app.application
+            >>> sorted(sample_app._data.R2['value'].items())
+            [('C', 'AT2'), ('P', 'HIGH')]
+            >>> ap = sample_app.exchanges.Action('AP', R=sample_app._data.R2['value'])
+            >>> ap.R.C.value
+            'AT2'
+            >>> ap.R.P.value
+            'HIGH'
+
+        """
         super(Exchange, self).__init__(value, *args, **kwargs)
         self._broadcast = broadcast
         self._return_code = False
@@ -41,19 +52,7 @@ class Exchange(checkmate.partition.Partition):
             >>> ca_1 == ca_2
             False
         """
-        if self.value == other.value:
-            if (len(dir(self)) == 0 or len(dir(other)) == 0):
-                return True
-            elif (len(dir(self)) == len(dir(other))):
-                for key in iter(dir(self)):
-                    if key not in iter(dir(other)):
-                        return False
-                    if (getattr(self, key) is not None and
-                        getattr(other, key) is not None and
-                        getattr(self, key) != getattr(other, key)):
-                        return False
-                return True
-        return False
+        return super().__eq__(other)
 
     @property
     def broadcast(self):
