@@ -212,8 +212,8 @@ class InternalStorage(object):
             >>> i = sample_app.exchanges.AC()
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> c.states[1].value
-            [{'R': ''}]
+            >>> c.states[1].value # doctest: +ELLIPSIS
+            [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> t = c.state_machine.transitions[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
