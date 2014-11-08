@@ -175,7 +175,7 @@ class Component(object):
         >>> output[0].value
         'RE'
         >>> output[1].value
-        'OK'
+        True
         >>> transition.is_matching_initial(c.states)
         False
         """

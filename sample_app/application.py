@@ -48,7 +48,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> result # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> result[1].value
-            'ER'
+            False
             >>> c.states[0].value
             'False'
             >>> i = sample_app.exchanges.PP()
