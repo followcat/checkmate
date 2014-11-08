@@ -80,8 +80,8 @@ class State(checkmate.partition.Partition):
                     self.value.append(value)
             else:
                 for key, value in list(kwargs.items()):
-                    if {key: value.value} not in self.value:
-                        self.value.append({key: value.value})
+                    if {key: value} not in self.value:
+                        self.value.append({key: value})
         except:
             pass
 
@@ -193,6 +193,6 @@ class State(checkmate.partition.Partition):
                     return self.value.pop(self.value.index(value))
             else:
                 for value in list(kwargs.items()):
-                    return self.value.pop(self.value.index({value[0]: value[1].value}))
+                    return self.value.pop(self.value.index({value[0]: value[1]}))
         except:
             return None
