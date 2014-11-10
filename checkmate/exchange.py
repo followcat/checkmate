@@ -10,7 +10,9 @@ class IExchange(zope.interface.Interface):
 @zope.interface.implementer(IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
-    def __init__(self, value=None, broadcast=False, *args, **kwargs):
+    broadcast = False
+
+    def __init__(self, value=None, *args, **kwargs):
         """
             >>> import sample_app.application
             >>> r2 = sample_app.application.TestData.data_value['R2']
@@ -24,7 +26,6 @@ class Exchange(checkmate.partition.Partition):
 
         """
         super(Exchange, self).__init__(value, *args, **kwargs)
-        self._broadcast = broadcast
         self._return_code = False
 
     def __eq__(self, other):
@@ -54,15 +55,6 @@ class Exchange(checkmate.partition.Partition):
             False
         """
         return super().__eq__(other)
-
-    @property
-    def broadcast(self):
-        """
-            >>> e = Exchange('CA')
-            >>> e.broadcast
-            False
-        """
-        return self._broadcast
 
     @property
     def return_code(self):

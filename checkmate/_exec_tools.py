@@ -228,8 +228,12 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
          \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty]))\
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty])",
+           if _v.annotation != inspect._empty])\
+         \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation == inspect._empty and _v is not None])",
          dict(define_class.__dict__), globals())
     setattr(define_class, '_annotated_values', globals()['_annotated_values'])
     setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
+    for _k, _v in globals()['class_attributes']:
+        setattr(define_class, _k , _v)
     return define_class, define_interface
