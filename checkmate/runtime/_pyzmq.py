@@ -96,12 +96,12 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)]))
 
 
-class Registry(checkmate.runtime._threading.Thread):
+class Router(checkmate.runtime._threading.Thread):
     """"""
     def __init__(self, encoder, name=None):
         """"""
-        super(Registry, self).__init__(name=name)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
+        super(Router, self).__init__(name=name)
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Router')
         self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
@@ -141,7 +141,7 @@ class Registry(checkmate.runtime._threading.Thread):
 
     def stop(self):
         self.logger.debug("%s stop" % self)
-        super(Registry, self).stop()
+        super(Router, self).stop()
 
     def pickfreeport(self):
         with self.get_assign_port_lock:
@@ -207,22 +207,22 @@ class Communication(checkmate.runtime.communication.Communication):
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
         self.encoder = Encoder()
-        self.registry = Registry(self.encoder)
+        self.router = Router(self.encoder)
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
-        self.registry.start()
+        self.router.start()
 
     def close(self):
-        self.registry.stop()
+        self.router.stop()
         self.logger.info("%s close" % self)
 
     def get_routerport(self):
-        return self.registry._routerport
+        return self.router._routerport
 
     def get_broadcast_routerport(self):
-        return self.registry._broadcast_routerport
+        return self.router._broadcast_routerport
 
     def get_publishport(self):
-        return self.registry._publishport
+        return self.router._publishport
