@@ -44,11 +44,14 @@ class ApplicationMeta(type):
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
             define_data = _file.read()
-        with open(namespace['test_data_definition_file'], 'r') as _file:
-            value_data = _file.read()
-        value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
-        for code, structure in value_source.items():
-            setattr(data_value_module, code, structure)
+        try:
+            with open(namespace['test_data_definition_file'], 'r') as _file:
+                value_data = _file.read()
+            value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+            for code, structure in value_source.items():
+                setattr(data_value_module, code, structure)
+        except KeyError:
+            pass
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
