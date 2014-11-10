@@ -47,10 +47,13 @@ class ApplicationMeta(type):
         with open(namespace['test_data_definition_file'], 'r') as _file:
             value_data = _file.read()
         value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        data_value = {}
         for code, structure in value_source.items():
-            setattr(data_value_module, code, structure)
+            data_value.update({code: structure})
+        namespace['data_value'] = data_value
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
+            setattr(checkmate.partition_declarator.Declarator, 'data_value', namespace['data_value'])
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
             declarator.new_definitions(data_source)
             output = declarator.get_output()

@@ -19,7 +19,7 @@ def name_to_interface(name, modules):
         raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
     return interface
 
-def _build_resolve_logic(transition, type, data):
+def _build_resolve_logic(transition, type, data, data_value=None):
     """Build logic to resolve kwargs in TransitionStorage
 
         >>> import sample_app.application
@@ -125,7 +125,7 @@ class PartitionStorage(Data):
 
 
 class TransitionStorage(collections.defaultdict):
-    def __init__(self, items, module_dict):
+    def __init__(self, items, module_dict, data_value):
         super(TransitionStorage, self).__init__(list)
 
         for _k, _v in items.items():
@@ -154,7 +154,7 @@ class TransitionStorage(collections.defaultdict):
 
         for _attribute in ('incoming', 'final', 'outgoing', 'returned'):
             for item in self[_attribute]:
-                item.resolve_logic = _build_resolve_logic(self, _attribute, item)
+                item.resolve_logic = _build_resolve_logic(self, _attribute, item, data_value)
 
 
 class IStorage(zope.interface.Interface):
