@@ -129,16 +129,15 @@ class Registry(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for sock in iter(socks):
+                package = sock.recv_multipart()
+                message = pickle.loads(package[1])
+                exchange = self.encoder.decode(message[1])
                 if sock == self.router:
-                    package = self.router.recv_multipart()
-                    message = pickle.loads(package[1])
                     self.router.send(message[0], flags=zmq.SNDMORE)
-                    self.router.send(message[1])
+                    self.router.send_pyobj(exchange)
                 if sock == self.broadcast_router:
-                    package = self.broadcast_router.recv_multipart()
-                    message = pickle.loads(package[1])
                     self.publish.send(message[0], flags=zmq.SNDMORE)
-                    self.publish.send(message[1])
+                    self.publish.send_pyobj(exchange)
 
     def stop(self):
         self.logger.debug("%s stop" % self)

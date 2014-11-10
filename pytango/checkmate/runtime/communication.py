@@ -141,9 +141,9 @@ class Router(checkmate.runtime._threading.Thread):
             for sock in iter(socks):
                 if sock == self.router:
                     message = self.router.recv_multipart()
+                    exchange = self.encoder.decode(message[2])
                     self.router.send(message[1], flags=zmq.SNDMORE)
-                    self.router.send(message[0], flags=zmq.SNDMORE)
-                    self.router.send(message[2])
+                    self.router.send_pyobj(exchange)
 
     def stop(self):
         super(Router, self).stop()
