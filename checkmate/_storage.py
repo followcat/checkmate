@@ -29,6 +29,17 @@ def _build_resolve_logic(transition, type, data, data_value=None):
         >>> t = a.components['C1'].state_machine.transitions[1]
         >>> t.final[0].resolve_logic
         {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
+        >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
+        >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
+        >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
+        >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
+        >>> t.outgoing[0].arguments
+        argument(values=('R2',), attribute_values={})
+        >>> t.outgoing[0].resolve_logic.keys()
+        dict_keys(['R2'])
+        >>> values = t.outgoing[0].resolve_logic['R2']
+        >>> values[1]['value']['C'], values[1]['value']['P']
+        ('AT2', 'HIGH')
     """
     resolved_arguments = {}
     entry = transition[type]
@@ -55,6 +66,9 @@ def _build_resolve_logic(transition, type, data, data_value=None):
                         resolved_arguments[arg] = ('final', item.interface)
                         found = True
                         break
+        if not found and data_value is not None:
+            if arg in list(data_value.keys()):
+                resolved_arguments[arg] = ('data', data_value[arg])
     return resolved_arguments
 
 
@@ -271,7 +285,7 @@ class InternalStorage(object):
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
-            >>> t.final[0].resolve('final', exchanges=[inc])  # doctest: +ELLIPSIS
+            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
             {}
         """
         resolved_arguments = {}
