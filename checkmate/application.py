@@ -120,11 +120,17 @@ class Application(object):
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
         [<checkmate.runs.TransitionTree object at ...
+        >>> a.origin_transitions #doctest: +ELLIPSIS
+        [<checkmate.runs.TransitionTree object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
             self.run_collection.build_trees_from_application(self)
             return self.run_collection
+        if name == 'origin_transitions':
+            setattr(self, 'origin_transitions', checkmate.runs.RunCollection())
+            self.origin_transitions.get_origin_transition(self)
+            return self.origin_transitions
         super().__getattr__(self, name)
 
     def start(self):

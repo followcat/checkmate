@@ -88,7 +88,25 @@ class TransitionTree(checkmate._tree.Tree):
                     return node
 
 
+
 class RunCollection(list):
+    """"""
+    def get_origin_transition(self, application):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> transitions = checkmate.runs.RunCollection()
+            >>> transitions.get_origin_transition(sample_app.application.TestData())
+            >>> [_t.root.outgoing[0].code for _t in transitions]
+            ['PBAC', 'PBRL', 'PBPP']
+        """
+        self.clear()
+        for _component in application.components.values():
+            for _transition in _component.state_machine.transitions:
+                if not len(_transition.incoming):
+                    _tree = TransitionTree(_transition)
+                    self.append(_tree)
+
     def build_trees_from_application(self, application):
         """
             >>> import checkmate.runs
@@ -111,6 +129,7 @@ class RunCollection(list):
             ['AC', 'ER', 'PBAC', 'RE', 'VOER']
 
         """
+        self.clear()
         for _component in application.components.values():
             for _transition in _component.state_machine.transitions:
                 _tree = TransitionTree(_transition)
@@ -249,4 +268,3 @@ class RunCollection(list):
             _index += 1
         if not is_merged and des_tree not in self:
             self.append(des_tree)
-

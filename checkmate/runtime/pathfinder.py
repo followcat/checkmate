@@ -67,17 +67,40 @@ def _find_runs(application, target):
         ...     proc.append(p)
         ...     
 
-        >>> nbox = checkmate.sandbox.Sandbox(box.application)
         >>> proc[0][0].transitions.root.outgoing[0].code
         'AC'
         >>> len(checkmate.runtime.pathfinder._find_runs(box.application, proc[0][0].initial))
-        1
+        3
 
     """
-    used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
+    used_runs = _next_run(application, target, application.origin_transitions, collections.OrderedDict())
     return used_runs
 
+
 def _next_run(application, target, runs, used_runs):
+    """
+        >>> import collections
+        >>> import checkmate.sandbox
+        >>> import checkmate.runtime.test_plan
+        >>> import checkmate.runtime.pathfinder
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> box = checkmate.sandbox.Sandbox(a)
+        >>> proc = []
+        >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData):
+        ...     proc.append(p)
+
+        >>> proc[0][0].transitions.root.outgoing[0].code
+        'AC'
+        >>> [_t.root.outgoing[0].code for _t in checkmate.runtime.pathfinder._next_run(box.application, proc[0][0].initial, a.origin_transitions, collections.OrderedDict())]
+        ['PBAC', 'PBRL', 'PBPP']
+
+        >>> proc[3][0].transitions.root.outgoing[0].code
+        'PP'
+        >>> [_t.root.outgoing[0].code for _t in checkmate.runtime.pathfinder._next_run(box.application, proc[3][0].initial, a.origin_transitions, collections.OrderedDict())]
+        ['PBAC', 'PBRL']
+
+    """
     box = checkmate.sandbox.Sandbox(application)
     for _run in runs:
         if _run in used_runs:
