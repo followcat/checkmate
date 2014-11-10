@@ -10,7 +10,6 @@ import threading
 import zmq
 import PyTango
 
-import checkmate.runtime.encoder
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication

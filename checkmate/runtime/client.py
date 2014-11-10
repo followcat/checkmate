@@ -7,7 +7,6 @@ import zope.interface
 
 import checkmate.logger
 import checkmate.timeout_manager
-import checkmate.runtime.encoder
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
