@@ -12,7 +12,6 @@ import checkmate.runtime.communication
 
 class Connector(checkmate.runtime.communication.Connector):
     """
-        >>> import zmq
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> a = sample_app.application.TestData()
@@ -91,17 +90,18 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), checkmate.runtime.encoder.encode(exchange)]))
+            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), self.communication.encoder.encode(exchange)]))
         else:
-            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), checkmate.runtime.encoder.encode(exchange)]))
+            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)]))
 
 
-class Registry(checkmate.runtime._threading.Thread):
+class Router(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, encoder, name=None):
         """"""
-        super(Registry, self).__init__(name=name)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
+        super(Router, self).__init__(name=name)
+        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Router')
+        self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
@@ -128,18 +128,19 @@ class Registry(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for sock in iter(socks):
+                package = sock.recv_multipart()
+                message = pickle.loads(package[1])
+                exchange = self.encoder.decode(message[1])
                 if sock == self.router:
-                    package = self.router.recv_multipart()
-                    message = pickle.loads(package[1])
-                    self.router.send_multipart([message[0], message[1]])
+                    self.router.send(message[0], flags=zmq.SNDMORE)
+                    self.router.send_pyobj(exchange)
                 if sock == self.broadcast_router:
-                    package = self.broadcast_router.recv_multipart()
-                    message = pickle.loads(package[1])
-                    self.publish.send_multipart(message)
+                    self.publish.send(message[0], flags=zmq.SNDMORE)
+                    self.publish.send_pyobj(exchange)
 
     def stop(self):
         self.logger.debug("%s stop" % self)
-        super(Registry, self).stop()
+        super(Router, self).stop()
 
     def pickfreeport(self):
         with self.get_assign_port_lock:
@@ -148,6 +149,31 @@ class Registry(checkmate.runtime._threading.Thread):
             addr, port = _socket.getsockname()
             _socket.close()
         return port
+
+
+class Encoder():
+    def __init__(self):
+        pass
+
+    def encode(self, exchange):
+        dump_data = pickle.dumps((type(exchange), exchange.value))
+        return dump_data
+
+    @checkmate.report_issue("checkmate/issues/decode_attribute.rst")
+    def decode(self, message):
+        """
+        >>> import sample_app.application
+        >>> import checkmate.runtime._pyzmq
+        >>> ac = sample_app.exchanges.AC()
+        >>> encoder = checkmate.runtime._pyzmq.Encoder()
+        >>> encode_exchange = encoder.encode(ac)
+        >>> decode_exchange = encoder.decode(encode_exchange)
+        >>> ac == decode_exchange
+        True
+        """
+        exchange_type, exchange_value = pickle.loads(message)
+        exchange = exchange_type(exchange_value)
+        return exchange
 
 
 class Communication(checkmate.runtime.communication.Communication):
@@ -181,22 +207,23 @@ class Communication(checkmate.runtime.communication.Communication):
         super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.registry = Registry()
+        self.encoder = Encoder()
+        self.router = Router(self.encoder)
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
-        self.registry.start()
+        self.router.start()
 
     def close(self):
-        self.registry.stop()
+        self.router.stop()
         self.logger.info("%s close" % self)
 
     def get_routerport(self):
-        return self.registry._routerport
+        return self.router._routerport
 
     def get_broadcast_routerport(self):
-        return self.registry._broadcast_routerport
+        return self.router._broadcast_routerport
 
     def get_publishport(self):
-        return self.registry._publishport
+        return self.router._publishport

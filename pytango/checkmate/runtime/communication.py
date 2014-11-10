@@ -10,7 +10,6 @@ import threading
 import zmq
 import PyTango
 
-import checkmate.runtime.encoder
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
@@ -103,11 +102,26 @@ def add_device_interface(services, component):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
+class Encoder():
+    def __init__(self):
+        pass
+
+    def encode(self, exchange):
+        dump_data = pickle.dumps((type(exchange), exchange.value))
+        return dump_data
+
+    def decode(self, message):
+        exchange_type, exchange_value = pickle.loads(message)
+        exchange = exchange_type(exchange_value)
+        return exchange
+
+
 class Router(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, encoder, name=None):
         """"""
         super(Router, self).__init__(name=name)
+        self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.get_assign_port_lock = threading.Lock()
@@ -126,7 +140,9 @@ class Router(checkmate.runtime._threading.Thread):
             for sock in iter(socks):
                 if sock == self.router:
                     message = self.router.recv_multipart()
-                    self.router.send_multipart([message[1], message[0], message[2]])
+                    exchange = self.encoder.decode(message[2])
+                    self.router.send(message[1], flags=zmq.SNDMORE)
+                    self.router.send_pyobj(exchange)
 
     def stop(self):
         super(Router, self).stop()
@@ -225,7 +241,7 @@ class Connector(checkmate.runtime.communication.Connector):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
         def check(dev_proxy):
             dev_proxy.attribute_list_query()
-        for dev_name in list(self.communication.comp_device.values()): 
+        for dev_name in list(self.communication.comp_device.values()):
             if dev_name != self.device_name:
                 dev_proxy = self.communication.get_device_proxy(dev_name)
                 check(dev_proxy)
@@ -265,7 +281,8 @@ class Communication(checkmate.runtime.communication.Communication):
             self.server_name = self.create_tango_server(component.name)
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
             self.comp_device[component.name] = _device_name
-        self.router = Router()
+        self.encoder = Encoder()
+        self.router = Router(self.encoder)
         self.dev_proxies = {}
 
     def initialize(self):
@@ -291,7 +308,6 @@ class Communication(checkmate.runtime.communication.Communication):
             dev_proxy = PyTango.DeviceProxy(device_name)
             self.dev_proxies[device_name] = dev_proxy
             return dev_proxy
-
 
     def close(self):
         pytango_util = PyTango.Util.instance()
