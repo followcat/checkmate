@@ -103,11 +103,26 @@ def add_device_interface(services, component):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
+class Encoder():
+    def __init__(self):
+        pass
+
+    def encode(self, exchange):
+        dump_data = pickle.dumps((type(exchange), exchange.value))
+        return dump_data
+
+    def decode(self, message):
+        exchange_type, exchange_value = pickle.loads(message)
+        exchange = exchange_type(exchange_value)
+        return exchange
+
+
 class Router(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, encoder, name=None):
         """"""
         super(Router, self).__init__(name=name)
+        self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.get_assign_port_lock = threading.Lock()
@@ -265,7 +280,8 @@ class Communication(checkmate.runtime.communication.Communication):
             self.server_name = self.create_tango_server(component.name)
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
             self.comp_device[component.name] = _device_name
-        self.router = Router()
+        self.encoder = Encoder()
+        self.router = Router(self.encoder)
         self.dev_proxies = {}
 
     def initialize(self):

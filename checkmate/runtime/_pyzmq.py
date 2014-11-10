@@ -98,10 +98,11 @@ class Connector(checkmate.runtime.communication.Connector):
 
 class Registry(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, name=None):
+    def __init__(self, encoder, name=None):
         """"""
         super(Registry, self).__init__(name=name)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
+        self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
@@ -150,6 +151,29 @@ class Registry(checkmate.runtime._threading.Thread):
         return port
 
 
+class Encoder():
+    def __init__(self):
+        pass
+
+    def encode(self, exchange):
+        dump_data = pickle.dumps((type(exchange), exchange.value))
+        return dump_data
+
+    def decode(self, message):
+        """
+        >>> import sample_app.application
+        >>> import checkmate.runtime.encoder
+        >>> ac = sample_app.exchanges.AC()
+        >>> encode_exchange = checkmate.runtime.encoder.encode(ac)
+        >>> decode_exchange = checkmate.runtime.encoder.decode(encode_exchange)
+        >>> ac == decode_exchange
+        True
+        """
+        exchange_type, exchange_value = pickle.loads(message)
+        exchange = exchange_type(exchange_value)
+        return exchange
+
+
 class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import time
@@ -181,7 +205,8 @@ class Communication(checkmate.runtime.communication.Communication):
         super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.registry = Registry()
+        self.encoder = Encoder()
+        self.registry = Registry(self.encoder)
 
     def initialize(self):
         """"""
