@@ -1,6 +1,5 @@
 import time
 import logging
-import collections
 
 import zmq
 import zope.interface

@@ -241,7 +241,7 @@ class Connector(checkmate.runtime.communication.Connector):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
         def check(dev_proxy):
             dev_proxy.attribute_list_query()
-        for dev_name in list(self.communication.comp_device.values()): 
+        for dev_name in list(self.communication.comp_device.values()):
             if dev_name != self.device_name:
                 dev_proxy = self.communication.get_device_proxy(dev_name)
                 check(dev_proxy)
@@ -308,7 +308,6 @@ class Communication(checkmate.runtime.communication.Communication):
             dev_proxy = PyTango.DeviceProxy(device_name)
             self.dev_proxies[device_name] = dev_proxy
             return dev_proxy
-
 
     def close(self):
         pytango_util = PyTango.Util.instance()
