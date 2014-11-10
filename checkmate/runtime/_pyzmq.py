@@ -91,9 +91,9 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), checkmate.runtime.encoder.encode(exchange)]))
+            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), self.communication.encoder.encode(exchange)]))
         else:
-            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), checkmate.runtime.encoder.encode(exchange)]))
+            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)]))
 
 
 class Registry(checkmate.runtime._threading.Thread):
