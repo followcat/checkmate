@@ -28,8 +28,11 @@ def get_transitions_from_test(application):
             state_modules.append(application.components[name].state_module)
     path = os.path.dirname(application.exchange_definition_file)
     array_list = []
-    with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
-        matrix = _file.read()
+    try:
+        with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
+            matrix = _file.read()
+    except FileNotFoundError:
+        return []
     _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
     for data in _output['transitions']:
         array_list.append(data)
