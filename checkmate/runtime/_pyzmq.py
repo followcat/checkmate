@@ -159,6 +159,7 @@ class Encoder():
         dump_data = pickle.dumps((type(exchange), exchange.value))
         return dump_data
 
+    @checkmate.report_issue("checkmate/issues/decode_attribute.rst")
     def decode(self, message):
         """
         >>> import sample_app.application
