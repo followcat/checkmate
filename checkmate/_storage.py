@@ -280,18 +280,31 @@ class InternalStorage(object):
             ['AT2', 'HIGH']
             >>> t.final[0].resolve_logic.keys()
             dict_keys(['R'])
-            >>> t.final[0].resolve('final', exchanges=[inc])
-            {}
+            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
-            {}
+            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
+            >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
+            >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
+            >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
+            >>> resolved_arguments = t.outgoing[0].resolve('outgoing')
+            >>> list(resolved_arguments.keys())
+            ['R2']
+            >>> resolved_arguments['R2']['type'], resolved_arguments['R2']['value']['C'], resolved_arguments['R2']['value']['P']
+            ('ActionRequest', 'AT2', 'HIGH')
         """
         resolved_arguments = {}
         for arg in self.resolve_logic.keys():
             try:
                 (_type, _interface) = self.resolve_logic[arg]
+                if _type == 'data':
+                    _dict = _interface
+                    resolved_arguments.update({arg: _dict})
+                    continue
                 if _type in ['initial', 'final'] and states is not None:
                     for _state in states:
                         if _interface.providedBy(_state):
@@ -300,12 +313,8 @@ class InternalStorage(object):
                 elif exchanges is not None:
                     for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
                         try:
-                            for attr in dir(_exchange):
-                                storages = type(getattr(_exchange, attr)).partition_storage.storage
-                                for storage in storages:
-                                    if arg == storage.code or getattr(_exchange, attr) == storage.factory():
-                                        resolved_arguments.update({attr: storage.factory()})
-                                        break
+                            resolved_arguments.update({arg: getattr(_exchange, arg)})
+                            break
                         except AttributeError:
                             continue
             except AttributeError:
