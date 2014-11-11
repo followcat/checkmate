@@ -258,7 +258,7 @@ class Connector(checkmate.runtime.communication.Connector):
             if attr is not None:
                 param_type = PyTango.DevVarStringArray
                 param = PyTango.DeviceData()
-                param.insert(param_type, [_a.value for _a in attr.partition_attribute])
+                param.insert(param_type, [getattr(attr, _a).value for _a in attr.partition_attribute])
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
                 call = getattr(device_proxy, exchange.value)
