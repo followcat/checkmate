@@ -83,13 +83,13 @@ def add_device_service(services, component):
     return d
 
 
-def add_device_interface(services, component):
+def add_device_interface(services, component, encoder):
     publishs = component.publish_exchange
     subscribes = component.subscribe_exchange
     command = {}
     for _service in services:
         name = _service[0]
-        args = _service[1].get_partition_values()
+        args = encoder.get_partition_values(_service[1])
         if name in publishs or name in subscribes:
             continue
         if args:
@@ -105,6 +105,16 @@ def add_device_interface(services, component):
 class Encoder():
     def __init__(self):
         pass
+
+    def get_partition_values(self, partition, values_list=None):
+        if values_list is None:
+            values_list = []
+        for name in dir(partition):
+            attr = getattr(partition, name)
+            self.get_partition_values(attr, values_list)
+            if attr.value is not None:
+                values_list.append(attr.value)
+        return values_list
 
     def encode(self, exchange_type, exchange_value, param):
         partition = {}
@@ -223,7 +233,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True, is_broadcast=False):
         super().__init__(component, communication, is_server=True, is_reading=is_reading, is_broadcast=is_broadcast)
         self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
-        self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
+        self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component, self.communication.encoder))
         self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
         self.communication.comp_device[component.name] = self.device_name
@@ -257,7 +267,7 @@ class Connector(checkmate.runtime.communication.Connector):
         if exchange.broadcast:
             self.socket_dealer_out.send(pickle.dumps([self.device_name, exchange]))
         else:
-            attribute_values = exchange.get_partition_values()
+            attribute_values = self.communication.encoder.get_partition_values(exchange)
             param = None
             if attribute_values:
                 param_type = PyTango.DevVarStringArray

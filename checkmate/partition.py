@@ -76,25 +76,6 @@ class Partition(object):
             _partition_dict[attr] = getattr(self, attr)
         return _partition_dict
 
-    def get_partition_values(self, values_list=None):
-        """
-            >>> import sample_app.application
-            >>> ac = sample_app.exchanges.AC()
-            >>> ac.get_partition_values()
-            ['AT1', 'NORM']
-            >>> ap = sample_app.exchanges.AP(R=sample_app._data.R2['value'])
-            >>> ap.get_partition_values()
-            ['AT2', 'HIGH']
-        """
-        if values_list is None:
-            values_list = []
-        for name in dir(self):
-            attr = getattr(self, name)
-            attr.get_partition_values(values_list)
-            if attr.value is not None:
-                values_list.append(attr.value)
-        return values_list
-
     def __eq__(self, other):
         """
             >>> import sample_app.application
