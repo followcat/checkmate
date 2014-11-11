@@ -156,10 +156,10 @@ class Encoder():
         pass
 
     def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value))
+        dump_data = pickle.dumps((type(exchange), exchange.value, exchange.get_partition_attr()))
         return dump_data
 
-    @checkmate.report_issue("checkmate/issues/decode_attribute.rst")
+    @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
     def decode(self, message):
         """
         >>> import sample_app.application
@@ -171,8 +171,8 @@ class Encoder():
         >>> ac == decode_exchange
         True
         """
-        exchange_type, exchange_value = pickle.loads(message)
-        exchange = exchange_type(exchange_value)
+        exchange_type, exchange_value, exchange_partition = pickle.loads(message)
+        exchange = exchange_type(exchange_value, **exchange_partition)
         return exchange
 
 
