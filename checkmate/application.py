@@ -111,6 +111,7 @@ class Application(object):
         4
         """
         self.name = self.__module__.split('.')[-2]
+        self._started = False
         self.components = {}
         self.service_registry = checkmate.service_registry.ServiceRegistry()
         for components, _class in self.component_classes.items():
@@ -141,8 +142,10 @@ class Application(object):
         >>> c.states #doctest: +ELLIPSIS
         [<sample_app.component.component_1_states.State object at ...
         """
-        for component in list(self.components.values()):
-            component.start()
+        if not self._started:
+            for component in list(self.components.values()):
+                component.start()
+            self._started = True
 
     def sut(self, system_under_test):
         """
