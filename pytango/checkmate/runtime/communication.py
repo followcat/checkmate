@@ -56,11 +56,11 @@ def add_device_service(services, component):
 
     for _service in services:
         name = _service[0]
-        dump_data = pickle.dumps((type(_service[1]), _service[1].value))
+        dump_data = pickle.dumps([type(_service[1]), _service[1].value])
         if name not in publishs and name not in subscribes:
             code += """
-                \ndef %(name)s(self, param=None):
-                \n    self.send(%(dump_data)s)""" % {'name': name, 'dump_data': dump_data}
+                \ndef %(name)s(self, param=[]):
+                \n    self.send(%(dump_data)s, param)""" % {'name': name, 'dump_data': dump_data}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -106,13 +106,14 @@ class Encoder():
     def __init__(self):
         pass
 
-    def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value))
+    def encode(self, exchange_type, exchange_value, param):
+        partition = {}
+        dump_data = pickle.dumps((exchange_type, exchange_value, partition))
         return dump_data
 
     def decode(self, message):
-        exchange_type, exchange_value = pickle.loads(message)
-        exchange = exchange_type(exchange_value)
+        exchange_type, exchange_value, exchange_partition = pickle.loads(message)
+        exchange = exchange_type(exchange_value, **exchange_partition)
         return exchange
 
 
@@ -197,8 +198,10 @@ class Device(PyTango.Device_4Impl):
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def send(self, dump_data):
-        self.socket_dealer_out.send_multipart([self._name.encode(), dump_data])
+    def send(self, dump_data, param):
+        data = pickle.loads(dump_data)
+        send_data = self.encoder.encode(data[0], data[1], param)
+        self.socket_dealer_out.send_multipart([self._name.encode(), send_data])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -235,6 +238,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
             self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
             setattr(self.device_class, '_routerport', self._routerport)
+            setattr(self.device_class, 'encoder', self.communication.encoder)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
