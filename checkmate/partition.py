@@ -64,16 +64,17 @@ class Partition(object):
             >>> dir(ac)
             ['R']
             >>> ac.get_partition_attr() #doctest: +ELLIPSIS
-            <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
             >>> dir(dr)
             []
             >>> dr.get_partition_attr()
+            {}
         """
-        _partition_attr = dir(self)
-        if _partition_attr:
-            #assume only one partition_attribute
-            return getattr(self, _partition_attr[0])
+        _partition_dict = {}
+        for attr in dir(self):
+            _partition_dict[attr] = getattr(self, attr)
+        return _partition_dict
 
     def get_partition_values(self, values_list=None):
         """
