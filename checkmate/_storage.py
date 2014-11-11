@@ -36,9 +36,9 @@ def _build_resolve_logic(transition, type, data, data_value=None):
         >>> t.outgoing[0].arguments
         argument(values=('R2',), attribute_values={})
         >>> t.outgoing[0].resolve_logic.keys()
-        dict_keys(['R2'])
-        >>> values = t.outgoing[0].resolve_logic['R2']
-        >>> values[1]['value']['C'], values[1]['value']['P']
+        dict_keys(['R'])
+        >>> values = t.outgoing[0].resolve_logic['R'][1]
+        >>> values['C'], values['P']
         ('AT2', 'HIGH')
     """
     resolved_arguments = {}
@@ -67,8 +67,14 @@ def _build_resolve_logic(transition, type, data, data_value=None):
                         found = True
                         break
         if not found and data_value is not None:
-            if arg in list(data_value.keys()):
-                resolved_arguments[arg] = ('data', data_value[arg])
+            if type in ['incoming', 'outgoing']:
+                if arg in list(data_value.keys()):
+                    _ds_module, _dict = data_value[arg]
+                    ds_cls = getattr(_ds_module, _dict['type'])
+                    ex_cls = checkmate._module.get_class_implementing(data.interface)
+                    for _k, _cls in list(ex_cls._annotated_values.items()):
+                        if ds_cls == _cls:
+                            resolved_arguments[_k] = ('data', _dict['value'])
     return resolved_arguments
 
 
@@ -293,18 +299,18 @@ class InternalStorage(object):
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
             >>> resolved_arguments = t.outgoing[0].resolve('outgoing')
             >>> list(resolved_arguments.keys())
-            ['R2']
-            >>> resolved_arguments['R2']['type'], resolved_arguments['R2']['value']['C'], resolved_arguments['R2']['value']['P']
-            ('ActionRequest', 'AT2', 'HIGH')
+            ['R']
+            >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
+            ('AT2', 'HIGH')
         """
         resolved_arguments = {}
         for arg in self.resolve_logic.keys():
             try:
-                (_type, _interface) = self.resolve_logic[arg]
+                (_type, _value) = self.resolve_logic[arg]
                 if _type == 'data':
-                    _dict = _interface
-                    resolved_arguments.update({arg: _dict})
+                    resolved_arguments.update({arg: _value})
                     continue
+                _interface = _value
                 if _type in ['initial', 'final'] and states is not None:
                     for _state in states:
                         if _interface.providedBy(_state):

@@ -49,7 +49,7 @@ class ApplicationMeta(type):
         value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
         data_value = {}
         for code, structure in value_source.items():
-            data_value.update({code: structure})
+            data_value.update({code: (data_structure_module, structure)})
         namespace['data_value'] = data_value
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
