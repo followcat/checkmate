@@ -20,6 +20,7 @@ def add_device_service(services, component):
     subscribes = component.subscribe_exchange
     broadcast_map = component.broadcast_map
 
+    exchange_dict = {}
     d = {}
     code = """
         \nimport time
@@ -56,11 +57,11 @@ def add_device_service(services, component):
 
     for _service in services:
         name = _service[0]
-        dump_data = pickle.dumps([type(_service[1]), _service[1].value])
+        exchange_dict[name] = ([type(_service[1]), _service[1].value])
         if name not in publishs and name not in subscribes:
             code += """
                 \ndef %(name)s(self, param=[]):
-                \n    self.send(%(dump_data)s, param)""" % {'name': name, 'dump_data': dump_data}
+                \n    self.send('%(name)s', param)""" % {'name': name}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -80,6 +81,7 @@ def add_device_service(services, component):
             \n    self.push_data_ready_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
 
     exec(code, d)
+    d['exchange_dict'] = exchange_dict
     return d
 
 
@@ -208,9 +210,9 @@ class Device(PyTango.Device_4Impl):
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def send(self, dump_data, param):
-        data = pickle.loads(dump_data)
-        send_data = self.encoder.encode(data[0], data[1], param)
+    def send(self, code, param):
+        exchange_type, exchange_value = self.exchange_dict[code]
+        send_data = self.encoder.encode(exchange_type, exchange_value, param)
         self.socket_dealer_out.send_multipart([self._name.encode(), send_data])
 
 
