@@ -272,7 +272,7 @@ class InternalStorage(object):
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, _type, states=None, exchanges=None):
+    def resolve(self, _type=None, states=None, exchanges=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -367,6 +367,8 @@ class InternalStorage(object):
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
                 resolved_arguments = self.resolve('final', _initial, incoming_list)
             
+            if resolved_arguments is None:
+                resolved_arguments = self.resolve()
             if _target == self.factory(_initial, kwargs=resolved_arguments):
                 target_copy.remove(_target)
                 break
