@@ -71,7 +71,7 @@ def _build_resolve_logic(transition, type, data, data_value=None):
                         found = True
                         break
         if not found and data_value is not None:
-            if type in ['incoming', 'outgoing']:
+            if type in ['initial', 'incoming', 'outgoing']:
                 if arg in list(data_value.keys()):
                     _ds_module, _dict = data_value[arg]
                     ds_cls = getattr(_ds_module, _dict['type'])
@@ -176,7 +176,7 @@ class TransitionStorage(collections.defaultdict):
                     elif _k == 'returned':
                         self['returned'].append(storage_data.storage[0])
 
-        for _attribute in ('incoming', 'final', 'outgoing', 'returned'):
+        for _attribute in ('initial', 'incoming', 'final', 'outgoing', 'returned'):
             for item in self[_attribute]:
                 item.resolve_logic = _build_resolve_logic(self, _attribute, item, data_value)
 
@@ -213,6 +213,7 @@ class InternalStorage(object):
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
+    @checkmate.report_issue('checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
     def factory(self, args=None, kwargs=None):
         """
             >>> import sample_app.application
