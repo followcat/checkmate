@@ -56,8 +56,12 @@ def _build_resolve_logic(transition, type, data, data_value=None):
             if type in ['final', 'outgoing', 'returned']:
                 for item in transition['incoming']:
                     if arg in list(item.arguments.attribute_values.keys()) + list(item.arguments.values):
-                        resolved_arguments[arg] = ('incoming', item.interface)
-                        found = True
+                        for _k in item.resolve_logic.keys():
+                            resolved_arguments[_k] = ('incoming', item.interface)
+                            found = True
+                        if not found:
+                            resolved_arguments[arg] = ('incoming', item.interface)
+                            found = True
                         break
         if not found:
             if type in ['outgoing', 'returned']:
