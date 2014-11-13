@@ -265,14 +265,17 @@ class InternalStorage(object):
         if args is None:
             args = self.arguments.values
         if kwargs is None:
-            kwargs = self.arguments.attribute_values
+            if len(self.arguments.attribute_values):
+                kwargs = self.arguments.attribute_values
+            else:
+                kwargs = self._self_resolve()
         else:
             _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
             _local_kwargs.update(kwargs)
             kwargs = _local_kwargs
         return wrapper(self.function, args, kwargs)
 
-    def resolve(self, _type=None, states=None, exchanges=None):
+    def resolve(self, _type, states=None, exchanges=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -297,24 +300,11 @@ class InternalStorage(object):
             ('AP', 1)
             >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-            >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
-            >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
-            >>> resolved_arguments = t.outgoing[0].resolve('outgoing')
-            >>> list(resolved_arguments.keys())
-            ['R']
-            >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
-            ('AT2', 'HIGH')
         """
         resolved_arguments = {}
         for arg in self.resolve_logic.keys():
             try:
-                (_type, _value) = self.resolve_logic[arg]
-                if _type == 'data':
-                    resolved_arguments.update({arg: _value})
-                    continue
-                _interface = _value
+                (_type, _interface) = self.resolve_logic[arg]
                 if _type in ['initial', 'final'] and states is not None:
                     for _state in states:
                         if _interface.providedBy(_state):
@@ -330,7 +320,30 @@ class InternalStorage(object):
             except AttributeError:
                 continue
         return resolved_arguments
+    
+    def _self_resolve(self):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.exchanges
+            >>> import checkmate._storage
+            >>> a = sample_app.application.TestData()
+            >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
+            >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
+            >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
+            >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
+            >>> resolved_arguments = t.outgoing[0]._self_resolve()
+            >>> list(resolved_arguments.keys())
+            ['R']
+            >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
+            ('AT2', 'HIGH')
+        """
+        resolved_arguments = {}
+        for arg in self.resolve_logic.keys():
+            (_type, _value) = self.resolve_logic[arg]
+            resolved_arguments.update({arg: _value})
+        return resolved_arguments
 
+        
     def match(self, target_copy, reference=None, incoming_list=None):
         """
             >>> import checkmate.runtime._runtime
@@ -367,8 +380,6 @@ class InternalStorage(object):
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
                 resolved_arguments = self.resolve('final', _initial, incoming_list)
             
-            if resolved_arguments is None:
-                resolved_arguments = self.resolve()
             if _target == self.factory(_initial, kwargs=resolved_arguments):
                 target_copy.remove(_target)
                 break
