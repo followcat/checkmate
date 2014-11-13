@@ -108,6 +108,14 @@ class Encoder():
         pass
 
     def get_partition_values(self, partition, values_list=None):
+        """
+            >>> import pytango.checkmate.application
+            >>> import pytango.checkmate.runtime.communication
+            >>> ac = pytango.checkmate.exchanges.AC()
+            >>> encoder = pytango.checkmate.runtime.communication.Encoder()
+            >>> encoder.get_partition_values(ac)
+            ['AT1', 'NORM']
+        """
         if values_list is None:
             values_list = []
         for name in dir(partition):
