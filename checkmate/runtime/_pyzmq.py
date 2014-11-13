@@ -1,12 +1,9 @@
 import pickle
 import logging
-import threading
 
 import zmq
-import socket
 
 import checkmate.timeout_manager
-import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
@@ -95,61 +92,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_out.send_multipart([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)])
 
 
-class Router(checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, encoder, name=None):
-        """"""
-        super(Router, self).__init__(name=name)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Router')
-        self.encoder = encoder
-        self.poller = zmq.Poller()
-        self.zmq_context = zmq.Context.instance()
-        self.router = self.zmq_context.socket(zmq.ROUTER)
-        self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
-        self.publish = self.zmq_context.socket(zmq.PUB)
-        self.logger.debug("%s init" % self)
-        self.get_assign_port_lock = threading.Lock()
-
-        self._routerport = self.pickfreeport()
-        self._broadcast_routerport = self.pickfreeport()
-        self._publishport = self.pickfreeport()
-        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.broadcast_router.bind("tcp://127.0.0.1:%i" % self._broadcast_routerport)
-        self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
-
-        self.poller.register(self.router, zmq.POLLIN)
-        self.poller.register(self.broadcast_router, zmq.POLLIN)
-
-    def run(self):
-        """"""
-        self.logger.debug("%s startup" % self)
-        while True:
-            if self.check_for_stop():
-                break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for sock in iter(socks):
-                message = sock.recv_multipart()
-                exchange = self.encoder.decode(message[2])
-                if sock == self.router:
-                    self.router.send(message[1], flags=zmq.SNDMORE)
-                    self.router.send_pyobj(exchange)
-                if sock == self.broadcast_router:
-                    self.publish.send(message[1], flags=zmq.SNDMORE)
-                    self.publish.send_pyobj(exchange)
-
-    def stop(self):
-        self.logger.debug("%s stop" % self)
-        super(Router, self).stop()
-
-    def pickfreeport(self):
-        with self.get_assign_port_lock:
-            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.bind(('127.0.0.1', 0))
-            addr, port = _socket.getsockname()
-            _socket.close()
-        return port
-
-
 class Encoder():
     def __init__(self):
         pass
@@ -207,7 +149,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
         self.encoder = Encoder()
-        self.router = Router(self.encoder)
+        self.router = checkmate.runtime.communication.Router(self.encoder)
 
     def initialize(self):
         """"""
