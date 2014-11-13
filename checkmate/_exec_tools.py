@@ -230,7 +230,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation == inspect._empty and _v is not None])",
+           if _v.annotation == inspect._empty and _v.default is not None])",
          dict(define_class.__dict__), globals())
     setattr(define_class, '_annotated_values', globals()['_annotated_values'])
     setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
