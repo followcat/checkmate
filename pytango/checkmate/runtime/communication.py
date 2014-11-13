@@ -4,7 +4,6 @@ import time
 import shlex
 import pickle
 import random
-import socket
 import threading
 
 import zmq
@@ -127,46 +126,6 @@ class Encoder():
         exchange_type, exchange_value, exchange_partition = pickle.loads(message)
         exchange = exchange_type(exchange_value, **exchange_partition)
         return exchange
-
-
-class Router(checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, encoder, name=None):
-        """"""
-        super(Router, self).__init__(name=name)
-        self.encoder = encoder
-        self.poller = zmq.Poller()
-        self.zmq_context = zmq.Context.instance()
-        self.get_assign_port_lock = threading.Lock()
-
-        self.router = self.zmq_context.socket(zmq.ROUTER)
-        self._routerport = self.pickfreeport()
-        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.poller.register(self.router, zmq.POLLIN)
-
-    def run(self):
-        """"""
-        while True:
-            if self.check_for_stop():
-                break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for sock in iter(socks):
-                if sock == self.router:
-                    message = self.router.recv_multipart()
-                    exchange = self.encoder.decode(message[2])
-                    self.router.send(message[1], flags=zmq.SNDMORE)
-                    self.router.send_pyobj(exchange)
-
-    def stop(self):
-        super(Router, self).stop()
-
-    def pickfreeport(self):
-        with self.get_assign_port_lock:
-            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.bind(('127.0.0.1', 0))
-            addr, port = _socket.getsockname()
-            _socket.close()
-        return port
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -298,7 +257,7 @@ class Communication(checkmate.runtime.communication.Communication):
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
             self.comp_device[component.name] = _device_name
         self.encoder = Encoder()
-        self.router = Router(self.encoder)
+        self.router = checkmate.runtime.communication.Router(self.encoder)
         self.dev_proxies = {}
 
     def initialize(self):
