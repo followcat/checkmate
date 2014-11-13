@@ -90,9 +90,9 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), self.communication.encoder.encode(exchange)]))
+            self.socket_pub.send_multipart([exchange.origin.encode(), self.communication.encoder.encode(exchange)])
         else:
-            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)]))
+            self.socket_dealer_out.send_multipart([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)])
 
 
 class Router(checkmate.runtime._threading.Thread):
@@ -128,14 +128,13 @@ class Router(checkmate.runtime._threading.Thread):
                 break
             socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
             for sock in iter(socks):
-                package = sock.recv_multipart()
-                message = pickle.loads(package[1])
-                exchange = self.encoder.decode(message[1])
+                message = sock.recv_multipart()
+                exchange = self.encoder.decode(message[2])
                 if sock == self.router:
-                    self.router.send(message[0], flags=zmq.SNDMORE)
+                    self.router.send(message[1], flags=zmq.SNDMORE)
                     self.router.send_pyobj(exchange)
                 if sock == self.broadcast_router:
-                    self.publish.send(message[0], flags=zmq.SNDMORE)
+                    self.publish.send(message[1], flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
 
     def stop(self):
