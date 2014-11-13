@@ -1,4 +1,3 @@
-import pickle
 import logging
 
 import zmq
@@ -92,53 +91,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_out.send_multipart([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)])
 
 
-class Encoder():
-    def __init__(self):
-        pass
-
-    def get_partition_attr(self, partition):
-        """
-            >>> import sample_app.application
-            >>> import checkmate.runtime._pyzmq
-            >>> a = sample_app.application.TestData()
-            >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
-            >>> dir(ac)
-            ['R']
-            >>> encoder = checkmate.runtime._pyzmq.Encoder()
-            >>> encoder.get_partition_attr(ac) #doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
-            >>> dir(dr)
-            []
-            >>> encoder.get_partition_attr(dr)
-            {}
-        """
-        _partition_dict = {}
-        for attr in dir(partition):
-            _partition_dict[attr] = getattr(partition, attr)
-        return _partition_dict
-
-    def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value, self.get_partition_attr(exchange)))
-        return dump_data
-
-    @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
-    def decode(self, message):
-        """
-        >>> import sample_app.application
-        >>> import checkmate.runtime._pyzmq
-        >>> ac = sample_app.exchanges.AC()
-        >>> encoder = checkmate.runtime._pyzmq.Encoder()
-        >>> encode_exchange = encoder.encode(ac)
-        >>> decode_exchange = encoder.decode(encode_exchange)
-        >>> ac == decode_exchange
-        True
-        """
-        exchange_type, exchange_value, exchange_partition = pickle.loads(message)
-        exchange = exchange_type(exchange_value, **exchange_partition)
-        return exchange
-
-
 class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import time
@@ -170,7 +122,7 @@ class Communication(checkmate.runtime.communication.Communication):
         super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.encoder = Encoder()
+        self.encoder = checkmate.runtime.communication.Encoder()
         self.router = checkmate.runtime.communication.Router(self.encoder)
 
     def initialize(self):
