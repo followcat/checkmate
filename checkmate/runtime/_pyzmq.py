@@ -96,8 +96,30 @@ class Encoder():
     def __init__(self):
         pass
 
+    def get_partition_attr(self, partition):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime._pyzmq
+            >>> a = sample_app.application.TestData()
+            >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
+            >>> dir(ac)
+            ['R']
+            >>> encoder = checkmate.runtime._pyzmq.Encoder()
+            >>> encoder.get_partition_attr(ac) #doctest: +ELLIPSIS
+            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
+            >>> dir(dr)
+            []
+            >>> encoder.get_partition_attr(dr)
+            {}
+        """
+        _partition_dict = {}
+        for attr in dir(partition):
+            _partition_dict[attr] = getattr(partition, attr)
+        return _partition_dict
+
     def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value, exchange.get_partition_attr()))
+        dump_data = pickle.dumps((type(exchange), exchange.value, self.get_partition_attr(exchange)))
         return dump_data
 
     @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")

@@ -56,26 +56,6 @@ class Partition(object):
     def __dir__(self):
         return self.partition_attribute
 
-    def get_partition_attr(self):
-        """
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
-            >>> dir(ac)
-            ['R']
-            >>> ac.get_partition_attr() #doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
-            >>> dir(dr)
-            []
-            >>> dr.get_partition_attr()
-            {}
-        """
-        _partition_dict = {}
-        for attr in dir(self):
-            _partition_dict[attr] = getattr(self, attr)
-        return _partition_dict
-
     def __eq__(self, other):
         """
             >>> import sample_app.application
