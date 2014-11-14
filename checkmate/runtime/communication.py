@@ -108,7 +108,7 @@ class Encoder():
     def __init__(self):
         pass
 
-    def get_partition_attr(self, partition):
+    def _dump(self, partition):
         """
             >>> import sample_app.application
             >>> import checkmate.runtime.communication
@@ -117,12 +117,12 @@ class Encoder():
             >>> dir(ac)
             ['R']
             >>> encoder = checkmate.runtime.communication.Encoder()
-            >>> encoder.get_partition_attr(ac) #doctest: +ELLIPSIS
+            >>> encoder._dump(ac) #doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
             >>> dir(dr)
             []
-            >>> encoder.get_partition_attr(dr)
+            >>> encoder._dump(dr)
             {}
         """
         _partition_dict = {}
@@ -130,8 +130,11 @@ class Encoder():
             _partition_dict[attr] = getattr(partition, attr)
         return _partition_dict
 
+    def _load(self, param):
+        return param
+
     def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value, self.get_partition_attr(exchange)))
+        dump_data = pickle.dumps((type(exchange), exchange.value, self._dump(exchange)))
         return dump_data
 
     @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
@@ -146,6 +149,7 @@ class Encoder():
         >>> ac == decode_exchange
         True
         """
-        exchange_type, exchange_value, exchange_partition = pickle.loads(message)
+        exchange_type, exchange_value, unload_partition = pickle.loads(message)
+        exchange_partition = self._load(unload_partition)
         exchange = exchange_type(exchange_value, **exchange_partition)
         return exchange
