@@ -24,4 +24,7 @@ new a transition with initial like "__init__(R2)" then, get initial factory() to
     >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
     >>> init_1 = t.initial[0].factory()
     >>> init_1.partition_attribute
-    ()
+    ('R',)
+    >>> init_1.R,
+    (None,)
+    
