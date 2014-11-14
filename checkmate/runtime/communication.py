@@ -1,11 +1,11 @@
 import socket
 import pickle
-import logging
 import threading
 
 import zmq
 import zope.interface
 
+import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
@@ -61,14 +61,12 @@ class Router(checkmate.runtime._threading.Thread):
     def __init__(self, encoder, name=None):
         """"""
         super(Router, self).__init__(name=name)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Router')
         self.encoder = encoder
         self.poller = zmq.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
         self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
         self.publish = self.zmq_context.socket(zmq.PUB)
-        self.logger.debug("%s init" % self)
         self.get_assign_port_lock = threading.Lock()
 
         self._routerport = self.pickfreeport()
@@ -83,7 +81,6 @@ class Router(checkmate.runtime._threading.Thread):
 
     def run(self):
         """"""
-        self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
                 break
@@ -97,10 +94,6 @@ class Router(checkmate.runtime._threading.Thread):
                 if sock == self.broadcast_router:
                     self.publish.send(message[1], flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
-
-    def stop(self):
-        self.logger.debug("%s stop" % self)
-        super(Router, self).stop()
 
     def pickfreeport(self):
         with self.get_assign_port_lock:
