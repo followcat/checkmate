@@ -5,9 +5,9 @@ import threading
 import zmq
 import zope.interface
 
-import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+import checkmate.runtime._zmq_wrapper
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
@@ -62,7 +62,7 @@ class Router(checkmate.runtime._threading.Thread):
         """"""
         super(Router, self).__init__(name=name)
         self.encoder = encoder
-        self.poller = zmq.Poller()
+        self.poller = checkmate.runtime._zmq_wrapper.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
         self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
@@ -76,15 +76,15 @@ class Router(checkmate.runtime._threading.Thread):
         self.broadcast_router.bind("tcp://127.0.0.1:%i" % self._broadcast_routerport)
         self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
 
-        self.poller.register(self.router, zmq.POLLIN)
-        self.poller.register(self.broadcast_router, zmq.POLLIN)
+        self.poller.register(self.router)
+        self.poller.register(self.broadcast_router)
 
     def run(self):
         """"""
         while True:
             if self.check_for_stop():
                 break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+            socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
                 message = sock.recv_multipart()
                 exchange = self.encoder.decode(message[2])
