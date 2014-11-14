@@ -250,27 +250,23 @@ class InternalStorage(object):
             >>> c.states[1].value
             []
         """
-        def wrapper(func, param, kwparam):
+        def wrapper(param, kwparam):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
                     value = self.arguments.values[0]
                 except IndexError:
                     value = None
-                func(state, value, **kwparam)
+                self.function(state, value, **kwparam)
                 return state
             else:
-                return func(*param, **kwparam)
+                return self.function(*param, **kwparam)
 
         if args is None:
             args = self.arguments.values
         if kwargs is None:
             kwargs = self.arguments.attribute_values
-        else:
-            _local_kwargs = copy.deepcopy(self.arguments.attribute_values)
-            _local_kwargs.update(kwargs)
-            kwargs = _local_kwargs
-        return wrapper(self.function, args, kwargs)
+        return wrapper(args, kwargs)
 
     def resolve(self, _type=None, states=None, exchanges=None):
         """
