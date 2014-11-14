@@ -118,23 +118,24 @@ class Encoder():
             ['R']
             >>> encoder = checkmate.runtime.communication.Encoder()
             >>> encoder._dump(ac) #doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            (<class 'sample_app.exchanges.Action'>, 'AC', {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
             >>> dir(dr)
             []
             >>> encoder._dump(dr)
-            {}
+            (<class 'sample_app.exchanges.ExchangeButton'>, 'PBRL', {})
         """
-        _partition_dict = {}
+        partition_dict = {}
         for attr in dir(partition):
-            _partition_dict[attr] = getattr(partition, attr)
-        return _partition_dict
+            partition_dict[attr] = getattr(partition, attr)
+        return (type(partition), partition.value, partition_dict)
 
-    def _load(self, param):
-        return param
+    def _load(self, data):
+        exchange_type, exchange_value, exchange_partition = data
+        return exchange_type(exchange_value, **exchange_partition)
 
-    def encode(self, exchange):
-        dump_data = pickle.dumps((type(exchange), exchange.value, self._dump(exchange)))
+    def encode(self, *args):
+        dump_data = pickle.dumps(self._dump(*args))
         return dump_data
 
     @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
@@ -149,7 +150,6 @@ class Encoder():
         >>> ac == decode_exchange
         True
         """
-        exchange_type, exchange_value, unload_partition = pickle.loads(message)
-        exchange_partition = self._load(unload_partition)
-        exchange = exchange_type(exchange_value, **exchange_partition)
+        load_data = pickle.loads(message)
+        exchange = self._load(load_data)
         return exchange

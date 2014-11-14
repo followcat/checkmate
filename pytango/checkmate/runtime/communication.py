@@ -103,7 +103,7 @@ def add_device_interface(services, component, encoder):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
-class Encoder():
+class Encoder(checkmate.runtime.communication.Encoder):
     def __init__(self):
         pass
 
@@ -125,15 +125,9 @@ class Encoder():
                 values_list.append(attr.value)
         return values_list
 
-    def encode(self, exchange_type, exchange_value, param):
+    def _dump(self, exchange_type, exchange_value, param):
         partition = {}
-        dump_data = pickle.dumps((exchange_type, exchange_value, partition))
-        return dump_data
-
-    def decode(self, message):
-        exchange_type, exchange_value, exchange_partition = pickle.loads(message)
-        exchange = exchange_type(exchange_value, **exchange_partition)
-        return exchange
+        return (exchange_type, exchange_value, partition)
 
 
 class Registry(checkmate.runtime._threading.Thread):
