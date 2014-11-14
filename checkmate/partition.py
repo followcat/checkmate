@@ -102,6 +102,24 @@ class Partition(object):
             return True
         return False
 
+    def dump(self):
+        """
+            >>> import sample_app.application
+            >>> ac =sample_app.exchanges.AC()
+            >>> dump_dict = ac.dump()
+            >>> dump_dict['value']
+            'AC'
+            >>> dump_dict['attr']['R']['attr']['C']['value']
+            'AT1'
+        """
+        dump_dict = {}
+        dump_dict['type'] = type(self).__name__
+        dump_dict['value'] = self.value
+        dump_dict['attr'] = {}
+        for attr in dir(self):
+            dump_dict['attr'][attr] = getattr(self, attr).dump()
+        return dump_dict
+
     def description(self):
         try:
             return (self.partition_storage.get_description(self))
