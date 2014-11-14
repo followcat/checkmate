@@ -76,8 +76,8 @@ def _build_resolve_logic(transition, type, data, data_value=None):
                     _ds_module, _dict = data_value[arg]
                     ds_cls = getattr(_ds_module, _dict['type'])
                     ex_cls = checkmate._module.get_class_implementing(data.interface)
-                    for _k, _cls in list(ex_cls._annotated_values.items()):
-                        if ds_cls == _cls:
+                    for _k, _cls in list(ex_cls._sig.parameters.items()):
+                        if ds_cls == _cls.annotation:
                             resolved_arguments[_k] = ('data', _dict['value'])
     return resolved_arguments
 

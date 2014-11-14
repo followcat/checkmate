@@ -160,16 +160,18 @@ def get_define_str(element):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
             \n                kwargs[_k] = _v()
-            \n            elif not isinstance(kwargs[_k], _v):
-            \n                if isinstance(kwargs[_k], tuple):
-            \n                    if isinstance(kwargs[_k][0], tuple):
-            \n                        kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n            else:
+            \n                _v = self.__class__._construct_values[_k]
+            \n                if not isinstance(kwargs[_k], _v):
+            \n                    if isinstance(kwargs[_k], tuple):
+            \n                        if isinstance(kwargs[_k][0], tuple):
+            \n                            kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n                        else:
+            \n                            kwargs[_k] = _v(*kwargs[_k])
+            \n                    elif isinstance(kwargs[_k], dict):
+            \n                        kwargs[_k] = _v(**kwargs[_k])
             \n                    else:
-            \n                        kwargs[_k] = _v(*kwargs[_k])
-            \n                elif isinstance(kwargs[_k], dict):
-            \n                    kwargs[_k] = _v(**kwargs[_k])
-            \n                else:
-            \n                    kwargs[_k] = _v(kwargs[_k])
+            \n                        kwargs[_k] = _v(kwargs[_k])
             \n        super().__init__(value, *args, **kwargs)
             \n
             """.format(i=os.path.splitext(element.ancestor_class)[0],
@@ -224,15 +226,18 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
-    exec("_annotated_values = dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()])\
-         \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty]))\
+    exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty])\
+         \n_construct_values = dict(_annotated_values)\
+         \n_annotated_values.update(dict([(_k, lambda:_v.default) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty and _v.default != inspect._empty]))\
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation == inspect._empty and _v.default is not None])",
+           if _v.annotation == inspect._empty and _v.default != inspect._empty])",
          dict(define_class.__dict__), globals())
     setattr(define_class, '_annotated_values', globals()['_annotated_values'])
+    setattr(define_class, '_construct_values', globals()['_construct_values'])
     setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
     for _k, _v in globals()['class_attributes']:
         setattr(define_class, _k , _v)
