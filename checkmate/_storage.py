@@ -245,7 +245,7 @@ class InternalStorage(object):
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
-            >>> arguments = t.final[1].resolve('final', i)
+            >>> arguments = t.final[1].resolve(i)
             >>> t.final[1].factory([c.states[1]], kwargs=arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState object at ...
             >>> c.states[1].value
@@ -269,7 +269,7 @@ class InternalStorage(object):
             kwargs = {}
         return wrapper(args, kwargs)
 
-    def resolve(self, _type=None, states=None, exchanges=None):
+    def resolve(self, states=None, exchanges=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -278,27 +278,27 @@ class InternalStorage(object):
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
-            >>> t.final[0].resolve('final', states=[states])
+            >>> t.final[0].resolve(states=[states])
             {}
-            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
             >>> inc.R.value
             ['AT2', 'HIGH']
             >>> t.final[0].resolve_logic.keys()
             dict_keys(['R'])
-            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
-            >>> t.final[0].resolve('final', exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
-            >>> resolved_arguments = t.outgoing[0].resolve('outgoing')
+            >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
             >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
@@ -362,7 +362,7 @@ class InternalStorage(object):
             resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
-                resolved_arguments = self.resolve('final', _initial, incoming_list)
+                resolved_arguments = self.resolve(_initial, incoming_list)
             
             if resolved_arguments is None:
                 resolved_arguments = self.resolve()
