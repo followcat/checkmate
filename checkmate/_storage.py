@@ -245,7 +245,8 @@ class InternalStorage(object):
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
-            >>> t.final[1].factory([c.states[1]]) # doctest: +ELLIPSIS
+            >>> arguments = t.final[1].resolve('final', i)
+            >>> t.final[1].factory([c.states[1]], kwargs=arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState object at ...
             >>> c.states[1].value
             []
@@ -265,7 +266,7 @@ class InternalStorage(object):
         if args is None:
             args = self.arguments.values
         if kwargs is None:
-            kwargs = self.arguments.attribute_values
+            kwargs = {}
         return wrapper(args, kwargs)
 
     def resolve(self, _type=None, states=None, exchanges=None):
