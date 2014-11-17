@@ -129,6 +129,10 @@ class Encoder(checkmate.runtime.communication.Encoder):
         partition = {}
         return (exchange_type, exchange_value, partition)
 
+    def _load(self, data):
+        exchange_type, exchange_value, exchange_partition = data
+        return exchange_type(exchange_value, **exchange_partition)
+
 
 class Registry(checkmate.runtime._threading.Thread):
     def __init__(self, event):

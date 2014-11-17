@@ -106,9 +106,6 @@ class Router(checkmate.runtime._threading.Thread):
 
 class Encoder():
     def __init__(self):
-        pass
-
-    def _dump(self, partition):
         """
             >>> import sample_app.application
             >>> import checkmate.runtime.communication
@@ -117,22 +114,28 @@ class Encoder():
             >>> dir(ac)
             ['R']
             >>> encoder = checkmate.runtime.communication.Encoder()
-            >>> encoder._dump(ac) #doctest: +ELLIPSIS
-            (<class 'sample_app.exchanges.Action'>, 'AC', {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> dr = a.components['C2'].state_machine.transitions[3].incoming[0].factory()
-            >>> dir(dr)
-            []
-            >>> encoder._dump(dr)
-            (<class 'sample_app.exchanges.ExchangeButton'>, 'PBRL', {})
+            >>> dump_data = encoder._dump(ac) #doctest: +ELLIPSIS
+            >>> dump_data[0]
+            <class 'sample_app.exchanges.Action'>
+            >>> dump_data[1]['value']
+            'AC'
+            >>> dump_data[1]['R']['C']['value']
+            'AT1'
+            >>> new_ac = encoder._load(dump_data)
+            >>> new_ac #doctest: +ELLIPSIS
+            <sample_app.exchanges.Action object at ...
+            >>> new_ac.R.P.value
+            'NORM'
         """
-        partition_dict = {}
-        for attr in dir(partition):
-            partition_dict[attr] = getattr(partition, attr)
-        return (type(partition), partition.value, partition_dict)
+        pass
+
+    def _dump(self, partition):
+        partition_dict = partition.dump()
+        return (type(partition), partition_dict)
 
     def _load(self, data):
-        exchange_type, exchange_value, exchange_partition = data
-        return exchange_type(exchange_value, **exchange_partition)
+        exchange_type, params_dict = data
+        return exchange_type(**params_dict)
 
     def encode(self, *args):
         dump_data = pickle.dumps(self._dump(*args))
