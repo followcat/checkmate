@@ -224,10 +224,11 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
-    exec("_annotated_values = dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()])\
-         \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty]))\
-         \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
+    exec("_annotated_values = dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty])\
+          \n_annotated_values.update(dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()\
+           if _v.default != inspect._empty]))\
+          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
            if _v.annotation == inspect._empty and _v is not None])",
