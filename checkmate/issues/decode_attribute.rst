@@ -1,5 +1,6 @@
 >>> import sample_app.application
->>> ap = sample_app.exchanges.AP(R=sample_app._data.R2['value'])
+>>> r2 = sample_app.application.TestData.data_value['R2'][1]
+>>> ap = sample_app.exchanges.AP(R=r2['value'])
 >>> ap.R.C.value
 'AT2'
 >>> import checkmate.runtime.communication
