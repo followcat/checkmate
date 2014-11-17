@@ -52,32 +52,6 @@ def get_method_basename(signature):
     return basename
 
 
-def get_parameters_list(parameter_str):
-    """
-
-        >>> import checkmate._exec_tools
-        >>> checkmate._exec_tools.get_parameters_list("'AT1'")
-        ['AT1']
-        >>> checkmate._exec_tools.get_parameters_list("R = ActionRequest(['AT2', 'HIGH']), R = ['HIGH']")
-        ["R = ActionRequest(['AT2', 'HIGH'])", "R = ['HIGH']"]
-    """
-    temp_list = []
-    temp_str = ''
-    bracket_count = 0
-    for _s in parameter_str.split(','):
-        if _s == '':
-            continue
-        bracket_count += _s.count('(')
-        bracket_count -= _s.count(')')
-        temp_str += _s
-        if bracket_count == 0:
-            temp_list.append(temp_str.strip(' \'"'))
-            temp_str = ''
-            continue
-        temp_str += ','
-    return temp_list
-
-
 @checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
 def method_arguments(signature, interface):
     """
@@ -87,32 +61,22 @@ def method_arguments(signature, interface):
         >>> interface = sample_app.exchanges.IAction
         >>> checkmate._exec_tools.method_arguments("A0('AT1')", interface)
         (('AT1',), {})
-
-        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R = None)", interface)
-        (('False',), {'R': None})
+        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R)", interface)
+        (('False',), {})
         >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
-        ((), {'R': None})
+        ((), {})
     """
-    args = []
+    args = tuple()
     kwargs = {}
     if is_method(signature):
         cls = checkmate._module.get_class_implementing(interface)
         found_label = signature.find('(')
-        parameter_str = signature[found_label:][1:-1]
-        parameters = get_parameters_list(parameter_str)
-        for each in parameters:
-            if '=' not in each:
-                if each in cls._sig.parameters.keys():
-                    kwargs[each] = None
-                else:
-                    args.append(each)
-            else:
-                label = each.find('=')
-                _k, _v = each[:label].strip(), each[label + 1:].strip()
-                exec("kwargs['%s'] = %s" % (_k, _v), locals(), locals())
+        parameters = signature[found_label:][1:-1].split(', ')
+        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
+                      _p.strip("'") not in cls._sig.parameters.keys())])
     else:
-        args = [signature]
-    return tuple(args), kwargs
+        args = (signature,)
+    return args, kwargs
 
 
 def get_exec_signature(signature, dependent_modules):

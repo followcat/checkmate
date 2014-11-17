@@ -1,6 +1,3 @@
-import checkmate._storage
-
-
 class Partition(object):
     """"""
     partition_attribute = tuple()
@@ -14,6 +11,7 @@ class Partition(object):
 
         If the partition defines an attribute as implementing IStorage, the factory() is called to instantiate the attribute.
             >>> import zope.interface
+            >>> import checkmate._storage
             >>> def factory(self): print("In factory")
             >>> A = type('A', (object,), {'factory': factory})
             >>> _impl = zope.interface.implementer(checkmate._storage.IStorage)
@@ -55,6 +53,10 @@ class Partition(object):
 
     def __dir__(self):
         return self.partition_attribute
+
+    @property
+    def attribute_list(self):
+        return dict(map(lambda x:(x, getattr(self, x)), self.partition_attribute))
 
     def get_partition_attr(self):
         """
