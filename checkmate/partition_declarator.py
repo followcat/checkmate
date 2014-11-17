@@ -18,11 +18,16 @@ def make_transition(items, exchanges, state_modules, data_value):
 
 
 class Declarator(object):
-    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None):
+    """"""
+    data_value = {}
+
+    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None, data_value=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
         self.module['exchanges'] = exchange_module
+        if data_value is not None:
+            self.__class__.data_value = data_value
 
         self.output = {
             'data_structure': [],
@@ -59,8 +64,6 @@ class Declarator(object):
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, zip(codes_list, values_list), full_description)
-        for _s in partition_storage.storage:
-            setattr(_s, 'data_value', self.data_value)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
@@ -83,7 +86,8 @@ class Declarator(object):
         >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...
         """
-        self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']], self.data_value))
+        self.output['transitions'].append(make_transition(item, [self.module['exchanges']],
+                                       [self.module['states']], self.__class__.data_value))
 
     def new_definitions(self, data_source):
         """
