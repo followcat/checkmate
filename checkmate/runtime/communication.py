@@ -127,7 +127,7 @@ class Encoder(object):
             >>> new_ac.R.P.value
             'NORM'
         """
-        partition_dict = partition.dump()
+        partition_dict = partition._dump()
         return (type(partition), partition_dict)
 
     def _load(self, data):

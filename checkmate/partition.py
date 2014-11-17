@@ -102,11 +102,11 @@ class Partition(object):
             return True
         return False
 
-    def dump(self):
+    def _dump(self):
         """
             >>> import sample_app.application
             >>> ac =sample_app.exchanges.AC()
-            >>> dump_dict = ac.dump()
+            >>> dump_dict = ac._dump()
             >>> dump_dict['value']
             'AC'
             >>> dump_dict['R']['C']['value']
@@ -115,7 +115,7 @@ class Partition(object):
         dump_dict = {}
         dump_dict['value'] = self.value
         for attr in dir(self):
-            dump_dict[attr] = getattr(self, attr).dump()
+            dump_dict[attr] = getattr(self, attr)._dump()
         return dump_dict
 
     def description(self):
