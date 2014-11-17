@@ -1,4 +1,3 @@
-import copy
 import collections
 
 import zope.interface
@@ -19,68 +18,6 @@ def name_to_interface(name, modules):
         raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
     return interface
 
-def _build_resolve_logic(transition, type, data, data_value=None):
-    """Build logic to resolve kwargs in TransitionStorage
-
-        >>> import sample_app.application
-        >>> import sample_app.exchanges
-        >>> import checkmate._storage
-        >>> a = sample_app.application.TestData()
-        >>> t = a.components['C1'].state_machine.transitions[1]
-        >>> t.final[0].resolve_logic
-        {'R': ('incoming', <InterfaceClass sample_app.exchanges.IAction>)}
-        >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-        >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
-        >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
-        >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
-        >>> t.outgoing[0].arguments
-        argument(values=('R2',), attribute_values={})
-        >>> t.outgoing[0].resolve_logic.keys()
-        dict_keys(['R'])
-        >>> values = t.outgoing[0].resolve_logic['R'][1]
-        >>> values['C'], values['P']
-        ('AT2', 'HIGH')
-    """
-    resolved_arguments = {}
-    entry = transition[type]
-    arguments = list(entry[entry.index(data)].arguments.attribute_values.keys()) + list(entry[entry.index(data)].arguments.values)
-    for arg in arguments:
-        found = False
-        if type in ['final', 'incoming']:
-            for item in transition['initial']:
-                if arg == item.code:
-                    resolved_arguments[arg] = ('initial', item.interface)
-                    found = True
-                    break
-        if ((not found) and len(transition['incoming']) != 0):
-            if type in ['final', 'outgoing', 'returned']:
-                for item in transition['incoming']:
-                    if arg in list(item.arguments.attribute_values.keys()) + list(item.arguments.values):
-                        for _k in item.resolve_logic.keys():
-                            resolved_arguments[_k] = ('incoming', item.interface)
-                            found = True
-                        if not found:
-                            resolved_arguments[arg] = ('incoming', item.interface)
-                            found = True
-                        break
-        if not found:
-            if type in ['outgoing', 'returned']:
-                for item in transition['final']:
-                    if arg == item.code:
-                        resolved_arguments[arg] = ('final', item.interface)
-                        found = True
-                        break
-        if not found and data_value is not None:
-            if type in ['incoming', 'outgoing']:
-                if arg in list(data_value.keys()):
-                    _ds_module, _dict = data_value[arg]
-                    ds_cls = getattr(_ds_module, _dict['type'])
-                    ex_cls = checkmate._module.get_class_implementing(data.interface)
-                    for _k, _cls in list(ex_cls._annotated_values.items()):
-                        if ds_cls == _cls:
-                            resolved_arguments[_k] = ('data', _dict['value'])
-    return resolved_arguments
-
 
 def store(type, interface, code, value, description=None):
     """
@@ -94,8 +31,7 @@ def store(type, interface, code, value, description=None):
         <sample_app.data_structure.ActionRequest object at ...
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
-        >>> print(state.value)
-        None
+        >>> state.value
         >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.value, ex.R.value)
@@ -176,10 +112,22 @@ class TransitionStorage(collections.defaultdict):
                     elif _k == 'returned':
                         self['returned'].append(storage_data.storage[0])
 
-        for _attribute in ('incoming', 'final', 'outgoing', 'returned'):
-            for item in self[_attribute]:
-                item.resolve_logic = _build_resolve_logic(self, _attribute, item, data_value)
+        self._build_resolve_logic(data_value)
 
+    def _build_resolve_logic(self, data_value):
+        for _attribute in ('incoming', 'final', 'outgoing', 'returned'):
+            for _item in self[_attribute]:
+                resolved_arguments = {}
+                for arg in _item.arguments.values:
+                    if arg in list(data_value.keys()):
+                        _ds_module, _dict = data_value[arg]
+                        ds_cls = getattr(_ds_module, _dict['type'])
+                        ex_cls = checkmate._module.get_class_implementing(_item.interface)
+                        for _k, _cls in list(ex_cls._annotated_values.items()):
+                            if ds_cls == _cls:
+                                resolved_arguments[_k] = _dict['value']
+                _item.resolved_arguments = resolved_arguments
+            
 
 class IStorage(zope.interface.Interface):
     """"""
@@ -195,10 +143,6 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> st = InternalStorage(sample_app.exchanges.IAction, "AP(R)", "AP(R)", None, sample_app.exchanges.Action)
-            >>> tuple(st.arguments)
-            ((), {'R': None})
-            >>> dir(st.factory())
-            ['R']
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
@@ -207,9 +151,9 @@ class InternalStorage(object):
         self.interface = interface
         self.function = function
 
+        self.resolved_arguments = {}
         argument = collections.namedtuple('argument', ['values', 'attribute_values'])
         self.arguments = argument(*checkmate._exec_tools.method_arguments(value, interface))
-        self.resolve_logic = {}
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
@@ -219,10 +163,6 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)","AP(R)", None, sample_app.exchanges.Action)
-            >>> tuple(st.arguments)
-            ((), {'R': None})
-            >>> dir(st.factory())
-            ['R']
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
@@ -245,7 +185,7 @@ class InternalStorage(object):
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
-            >>> arguments = t.final[1].resolve(i)
+            >>> arguments = t.final[1].resolve(exchanges=[i])
             >>> t.final[1].factory([c.states[1]], kwargs=arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState object at ...
             >>> c.states[1].value
@@ -278,22 +218,20 @@ class InternalStorage(object):
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
-            >>> t.final[0].resolve(states=[states])
-            {}
+            >>> t.final[0].resolve(states)
+            OrderedDict([('R', None)])
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
             >>> inc.R.value
             ['AT2', 'HIGH']
-            >>> t.final[0].resolve_logic.keys()
-            dict_keys(['R'])
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(kwargs={'R': 1})
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
@@ -304,29 +242,23 @@ class InternalStorage(object):
             >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
             ('AT2', 'HIGH')
         """
-        resolved_arguments = {}
-        for arg in self.resolve_logic.keys():
+        _attributes = {}
+        if states is not None:
+            for input in states:
+                _attributes.update(input.attribute_list)
+        if exchanges is not None:
+            for input in exchanges:
+                _attributes.update(input.attribute_list)
+        _cls = checkmate._module.get_class_implementing(self.interface)
+        try:
+            return _cls._sig.bind(**_attributes).arguments
+        except TypeError:
             try:
-                (_type, _value) = self.resolve_logic[arg]
-                if _type == 'data':
-                    resolved_arguments.update({arg: _value})
-                    continue
-                _interface = _value
-                if _type in ['initial', 'final'] and states is not None:
-                    for _state in states:
-                        if _interface.providedBy(_state):
-                            resolved_arguments.update({arg: _state.value})
-                            break
-                elif exchanges is not None:
-                    for _exchange in [_e for _e in exchanges if _interface.providedBy(_e)]:
-                        try:
-                            resolved_arguments.update({arg: getattr(_exchange, arg)})
-                            break
-                        except AttributeError:
-                            continue
-            except AttributeError:
-                continue
-        return resolved_arguments
+                return collections.OrderedDict(
+                        map(lambda x:(x,self.resolved_arguments[x]),
+                        _cls._sig.parameters.keys()))
+            except KeyError:
+                return {}
 
     def match(self, target_copy, reference=None, incoming_list=None):
         """

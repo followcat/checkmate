@@ -119,12 +119,12 @@ class Transition(object):
             >>> t = c.state_machine.transitions[1]
             >>> i = t.incoming[0].factory(kwargs={'R': 1})
             >>> t.resolve_arguments(t.final[0], c.states, [i]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> i = t.incoming[0].factory()
             >>> (i.value, [i.R.C.value, i.R.P.value])
             ('AP', ['AT1', 'NORM'])
             >>> t.resolve_arguments(t.final[0], c.states, [i]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
         """
         return data.resolve(states, incoming_exchange)
 
