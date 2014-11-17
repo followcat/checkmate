@@ -254,7 +254,10 @@ class InternalStorage(object):
                 _attributes.update(input.attribute_list)
         _cls = checkmate._module.get_class_implementing(self.interface)
         try:
-            return _cls._sig.bind(**_attributes).arguments
+            _kwargs = _cls._sig.bind(**_attributes).arguments
+            if len(_kwargs) == 0 and len(_cls._sig.parameters) > 0:
+                raise TypeError("_attributes is empty, then go forward")
+            return _kwargs
         except TypeError:
             try:
                 return collections.OrderedDict(
