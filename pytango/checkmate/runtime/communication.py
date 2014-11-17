@@ -104,9 +104,6 @@ def add_device_interface(services, component, encoder):
 
 
 class Encoder(checkmate.runtime.communication.Encoder):
-    def __init__(self):
-        pass
-
     def get_partition_values(self, partition, values_list=None):
         """
             >>> import pytango.checkmate.application

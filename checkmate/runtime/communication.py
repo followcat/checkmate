@@ -104,8 +104,8 @@ class Router(checkmate.runtime._threading.Thread):
         return port
 
 
-class Encoder():
-    def __init__(self):
+class Encoder(object):
+    def _dump(self, partition):
         """
             >>> import sample_app.application
             >>> import checkmate.runtime.communication
@@ -127,9 +127,6 @@ class Encoder():
             >>> new_ac.R.P.value
             'NORM'
         """
-        pass
-
-    def _dump(self, partition):
         partition_dict = partition.dump()
         return (type(partition), partition_dict)
 
