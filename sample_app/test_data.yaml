@@ -1,12 +1,9 @@
-R1:
-  type: ActionRequest
-  value:
+ActionRequest:
+  R1:
     C: AT1
     P: NORM
 
-R2:
-  type: ActionRequest
-  value:
+  R2:
     C: AT2
     P: HIGH
 
