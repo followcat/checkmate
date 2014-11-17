@@ -109,15 +109,13 @@ class Partition(object):
             >>> dump_dict = ac.dump()
             >>> dump_dict['value']
             'AC'
-            >>> dump_dict['attr']['R']['attr']['C']['value']
+            >>> dump_dict['R']['C']['value']
             'AT1'
         """
         dump_dict = {}
-        dump_dict['type'] = type(self).__name__
         dump_dict['value'] = self.value
-        dump_dict['attr'] = {}
         for attr in dir(self):
-            dump_dict['attr'][attr] = getattr(self, attr).dump()
+            dump_dict[attr] = getattr(self, attr).dump()
         return dump_dict
 
     def description(self):
