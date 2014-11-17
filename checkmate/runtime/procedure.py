@@ -134,20 +134,20 @@ class Procedure(object):
         if self.transitions.root.owner in self.system_under_test:
             return _compatible_skip_test(self, "SUT do NOT simulate")
         if hasattr(self, 'initial'):
-            if not self.application.compare_states(self.initial):
-                self.transform_to_initial()
-            if not self.application.compare_states(self.initial):
+            if not self.transform_to_initial():
                 return _compatible_skip_test(self, "Procedure components states do not match Initial")
         self._run_from_startpoint(self.transitions)
 
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
-            return
+            return True
         path = checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial)
         if len(path) == 0:
-            return _compatible_skip_test(self, "Can't find a path to inital state")
+            _compatible_skip_test(self, "Can't find a path to inital state")
+            return False
         for _procedure in path:
             _procedure(runtime=self.runtime)
+        return True
 
     def _components_match_sut(self, system_under_test):
         for _sut in system_under_test:
