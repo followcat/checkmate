@@ -4,13 +4,11 @@ import time
 import shlex
 import pickle
 import random
-import socket
 import threading
 
 import zmq
 import PyTango
 
-import checkmate.runtime.encoder
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 import checkmate.runtime.communication
@@ -21,6 +19,7 @@ def add_device_service(services, component):
     subscribes = component.subscribe_exchange
     broadcast_map = component.broadcast_map
 
+    exchange_dict = {}
     d = {}
     code = """
         \nimport time
@@ -57,11 +56,11 @@ def add_device_service(services, component):
 
     for _service in services:
         name = _service[0]
-        dump_data = pickle.dumps((type(_service[1]), _service[1].value))
+        exchange_dict[name] = ([type(_service[1]), _service[1].value])
         if name not in publishs and name not in subscribes:
             code += """
-                \ndef %(name)s(self, param=None):
-                \n    self.send(%(dump_data)s)""" % {'name': name, 'dump_data': dump_data}
+                \ndef %(name)s(self, param=[]):
+                \n    self.send('%(name)s', param)""" % {'name': name}
 
     for _subscribe in subscribes:
         component_name = broadcast_map[_subscribe]
@@ -81,19 +80,20 @@ def add_device_service(services, component):
             \n    self.push_data_ready_event('%(pub)s', self.attr_%(pub)s_read)""" % {'pub': _publish}
 
     exec(code, d)
+    d['exchange_dict'] = exchange_dict
     return d
 
 
-def add_device_interface(services, component):
+def add_device_interface(services, component, encoder):
     publishs = component.publish_exchange
     subscribes = component.subscribe_exchange
     command = {}
     for _service in services:
         name = _service[0]
-        args = _service[1].get_partition_attr()
+        args = encoder.get_partition_values(_service[1])
         if name in publishs or name in subscribes:
             continue
-        if args is not None:
+        if args:
             command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
@@ -103,41 +103,32 @@ def add_device_interface(services, component):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
-class Router(checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, name=None):
-        """"""
-        super(Router, self).__init__(name=name)
-        self.poller = zmq.Poller()
-        self.zmq_context = zmq.Context.instance()
-        self.get_assign_port_lock = threading.Lock()
+class Encoder(checkmate.runtime.communication.Encoder):
+    def get_partition_values(self, partition, values_list=None):
+        """
+            >>> import pytango.checkmate.application
+            >>> import pytango.checkmate.runtime.communication
+            >>> ac = pytango.checkmate.exchanges.AC()
+            >>> encoder = pytango.checkmate.runtime.communication.Encoder()
+            >>> encoder.get_partition_values(ac)
+            ['AT1', 'NORM']
+        """
+        if values_list is None:
+            values_list = []
+        for name in dir(partition):
+            attr = getattr(partition, name)
+            self.get_partition_values(attr, values_list)
+            if attr.value is not None:
+                values_list.append(attr.value)
+        return values_list
 
-        self.router = self.zmq_context.socket(zmq.ROUTER)
-        self._routerport = self.pickfreeport()
-        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.poller.register(self.router, zmq.POLLIN)
+    def _dump(self, exchange_type, exchange_value, param):
+        partition = {}
+        return (exchange_type, exchange_value, partition)
 
-    def run(self):
-        """"""
-        while True:
-            if self.check_for_stop():
-                break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for sock in iter(socks):
-                if sock == self.router:
-                    message = self.router.recv_multipart()
-                    self.router.send_multipart([message[1], message[0], message[2]])
-
-    def stop(self):
-        super(Router, self).stop()
-
-    def pickfreeport(self):
-        with self.get_assign_port_lock:
-            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.bind(('127.0.0.1', 0))
-            addr, port = _socket.getsockname()
-            _socket.close()
-        return port
+    def _load(self, data):
+        exchange_type, exchange_value, exchange_partition = data
+        return exchange_type(exchange_value, **exchange_partition)
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -181,8 +172,10 @@ class Device(PyTango.Device_4Impl):
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def send(self, dump_data):
-        self.socket_dealer_out.send_multipart([self._name.encode(), dump_data])
+    def send(self, code, param):
+        exchange_type, exchange_value = self.exchange_dict[code]
+        send_data = self.encoder.encode(exchange_type, exchange_value, param)
+        self.socket_dealer_out.send_multipart([self._name.encode(), send_data])
 
 
 class DeviceInterface(PyTango.DeviceClass):
@@ -204,7 +197,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True, is_broadcast=False):
         super().__init__(component, communication, is_server=True, is_reading=is_reading, is_broadcast=is_broadcast)
         self.device_class = type(component.name + 'Device', (Device,), add_device_service(component.services, self.component))
-        self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component))
+        self.interface_class = type(component.name + 'Interface', (DeviceInterface,), add_device_interface(component.services, self.component, self.communication.encoder))
         self.device_name = self.communication.create_tango_device(self.device_class.__name__, self.component.name, type(self.component).__module__.split(os.extsep)[-1])
         self._name = component.name
         self.communication.comp_device[component.name] = self.device_name
@@ -219,13 +212,14 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
             self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
             setattr(self.device_class, '_routerport', self._routerport)
+            setattr(self.device_class, 'encoder', self.communication.encoder)
             self.communication.pytango_server.add_class(self.interface_class, self.device_class, self.device_class.__name__)
 
     def open(self):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
         def check(dev_proxy):
             dev_proxy.attribute_list_query()
-        for dev_name in list(self.communication.comp_device.values()): 
+        for dev_name in list(self.communication.comp_device.values()):
             if dev_name != self.device_name:
                 dev_proxy = self.communication.get_device_proxy(dev_name)
                 check(dev_proxy)
@@ -237,12 +231,12 @@ class Connector(checkmate.runtime.communication.Connector):
         if exchange.broadcast:
             self.socket_dealer_out.send(pickle.dumps([self.device_name, exchange]))
         else:
-            attr = exchange.get_partition_attr()
+            attribute_values = self.communication.encoder.get_partition_values(exchange)
             param = None
-            if attr is not None:
+            if attribute_values:
                 param_type = PyTango.DevVarStringArray
                 param = PyTango.DeviceData()
-                param.insert(param_type, [_a.value for _a in attr.partition_attribute])
+                param.insert(param_type, attribute_values)
             for des in exchange.destination:
                 device_proxy = self.communication.get_device_proxy(self.communication.comp_device[des])
                 call = getattr(device_proxy, exchange.value)
@@ -265,7 +259,8 @@ class Communication(checkmate.runtime.communication.Communication):
             self.server_name = self.create_tango_server(component.name)
             _device_name = self.create_tango_device(component.__class__.__name__, component.name, self.device_family)
             self.comp_device[component.name] = _device_name
-        self.router = Router()
+        self.encoder = Encoder()
+        self.router = checkmate.runtime.communication.Router(self.encoder)
         self.dev_proxies = {}
 
     def initialize(self):
@@ -291,7 +286,6 @@ class Communication(checkmate.runtime.communication.Communication):
             dev_proxy = PyTango.DeviceProxy(device_name)
             self.dev_proxies[device_name] = dev_proxy
             return dev_proxy
-
 
     def close(self):
         pytango_util = PyTango.Util.instance()
