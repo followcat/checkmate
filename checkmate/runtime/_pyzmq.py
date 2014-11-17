@@ -1,18 +1,13 @@
-import pickle
 import logging
-import threading
 
 import zmq
-import socket
 
 import checkmate.timeout_manager
-import checkmate.runtime._threading
 import checkmate.runtime.communication
 
 
 class Connector(checkmate.runtime.communication.Connector):
     """
-        >>> import zmq
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> a = sample_app.application.TestData()
@@ -91,63 +86,9 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send(pickle.dumps([exchange.origin.encode(), checkmate.runtime.encoder.encode(exchange)]))
+            self.socket_pub.send_multipart([exchange.origin.encode(), self.communication.encoder.encode(exchange)])
         else:
-            self.socket_dealer_out.send(pickle.dumps([exchange.destination[0].encode(), checkmate.runtime.encoder.encode(exchange)]))
-
-
-class Registry(checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, name=None):
-        """"""
-        super(Registry, self).__init__(name=name)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Registry')
-        self.poller = zmq.Poller()
-        self.zmq_context = zmq.Context.instance()
-        self.router = self.zmq_context.socket(zmq.ROUTER)
-        self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
-        self.publish = self.zmq_context.socket(zmq.PUB)
-        self.logger.debug("%s init" % self)
-        self.get_assign_port_lock = threading.Lock()
-
-        self._routerport = self.pickfreeport()
-        self._broadcast_routerport = self.pickfreeport()
-        self._publishport = self.pickfreeport()
-        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.broadcast_router.bind("tcp://127.0.0.1:%i" % self._broadcast_routerport)
-        self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
-
-        self.poller.register(self.router, zmq.POLLIN)
-        self.poller.register(self.broadcast_router, zmq.POLLIN)
-
-    def run(self):
-        """"""
-        self.logger.debug("%s startup" % self)
-        while True:
-            if self.check_for_stop():
-                break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
-            for sock in iter(socks):
-                if sock == self.router:
-                    package = self.router.recv_multipart()
-                    message = pickle.loads(package[1])
-                    self.router.send_multipart([message[0], message[1]])
-                if sock == self.broadcast_router:
-                    package = self.broadcast_router.recv_multipart()
-                    message = pickle.loads(package[1])
-                    self.publish.send_multipart(message)
-
-    def stop(self):
-        self.logger.debug("%s stop" % self)
-        super(Registry, self).stop()
-
-    def pickfreeport(self):
-        with self.get_assign_port_lock:
-            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.bind(('127.0.0.1', 0))
-            addr, port = _socket.getsockname()
-            _socket.close()
-        return port
+            self.socket_dealer_out.send_multipart([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)])
 
 
 class Communication(checkmate.runtime.communication.Communication):
@@ -181,22 +122,23 @@ class Communication(checkmate.runtime.communication.Communication):
         super(Communication, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.registry = Registry()
+        self.encoder = checkmate.runtime.communication.Encoder()
+        self.router = checkmate.runtime.communication.Router(self.encoder)
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
-        self.registry.start()
+        self.router.start()
 
     def close(self):
-        self.registry.stop()
+        self.router.stop()
         self.logger.info("%s close" % self)
 
     def get_routerport(self):
-        return self.registry._routerport
+        return self.router._routerport
 
     def get_broadcast_routerport(self):
-        return self.registry._broadcast_routerport
+        return self.router._broadcast_routerport
 
     def get_publishport(self):
-        return self.registry._publishport
+        return self.router._publishport

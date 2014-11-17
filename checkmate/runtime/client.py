@@ -1,24 +1,12 @@
-import time
 import logging
-import collections
 
 import zmq
 import zope.interface
 
 import checkmate.logger
-import checkmate.timeout_manager
-import checkmate.runtime.encoder
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
-
-
-class Poller(zmq.Poller):
-    def poll(self, timeout=None):
-        if self.sockets:
-            return super().poll(timeout)
-        if timeout > 0:
-            time.sleep(timeout / 1000)
-        return []
+import checkmate.runtime._zmq_wrapper
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
@@ -93,11 +81,10 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.exchange_deque = exchange_deque
 
         self.connections = []
-        self.zmq_context = zmq.Context.instance()
-        self.poller = Poller()
         self.internal_connector = None
         self.external_connector = None
         self.logger.debug("%s initial" % self)
+        self.poller = checkmate.runtime._zmq_wrapper.Poller()
 
     def set_exchange_module(self, exchange_module):
         self.exchange_module = exchange_module
@@ -112,12 +99,12 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     def start(self):
         if self.internal_connector and self.internal_connector.is_reading:
             if self.internal_connector.socket_sub:
-                self.poller.register(self.internal_connector.socket_sub, zmq.POLLIN)
-            self.poller.register(self.internal_connector.socket_dealer_in, zmq.POLLIN)
+                self.poller.register(self.internal_connector.socket_sub)
+            self.poller.register(self.internal_connector.socket_dealer_in)
         if self.external_connector and self.external_connector.is_reading:
             if self.external_connector.socket_sub:
-                self.poller.register(self.external_connector.socket_sub, zmq.POLLIN)
-            self.poller.register(self.external_connector.socket_dealer_in, zmq.POLLIN)
+                self.poller.register(self.external_connector.socket_sub)
+            self.poller.register(self.external_connector.socket_dealer_in)
         if self.internal_connector:
             self.internal_connector.open()
         if self.external_connector:
@@ -135,11 +122,11 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                     self.external_connector.close()
                 self.logger.debug("%s stop" % self)
                 break
-            socks = dict(self.poller.poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+            socks = self.poller.poll_with_timeout()
             for _s in socks:
-                msg = _s.recv_multipart()
-                exchange = msg[-1]
-                exchange = checkmate.runtime.encoder.decode(exchange)
+                if _s.TYPE == zmq.SUB:
+                    _s.recv()
+                exchange = _s.recv_pyobj()
                 self.exchange_deque.append(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
