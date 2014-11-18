@@ -180,8 +180,10 @@ class DataVisitor(collections.OrderedDict):
         self.parser_chunk(value_content)
 
     def parser_chunk(self, chunk):
-        for code, structure in chunk.items():
-            self[code] = structure
+        for type, data in chunk.items():
+            self[type] = {}
+            for code, structure in data.items():
+                self[type][code] = structure
 
 
 def call_data_visitor(stream):

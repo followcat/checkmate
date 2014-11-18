@@ -54,10 +54,6 @@ class Partition(object):
     def __dir__(self):
         return self.partition_attribute
 
-    @property
-    def attribute_list(self):
-        return dict(map(lambda x:(x, getattr(self, x)), self.partition_attribute))
-
     def __eq__(self, other):
         """
             >>> import sample_app.application
@@ -125,6 +121,10 @@ class Partition(object):
             return (self.partition_storage.get_description(self))
         except AttributeError:
             return (None, None)
+
+    @property
+    def attribute_list(self):
+        return dict(map(lambda x:(x, getattr(self, x)), self.partition_attribute))
 
     @property
     def partition_id(self):

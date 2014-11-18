@@ -119,14 +119,14 @@ class TransitionStorage(collections.defaultdict):
         for _attribute in ('initial', 'incoming', 'final', 'outgoing', 'returned'):
             for _item in self[_attribute]:
                 resolved_arguments = {}
-                for arg in _item.arguments.values:
-                    if arg in list(data_value.keys()):
-                        _ds_module, _dict = data_value[arg]
-                        ds_cls = getattr(_ds_module, _dict['type'])
-                        ex_cls = checkmate._module.get_class_implementing(_item.interface)
-                        for _k, _cls in list(ex_cls._construct_values.items()):
-                            if ds_cls == _cls:
-                                resolved_arguments[_k] = _dict['value']
+                ex_cls = checkmate._module.get_class_implementing(_item.interface)
+                for _k, _cls in list(ex_cls._construct_values.items()):
+                    class_name = _cls.__name__
+                    if class_name in data_value:
+                        for arg in _item.arguments.values:
+                            if arg in data_value[class_name][1]:
+                                _ds_module, _dict = data_value[class_name]
+                                resolved_arguments[_k] = _dict[arg]
                 _item.resolved_arguments = resolved_arguments
             
 
