@@ -101,7 +101,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> transition_list[0].incoming[0].code
         'AC'
         >>> box = checkmate.sandbox.Sandbox(_application, [transition_list[0]])
-        >>> box.application.components['C1'].states[0].value == transition_list[0].initial[0].arguments.values[0]
+        >>> box.application.components['C1'].states[0].value == transition_list[0].initial[0].arguments[0]
         True
         >>> box.application.compare_states(transition_list[0].initial)
         True

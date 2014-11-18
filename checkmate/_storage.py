@@ -126,7 +126,7 @@ class TransitionStorage(collections.defaultdict):
                 for _k, _cls in list(ex_cls._construct_values.items()):
                     class_name = _cls.__name__
                     if class_name in data_value:
-                        for arg in _item.arguments.values:
+                        for arg in _item.arguments:
                             if arg in data_value[class_name][1]:
                                 _ds_module, _dict = data_value[class_name]
                                 resolved_arguments[_k] = _dict[arg]
@@ -158,9 +158,8 @@ class InternalStorage(object):
         self.function = function
 
         self.resolved_arguments = {}
-        argument = collections.namedtuple('argument', ['values', 'attribute_values'])
-        self.arguments = argument(*checkmate._exec_tools.method_arguments(value, interface))
-        self.values = tuple(self.arguments.values)
+        self.arguments = checkmate._exec_tools.method_arguments(value, interface)
+        self.values = self.arguments
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
