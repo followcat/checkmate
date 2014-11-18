@@ -121,6 +121,7 @@ class TransitionStorage(collections.defaultdict):
         for _attribute in ('initial', 'incoming', 'final', 'outgoing', 'returned'):
             for _item in self[_attribute]:
                 resolved_arguments = {}
+                resolved_args = set()
                 ex_cls = checkmate._module.get_class_implementing(_item.interface)
                 for _k, _cls in list(ex_cls._construct_values.items()):
                     class_name = _cls.__name__
@@ -129,8 +130,9 @@ class TransitionStorage(collections.defaultdict):
                             if arg in data_value[class_name][1]:
                                 _ds_module, _dict = data_value[class_name]
                                 resolved_arguments[_k] = _dict[arg]
+                                resolved_args.add(arg)
                 _item.resolved_arguments = resolved_arguments
-            
+                _item.values = tuple(set(_item.values) - resolved_args)
 
 
 class IStorage(zope.interface.Interface):
@@ -158,6 +160,7 @@ class InternalStorage(object):
         self.resolved_arguments = {}
         argument = collections.namedtuple('argument', ['values', 'attribute_values'])
         self.arguments = argument(*checkmate._exec_tools.method_arguments(value, interface))
+        self.values = tuple(self.arguments.values)
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
@@ -200,7 +203,7 @@ class InternalStorage(object):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
-                    value = self.arguments.values[0]
+                    value = self.values[0]
                 except IndexError:
                     value = None
                 self.function(state, value, **kwparam)
@@ -209,7 +212,7 @@ class InternalStorage(object):
                 return self.function(*param, **kwparam)
 
         if args is None:
-            args = self.arguments.values
+            args = self.values
         if kwargs is None:
             kwargs = {}
         return wrapper(args, kwargs)
