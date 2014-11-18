@@ -129,6 +129,7 @@ class Transition(object):
         return data.resolve(states, incoming_exchange)
 
 
+    @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst')
     def generic_incoming(self, states, service_registry):
         """ Generate a generic incoming for the provided state
 
