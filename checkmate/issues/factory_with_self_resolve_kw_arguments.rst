@@ -6,15 +6,14 @@ new a transition with initial like "__init__(R2)" then, get initial factory() to
     >>> item = {'name': 'Toggle TestState tran01', 'initial':[{'AnotherState':'__init__(R)'}], 'final': [{'AnotherState': 'pop(R)'}], 'incoming': [{'Action': 'PP(R)'}], 'outgoing': [{"Pause":"PA()"}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
     >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
-    >>> init_1 = t.initial[0].factory()
+    >>> init_1 = t.initial[0].factory(kwargs=t.initial[0].resolve())
     >>> init_1.partition_attribute
     ('R',)
-    >>> init_1.R.C.value, init_1.R.P.value
-    ('AT1', 'NORM')
+    >>> init_1.R
     >>> item = {'name': 'Toggle TestState tran01', 'initial':[{'AnotherState':'__init__(R2)'}], 'final': [{'AnotherState': 'pop(R2)'}], 'incoming': [{'Action': 'PP(R2)'}], 'outgoing': [{"Pause":"PA()"}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
     >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
-    >>> init_1 = t.initial[0].factory()
+    >>> init_1 = t.initial[0].factory(kwargs=t.initial[0].resolve())
     >>> init_1.partition_attribute
     ('R',)
     >>> init_1.R.C.value, init_1.R.P.value
@@ -22,7 +21,7 @@ new a transition with initial like "__init__(R2)" then, get initial factory() to
     >>> item = {'name': 'Toggle TestState tran01', 'initial':[{'AnotherState':'__init__()'}], 'final': [{'AnotherState': 'pop(R)'}], 'incoming': [{'Action': 'PP(R)'}], 'outgoing': [{"Pause":"PA()"}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
     >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
-    >>> init_1 = t.initial[0].factory()
+    >>> init_1 = t.initial[0].factory(kwargs=t.initial[0].resolve())
     >>> init_1.partition_attribute
     ('R',)
     >>> init_1.R,
