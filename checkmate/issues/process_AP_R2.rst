@@ -3,10 +3,10 @@ define a transition to to process AP(R2)
     >>> import checkmate._storage
     >>> a = sample_app.application.TestData()
     >>> a.start()
-    >>> r1 = a.data_value['R1'][1]
-    >>> r2 = a.data_value['R2'][1]
-    >>> ap_r1 = sample_app.exchanges.Action('AP', R=r1['value'])
-    >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2['value'])
+    >>> r1 = a.data_value['ActionRequest'][1]['R1']
+    >>> r2 = a.data_value['ActionRequest'][1]['R2']
+    >>> ap_r1 = sample_app.exchanges.Action('AP', R=r1)
+    >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r1.R.C.value, ap_r1.R.P.value
     ('AT1', 'NORM')
     >>> ap_r2.R.C.value, ap_r2.R.P.value
