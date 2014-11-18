@@ -39,9 +39,11 @@ def store(type, interface, code, value, description=None):
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
+    if value is None:
+        value = code
     if type == 'exchanges':
         try:
-            return InternalStorage(interface, code, code, description, getattr(checkmate._module.get_module_defining(interface), name))
+            return InternalStorage(interface, code, value, description, getattr(checkmate._module.get_module_defining(interface), name))
         except AttributeError:
             raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
     elif checkmate._exec_tools.method_unbound(code, interface):
@@ -99,7 +101,7 @@ class TransitionStorage(collections.defaultdict):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     interface = name_to_interface(_name, module_dict[module_type])
-                    storage_data = Data(module_type, interface, [(_data, _data)])
+                    storage_data = Data(module_type, interface, [(_data, None)])
                     if _k == 'initial':
                         self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':
