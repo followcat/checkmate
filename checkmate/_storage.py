@@ -39,9 +39,11 @@ def store(type, interface, code, value, description=None):
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
+    if value is None:
+        value = code
     if type == 'exchanges':
         try:
-            return InternalStorage(interface, code, code, description, getattr(checkmate._module.get_module_defining(interface), name))
+            return InternalStorage(interface, code, value, description, getattr(checkmate._module.get_module_defining(interface), name))
         except AttributeError:
             raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
     elif checkmate._exec_tools.method_unbound(code, interface):
@@ -99,7 +101,7 @@ class TransitionStorage(collections.defaultdict):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     interface = name_to_interface(_name, module_dict[module_type])
-                    storage_data = Data(module_type, interface, [(_data, _data)])
+                    storage_data = Data(module_type, interface, [(_data, None)])
                     if _k == 'initial':
                         self['initial'].append(storage_data.storage[0])
                     elif _k == 'final':
@@ -119,16 +121,18 @@ class TransitionStorage(collections.defaultdict):
         for _attribute in ('initial', 'incoming', 'final', 'outgoing', 'returned'):
             for _item in self[_attribute]:
                 resolved_arguments = {}
+                resolved_args = set()
                 ex_cls = checkmate._module.get_class_implementing(_item.interface)
                 for _k, _cls in list(ex_cls._construct_values.items()):
                     class_name = _cls.__name__
                     if class_name in data_value:
-                        for arg in _item.arguments.values:
+                        for arg in _item.arguments:
                             if arg in data_value[class_name][1]:
                                 _ds_module, _dict = data_value[class_name]
                                 resolved_arguments[_k] = _dict[arg]
+                                resolved_args.add(arg)
                 _item.resolved_arguments = resolved_arguments
-            
+                _item.values = tuple(set(_item.values) - resolved_args)
 
 
 class IStorage(zope.interface.Interface):
@@ -154,8 +158,8 @@ class InternalStorage(object):
         self.function = function
 
         self.resolved_arguments = {}
-        argument = collections.namedtuple('argument', ['values', 'attribute_values'])
-        self.arguments = argument(*checkmate._exec_tools.method_arguments(value, interface))
+        self.arguments = checkmate._exec_tools.method_arguments(value, interface)
+        self.values = self.arguments
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
@@ -198,7 +202,7 @@ class InternalStorage(object):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
-                    value = self.arguments.values[0]
+                    value = self.values[0]
                 except IndexError:
                     value = None
                 self.function(state, value, **kwparam)
@@ -207,7 +211,7 @@ class InternalStorage(object):
                 return self.function(*param, **kwparam)
 
         if args is None:
-            args = self.arguments.values
+            args = self.values
         if kwargs is None:
             kwargs = {}
         return wrapper(args, kwargs)
@@ -239,6 +243,8 @@ class InternalStorage(object):
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
+            >>> t.outgoing[0].arguments, t.outgoing[0].values
+            (('R2',), ())
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
