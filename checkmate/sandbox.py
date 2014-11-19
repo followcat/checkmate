@@ -22,7 +22,7 @@ class Sandbox(object):
 
             >>> app = sample_app.application.TestData()
             >>> app.start()
-            >>> out = app.components['C1'].process([sample_app.exchanges.AC()])
+            >>> out = app.components['C1'].process([sample_app.exchanges.Action('AC')])
             >>> app.components['C1'].states[0].value
             'False'
             >>> box = checkmate.sandbox.Sandbox(app)
@@ -112,7 +112,7 @@ class Sandbox(object):
             >>> import checkmate.sandbox
             >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
-            >>> ex = sample_app.exchanges.AC()
+            >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
             >>> _t = box.application.components['C2'].get_transition_by_output([ex])
             >>> transitions = box.generate([ex], checkmate._tree.Tree(_t, []))

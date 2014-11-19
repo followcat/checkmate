@@ -9,7 +9,7 @@ def get_path_from_pathfinder(application, target):
     """
         >>> import checkmate.runs
         >>> import checkmate.sandbox
-        >>> import checkmate.runtime.registry    
+        >>> import checkmate.runtime.registry
         >>> import checkmate.runtime.pathfinder
         >>> import checkmate.runtime.communication
         >>> import sample_app.application
@@ -21,7 +21,7 @@ def get_path_from_pathfinder(application, target):
         >>> runs.build_trees_from_application(_class())
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
-        >>> ex1 = sample_app.exchanges.AC()
+        >>> ex1 = sample_app.exchanges.Action('AC')
         >>> ex1.origin_destination('C2', 'C1')
         >>> _t = box.application.components['C2'].get_transition_by_output([ex1])
         >>> transitions = box.generate([ex1], checkmate._tree.Tree(_t, []))

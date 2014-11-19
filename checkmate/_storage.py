@@ -33,25 +33,27 @@ def store(type, interface, code, value, description=None):
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> state.value
-        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP(R)')
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', None)
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.value, ex.R.value)
         ('AP', 'HIGH')
     """
     name = checkmate._exec_tools.get_method_basename(code)
-    if value is None:
-        value = code
     if type == 'exchanges':
         try:
-            return InternalStorage(interface, code, value, description, getattr(checkmate._module.get_module_defining(interface), name))
+            if value is None:
+                value = code.replace("(", "(" + name + ", ")
+            return InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
         except AttributeError:
             raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
     elif checkmate._exec_tools.method_unbound(code, interface):
         try:
-            return InternalStorage(interface, code, code, description, getattr(checkmate._module.get_class_implementing(interface), name))
+            return InternalStorage(interface, code, value, description, getattr(checkmate._module.get_class_implementing(interface), name))
         except AttributeError:
             raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
     else:
+        if value is None:
+            value = code
         return checkmate._storage.InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
 
 
@@ -72,8 +74,6 @@ class Data(object):
                 code_description = (None, None)
             _storage = store(self.type, self.interface, code, value, code_description)
             self.storage.append(_storage)
-        if not self.storage:
-            self.storage = [store(self.type, self.interface, '', '')]
 
     def get_description(self, item):
         """ Return description corresponding to item """
@@ -179,10 +179,10 @@ class InternalStorage(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> a.start()
-            >>> i = sample_app.exchanges.AP()
+            >>> i = sample_app.exchanges.Action('AP')
             >>> c.process([i])[-1] # doctest: +ELLIPSIS
             <sample_app.exchanges.ThirdAction object at ...
-            >>> i = sample_app.exchanges.AC()
+            >>> i = sample_app.exchanges.Action('AC')
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
@@ -244,7 +244,7 @@ class InternalStorage(object):
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
             >>> t.outgoing[0].arguments, t.outgoing[0].values
-            (('R2',), ())
+            (('AP', 'R2'), ('AP',))
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']

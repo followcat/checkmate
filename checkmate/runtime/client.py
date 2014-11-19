@@ -52,7 +52,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> rc1 = r.runtime_components['C1']
         >>> rc2 = r.runtime_components['C2']
         >>> rc3 = r.runtime_components['C3']
-        >>> are = sample_app.exchanges.ARE()
+        >>> are = sample_app.exchanges.AnotherReaction('ARE')
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
@@ -60,7 +60,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         'ARE'
         >>> rc2.reset()
         >>> rc3.reset()
-        >>> pa = sample_app.exchanges.PA()
+        >>> pa = sample_app.exchanges.Pause('PA')
         >>> pa._origin = 'C1'
         >>> pa.broadcast
         True
