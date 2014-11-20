@@ -38,19 +38,7 @@ def store(type, interface, code, value, description=None):
         >>> (ex.value, ex.R.value)
         ('AP', 'HIGH')
     """
-    name = checkmate._exec_tools.get_method_basename(code)
-    if type == 'exchanges':
-        try:
-            return InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
-        except AttributeError:
-            raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
-    elif checkmate._exec_tools.method_unbound(code, interface):
-        try:
-            return InternalStorage(interface, code, value, description, getattr(checkmate._module.get_class_implementing(interface), name))
-        except AttributeError:
-            raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
-    else:
-        return checkmate._storage.InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
+    return InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
 
 
 class Data(object):
