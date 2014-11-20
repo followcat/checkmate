@@ -52,7 +52,7 @@ class Data(object):
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None)
-            _storage = InternalStorage(self.interface, code, code_description, checkmate._module.get_class_implementing(interface), value=value)
+            _storage = InternalStorage(self.interface, code, code_description, value=value)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -83,7 +83,7 @@ class TransitionStorage(collections.defaultdict):
                     interface = name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = checkmate._module.get_class_implementing(interface)
-                    generate_storage = InternalStorage(interface, _data, None, checkmate._module.get_class_implementing(interface), arguments=_data)
+                    generate_storage = InternalStorage(interface, _data, None, arguments=_data)
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
                             if _k == 'final':
@@ -120,19 +120,19 @@ class IStorage(zope.interface.Interface):
 @zope.interface.implementer(IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, code, description, function, value=None, arguments=None):
+    def __init__(self, interface, code, description, value=None, arguments=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action, value="AP(R)")
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
-        self.function = function
+        self.function = checkmate._module.get_class_implementing(interface)
 
         self.resolved_arguments = {}
         self.arguments = checkmate._exec_tools.method_arguments(arguments, interface)
@@ -146,7 +146,7 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, sample_app.exchanges.Action, value="AP(R)")
+            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
             >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
