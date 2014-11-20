@@ -31,7 +31,7 @@ class Data(object):
             >>> acr = sample_app.data_structure.ActionRequest()
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
-            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, [('Q0()', 'Q0()')])
+            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, [('AnotherState1()', 'None')])
             >>> state = data.storage[0].factory()
             >>> state.value
             >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, [('AP(R)', 'AP')])
@@ -83,17 +83,17 @@ class TransitionStorage(collections.defaultdict):
                     interface = name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = checkmate._module.get_class_implementing(interface)
-                    storage_data = Data(module_type, interface, [(_data, _data)])
+                    generate_storage = InternalStorage(interface, _data, _data, None, checkmate._module.get_class_implementing(interface))
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
                             if _k == 'final':
-                                storage_data.storage[0].function = define_class.__init__
-                            storage_data.storage[0].values = _s.values
-                            self[_k].append(storage_data.storage[0])
+                                generate_storage.function = define_class.__init__
+                            generate_storage.values = _s.values
+                            self[_k].append(generate_storage)
                             break
                     else:
-                        storage_data.storage[0].function = getattr(define_class, code)
-                        self[_k].append(storage_data.storage[0])
+                        generate_storage.function = getattr(define_class, code)
+                        self[_k].append(generate_storage)
         self._build_resolve_logic(data_value)
 
     def _build_resolve_logic(self, data_value):
