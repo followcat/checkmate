@@ -10,8 +10,7 @@ data:
   - Definition and accessibility: 'AnotherState'
     Value partitions:
     # [Partition,   State,            Valid value,    Comment]
-    - [S-ANOST-01,  AnotherState1(),  Q(None),        AnotherState first value]
-    - [S-ANOST-02,  AnotherState2(),  Q(),            AnotherState second value]
+    - [S-ANOST-01,  AnotherState1(),  None,           AnotherState first value]
 
 ---
 title: "State machine"
@@ -31,7 +30,7 @@ data:
   - Transitions:
       - name: 'Append element ok tran01'
         initial: 
-          - AnotherState:     AnotherState2()
+          - AnotherState:     AnotherState1()
         incoming:
           - Action:           AP(R)
         final:
@@ -43,7 +42,7 @@ data:
       - name: 'Append element ok tran02'
         initial: 
           - State:            State2
-          - AnotherState:     AnotherState2()
+          - AnotherState:     AnotherState1()
         incoming:
           - Action:           PP()
         final:

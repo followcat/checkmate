@@ -12,7 +12,7 @@ define a transition to to process AP(R2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
     >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-    >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState2()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
+    >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
     >>> t = checkmate.transition.Transition(tran_name=item['name'], initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
     >>> t.is_matching_incoming([ap_r1])

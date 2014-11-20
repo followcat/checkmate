@@ -5,24 +5,24 @@ data:
       - name: 'Toggle C1 state with AC'
         initial: 
           - State:              State1
-          - AnotherState:       AnotherState2()
+          - AnotherState:       AnotherState1()
           - Acknowledge:        Acknowledge1
         incoming:
           - Action:             AC()
         final:
           - State:              State2
-          - AnotherState:       AnotherState2()
+          - AnotherState:       AnotherState1()
           - Acknowledge:        Acknowledge2
 
   # Always run
   - Procedures:
       - name: 'Append request C1 with AP'
         initial: 
-          - AnotherState:       AnotherState2()
+          - AnotherState:       AnotherState1()
         incoming:
           - Action:             AP(R)
         final:
-          - AnotherState:       AnotherState2(R)
+          - AnotherState:       AnotherState1(R)
 
   - Procedures:
       - name: 'Toggle acknowledge with RL'
@@ -38,10 +38,10 @@ data:
         initial: 
           - State:              State2
           - Acknowledge:        Acknowledge1
-          - AnotherState:       AnotherState2()
+          - AnotherState:       AnotherState1()
         incoming:
           - Action:             PP()
         final:
           - State:              State1
           - Acknowledge:        Acknowledge1
-          - AnotherState:       AnotherState1
+          - AnotherState:       AnotherState1()
