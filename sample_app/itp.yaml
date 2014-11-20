@@ -4,44 +4,44 @@ data:
   - Procedures:
       - name: 'Toggle C1 state with AC'
         initial: 
-          - State:              __init__(True)
-          - AnotherState:       __init__()
-          - Acknowledge:        __init__(False)
+          - State:              State1
+          - AnotherState:       AnotherState2()
+          - Acknowledge:        Acknowledge1
         incoming:
           - Action:             AC()
         final:
-          - State:              __init__(False)
-          - AnotherState:       __init__()
-          - Acknowledge:        __init__(True)
+          - State:              State2
+          - AnotherState:       AnotherState2()
+          - Acknowledge:        Acknowledge2
 
   # Always run
   - Procedures:
       - name: 'Append request C1 with AP'
         initial: 
-          - AnotherState:       __init__()
+          - AnotherState:       AnotherState2()
         incoming:
           - Action:             AP(R)
         final:
-          - AnotherState:       __init__(R)
+          - AnotherState:       AnotherState2(R)
 
   - Procedures:
       - name: 'Toggle acknowledge with RL'
         initial: 
-          - Acknowledge:        __init__(True)
+          - Acknowledge:        Acknowledge2
         incoming:
           - Reaction:           RL()
         final:
-          - Acknowledge:        __init__(False)
+          - Acknowledge:        Acknowledge1
 
   - Procedures:
       - name: 'Toggle C1 state back (RL)'
         initial: 
-          - State:              __init__(False)
-          - Acknowledge:        __init__(False)
-          - AnotherState:       __init__()
+          - State:              State2
+          - Acknowledge:        Acknowledge1
+          - AnotherState:       AnotherState2()
         incoming:
           - Action:             PP()
         final:
-          - State:              __init__(True)
-          - Acknowledge:        __init__(False)
-          - AnotherState:       __init__(None)
+          - State:              State1
+          - Acknowledge:        Acknowledge1
+          - AnotherState:       AnotherState1

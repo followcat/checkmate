@@ -33,7 +33,7 @@ def store(type, interface, code, value, description=None):
         >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
         >>> state = st.factory()
         >>> state.value
-        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', None)
+        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP')
         >>> ex = st.factory(kwargs={'R': 'HIGH'})
         >>> (ex.value, ex.R.value)
         ('AP', 'HIGH')
@@ -41,8 +41,6 @@ def store(type, interface, code, value, description=None):
     name = checkmate._exec_tools.get_method_basename(code)
     if type == 'exchanges':
         try:
-            if value is None:
-                value = code.replace("(", "(" + name + ", ")
             return InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
         except AttributeError:
             raise AttributeError(checkmate._module.get_module_defining(interface).__name__ + " has no function defined: " + name)
@@ -52,8 +50,6 @@ def store(type, interface, code, value, description=None):
         except AttributeError:
             raise AttributeError(checkmate._module.get_class_implementing(interface).__name__ + ' has no function defined: ' + name)
     else:
-        if value is None:
-            value = code
         return checkmate._storage.InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
 
 
@@ -101,20 +97,19 @@ class TransitionStorage(collections.defaultdict):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     interface = name_to_interface(_name, module_dict[module_type])
-                    storage_data = Data(module_type, interface, [(_data, None)])
-                    if _k == 'initial':
-                        self['initial'].append(storage_data.storage[0])
-                    elif _k == 'final':
-                        if interface.implementedBy(storage_data.storage[0].function):
-                            storage_data.storage[0].function = storage_data.storage[0].function.__init__
-                        self['final'].append(storage_data.storage[0])
-                    elif _k == 'incoming':
-                        self['incoming'].append(storage_data.storage[0])
-                    elif _k == 'outgoing':
-                        self['outgoing'].append(storage_data.storage[0])
-                    elif _k == 'returned':
-                        self['returned'].append(storage_data.storage[0])
-
+                    code = checkmate._exec_tools.get_method_basename(_data)
+                    define_class = checkmate._module.get_class_implementing(interface)
+                    storage_data = Data(module_type, interface, [(_data, _data)])
+                    for _s in define_class.partition_storage.storage:
+                        if _s.code == code:
+                            if _k == 'final':
+                                storage_data.storage[0].function = define_class.__init__
+                            storage_data.storage[0].values = _s.values
+                            self[_k].append(storage_data.storage[0])
+                            break
+                    else:
+                        storage_data.storage[0].function = getattr(define_class, code)
+                        self[_k].append(storage_data.storage[0])
         self._build_resolve_logic(data_value)
 
     def _build_resolve_logic(self, data_value):
@@ -244,7 +239,7 @@ class InternalStorage(object):
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
             >>> t.outgoing[0].arguments, t.outgoing[0].values
-            (('AP', 'R2'), ('AP',))
+            (('R2',), ('AP',))
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']

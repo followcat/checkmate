@@ -3,11 +3,11 @@ Feature: First run AC
     User should be able to toggle C1.State,C1.AnotherState,C3.Acknowledge
 
     Scenario: Toggle C1 state with AC
-        Given Component state C1.State at value __init__(True)
-        And Component state C1.AnotherState at value __init__()
-        And Component state C3.Acknowledge at value __init__(False)
+        Given Component state C1.State at value State1
+        And Component state C1.AnotherState at value AnotherState2()
+        And Component state C3.Acknowledge at value Acknowledge1
         When Component USER sends exchange ExchangeButton PBAC()
-        Then Component state C1.State should change to value __init__(False)
-        And Component state C1.AnotherState should change to value __init__()
-        And Component state C3.Acknowledge should change to value __init__(True)
+        Then Component state C1.State should change to value State2
+        And Component state C1.AnotherState should change to value AnotherState2()
+        And Component state C3.Acknowledge should change to value Acknowledge2
 

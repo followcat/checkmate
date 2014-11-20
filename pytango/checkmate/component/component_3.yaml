@@ -13,7 +13,7 @@ data:
   - Transitions:
       - name: '[Input/Final state/Output]'
         initial:
-          - Acknowledge:        __init__(False)
+          - Acknowledge:        Acknowledge1
         incoming:
           - Reaction:           RE()
         final:
@@ -22,7 +22,7 @@ data:
   - Transitions:
       - name: '[Input/Final state/Output]'
         initial:
-          - Acknowledge:        __init__(True)
+          - Acknowledge:        Acknowledge2
         incoming:
           - Reaction:           RL()
         final:
@@ -33,8 +33,8 @@ data:
   - Transitions:
       - name: 'C3 pause process'
         initial:
-          - Acknowledge:        __init__(False)
+          - Acknowledge:        Acknowledge1
         incoming:
           - Pause:              PA()
         final:
-          - Acknowledge:        __init__(False)
+          - Acknowledge:        Acknowledge1

@@ -19,11 +19,11 @@ data:
   - Transitions:
       - name: 'Toggle state tran01'
         initial: 
-          - State:            __init__(True)
+          - State:            State1
         incoming:
           - Action:           AC()
         final:
-          - State:            __init__(False)
+          - State:            State2
         outgoing:
           - Reaction:         RE()
           - AnotherReaction:  ARE()
@@ -31,7 +31,7 @@ data:
   - Transitions:
       - name: 'Append element ok tran01'
         initial: 
-          - AnotherState:     __init__()
+          - AnotherState:     AnotherState2()
         incoming:
           - Action:           AP(R)
         final:
@@ -42,12 +42,12 @@ data:
   - Transitions:
       - name: 'Append element ok tran02'
         initial: 
-          - State:            __init__(False)
-          - AnotherState:     __init__()
+          - State:            State2
+          - AnotherState:     AnotherState2()
         incoming:
           - Action:           PP()
         final:
-          - State:            __init__(True)
+          - State:            State1
           - AnotherState:     pop()
         outgoing:
           - Pause:            PA()
