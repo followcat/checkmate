@@ -20,29 +20,25 @@ def name_to_interface(name, modules):
     return interface
 
 
-def store(type, interface, code, value, description=None):
-    """
-        >>> import checkmate._storage
-        >>> import sample_app.application
-        >>> import sample_app.exchanges
-        >>> import sample_app.component.component_1_states
-        >>> a = sample_app.application.TestData()
-        >>> acr = sample_app.data_structure.ActionRequest()
-        >>> acr #doctest: +ELLIPSIS 
-        <sample_app.data_structure.ActionRequest object at ...
-        >>> st = checkmate._storage.store('states', sample_app.component.component_1_states.IAnotherState, 'Q0()', 'Q0()')
-        >>> state = st.factory()
-        >>> state.value
-        >>> st = checkmate._storage.store('exchanges', sample_app.exchanges.IAction, 'AP(R)', 'AP')
-        >>> ex = st.factory(kwargs={'R': 'HIGH'})
-        >>> (ex.value, ex.R.value)
-        ('AP', 'HIGH')
-    """
-    return InternalStorage(interface, code, value, description, checkmate._module.get_class_implementing(interface))
-
-
 class Data(object):
     def __init__(self, type, interface, code_value_list, full_description=None):
+        """
+            >>> import checkmate._storage
+            >>> import sample_app.application
+            >>> import sample_app.exchanges
+            >>> import sample_app.component.component_1_states
+            >>> a = sample_app.application.TestData()
+            >>> acr = sample_app.data_structure.ActionRequest()
+            >>> acr #doctest: +ELLIPSIS
+            <sample_app.data_structure.ActionRequest object at ...
+            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, [('Q0()', 'Q0()')])
+            >>> state = data.storage[0].factory()
+            >>> state.value
+            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, [('AP(R)', 'AP')])
+            >>> ex = data.storage[0].factory(kwargs={'R': 'HIGH'})
+            >>> (ex.value, ex.R.value)
+            ('AP', 'HIGH')
+        """
         self.type = type
         self.interface = interface
         self.full_description = full_description
@@ -56,7 +52,7 @@ class Data(object):
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None)
-            _storage = store(self.type, self.interface, code, value, code_description)
+            _storage = InternalStorage(self.interface, code, value, code_description, checkmate._module.get_class_implementing(interface))
             self.storage.append(_storage)
 
     def get_description(self, item):
