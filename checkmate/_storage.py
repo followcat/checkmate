@@ -134,6 +134,8 @@ class TransitionStorage(collections.defaultdict):
                 _item.resolved_arguments = resolved_arguments
                 _item.values = tuple(set(_item.values) - resolved_args)
 
+                _item.key_to_resolve = frozenset(ex_cls._sig.parameters.keys())
+
 
 class IStorage(zope.interface.Interface):
     """"""
@@ -252,13 +254,13 @@ class InternalStorage(object):
             ('AT2', 'HIGH')
         """
         _attributes = {}
+        _cls = checkmate._module.get_class_implementing(self.interface)
         if states is not None:
             for input in states:
-                _attributes.update(input.attribute_list)
+                _attributes.update(input.attribute_list(self.key_to_resolve))
         if exchanges is not None:
             for input in exchanges:
-                _attributes.update(input.attribute_list)
-        _cls = checkmate._module.get_class_implementing(self.interface)
+                _attributes.update(input.attribute_list(self.key_to_resolve))
         try:
             _kwargs = _cls._sig.bind(**_attributes).arguments
             if len(_kwargs) == 0 and len(_cls._sig.parameters) > 0:
