@@ -12,8 +12,8 @@ class TransitionTree(checkmate._tree.Tree):
             >>> import checkmate.transition
             >>> import sample_app.application
             >>> import sample_app.data_structure
-            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'AC()', 'AC()', None, sample_app.data_structure.ActionRequest)]
-            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'RE()', 'RE()', None, sample_app.data_structure.ActionRequest), checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'ARE()', 'ARE()', None, sample_app.data_structure.ActionRequest)]
+            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'AC()', None, sample_app.data_structure.ActionRequest, value='AC()')]
+            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'RE()', None, sample_app.data_structure.ActionRequest, value='RE()'), checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'ARE()', None, sample_app.data_structure.ActionRequest, value='ARE()')]
             >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
             >>> tree = checkmate.runs.TransitionTree(test_transition)
             >>> (tree.root.incoming[0].code, tree.root.outgoing[0].code, tree.root.outgoing[1].code)
