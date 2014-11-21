@@ -118,7 +118,6 @@ def get_define_str(element):
             \nclass {e.classname}({e.ancestor_class}):
             \n    import inspect
             \n    _valid_values = {e.values}
-            \n    _codes = {e.codes}
             \n    def __init__(self, value=None, *args, **kwargs):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
@@ -145,15 +144,6 @@ def get_define_str(element):
             \n    def return_type(self):
             \n        return self._sig.return_annotation
         """
-
-    for _c, _v in zip(element.codes, element.values):
-        sep = ''
-        if type(_v) == str:
-            sep = "'"
-        run_code += """
-        \ndef {code}(*args, **kwargs):
-        \n    return {cls}({sep}{value}{sep}, *args, **kwargs)
-        """.format(cls=element.classname, code=_c, sep=sep, value=_v)
     return run_code
 
 
@@ -163,17 +153,14 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     class_element = collections.namedtuple('class_element',
                     ['interface_ancestor_class', 'interface_class',
-                     'ancestor_class', 'classname',
-                     'codes', 'values'])
+                     'ancestor_class', 'classname', 'values'])
     if partition_type == 'exchanges':
         element = class_element('checkmate.exchange.IExchange', interface_class,
-                                'checkmate.exchange.Exchange', classname, 
-                                [get_method_basename(_c) for _c in codes], values)
+                                'checkmate.exchange.Exchange', classname, values)
         run_code = get_define_str(element)
     elif partition_type == 'data_structure':
         element = class_element('zope.interface.Interface', interface_class,
-                                'checkmate.data_structure.DataStructure', classname, 
-                                [], values)
+                                'checkmate.data_structure.DataStructure', classname, values)
         run_code = get_define_str(element)
     elif partition_type == 'states':
         valid_values_list = []
@@ -181,8 +168,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             if not is_method(_v):
                 valid_values_list.append(_v)
         element = class_element('checkmate.state.IState', interface_class,
-                                'checkmate.state.State', classname, 
-                                [], valid_values_list)
+                                'checkmate.state.State', classname, valid_values_list)
         run_code = get_define_str(element)
 
     exec(run_code, exec_module.__dict__)

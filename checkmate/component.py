@@ -171,7 +171,7 @@ class Component(object):
         >>> transition=c.state_machine.transitions[0]
         >>> transition.is_matching_initial(c.states)
         True
-        >>> output = transition.process(c.states, [sample_app.exchanges.AC()])
+        >>> output = transition.process(c.states, [sample_app.exchanges.Action("AC")])
         >>> output[0].value
         'RE'
         >>> output[1].value
@@ -228,7 +228,7 @@ class Component(object):
             >>> a = sample_app.application.TestData()
             >>> c2 = a.components['C2']
             >>> c2.start()
-            >>> exchange = sample_app.exchanges.AC()
+            >>> exchange = sample_app.exchanges.Action('AC')
             >>> transition = c2.get_transition_by_output([exchange])
 
         We can't simulate a transition when no destination for outgoing is registered:
@@ -255,7 +255,7 @@ class Component(object):
             >>> a = sample_app.application.TestData()
             >>> c1 = a.components['C1']
             >>> c1.start()
-            >>> exchange = sample_app.exchanges.AC()
+            >>> exchange = sample_app.exchanges.Action('AC')
             >>> transition = c1.get_transition_by_input([exchange])
             >>> c1.validate(transition)
             False

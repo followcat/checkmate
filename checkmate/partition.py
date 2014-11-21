@@ -103,7 +103,7 @@ class Partition(object):
     def _dump(self):
         """
             >>> import sample_app.application
-            >>> ac =sample_app.exchanges.AC()
+            >>> ac =sample_app.exchanges.Action('AC')
             >>> dump_dict = ac._dump()
             >>> dump_dict['value']
             'AC'

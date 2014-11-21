@@ -29,12 +29,12 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-01', ...
             >>> ds = sample_app.data_structure.ActionRequest('HIGH') 
-            >>> i = sample_app.exchanges.AP()
+            >>> i = sample_app.exchanges.Action('AP')
             >>> c.process([i])[-1] # doctest: +ELLIPSIS
             <sample_app.exchanges.ThirdAction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> i = sample_app.exchanges.AC()
+            >>> i = sample_app.exchanges.Action('AC')
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming([i])
             True
@@ -51,7 +51,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             False
             >>> c.states[0].value
             'False'
-            >>> i = sample_app.exchanges.PP()
+            >>> i = sample_app.exchanges.Action('PP')
             >>> t = c.state_machine.transitions[2]
             >>> t.is_matching_incoming([i])
             True
