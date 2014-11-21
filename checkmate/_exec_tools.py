@@ -52,32 +52,6 @@ def get_method_basename(signature):
     return basename
 
 
-def get_parameters_list(parameter_str):
-    """
-
-        >>> import checkmate._exec_tools
-        >>> checkmate._exec_tools.get_parameters_list("'AT1'")
-        ['AT1']
-        >>> checkmate._exec_tools.get_parameters_list("R = ActionRequest(['AT2', 'HIGH']), R = ['HIGH']")
-        ["R = ActionRequest(['AT2', 'HIGH'])", "R = ['HIGH']"]
-    """
-    temp_list = []
-    temp_str = ''
-    bracket_count = 0
-    for _s in parameter_str.split(','):
-        if _s == '':
-            continue
-        bracket_count += _s.count('(')
-        bracket_count -= _s.count(')')
-        temp_str += _s
-        if bracket_count == 0:
-            temp_list.append(temp_str.strip(' \'"'))
-            temp_str = ''
-            continue
-        temp_str += ','
-    return temp_list
-
-
 @checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
 def method_arguments(signature, interface):
     """
@@ -86,33 +60,22 @@ def method_arguments(signature, interface):
         >>> import sample_app.exchanges
         >>> interface = sample_app.exchanges.IAction
         >>> checkmate._exec_tools.method_arguments("A0('AT1')", interface)
-        (('AT1',), {})
-
-        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R = None)", interface)
-        (('False',), {'R': None})
+        ('AT1',)
+        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R)", interface)
+        ('False',)
         >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
-        ((), {'R': None})
+        ()
     """
-    args = []
-    kwargs = {}
+    args = tuple()
     if is_method(signature):
         cls = checkmate._module.get_class_implementing(interface)
         found_label = signature.find('(')
-        parameter_str = signature[found_label:][1:-1]
-        parameters = get_parameters_list(parameter_str)
-        for each in parameters:
-            if '=' not in each:
-                if each in cls._sig.parameters.keys():
-                    kwargs[each] = None
-                else:
-                    args.append(each)
-            else:
-                label = each.find('=')
-                _k, _v = each[:label].strip(), each[label + 1:].strip()
-                exec("kwargs['%s'] = %s" % (_k, _v), locals(), locals())
+        parameters = signature[found_label:][1:-1].split(', ')
+        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
+                      _p.strip("'") not in cls._sig.parameters.keys())])
     else:
-        args = [signature]
-    return tuple(args), kwargs
+        args = (signature,)
+    return args
 
 
 def get_exec_signature(signature, dependent_modules):
@@ -155,21 +118,22 @@ def get_define_str(element):
             \nclass {e.classname}({e.ancestor_class}):
             \n    import inspect
             \n    _valid_values = {e.values}
-            \n    _codes = {e.codes}
             \n    def __init__(self, value=None, *args, **kwargs):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
             \n                kwargs[_k] = _v()
-            \n            elif not isinstance(kwargs[_k], _v):
-            \n                if isinstance(kwargs[_k], tuple):
-            \n                    if isinstance(kwargs[_k][0], tuple):
-            \n                        kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n            else:
+            \n                _v = self.__class__._construct_values[_k]
+            \n                if not isinstance(kwargs[_k], _v):
+            \n                    if isinstance(kwargs[_k], tuple):
+            \n                        if isinstance(kwargs[_k][0], tuple):
+            \n                            kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n                        else:
+            \n                            kwargs[_k] = _v(*kwargs[_k])
+            \n                    elif isinstance(kwargs[_k], dict):
+            \n                        kwargs[_k] = _v(**kwargs[_k])
             \n                    else:
-            \n                        kwargs[_k] = _v(*kwargs[_k])
-            \n                elif isinstance(kwargs[_k], dict):
-            \n                    kwargs[_k] = _v(**kwargs[_k])
-            \n                else:
-            \n                    kwargs[_k] = _v(kwargs[_k])
+            \n                        kwargs[_k] = _v(kwargs[_k])
             \n        super().__init__(value, *args, **kwargs)
             \n
             """.format(i=os.path.splitext(element.ancestor_class)[0],
@@ -180,15 +144,6 @@ def get_define_str(element):
             \n    def return_type(self):
             \n        return self._sig.return_annotation
         """
-
-    for _c, _v in zip(element.codes, element.values):
-        sep = ''
-        if type(_v) == str:
-            sep = "'"
-        run_code += """
-        \ndef {code}(*args, **kwargs):
-        \n    return {cls}({sep}{value}{sep}, *args, **kwargs)
-        """.format(cls=element.classname, code=_c, sep=sep, value=_v)
     return run_code
 
 
@@ -198,17 +153,14 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
 
     class_element = collections.namedtuple('class_element',
                     ['interface_ancestor_class', 'interface_class',
-                     'ancestor_class', 'classname',
-                     'codes', 'values'])
+                     'ancestor_class', 'classname', 'values'])
     if partition_type == 'exchanges':
         element = class_element('checkmate.exchange.IExchange', interface_class,
-                                'checkmate.exchange.Exchange', classname, 
-                                [get_method_basename(_c) for _c in codes], values)
+                                'checkmate.exchange.Exchange', classname, values)
         run_code = get_define_str(element)
     elif partition_type == 'data_structure':
         element = class_element('zope.interface.Interface', interface_class,
-                                'checkmate.data_structure.DataStructure', classname, 
-                                [], values)
+                                'checkmate.data_structure.DataStructure', classname, values)
         run_code = get_define_str(element)
     elif partition_type == 'states':
         valid_values_list = []
@@ -216,20 +168,26 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             if not is_method(_v):
                 valid_values_list.append(_v)
         element = class_element('checkmate.state.IState', interface_class,
-                                'checkmate.state.State', classname, 
-                                [], valid_values_list)
+                                'checkmate.state.State', classname, valid_values_list)
         run_code = get_define_str(element)
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
-    exec("_annotated_values = dict([(_k, lambda:_v.default) for (_k,_v) in _sig.parameters.items()])\
-         \n_annotated_values.update(dict([(_k, _v.annotation) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty]))\
+    exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty])\
+         \n_construct_values = dict(_annotated_values)\
+         \n_annotated_values.update(dict([(_k, lambda:_v.default) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation != inspect._empty and _v.default != inspect._empty]))\
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty])",
+           if _v.annotation != inspect._empty])\
+         \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
+           if _v.annotation == inspect._empty and _v.default != inspect._empty])",
          dict(define_class.__dict__), globals())
     setattr(define_class, '_annotated_values', globals()['_annotated_values'])
+    setattr(define_class, '_construct_values', globals()['_construct_values'])
     setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
+    for _k, _v in globals()['class_attributes']:
+        setattr(define_class, _k , _v)
     return define_class, define_interface

@@ -143,7 +143,7 @@ class Encoder(object):
         """
         >>> import sample_app.application
         >>> import checkmate.runtime.communication
-        >>> ac = sample_app.exchanges.AC()
+        >>> ac = sample_app.exchanges.Action('AC')
         >>> encoder = checkmate.runtime.communication.Encoder()
         >>> encode_exchange = encoder.encode(ac)
         >>> decode_exchange = encoder.decode(encode_exchange)

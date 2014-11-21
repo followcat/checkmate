@@ -5,24 +5,29 @@ import checkmate._exec_tools
 import checkmate.parser.yaml_visitor
 
 
-def make_transition(items, exchanges, state_modules):
+def make_transition(items, exchanges, state_modules, data_value):
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
     try:
         tran_name = items['name']
     except KeyError:
         tran_name = 'unknown'
-    ts = checkmate._storage.TransitionStorage(items, module_dict)
+    ts = checkmate._storage.TransitionStorage(items, module_dict, data_value)
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'], returned=ts['returned'])
     return t
 
 
 class Declarator(object):
-    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None):
+    """"""
+    data_value = {}
+
+    def __init__(self, data_module, exchange_module, state_module=None, transition_module=None, data_value=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
         self.module['exchanges'] = exchange_module
+        if data_value is not None:
+            self.__class__.data_value = data_value
 
         self.output = {
             'data_structure': [],
@@ -81,7 +86,8 @@ class Declarator(object):
         >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...
         """
-        self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']]))
+        self.output['transitions'].append(make_transition(item, [self.module['exchanges']],
+                                       [self.module['states']], self.__class__.data_value))
 
     def new_definitions(self, data_source):
         """

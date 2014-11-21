@@ -110,7 +110,7 @@ class Transition(object):
         # Do not check len(local_copy) as some state_list are not in self.initial
         return True
 
-    def resolve_arguments(self, _type, data, states, incoming_exchange=[]):
+    def resolve_arguments(self, data, states, incoming_exchange=[]):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
@@ -118,17 +118,18 @@ class Transition(object):
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
             >>> i = t.incoming[0].factory(kwargs={'R': 1})
-            >>> t.resolve_arguments('final', t.final[0], c.states, [i])
-            {}
+            >>> t.resolve_arguments(t.final[0], c.states, [i]) # doctest: +ELLIPSIS
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> i = t.incoming[0].factory()
             >>> (i.value, [i.R.C.value, i.R.P.value])
             ('AP', ['AT1', 'NORM'])
-            >>> t.resolve_arguments('final', t.final[0], c.states, [i]) # doctest: +ELLIPSIS
-            {'R': <sample_app.data_structure.ActionRequest object at ...
+            >>> t.resolve_arguments(t.final[0], c.states, [i]) # doctest: +ELLIPSIS
+            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
         """
-        return data.resolve(_type, states, incoming_exchange)
+        return data.resolve(states, incoming_exchange)
 
 
+    @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst')
     def generic_incoming(self, states, service_registry):
         """ Generate a generic incoming for the provided state
 
@@ -136,7 +137,7 @@ class Transition(object):
         """
         incoming_exchanges = []
         for incoming in self.incoming:
-            arguments = self.resolve_arguments('incoming', incoming, states)
+            arguments = self.resolve_arguments(incoming, states)
             _i = incoming.factory(kwargs=arguments)
             for _e in service_registry.server_exchanges(_i, ''):
                 incoming_exchanges.append(_e)
@@ -144,6 +145,7 @@ class Transition(object):
             
 
     @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
+    @checkmate.fix_issue("checkmate/issues/process_AP_R2.rst")
     def process(self, states, _incoming):
         """
             >>> import sample_app.application
@@ -168,9 +170,9 @@ class Transition(object):
                         continue
                     _final_interface = _final.interface
                     if _final_interface == _interface:
-                        resolved_arguments = self.resolve_arguments('final', _final, states, _incoming)
+                        resolved_arguments = self.resolve_arguments(_final, states, _incoming)
                         _final.factory(args=[_state], kwargs=resolved_arguments)
         for outgoing_exchange in self.outgoing:
-            resolved_arguments = self.resolve_arguments('outgoing', outgoing_exchange, states, _incoming)
+            resolved_arguments = self.resolve_arguments(outgoing_exchange, states, _incoming)
             _outgoing_list.append(outgoing_exchange.factory(kwargs=resolved_arguments))
         return _outgoing_list

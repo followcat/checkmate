@@ -1,3 +1,9 @@
-ActionRequest: 
-  - ['R1', ['AT1', 'NORM']]
-  - ['R2', ['AT2', 'HIGH']]
+ActionRequest:
+  R1:
+    C: AT1
+    P: NORM
+
+  R2:
+    C: AT2
+    P: HIGH
+

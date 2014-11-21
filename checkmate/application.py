@@ -44,17 +44,20 @@ class ApplicationMeta(type):
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
             define_data = _file.read()
+        data_value = {}
         try:
             with open(namespace['test_data_definition_file'], 'r') as _file:
                 value_data = _file.read()
             value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
-                setattr(data_value_module, code, structure)
+                data_value.update({code: (data_structure_module, structure)})
+            namespace['data_value'] = data_value
         except KeyError:
             pass
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module)
+            declarator = checkmate.partition_declarator.Declarator(data_structure_module,
+                                                   exchange_module, data_value=data_value)
             declarator.new_definitions(data_source)
             output = declarator.get_output()
 
@@ -124,11 +127,17 @@ class Application(object):
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
         [<checkmate.runs.TransitionTree object at ...
+        >>> a.origin_transitions #doctest: +ELLIPSIS
+        [<checkmate.runs.TransitionTree object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
             self.run_collection.build_trees_from_application(self)
             return self.run_collection
+        if name == 'origin_transitions':
+            setattr(self, 'origin_transitions', checkmate.runs.RunCollection())
+            self.origin_transitions.get_origin_transition(self)
+            return self.origin_transitions
         super().__getattr__(self, name)
 
     def start(self):
@@ -192,7 +201,7 @@ class Application(object):
             >>> c1.states[0].value
             'True'
             >>> t = c1.state_machine.transitions[0]
-            >>> t.initial[0].arguments.values
+            >>> t.initial[0].values
             ('True',)
             >>> app.compare_states(t.initial)
             True

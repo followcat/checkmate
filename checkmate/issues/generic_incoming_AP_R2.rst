@@ -1,0 +1,22 @@
+can't generic incoming "AP(R2)" as alway consider states'attribute_list first is resolve
+    >>> import sample_app.application
+    >>> import checkmate.sandbox
+    >>> import checkmate._storage
+    >>> a = sample_app.application.TestData()
+    >>> a.start()
+    >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
+    >>> item = {'name': 'Toggle TestState tran01', 'initial':[{'AnotherState':'__init__()'}], 'final': [{'AnotherState': '__init__(R2)'}], 'incoming': [{'Action': 'AP(R2)'}]}
+    >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
+    >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
+    >>> t.incoming[0].code, t.incoming[0].resolved_arguments
+    ('AP', {'R': {'C': 'AT2', 'P': 'HIGH'}})
+    >>> a.components['C1'].states[1].attribute_list
+    {'R': None}
+    >>> t.is_matching_initial(a.components['C1'].states)
+    True
+    >>> exchanges = t.generic_incoming(a.components['C1'].states, a.components['C1'].service_registry)
+    >>> ex = exchanges[0]
+    >>> ex.R.C.value, ex.R.P.value
+    ('AT2', 'HIGH')
+    >>> t.is_matching_incoming(exchanges)
+    True
