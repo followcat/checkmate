@@ -81,7 +81,7 @@ class Declarator(object):
         >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue()', 'TestStateFalse()'], values_list=['True', 'False'])
         >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'])
         >>> de.new_partition('exchanges', 'TestReturn()', codes_list=['DA()'], values_list=['DA'])
-        >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'TestState': '__init__(True)'}], 'outgoing': [{'TestReturn': 'DA()'}], 'incoming': [{'TestAction': 'AP(R)'}], 'final': [{'TestState': '__init__(False)'}]}
+        >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'TestState': 'TestStateTrue'}], 'outgoing': [{'TestReturn': 'DA()'}], 'incoming': [{'TestAction': 'AP(R)'}], 'final': [{'TestState': 'TestStateFalse'}]}
         >>> de.new_transition(item)
         >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...

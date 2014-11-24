@@ -66,16 +66,15 @@ def method_arguments(signature, interface):
         >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
         ()
     """
-    args = tuple()
+    arguments = {}
     if is_method(signature):
         cls = checkmate._module.get_class_implementing(interface)
         found_label = signature.find('(')
         parameters = signature[found_label:][1:-1].split(', ')
         args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
                       _p.strip("'") not in cls._sig.parameters.keys())])
-    else:
-        args = (signature,)
-    return args
+        arguments = cls._sig.bind_partial(*args).arguments
+    return tuple(arguments.values())
 
 
 def get_exec_signature(signature, dependent_modules):
