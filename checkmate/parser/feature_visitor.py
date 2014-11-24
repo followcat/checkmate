@@ -182,6 +182,6 @@ def get_transitions_from_features(exchange_module, state_modules, data_value, pa
         return []
     initial_transitions = []
     for array_items in array_list:
-        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules, data_value))
+        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return initial_transitions 
 

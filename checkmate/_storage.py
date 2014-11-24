@@ -68,7 +68,7 @@ class PartitionStorage(Data):
 
 
 class TransitionStorage(collections.defaultdict):
-    def __init__(self, items, module_dict, data_value):
+    def __init__(self, items, module_dict):
         super(TransitionStorage, self).__init__(list)
 
         for _k, _v in items.items():
@@ -205,7 +205,7 @@ class InternalStorage(object):
             OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
+            >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
             >>> t.outgoing[0].resolved_arguments['R']['C'], t.outgoing[0].resolved_arguments['R']['P'], t.outgoing[0].values
             ('AT2', 'HIGH', ('AP',))
