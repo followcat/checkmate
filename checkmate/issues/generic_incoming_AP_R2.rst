@@ -14,7 +14,7 @@ can't generic incoming "AP(R2)" as alway consider states'attribute_list first is
     {'R': None}
     >>> t.is_matching_initial(a.components['C1'].states)
     True
-    >>> exchanges = t.generic_incoming(a.components['C1'].states, a.components['C1'].service_registry)
+    >>> exchanges = t.generic_incoming(a.components['C1'].states)
     >>> ex = exchanges[0]
     >>> ex.R.C.value, ex.R.P.value
     ('AT2', 'HIGH')

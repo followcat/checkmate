@@ -32,7 +32,7 @@ def _compatible_skip_test(procedure, message):
         >>> transition = c2.state_machine.transitions[3]
 
     You execute it:
-        >>> _incoming = c2.process(transition.generic_incoming(c2.states, c2.service_registry))[0]
+        >>> _incoming = c2.process(transition.generic_incoming(c2.states))[0]
 
     But you get the wrong output (because it takes the first transition matching
     the generic_incoming (here this is transition index 1)

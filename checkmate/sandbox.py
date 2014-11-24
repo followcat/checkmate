@@ -85,7 +85,7 @@ class Sandbox(object):
             if not foreign_transitions and not transition in component.state_machine.transitions:
                 continue
             if len(transition.incoming) > 0:
-                _incoming = transition.generic_incoming(component.states, component.service_registry)
+                _incoming = transition.generic_incoming(component.states)
                 for _c in self.application.components.values():
                     component_transition = _c.get_transition_by_output(_incoming)
                     if component_transition is not None:

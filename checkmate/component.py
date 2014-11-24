@@ -242,7 +242,7 @@ class Component(object):
             True
         """
         output = []
-        _incoming = _transition.generic_incoming(self.states, self.service_registry)
+        _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 output.append(_e)

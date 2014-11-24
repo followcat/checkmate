@@ -130,7 +130,7 @@ class Transition(object):
 
 
     @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst')
-    def generic_incoming(self, states, service_registry):
+    def generic_incoming(self, states):
         """ Generate a generic incoming for the provided state
 
         In case the transition has no incoming, raise AttributeError exception.
@@ -138,9 +138,7 @@ class Transition(object):
         incoming_exchanges = []
         for incoming in self.incoming:
             arguments = self.resolve_arguments(incoming, states)
-            _i = incoming.factory(kwargs=arguments)
-            for _e in service_registry.server_exchanges(_i, ''):
-                incoming_exchanges.append(_e)
+            incoming_exchanges.append(incoming.factory(kwargs=arguments))
         return incoming_exchanges
             
 
