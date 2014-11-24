@@ -102,7 +102,7 @@ def get_exec_signature(signature, dependent_modules):
     return inspect.Signature.from_function(locals()['fn'])
 
 
-@checkmate.report_issue('checkmate/issues/exchange_different_data.rst')
+@checkmate.report_issue('checkmate/issues/exchange_different_data.rst', failed=2)
 def get_define_str(element):
     run_code = """
             \nimport inspect
