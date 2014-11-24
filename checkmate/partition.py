@@ -13,11 +13,11 @@ class Partition(object):
             >>> import sample_app.exchanges
             >>> action = sample_app.exchanges.Action()
             >>> action.method_arguments("PP('AT1')")
-            ('AT1',)
+            OrderedDict([('R', 'AT1')])
             >>> action.method_arguments("Action('R')")
-            ()
-            >>> action.method_arguments("AP('R2')")
-            ('R2',)
+            OrderedDict()
+            >>> action.method_arguments("AP('R2')")['R']['C'], action.method_arguments("AP('R2')")['R']['P']
+            ('AT2', 'HIGH')
         """
         arguments = {}
         found_label = signature.find('(')
@@ -25,7 +25,16 @@ class Partition(object):
         args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
                       _p.strip("'") not in cls._sig.parameters.keys())])
         arguments = cls._sig.bind_partial(*args).arguments
-        return tuple(arguments.values())
+        for attr, value in arguments.items():
+            data_cls = cls._construct_values[attr]
+            if hasattr(data_cls, value):
+                arguments[attr] = getattr(data_cls, value)
+            else:
+                for _s in data_cls.partition_storage.storage:
+                    if _s.code == value:
+                        arguments[attr] = _s.factory()
+                        break
+        return arguments
 
     def __init__(self, value=None, *args, **kwargs):
         """

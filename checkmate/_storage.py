@@ -94,23 +94,6 @@ class TransitionStorage(collections.defaultdict):
                     else:
                         generate_storage.function = getattr(define_class, code)
                         self[_k].append(generate_storage)
-        self._build_resolve_logic(data_value)
-
-    def _build_resolve_logic(self, data_value):
-        for _attribute in ('initial', 'incoming', 'final', 'outgoing', 'returned'):
-            for _item in self[_attribute]:
-                resolved_arguments = {}
-                ex_cls = checkmate._module.get_class_implementing(_item.interface)
-                for _k, _cls in list(ex_cls._construct_values.items()):
-                    class_name = _cls.__name__
-                    if class_name in data_value:
-                        for arg in _item.arguments:
-                            if arg in data_value[class_name][1]:
-                                _ds_module, _dict = data_value[class_name]
-                                resolved_arguments[_k] = _dict[arg]
-                _item.resolved_arguments = resolved_arguments
-
-                _item.key_to_resolve = frozenset(ex_cls._sig.parameters.keys())
 
 
 class IStorage(zope.interface.Interface):
@@ -138,9 +121,8 @@ class InternalStorage(object):
 
         self.resolved_arguments = {}
         if checkmate._exec_tools.is_method(arguments):
-            self.arguments = self.function.method_arguments(arguments)
-        else:
-            self.arguments = {}
+            self.resolved_arguments = self.function.method_arguments(arguments)
+        self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')
@@ -225,8 +207,8 @@ class InternalStorage(object):
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict, a.data_value)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
-            >>> t.outgoing[0].arguments, t.outgoing[0].values
-            (('R2',), ('AP',))
+            >>> t.outgoing[0].resolved_arguments['R']['C'], t.outgoing[0].resolved_arguments['R']['P'], t.outgoing[0].values
+            ('AT2', 'HIGH', ('AP',))
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
