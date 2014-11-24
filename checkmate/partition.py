@@ -1,6 +1,31 @@
+import checkmate
+
+
 class Partition(object):
     """"""
     partition_attribute = tuple()
+
+    @classmethod
+    @checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
+    def method_arguments(cls, signature):
+        """
+            >>> import sample_app.application
+            >>> import sample_app.exchanges
+            >>> action = sample_app.exchanges.Action()
+            >>> action.method_arguments("PP('AT1')")
+            ('AT1',)
+            >>> action.method_arguments("Action('R')")
+            ()
+            >>> action.method_arguments("AP('R2')")
+            ('R2',)
+        """
+        arguments = {}
+        found_label = signature.find('(')
+        parameters = signature[found_label:][1:-1].split(', ')
+        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
+                      _p.strip("'") not in cls._sig.parameters.keys())])
+        arguments = cls._sig.bind_partial(*args).arguments
+        return tuple(arguments.values())
 
     def __init__(self, value=None, *args, **kwargs):
         """

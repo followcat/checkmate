@@ -1,6 +1,5 @@
 
-        >>> import checkmate._exec_tools
         >>> import sample_app.application
         >>> import sample_app.exchanges
-        >>> checkmate._exec_tools.method_arguments("Action(R = ActionRequest(['AT2', 'HIGH']))", sample_app.exchanges.IAction)
+        >>> sample_app.exchanges.Action.method_arguments("Action(R = ActionRequest(['AT2', 'HIGH']))")
         ((), {'R': ActionRequest(['AT2', 'HIGH'])})

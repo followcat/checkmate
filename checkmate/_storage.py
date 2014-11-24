@@ -137,7 +137,10 @@ class InternalStorage(object):
         self.function = checkmate._module.get_class_implementing(interface)
 
         self.resolved_arguments = {}
-        self.arguments = checkmate._exec_tools.method_arguments(arguments, interface)
+        if checkmate._exec_tools.is_method(arguments):
+            self.arguments = self.function.method_arguments(arguments)
+        else:
+            self.arguments = {}
         self.values = (value, )
 
     @checkmate.report_issue('checkmate/issues/init_with_arg.rst')

@@ -52,31 +52,6 @@ def get_method_basename(signature):
     return basename
 
 
-@checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
-def method_arguments(signature, interface):
-    """
-        >>> import checkmate._exec_tools
-        >>> import sample_app.application
-        >>> import sample_app.exchanges
-        >>> interface = sample_app.exchanges.IAction
-        >>> checkmate._exec_tools.method_arguments("A0('AT1')", interface)
-        ('AT1',)
-        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R)", interface)
-        ('False',)
-        >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
-        ()
-    """
-    arguments = {}
-    if is_method(signature):
-        cls = checkmate._module.get_class_implementing(interface)
-        found_label = signature.find('(')
-        parameters = signature[found_label:][1:-1].split(', ')
-        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
-                      _p.strip("'") not in cls._sig.parameters.keys())])
-        arguments = cls._sig.bind_partial(*args).arguments
-    return tuple(arguments.values())
-
-
 def get_exec_signature(signature, dependent_modules):
     """
         >>> import sample_app.application
