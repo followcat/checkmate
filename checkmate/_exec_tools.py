@@ -121,7 +121,7 @@ def get_define_str(element):
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
+def exec_class_definition(data_value, data_structure_module, partition_type, exec_module, signature, codes, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
@@ -149,6 +149,9 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
+    if classname in data_value:
+        for key, data in data_value[classname][1].items():
+            setattr(define_class, key, data)
     exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \n_construct_values = dict(_annotated_values)\
