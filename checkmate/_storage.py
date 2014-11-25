@@ -223,18 +223,9 @@ class InternalStorage(object):
         if exchanges is not None:
             for input in exchanges:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
-        try:
-            _kwargs = _cls._sig.bind(**_attributes).arguments
-            if len(_kwargs) == 0 and len(_cls._sig.parameters) > 0:
-                raise TypeError("_attributes is empty, then go forward")
-            return _kwargs
-        except TypeError:
-            try:
-                return collections.OrderedDict(
-                        map(lambda x:(x,self.resolved_arguments[x]),
-                        _cls._sig.parameters.keys()))
-            except KeyError:
-                return {}
+        _attributes.update(self.resolved_arguments)
+        _kwargs = _cls._sig.bind_partial(**_attributes).arguments
+        return _kwargs
 
     def match(self, target_copy, reference=None, incoming_list=None):
         """
