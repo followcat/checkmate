@@ -1,12 +1,8 @@
-import checkmate
-
-
 class Partition(object):
     """"""
     partition_attribute = tuple()
 
     @classmethod
-    @checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
     def method_arguments(cls, signature):
         """
             >>> import sample_app.application
