@@ -1,4 +1,5 @@
 It is impossible to specify the final state by providing arguments (like __init__(R))
+    >>> import checkmate.sandbox
     >>> import checkmate.runtime._pyzmq
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime.test_plan
@@ -16,12 +17,16 @@ It is impossible to specify the final state by providing arguments (like __init_
     >>> proc = procedures[1]
     >>> r.application.compare_states(proc.initial)
     True
+    >>> saved_initial = checkmate.sandbox.Sandbox(r.application)
     >>> proc(r)
-    >>> proc.final[0].function
-    <class 'sample_app.component.component_1_states.AnotherState'>
-    >>> proc.final[0].factory().value
-    [{'R': ['AT1', 'NORM']}]
-    >>> r.application.compare_states(proc.final)
+    >>> proc.final[0].function #doctest: +ELLIPSIS
+    <function AnotherState.__init__ at ...
+    >>> ap = sample_app.exchanges.Action('AP')
+    >>> revolved_args = proc.final[0].resolve(exchanges=[ap])
+    >>> fs = proc.final[0].factory(args=[r.application.components['C1'].states[1]], kwargs=revolved_args)
+    >>> (fs.R.C.value, fs.R.P.value)
+    ('AT1', 'NORM')
+    >>> r.application.compare_states(proc.final, saved_initial.application.state_list())
     True
     >>> r.stop_test()
     >>>
