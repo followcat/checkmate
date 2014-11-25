@@ -129,7 +129,7 @@ class Transition(object):
         return data.resolve(states, incoming_exchange)
 
 
-    @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst')
+    @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst', failed=2)
     def generic_incoming(self, states):
         """ Generate a generic incoming for the provided state
 
@@ -158,8 +158,8 @@ class Transition(object):
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
         """
-        _outgoing_list = []		
-        if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming): 
+        _outgoing_list = []
+        if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming):
             return _outgoing_list
         for _state in states:
             for _interface in zope.interface.providedBy(_state):

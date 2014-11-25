@@ -21,17 +21,12 @@ def runtest(filename):
     _r = Runner(verbose=False)
     return _r.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
 
-def _issue_record(filename):
+def _issue_record(filename, message, failed):
     result = runtest(filename)
-    if result.failed == 0:
-        raise doctest.DocTestFailure('Issue: '+filename, 'Expected: failure', 'Got: success')
+    if result.failed != failed:
+        print(message %result.failed)
 
-def _issue_regression(filename):
-    result = runtest(filename)
-    if result.failed != 0:
-        raise doctest.DocTestFailure('Issue regression: '+filename, 'Expected: success', 'Got: failure')
-
-def _add_issue_doctest(filename, doctest_function):
+def _add_issue_doctest(filename, message, failed=0):
     def append_docstring(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -39,12 +34,12 @@ def _add_issue_doctest(filename, doctest_function):
         if wrapper.__doc__ is None:
             wrapper.__doc__ = ""
         wrapper.__doc__ += """
-            \n            >>> %s.%s('%s')
-            """ % (__name__, doctest_function.__name__, filename)
+            \n            >>> %s._issue_record('%s', '%s', failed=%d)
+            """ % (__name__, filename, message, failed)
         return wrapper
     return append_docstring
 
-def report_issue(filename):
+def report_issue(filename, failed=1):
     """
         >>> import os
         >>> import doctest
@@ -73,7 +68,8 @@ def report_issue(filename):
         >>> doctest.run_docstring_examples(func, locals())
         >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     """
-    return _add_issue_doctest(filename, _issue_record)
+    return _add_issue_doctest(filename,
+                'Expected: '+str(failed)+' failures, got: %d', failed)
 
 def fix_issue(filename):
     """
@@ -104,5 +100,5 @@ def fix_issue(filename):
         TestResults(failed=1, ...
         >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     """
-    return _add_issue_doctest(filename, _issue_regression)
+    return _add_issue_doctest(filename, 'Expected: success, got: %d failures')
 
