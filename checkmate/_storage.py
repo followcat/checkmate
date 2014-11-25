@@ -207,12 +207,12 @@ class InternalStorage(object):
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
             >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
-            >>> t.outgoing[0].resolved_arguments['R']['C'], t.outgoing[0].resolved_arguments['R']['P'], t.outgoing[0].values
+            >>> t.outgoing[0].resolved_arguments['R'].C.value, t.outgoing[0].resolved_arguments['R'].P.value, t.outgoing[0].values
             ('AT2', 'HIGH', ('AP',))
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
-            >>> resolved_arguments['R']['C'], resolved_arguments['R']['P']
+            >>> resolved_arguments['R'].C.value, resolved_arguments['R'].P.value
             ('AT2', 'HIGH')
         """
         _attributes = {}

@@ -16,7 +16,7 @@ class Partition(object):
             OrderedDict([('R', 'AT1')])
             >>> action.method_arguments("Action('R')")
             OrderedDict()
-            >>> action.method_arguments("AP('R2')")['R']['C'], action.method_arguments("AP('R2')")['R']['P']
+            >>> action.method_arguments("AP('R2')")['R'].C.value, action.method_arguments("AP('R2')")['R'].P.value
             ('AT2', 'HIGH')
         """
         arguments = {}
@@ -28,7 +28,7 @@ class Partition(object):
         for attr, value in arguments.items():
             data_cls = cls._construct_values[attr]
             if hasattr(data_cls, value):
-                arguments[attr] = getattr(data_cls, value)
+                arguments[attr] = data_cls(**getattr(data_cls, value))
             else:
                 for _s in data_cls.partition_storage.storage:
                     if _s.code == value:
