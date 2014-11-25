@@ -96,7 +96,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> state_modules = []
         >>> for name in components:
         ...         state_modules.append(_application.components[name].state_module)
-        >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, _application.data_value)
+        >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
         >>> transition_list.sort(key=lambda x:x.incoming[0].code)
         >>> transition_list[0].incoming[0].code
         'AC'
@@ -131,7 +131,7 @@ def TestProcedureFeaturesGenerator(application_class):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, _application.data_value, path=_application.feature_definition_path)
+    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])
