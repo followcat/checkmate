@@ -55,7 +55,6 @@ def get_exec_signature(signature, dependent_modules):
     for _dep in dependent_modules:
         dependent_dict.update(_dep.__dict__)
     exec(run_code, dependent_dict, locals())
-    exec(run_code, dependent_dict, locals())
     return inspect.Signature.from_function(locals()['fn'])
 
 
