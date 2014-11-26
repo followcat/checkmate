@@ -18,23 +18,6 @@ def is_method(signature):
     return False
 
 
-def method_unbound(signature, interface):
-    """
-        >>> import checkmate._exec_tools
-        >>> import sample_app.application
-        >>> import sample_app.component
-        >>> interface = sample_app.component.component_3_states.IAcknowledge
-        >>> checkmate._exec_tools.method_unbound('func(args)', interface)
-        False
-        >>> checkmate._exec_tools.method_unbound('append(R)', interface)
-        True
-        >>> checkmate._exec_tools.method_unbound('append2(R)', interface)
-        False
-    """
-    basename = get_method_basename(signature)
-    return is_method(signature) and interface.get(basename) is not None
-
-
 def get_method_basename(signature):
     """
         >>> import checkmate._exec_tools
