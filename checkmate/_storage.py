@@ -125,7 +125,7 @@ class InternalStorage(object):
         self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
 
-    @checkmate.report_issue('checkmate/issues/init_with_arg.rst', failed=3)
+    @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
     @checkmate.fix_issue('checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
     def factory(self, args=None, kwargs=None):

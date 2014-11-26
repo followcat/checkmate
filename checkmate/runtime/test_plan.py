@@ -8,9 +8,12 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def build_procedure(sandbox, transition):
+def build_procedure(sandbox, transition=None):
     proc = checkmate.runtime.procedure.Procedure()
     sandbox.fill_procedure(proc)
+    if transition is not None:
+        #force checking final from transition if given
+        proc.final = transition.final
     return proc
 
 def get_transitions_from_test(application):
@@ -167,5 +170,5 @@ def TestProcedureRunsGenerator(application_class):
         _transitions = _run.walk()
         box = checkmate.sandbox.Sandbox(_application, _transitions)
         box(_transitions[0], foreign_transitions=True) 
-        yield build_procedure(box, _transitions[0]), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
