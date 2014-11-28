@@ -7,7 +7,7 @@ data:
     - [S-STATE-01,  State1(),   'True',         State true value]
     - [S-STATE-02,  State2(),   'False',        State false value]
 
-  - Definition and accessibility: 'AnotherState'
+  - Definition and accessibility: 'AnotherState(R:ActionRequest=None)'
     Value partitions:
     # [Partition,   State,            Valid value,    Comment]
     - [S-ANOST-01,  AnotherState1(),  None,           AnotherState first value]

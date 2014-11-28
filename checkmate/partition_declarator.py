@@ -5,14 +5,14 @@ import checkmate._exec_tools
 import checkmate.parser.yaml_visitor
 
 
-def make_transition(items, exchanges, state_modules, data_value):
+def make_transition(items, exchanges, state_modules):
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
     try:
         tran_name = items['name']
     except KeyError:
         tran_name = 'unknown'
-    ts = checkmate._storage.TransitionStorage(items, module_dict, data_value)
+    ts = checkmate._storage.TransitionStorage(items, module_dict)
     t = checkmate.transition.Transition(tran_name=tran_name, initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'], returned=ts['returned'])
     return t
 
@@ -62,7 +62,7 @@ class Declarator(object):
         ['NORM']
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.__class__.data_value, self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, zip(codes_list, values_list), full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
@@ -81,13 +81,12 @@ class Declarator(object):
         >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue()', 'TestStateFalse()'], values_list=['True', 'False'])
         >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'])
         >>> de.new_partition('exchanges', 'TestReturn()', codes_list=['DA()'], values_list=['DA'])
-        >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'TestState': '__init__(True)'}], 'outgoing': [{'TestReturn': 'DA()'}], 'incoming': [{'TestAction': 'AP(R)'}], 'final': [{'TestState': '__init__(False)'}]}
+        >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'TestState': 'TestStateTrue'}], 'outgoing': [{'TestReturn': 'DA()'}], 'incoming': [{'TestAction': 'AP(R)'}], 'final': [{'TestState': 'TestStateFalse'}]}
         >>> de.new_transition(item)
         >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
         [<checkmate.transition.Transition object at ...
         """
-        self.output['transitions'].append(make_transition(item, [self.module['exchanges']],
-                                       [self.module['states']], self.__class__.data_value))
+        self.output['transitions'].append(make_transition(item, [self.module['exchanges']], [self.module['states']]))
 
     def new_definitions(self, data_source):
         """

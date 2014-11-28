@@ -18,23 +18,6 @@ def is_method(signature):
     return False
 
 
-def method_unbound(signature, interface):
-    """
-        >>> import checkmate._exec_tools
-        >>> import sample_app.application
-        >>> import sample_app.component
-        >>> interface = sample_app.component.component_3_states.IAcknowledge
-        >>> checkmate._exec_tools.method_unbound('func(args)', interface)
-        False
-        >>> checkmate._exec_tools.method_unbound('append(R)', interface)
-        True
-        >>> checkmate._exec_tools.method_unbound('append2(R)', interface)
-        False
-    """
-    basename = get_method_basename(signature)
-    return is_method(signature) and interface.get(basename) is not None
-
-
 def get_method_basename(signature):
     """
         >>> import checkmate._exec_tools
@@ -50,32 +33,6 @@ def get_method_basename(signature):
     method = signature.split('(')[0]
     basename = method.split('.')[-1]
     return basename
-
-
-@checkmate.report_issue('checkmate/issues/function_parameter_exec.rst')
-def method_arguments(signature, interface):
-    """
-        >>> import checkmate._exec_tools
-        >>> import sample_app.application
-        >>> import sample_app.exchanges
-        >>> interface = sample_app.exchanges.IAction
-        >>> checkmate._exec_tools.method_arguments("A0('AT1')", interface)
-        ('AT1',)
-        >>> checkmate._exec_tools.method_arguments("ActionMix(False, R)", interface)
-        ('False',)
-        >>> checkmate._exec_tools.method_arguments("AP('R')", interface)
-        ()
-    """
-    args = tuple()
-    if is_method(signature):
-        cls = checkmate._module.get_class_implementing(interface)
-        found_label = signature.find('(')
-        parameters = signature[found_label:][1:-1].split(', ')
-        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
-                      _p.strip("'") not in cls._sig.parameters.keys())])
-    else:
-        args = (signature,)
-    return args
 
 
 def get_exec_signature(signature, dependent_modules):
@@ -146,7 +103,7 @@ def get_define_str(element):
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
+def exec_class_definition(data_value, data_structure_module, partition_type, exec_module, signature, codes, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
@@ -174,6 +131,9 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
+    if classname in data_value:
+        for key, data in data_value[classname][1].items():
+            setattr(define_class, key, data)
     exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \n_construct_values = dict(_annotated_values)\

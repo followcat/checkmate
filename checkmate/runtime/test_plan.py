@@ -41,7 +41,7 @@ def get_transitions_from_test(application):
         array_list.append(data)
     transitions = []
     for array_items in array_list:
-        transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules, application.data_value))
+        transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return transitions
 
 def TestProcedureInitialGenerator(application_class, transition_list=None):
@@ -99,7 +99,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> state_modules = []
         >>> for name in components:
         ...         state_modules.append(_application.components[name].state_module)
-        >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, _application.data_value)
+        >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
         >>> transition_list.sort(key=lambda x:x.incoming[0].code)
         >>> transition_list[0].incoming[0].code
         'AC'
@@ -134,7 +134,7 @@ def TestProcedureFeaturesGenerator(application_class):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, _application.data_value, path=_application.feature_definition_path)
+    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
 
     for _transition in transition_list:
         box = checkmate.sandbox.Sandbox(_application, [_transition])

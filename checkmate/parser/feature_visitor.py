@@ -153,7 +153,7 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_transitions_from_features(exchange_module, state_modules, data_value, path=None):
+def get_transitions_from_features(exchange_module, state_modules, path=None):
     """
             >>> import os
             >>> import checkmate.state
@@ -166,7 +166,7 @@ def get_transitions_from_features(exchange_module, state_modules, data_value, pa
             >>> state_modules = []
             >>> for name in list(a.components.keys()):
             ...     state_modules.append(a.components[name].state_module)
-            >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules, a.data_value)
+            >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
             >>> len(transitions)
             14
             >>> transitions # doctest: +ELLIPSIS
@@ -182,6 +182,6 @@ def get_transitions_from_features(exchange_module, state_modules, data_value, pa
         return []
     initial_transitions = []
     for array_items in array_list:
-        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules, data_value))
+        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
     return initial_transitions 
 
