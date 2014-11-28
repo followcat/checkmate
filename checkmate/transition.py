@@ -142,8 +142,8 @@ class Transition(object):
         return incoming_exchanges
             
 
+    @checkmate.fix_issue('checkmate/issues/process_AP_R2.rst')
     @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
-    @checkmate.report_issue('checkmate/issues/process_AP_R2.rst', failed=2)
     def process(self, states, _incoming):
         """
             >>> import sample_app.application

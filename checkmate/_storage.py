@@ -261,10 +261,10 @@ class InternalStorage(object):
             resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
-                resolved_arguments = self.resolve(_initial, incoming_list)
+                resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
             
             if resolved_arguments is None:
-                resolved_arguments = self.resolve()
+                resolved_arguments = self.resolve(target_copy)
             if _target == self.factory(_initial, kwargs=resolved_arguments):
                 target_copy.remove(_target)
                 break
