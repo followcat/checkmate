@@ -28,10 +28,10 @@ class IState(zope.interface.Interface):
 class State(checkmate.partition.Partition):
     """"""
 
-    def __init__(self, value=None, *args, **kwargs):
+    def __init__(self, value=None, *args, default=True, **kwargs):
         """State object supports value=None for state matching
         """
-        super(State, self).__init__(value, *args, **kwargs)
+        super(State, self).__init__(value, *args, default=default, **kwargs)
 
     def __eq__(self, other):
         """

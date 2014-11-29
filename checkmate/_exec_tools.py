@@ -74,23 +74,23 @@ def get_define_str(element):
             \nclass {e.classname}({e.ancestor_class}):
             \n    import inspect
             \n    _valid_values = {e.values}
-            \n    def __init__(self, value=None, *args, **kwargs):
+            \n    def __init__(self, value=None, *args, default=True, **kwargs):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
-            \n                kwargs[_k] = _v()
+            \n                kwargs[_k] = _v(default=default)
             \n            else:
             \n                _v = self.__class__._construct_values[_k]
             \n                if not isinstance(kwargs[_k], _v):
             \n                    if isinstance(kwargs[_k], tuple):
             \n                        if isinstance(kwargs[_k][0], tuple):
-            \n                            kwargs[_k] = _v(*kwargs[_k][0], **kwargs[_k][1])
+            \n                            kwargs[_k] = _v(*kwargs[_k][0], default=default, **kwargs[_k][1])
             \n                        else:
-            \n                            kwargs[_k] = _v(*kwargs[_k])
+            \n                            kwargs[_k] = _v(*kwargs[_k], default=default)
             \n                    elif isinstance(kwargs[_k], dict):
-            \n                        kwargs[_k] = _v(**kwargs[_k])
+            \n                        kwargs[_k] = _v(default=default, **kwargs[_k])
             \n                    else:
-            \n                        kwargs[_k] = _v(kwargs[_k])
-            \n        super().__init__(value, *args, **kwargs)
+            \n                        kwargs[_k] = _v(kwargs[_k], default=default)
+            \n        super().__init__(value, *args, default=default, **kwargs)
             \n
             """.format(i=os.path.splitext(element.ancestor_class)[0],
                        e=element)
@@ -137,7 +137,7 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
     exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \n_construct_values = dict(_annotated_values)\
-         \n_annotated_values.update(dict([(_k, lambda:_v.default) for (_k, _v) in _sig.parameters.items()\
+         \n_annotated_values.update(dict([(_k, lambda default:_v.default) for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty and _v.default != inspect._empty]))\
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\

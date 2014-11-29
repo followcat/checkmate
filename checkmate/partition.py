@@ -32,7 +32,7 @@ class Partition(object):
                         break
         return arguments
 
-    def __init__(self, value=None, *args, **kwargs):
+    def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are sotred in parameter dict.
             >>> e = Partition('CA', 'AUTO')
@@ -71,7 +71,7 @@ class Partition(object):
             self.value = None
         else:
             self.value = value
-            if value is None and hasattr(self, '_valid_values'):
+            if value is None and default and hasattr(self, '_valid_values'):
                 try:
                     self.value = self._valid_values[0]
                     if self.value == 'None':
