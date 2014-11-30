@@ -35,7 +35,7 @@ class Data(object):
             >>> state = data.storage[0].factory()
             >>> state.value
             >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, [('AP(R)', 'AP')])
-            >>> ex = data.storage[0].factory(kwargs={'R': 'HIGH'})
+            >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
         """
@@ -128,7 +128,7 @@ class InternalStorage(object):
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
     @checkmate.fix_issue('checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
-    def factory(self, args=None, kwargs=None):
+    def factory(self, args=None, **kwargs):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
@@ -136,7 +136,7 @@ class InternalStorage(object):
             >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
-            >>> st.factory(kwargs={'R':['AT2', 'HIGH']}).R.value
+            >>> st.factory(R=['AT2', 'HIGH']).R.value
             ['AT2', 'HIGH']
 
             >>> import sample_app.application
@@ -157,12 +157,12 @@ class InternalStorage(object):
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
             >>> arguments = t.final[1].resolve(exchanges=[i])
-            >>> t.final[1].factory([c.states[1]], kwargs=arguments) # doctest: +ELLIPSIS
+            >>> t.final[1].factory([c.states[1]], **arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState object at ...
             >>> c.states[1].value
             []
         """
-        def wrapper(param, kwparam):
+        def wrapper(param, **kwparam):
             if len(param) > 0 and self.interface.providedBy(param[0]):
                 state = param[0]
                 try:
@@ -176,9 +176,7 @@ class InternalStorage(object):
 
         if args is None:
             args = self.values
-        if kwargs is None:
-            kwargs = {}
-        return wrapper(args, kwargs)
+        return wrapper(args, **kwargs)
 
     def resolve(self, states=None, exchanges=None):
         """
@@ -193,12 +191,12 @@ class InternalStorage(object):
             OrderedDict([('R', None)])
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
-            >>> inc = t.incoming[0].factory(kwargs={'R': ['AT2', 'HIGH']})
+            >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
             >>> inc.R.value
             ['AT2', 'HIGH']
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
-            >>> inc = t.incoming[0].factory(kwargs={'R': 1})
+            >>> inc = t.incoming[0].factory(R=1)
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
@@ -265,7 +263,7 @@ class InternalStorage(object):
             
             if resolved_arguments is None:
                 resolved_arguments = self.resolve()
-            if _target == self.factory(_initial, kwargs=resolved_arguments):
+            if _target == self.factory(_initial, **resolved_arguments):
                 target_copy.remove(_target)
                 break
         return target_copy

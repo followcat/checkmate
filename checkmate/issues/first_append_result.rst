@@ -32,7 +32,7 @@ Send 'AC' for append default 'R':
     >>> validated_incoming = r.application.validated_incoming_list()
     >>> saved_final = [_f for _f in saved.application.state_list() if final.interface.providedBy(_f)]
     >>> saved_initial = [_s for _s in saved.application.state_list() if final.interface.providedBy(_s)]
-    >>> res = final.factory(saved_final, kwargs=final.resolve(saved_initial, validated_incoming))
+    >>> res = final.factory(saved_final, **final.resolve(saved_initial, validated_incoming))
     >>> res.R #doctest: +ELLIPSIS
     <sample_app.data_structure.ActionRequest object at ...
     >>> r.application.components['C1'].states[1].R #doctest: +ELLIPSIS
