@@ -163,7 +163,8 @@ class InternalStorage(object):
             []
         """
         if len(args) == 0:
-            args = self.values
+            if 'default' not in kwargs or kwargs['default']:
+                args = self.values
         if instance is not None and self.interface.providedBy(instance):
             try:
                 value = self.values[0]
