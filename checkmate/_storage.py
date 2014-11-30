@@ -128,7 +128,7 @@ class InternalStorage(object):
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
     @checkmate.fix_issue('checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
-    def factory(self, args=None, **kwargs):
+    def factory(self, *args, instance=None, **kwargs):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
@@ -157,21 +157,20 @@ class InternalStorage(object):
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
             >>> arguments = t.final[1].resolve(exchanges=[i])
-            >>> t.final[1].factory([c.states[1]], **arguments) # doctest: +ELLIPSIS
+            >>> t.final[1].factory(instance=c.states[1], **arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState object at ...
             >>> c.states[1].value
             []
         """
-        if args is None:
+        if len(args) == 0:
             args = self.values
-        if len(args) > 0 and self.interface.providedBy(args[0]):
-            state = args[0]
+        if instance is not None and self.interface.providedBy(instance):
             try:
                 value = self.values[0]
             except IndexError:
                 value = None
-            self.function(state, value, **kwargs)
-            return state
+            self.function(instance, value, **kwargs)
+            return instance
         else:
             return self.function(*args, **kwargs)
 
@@ -252,7 +251,7 @@ class InternalStorage(object):
             True
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
-            _initial = None
+            _initial = [None]
             resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
@@ -260,7 +259,7 @@ class InternalStorage(object):
             
             if resolved_arguments is None:
                 resolved_arguments = self.resolve()
-            if _target == self.factory(_initial, **resolved_arguments):
+            if _target == self.factory(instance=_initial[0], **resolved_arguments):
                 target_copy.remove(_target)
                 break
         return target_copy

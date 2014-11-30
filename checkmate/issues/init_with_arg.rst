@@ -23,7 +23,7 @@ It is impossible to specify the final state by providing arguments (like __init_
     <function AnotherState.__init__ at ...
     >>> ap = sample_app.exchanges.Action('AP')
     >>> revolved_args = proc.final[0].resolve(exchanges=[ap])
-    >>> fs = proc.final[0].factory(args=[r.application.components['C1'].states[1]], **revolved_args)
+    >>> fs = proc.final[0].factory(instance=r.application.components['C1'].states[1], **revolved_args)
     >>> (fs.R.C.value, fs.R.P.value)
     ('AT1', 'NORM')
     >>> r.application.compare_states(proc.final, saved_initial.application.state_list())

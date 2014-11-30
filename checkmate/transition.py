@@ -169,7 +169,7 @@ class Transition(object):
                     _final_interface = _final.interface
                     if _final_interface == _interface:
                         resolved_arguments = self.resolve_arguments(_final, states, _incoming)
-                        _final.factory(args=[_state], **resolved_arguments)
+                        _final.factory(instance=_state, **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = self.resolve_arguments(outgoing_exchange, states, _incoming)
             _outgoing_list.append(outgoing_exchange.factory(**resolved_arguments))
