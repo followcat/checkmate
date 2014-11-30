@@ -12,7 +12,7 @@ class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
 
-    def __init__(self, value=None, *args, **kwargs):
+    def __init__(self, value=None, *args, default=True, **kwargs):
         """
             >>> import sample_app.application
             >>> r2 = sample_app.application.TestData.data_value['ActionRequest'][1]['R2']
@@ -25,7 +25,7 @@ class Exchange(checkmate.partition.Partition):
             'HIGH'
 
         """
-        super(Exchange, self).__init__(value, *args, **kwargs)
+        super(Exchange, self).__init__(value, *args, default=default, **kwargs)
         self._return_code = False
 
     def __eq__(self, other):
