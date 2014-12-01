@@ -120,9 +120,8 @@ class Sandbox(object):
             'True'
         """
         for _exchange in exchanges:
-            for _name, _c in self.application.components.items():
-                if _name not in _exchange.destination:
-                    continue
+            for _des in _exchange.destination:
+                _c = self.application.components[_des]
                 _transition = _c.get_transition_by_input([_exchange])
                 _outgoings = self.generate(_c, _exchange)
                 if _outgoings is None:
