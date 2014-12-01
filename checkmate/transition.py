@@ -117,7 +117,7 @@ class Transition(object):
             >>> c = a.components['C1']
             >>> c.start()
             >>> t = c.state_machine.transitions[1]
-            >>> i = t.incoming[0].factory(kwargs={'R': 1})
+            >>> i = t.incoming[0].factory(R=1)
             >>> t.resolve_arguments(t.final[0], c.states, [i]) # doctest: +ELLIPSIS
             OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
             >>> i = t.incoming[0].factory()
@@ -138,7 +138,7 @@ class Transition(object):
         incoming_exchanges = []
         for incoming in self.incoming:
             arguments = self.resolve_arguments(incoming, states)
-            incoming_exchanges.append(incoming.factory(kwargs=arguments))
+            incoming_exchanges.append(incoming.factory(**arguments))
         return incoming_exchanges
             
 
@@ -169,8 +169,8 @@ class Transition(object):
                     _final_interface = _final.interface
                     if _final_interface == _interface:
                         resolved_arguments = self.resolve_arguments(_final, states, _incoming)
-                        _final.factory(args=[_state], kwargs=resolved_arguments)
+                        _final.factory(instance=_state, **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = self.resolve_arguments(outgoing_exchange, states, _incoming)
-            _outgoing_list.append(outgoing_exchange.factory(kwargs=resolved_arguments))
+            _outgoing_list.append(outgoing_exchange.factory(**resolved_arguments))
         return _outgoing_list

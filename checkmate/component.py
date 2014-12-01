@@ -139,7 +139,7 @@ class Component(object):
         return None
 
             
-    def start(self):
+    def start(self, default_state_value=True):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -151,7 +151,7 @@ class Component(object):
         [<sample_app.component.component_1_states.State object at ...
         """
         for interface, state in self.state_machine.states:
-            self.states.append(state.storage[0].factory())
+            self.states.append(state.storage[0].factory(default=default_state_value))
         self.service_registry.register(self, self.service_interfaces)
 
     def reset(self):

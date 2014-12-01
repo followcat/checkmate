@@ -34,7 +34,7 @@ class Partition(object):
 
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
-        The arguments are of str type, the values are sotred in parameter dict.
+        The arguments are of str type, the values are stored in parameter dict.
             >>> e = Partition('CA', 'AUTO')
             >>> e.value
             'CA'
