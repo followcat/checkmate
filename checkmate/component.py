@@ -218,8 +218,10 @@ class Component(object):
                 output.append(_e)
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
-                output.insert(0, exchange[0].return_type())
-                output[0].origin_destination(self.name, [exchange[0].destination])
+                return_exchange = exchange[0].return_type()
+                return_exchange._return_code = True
+                output.insert(0, return_exchange)
+                output[0].origin_destination(self.name, exchange[0].destination)
         return output
 
     def simulate(self, _transition):
