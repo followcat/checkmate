@@ -222,6 +222,7 @@ class Component(object):
                 output[0].origin_destination(self.name, [exchange[0].destination])
         return output
 
+    @checkmate.report_issue("checkmate/issues/simulate_return_code.rst", failed=2)
     def simulate(self, _transition):
         """
             >>> import sample_app.application
