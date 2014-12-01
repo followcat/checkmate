@@ -139,7 +139,7 @@ class Component(object):
         return None
 
             
-    def start(self):
+    def start(self, default_state_value=True):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -151,7 +151,7 @@ class Component(object):
         [<sample_app.component.component_1_states.State object at ...
         """
         for interface, state in self.state_machine.states:
-            self.states.append(state.storage[0].factory())
+            self.states.append(state.storage[0].factory(default=default_state_value))
         self.service_registry.register(self, self.service_interfaces)
 
     def reset(self):
@@ -218,8 +218,10 @@ class Component(object):
                 output.append(_e)
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
-                output.insert(0, exchange[0].return_type())
-                output[0].origin_destination(self.name, [exchange[0].destination])
+                return_exchange = exchange[0].return_type()
+                return_exchange._return_code = True
+                output.insert(0, return_exchange)
+                output[0].origin_destination(self.name, exchange[0].destination)
         return output
 
     @checkmate.fix_issue("checkmate/issues/simulate_return_code.rst")

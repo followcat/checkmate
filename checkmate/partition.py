@@ -32,9 +32,9 @@ class Partition(object):
                         break
         return arguments
 
-    def __init__(self, value=None, *args, **kwargs):
+    def __init__(self, value=None, *args, default=True, **kwargs):
         """
-        The arguments are of str type, the values are sotred in parameter dict.
+        The arguments are of str type, the values are stored in parameter dict.
             >>> e = Partition('CA', 'AUTO')
             >>> e.value
             'CA'
@@ -52,18 +52,18 @@ class Partition(object):
             >>> delattr(Partition, 'A')
             >>> Partition.partition_attribute = tuple()
 
-        factory will set R = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
+        Partition will be given a default value if none is provided.
+        The default value is from definition in yaml:
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> ac = a.exchanges[0][-1].storage[0].factory(kwargs={'R':sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])})
-            >>> ac.R.value
-            ['AT2', 'HIGH']
+            >>> re = sample_app.data_structure.ActionRequest()
+            >>> re.C.value, re.P.value
+            ('AT1', 'NORM')
 
-        We can define a partition by passing an instance for attribute.
-            >>> re = sample_app.data_structure.ActionRequest(['AT2', 'HIGH'])
-            >>> ac2 = a.exchanges[0][-1].storage[0].factory(kwargs={'R': re})
-            >>> ac2.R.value
-            ['AT2', 'HIGH']
+        The default keyword only argument allow to use None as default:
+            >>> import sample_app.application
+            >>> re = sample_app.data_structure.ActionRequest(default=False)
+            >>> re.C.value, re.P.value
+            (None, None)
         """
         if type(value) == list:
             self.value = list(value)
@@ -71,7 +71,7 @@ class Partition(object):
             self.value = None
         else:
             self.value = value
-            if value is None and hasattr(self, '_valid_values'):
+            if value is None and default and hasattr(self, '_valid_values'):
                 try:
                     self.value = self._valid_values[0]
                     if self.value == 'None':

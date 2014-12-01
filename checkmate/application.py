@@ -140,7 +140,7 @@ class Application(object):
             return self.origin_transitions
         super().__getattr__(self, name)
 
-    def start(self):
+    def start(self, default_state_value=True):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -153,7 +153,7 @@ class Application(object):
         """
         if not self._started:
             for component in list(self.components.values()):
-                component.start()
+                component.start(default_state_value=default_state_value)
             self._started = True
 
     def sut(self, system_under_test):
