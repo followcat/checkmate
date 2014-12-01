@@ -102,12 +102,12 @@ class Sandbox(object):
 
         if len(_outgoing) == 0:
             return False
-        self.transitions = self.generate(_outgoing, checkmate._tree.Tree(self.transitions, []))
+        self.transitions = self.process(_outgoing, checkmate._tree.Tree(self.transitions, []))
         if self.is_run:
             self.update_required_states(transition)
         return self.is_run
 
-    def generate(self, exchanges, tree=None):
+    def process(self, exchanges, tree=None):
         """
             >>> import checkmate.sandbox
             >>> import sample_app.application
@@ -115,7 +115,7 @@ class Sandbox(object):
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
             >>> _t = box.application.components['C2'].get_transition_by_output([ex])
-            >>> transitions = box.generate([ex], checkmate._tree.Tree(_t, []))
+            >>> transitions = box.process([ex], checkmate._tree.Tree(_t, []))
             >>> box.application.components['C3'].states[0].value
             'True'
         """
@@ -124,19 +124,25 @@ class Sandbox(object):
                 if _name not in _exchange.destination:
                     continue
                 _transition = _c.get_transition_by_input([_exchange])
-                try:
-                    _outgoings = _c.process([_exchange])
-                except checkmate.component.NoTransitionFound:
+                _outgoings = self.generate(_c, _exchange)
+                if _outgoings is None:
                     if _exchange.return_code:
                         break
                     return None
 
                 self.update_required_states(_transition)
-                tmp_tree = self.generate(_outgoings, checkmate._tree.Tree(_transition, []))
+                tmp_tree = self.process(_outgoings, checkmate._tree.Tree(_transition, []))
                 if tmp_tree is None:
                     return None
                 tree.add_node(tmp_tree)
         return tree
+
+    def generate(self, component, _exchange):
+        try:
+            _outgoings = component.process([_exchange])
+        except checkmate.component.NoTransitionFound:
+            return None
+        return _outgoings
 
     def fill_procedure(self, procedure):
         if self.is_run:
