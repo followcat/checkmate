@@ -7,11 +7,7 @@ class Transition(object):
     """Driving a change of state inside a state machine
     """
     def __init__(self, **argc):
-        self.initial = []
-        self.incoming = []
-        self.final = []
-        self.outgoing = []
-        self.returned = []
+        """"""
         try:
             self.name = argc['tran_name']
         except KeyError:
@@ -20,9 +16,10 @@ class Transition(object):
             if self.name == '':
                 self.name = 'unknown'
         for item in ['initial', 'incoming', 'final', 'outgoing', 'returned']:
-            if (item in argc) == False:
-                continue
-            setattr(self, item, argc[item])
+            try:
+                setattr(self, item, argc[item])
+            except KeyError:
+                setattr(self, item, [])
 
     def matching_list(self, matched_list, partition_list):
         match_list = []
