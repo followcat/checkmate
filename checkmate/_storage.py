@@ -259,15 +259,15 @@ class InternalStorage(object):
             >>> t1 = c1.state_machine.transitions[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> len(final.match(app.state_list(), saved)) != len(saved)
-            True
+            >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
+            <sample_app.component.component_1_states.State object at ...
 
             >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_3_states.IAcknowledge][0]
             >>> t3 = c3.state_machine.transitions[0]
             >>> c3.simulate(t3)
             []
-            >>> len(proc.final[1].match(app.state_list(), saved)) != len(saved)
-            True
+            >>> proc.final[1].match(app.state_list(), saved) #doctest: +ELLIPSIS
+            <sample_app.component.component_1_states.AnotherState object at ...
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = None
@@ -279,6 +279,5 @@ class InternalStorage(object):
             if resolved_arguments is None:
                 resolved_arguments = self.resolve()
             if _target == self.factory(_initial, kwargs=resolved_arguments):
-                target_copy.remove(_target)
-                break
-        return target_copy
+                return _target
+        return None

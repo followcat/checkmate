@@ -24,6 +24,16 @@ class Transition(object):
                 continue
             setattr(self, item, argc[item])
 
+    def matching_list(self, matched_list, partition_list):
+        match_list = []
+        local_copy = list(partition_list)
+        for _k in matched_list:
+            match_item = _k.match(local_copy)
+            if match_item is not None:
+                match_list.append(match_item)
+                local_copy.remove(match_item)
+        return match_list
+
 
     def is_matching_incoming(self, exchange_list):
         """Check if the transition incoming list is matching a list of exchange.
@@ -45,16 +55,8 @@ class Transition(object):
 
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
         """
-        if len(self.incoming) != 0:
-            local_copy = list(exchange_list)
-            _length = len(local_copy)
-            for incoming_exchange in self.incoming:
-                local_copy = incoming_exchange.match(local_copy)
-                if len(local_copy) == _length:
-                    return False
-            return len(local_copy) == 0
-        else:
-            return len(exchange_list) == 0
+        match_list = self.matching_list(self.incoming, exchange_list)
+        return len(match_list) == len(exchange_list)
 
     def is_matching_outgoing(self, exchange_list):
         """Check if the transition outgoing list is matching a list of exchange.
@@ -73,13 +75,8 @@ class Transition(object):
             >>> c.state_machine.transitions[1].is_matching_outgoing([i])
             False
         """
-        if len(exchange_list) != 0:
-            local_copy = list(exchange_list)
-            for outgoing_exchange in self.outgoing:
-                local_copy = outgoing_exchange.match(local_copy)
-            return len(local_copy) == 0
-        else:
-            return True
+        match_list = self.matching_list(self.outgoing, exchange_list)
+        return len(match_list) == len(exchange_list)
 
     def is_matching_initial(self, state_list):
         """
@@ -99,16 +96,8 @@ class Transition(object):
             False
             >>> a.start()
         """
-        if len(self.initial) == 0:
-            return True
-        local_copy = list(state_list)
-        for _k in self.initial:
-            _length = len(local_copy)
-            local_copy = _k.match(local_copy)
-            if len(local_copy) == _length:
-                return False
-        # Do not check len(local_copy) as some state_list are not in self.initial
-        return True
+        match_list = self.matching_list(self.initial, state_list)
+        return len(match_list) == len(self.initial)
 
     @checkmate.fix_issue('checkmate/issues/generic_incoming_AP_R2.rst')
     def generic_incoming(self, states):

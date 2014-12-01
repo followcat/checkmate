@@ -218,9 +218,13 @@ class Application(object):
         if reference_state_list is not None:
             incoming_list = self.validated_incoming_list()
 
+        match_list = []
         for _target in target:
             _length = len(local_copy)
-            local_copy = _target.match(local_copy, reference_state_list, incoming_list)
+            match_item = _target.match(local_copy, reference_state_list, incoming_list)
+            if match_item is not None:
+                match_list.append(match_item)
+                local_copy.remove(match_item)
             if len(local_copy) == _length:
                 return False
         return True
