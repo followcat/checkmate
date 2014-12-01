@@ -4,6 +4,7 @@ import collections
 import zope.interface
 
 import checkmate._module
+import checkmate.transition
 import checkmate._exec_tools
 
 
@@ -67,9 +68,16 @@ class PartitionStorage(Data):
     """"""
 
 
-class TransitionStorage(collections.defaultdict):
+class TransitionStorage(object):
     def __init__(self, items, module_dict):
-        super(TransitionStorage, self).__init__(list)
+        """"""
+        super().__init__()
+        self.name = ''
+        self.final = []
+        self.initial = []
+        self.incoming = []
+        self.outgoing = []
+        self.returned = []
 
         for _k, _v in items.items():
             if _k == 'initial' or _k == 'final':
@@ -77,6 +85,7 @@ class TransitionStorage(collections.defaultdict):
             elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
                 module_type = 'exchanges'
             elif _k == 'name':
+                self.name = _v
                 continue
             for each_item in _v:
                 for _name, _data in each_item.items():
@@ -89,11 +98,14 @@ class TransitionStorage(collections.defaultdict):
                             if _k == 'final':
                                 generate_storage.function = define_class.__init__
                             generate_storage.values = _s.values
-                            self[_k].append(generate_storage)
+                            getattr(self, _k).append(generate_storage)
                             break
                     else:
                         generate_storage.function = getattr(define_class, code)
-                        self[_k].append(generate_storage)
+                        getattr(self, _k).append(generate_storage)
+
+    def factory(self):
+        return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
 
 
 class IStorage(zope.interface.Interface):
@@ -180,6 +192,7 @@ class InternalStorage(object):
             kwargs = {}
         return wrapper(args, kwargs)
 
+    @checkmate.fix_issue("checkmate/issues/transition_resolve_arguments.rst")
     def resolve(self, states=None, exchanges=None):
         """
             >>> import sample_app.application
@@ -206,7 +219,7 @@ class InternalStorage(object):
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-            >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'])
+            >>> t = ts.factory()
             >>> t.outgoing[0].resolved_arguments['R'].C.value, t.outgoing[0].resolved_arguments['R'].P.value, t.outgoing[0].values
             ('AT2', 'HIGH', ('AP',))
             >>> resolved_arguments = t.outgoing[0].resolve()
