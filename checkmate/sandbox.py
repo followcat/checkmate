@@ -102,7 +102,10 @@ class Sandbox(object):
 
         if len(_outgoing) == 0:
             return False
-        self.transitions = self.process(_outgoing, checkmate._tree.Tree(self.transitions, []))
+        try:
+            self.transitions = self.process(_outgoing, checkmate._tree.Tree(self.transitions, []))
+        except checkmate.component.NoTransitionFound:
+            self.transitions = None
         if self.is_run:
             self.update_required_states(transition)
         return self.is_run
@@ -123,24 +126,22 @@ class Sandbox(object):
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
                 _transition = _c.get_transition_by_input([_exchange])
-                _outgoings = self.generate(_c, _exchange)
-                if _outgoings is None:
-                    if _exchange.return_code:
-                        break
-                    return None
-
-                self.update_required_states(_transition)
+                _outgoings = self.generate(_c, _exchange, _transition)
+                if _transition is None:
+                    continue
                 tmp_tree = self.process(_outgoings, checkmate._tree.Tree(_transition, []))
-                if tmp_tree is None:
-                    return None
                 tree.add_node(tmp_tree)
         return tree
 
-    def generate(self, component, _exchange):
+    def generate(self, component, _exchange, _transition):
         try:
             _outgoings = component.process([_exchange])
+            self.update_required_states(_transition)
         except checkmate.component.NoTransitionFound:
-            return None
+            if _exchange.return_code is True:
+                return []
+            else:
+                raise checkmate.component.NoTransitionFound()
         return _outgoings
 
     def fill_procedure(self, procedure):
