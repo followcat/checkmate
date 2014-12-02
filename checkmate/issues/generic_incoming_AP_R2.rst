@@ -8,7 +8,7 @@ can't generic incoming "AP(R2)" as alway consider states'attribute_list first is
     >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01', 'initial':[{'AnotherState':'AnotherState1()'}], 'final': [{'AnotherState': 'AnotherState1(R2)'}], 'incoming': [{'Action': 'AP(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = checkmate.transition.Transition(tran_name=item['name'], incoming=ts['incoming'], outgoing=ts['outgoing'], initial=ts['initial'], final=ts['final'])
+    >>> t = ts.factory()
     >>> t.incoming[0].code, t.incoming[0].resolved_arguments['R'].C.value, t.incoming[0].resolved_arguments['R'].P.value
     ('AP', 'AT2', 'HIGH')
     >>> a.components['C1'].states[1].attribute_list()

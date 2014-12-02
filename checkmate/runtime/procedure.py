@@ -5,10 +5,10 @@ import zope.interface
 import nose.plugins.skip
 
 import checkmate.sandbox
+import checkmate.pathfinder
 import checkmate.application
 import checkmate.timeout_manager
 import checkmate.runtime.interfaces
-import checkmate.runtime.pathfinder
 
 
 def _compatible_skip_test(procedure, message):
@@ -66,6 +66,17 @@ def _compatible_skip_test(procedure, message):
             procedure.result.stopTest(procedure)
             return
     raise nose.plugins.skip.SkipTest(message)
+
+
+@checkmate.fix_issue("checkmate/issues/get_path_from_pathfinder.rst")
+def get_path_from_pathfinder(application, target):
+    """"""
+    path = []
+    for _run, _app in checkmate.pathfinder._find_runs(application, target).items():
+        proc = Procedure(type(application), is_setup=True)
+        _app.fill_procedure(proc)
+        path.append(proc)
+    return path
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
@@ -141,7 +152,7 @@ class Procedure(object):
     def transform_to_initial(self):
         if self.application.compare_states(self.initial):
             return True
-        path = checkmate.runtime.pathfinder.get_path_from_pathfinder(self.application, self.initial)
+        path = get_path_from_pathfinder(self.application, self.initial)
         if len(path) == 0:
             _compatible_skip_test(self, "Can't find a path to inital state")
             return False

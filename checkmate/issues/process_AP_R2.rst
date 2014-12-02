@@ -32,7 +32,7 @@ define a transition to to process AP(R2)
     >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = checkmate.transition.Transition(tran_name=item['name'], initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
+    >>> t = ts.factory()
     >>> t.is_matching_incoming([ap_r1])
     False
     >>> t.is_matching_incoming([ap_r2])
@@ -59,7 +59,7 @@ the component should be able to execute the transition:
     >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = checkmate.transition.Transition(tran_name=item['name'], initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
+    >>> t = ts.factory()
     >>> saved_transition = c1.state_machine.transitions[1]
     >>> c1.state_machine.transitions[1] = t
 

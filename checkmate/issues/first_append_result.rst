@@ -43,8 +43,8 @@ Check the resulting final state compared to transition's final:
     True
 
 Result from compare_states():
-    >>> len(final.match(r.application.state_list(), saved.application.state_list(), validated_incoming))
-    2
+    >>> final.match(r.application.state_list(), saved.application.state_list(), validated_incoming) #doctest: +ELLIPSIS
+    <sample_app.component.component_1_states.AnotherState object at ...
     >>> r.application.compare_states(proc.final, saved.application.state_list())
     True
     >>> 
