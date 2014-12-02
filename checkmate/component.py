@@ -181,10 +181,10 @@ class Component(object):
         """
         def process_pending_incoming(self, output):
             for _incoming in self.pending_incoming[:]:
-                _incremental_output = self._do_process(_incoming)
+                _incremental_output = self._do_process([_incoming])
                 output.extend(_incremental_output)
-                self.pending_incoming.pop(_incoming)
-                if len([_ex for _e in _incremental_output if _ex.data_returned]) == 0:
+                self.pending_incoming.remove(_incoming)
+                if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
                     break
             return output
 
