@@ -162,6 +162,7 @@ class Component(object):
     def stop(self):
         pass
 
+    @checkmate.report_issue("checkmate/issues/process_pending_incoming.diff", failed=4)
     def process(self, exchange):
         """
         >>> import sample_app.application
