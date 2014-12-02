@@ -224,6 +224,7 @@ class Component(object):
                 output[0].origin_destination(self.name, exchange[0].destination)
         return output
 
+    @checkmate.fix_issue("checkmate/issues/simulate_return_code.rst")
     def simulate(self, _transition):
         """
             >>> import sample_app.application
@@ -247,6 +248,8 @@ class Component(object):
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+                if len(_incoming) != 0 and isinstance(_e, _incoming[0].return_type):
+                    continue
                 output.append(_e)
         return output
 

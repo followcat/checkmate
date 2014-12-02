@@ -7,7 +7,7 @@ if the transition incoming comes like "AP(R1)", calling factory() function witho
     >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': '__init__()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R1)'}], 'final': [{'AnotherState': 'append(R1)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = checkmate.transition.Transition(tran_name=item['name'], initial=ts['initial'], incoming=ts['incoming'], final=ts['final'], outgoing=ts['outgoing'])
+    >>> t = ts.factory()
     >>> ex = t.incoming[0].factory()
     >>> ex.broadcast
     False
