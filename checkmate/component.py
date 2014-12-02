@@ -221,8 +221,8 @@ class Component(object):
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
                 return_exchange._return_code = True
+                return_exchange.origin_destination(self.name, exchange[0].origin)
                 output.insert(0, return_exchange)
-                output[0].origin_destination(self.name, exchange[0].destination)
         return output
 
     @checkmate.report_issue("checkmate/issues/simulate_return_code.rst")
