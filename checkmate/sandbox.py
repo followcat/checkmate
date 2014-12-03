@@ -99,11 +99,13 @@ class Sandbox(object):
                     continue
                 self.transitions = transition
                 break
+        return self.run_process(_outgoing, transition)
 
-        if len(_outgoing) == 0:
+    def run_process(self, outgoing, transition):
+        if len(outgoing) == 0:
             return False
         try:
-            self.transitions = self.process(_outgoing, checkmate._tree.Tree(self.transitions, []))
+            self.transitions = self.process(outgoing, checkmate._tree.Tree(self.transitions, []))
         except checkmate.component.NoTransitionFound:
             self.transitions = None
         if self.is_run:
