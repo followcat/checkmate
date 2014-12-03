@@ -181,7 +181,7 @@ class Component(object):
         pass
 
     @checkmate.report_issue("checkmate/issues/process_pending_incoming.diff", failed=4)
-    def process(self, exchange):
+    def process(self, exchange, transition=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -200,7 +200,7 @@ class Component(object):
         """
         def process_pending_incoming(self, output):
             for _incoming in self.pending_incoming[:]:
-                _incremental_output = self._do_process([_incoming])
+                _incremental_output = self._do_process([_incoming], transition)
                 output.extend(_incremental_output)
                 self.pending_incoming.remove(_incoming)
                 if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
@@ -211,11 +211,11 @@ class Component(object):
         if self.expected_return_code is None:
             if len(self.pending_incoming) > 0:
                 output = self.process_pending_incoming(output)
-            output.extend(self._do_process(exchange))
+            output.extend(self._do_process(exchange, transition))
         else:
             if isinstance(exchange[0], self.expected_return_code.return_type):
                 self.expected_return_code = None
-                output = self._do_process(exchange)
+                output = self._do_process(exchange, transition)
                 output = self.process_pending_incoming(output)
             else:
                 self.pending_incoming.append(exchange[0])
@@ -223,11 +223,14 @@ class Component(object):
         assert(self.expected_return_code is None or len(output) == 0)
         return output
 
-    def _do_process(self, exchange):
+    def _do_process(self, exchange, transition):
         """"""
-        _transition = self.get_transition_by_input(exchange)
-        if _transition is None:
-            raise NoTransitionFound("No transition for incoming %s" %(exchange[0]))
+        if transition is None:
+            _transition = self.get_transition_by_input(exchange)
+            if _transition is None:
+                raise NoTransitionFound("No transition for incoming %s " %(exchange[0]))
+        else:
+            _transition = transition
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
