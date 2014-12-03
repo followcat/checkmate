@@ -17,7 +17,7 @@
         >>> ex1 = sample_app.exchanges.Action('AC')
         >>> ex1.origin_destination('C2', 'C1')
         >>> _t = box.application.components['C2'].get_transition_by_output([ex1])
-        >>> transitions = box.generate([ex1], checkmate._tree.Tree(_t, []))
+        >>> transitions = box.process([ex1], checkmate._tree.Tree(_t, []))
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'
