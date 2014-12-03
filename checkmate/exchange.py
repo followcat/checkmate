@@ -12,7 +12,7 @@ class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
 
-    def __init__(self, value=None, *args, default=True, **kwargs):
+    def __init__(self, value=None, *args, default=True, origin='', destination='', **kwargs):
         """
             >>> import sample_app.application
             >>> r2 = sample_app.application.TestData.data_value['ActionRequest'][1]['R2']
@@ -26,6 +26,7 @@ class Exchange(checkmate.partition.Partition):
 
         """
         super(Exchange, self).__init__(value, *args, default=default, **kwargs)
+        self.origin_destination(origin, destination)
         self._return_code = False
 
     def __eq__(self, other):
@@ -56,6 +57,12 @@ class Exchange(checkmate.partition.Partition):
         """
         return super().__eq__(other)
 
+    def _dump(self):
+        dump_dict = super()._dump()
+        dump_dict['origin'] = self.origin
+        dump_dict['destination'] = self.destination
+        return dump_dict
+        
     @property
     def return_code(self):
         """

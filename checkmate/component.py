@@ -162,6 +162,7 @@ class Component(object):
     def stop(self):
         pass
 
+    @checkmate.report_issue("checkmate/issues/process_pending_incoming.diff", failed=4)
     def process(self, exchange):
         """
         >>> import sample_app.application
@@ -181,10 +182,10 @@ class Component(object):
         """
         def process_pending_incoming(self, output):
             for _incoming in self.pending_incoming[:]:
-                _incremental_output = self._do_process(_incoming)
+                _incremental_output = self._do_process([_incoming])
                 output.extend(_incremental_output)
-                self.pending_incoming.pop(_incoming)
-                if len([_ex for _e in _incremental_output if _ex.data_returned]) == 0:
+                self.pending_incoming.remove(_incoming)
+                if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
                     break
             return output
 
@@ -220,10 +221,11 @@ class Component(object):
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
                 return_exchange._return_code = True
+                return_exchange.origin_destination(self.name, exchange[0].origin)
                 output.insert(0, return_exchange)
-                output[0].origin_destination(self.name, exchange[0].destination)
         return output
 
+    @checkmate.report_issue("checkmate/issues/simulate_return_code.rst")
     def simulate(self, _transition):
         """
             >>> import sample_app.application
@@ -247,6 +249,8 @@ class Component(object):
         _incoming = _transition.generic_incoming(self.states)
         for _outgoing in _transition.process(self.states, _incoming):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+                if len(_incoming) != 0 and isinstance(_e, _incoming[0].return_type):
+                    continue
                 output.append(_e)
         return output
 

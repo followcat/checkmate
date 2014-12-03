@@ -19,7 +19,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             'ARE'
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code
             'AP'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[0].root.incoming[0].code
+            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].root.incoming[0].code
             'DA'
             >>> proc(result=None, runtime=r)
             >>> r.stop_test()
