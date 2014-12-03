@@ -14,19 +14,20 @@ class Runner(doctest.DocTestRunner):
      def report_failure(self, *args, **kwargs):
          pass
 
-
-def runtest(filename):
+def runtest(filename, runner=doctest.DocTestRunner()):
     with open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename])) as _f:
         test = _f.read()
-    _r = Runner(verbose=False)
-    return _r.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
+    return runner.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
 
-def _issue_record(filename, message, failed):
-    result = runtest(filename)
+def runtest_silent(filename):
+    return runtest(filename, Runner(verbose=False))
+
+def _issue_record(filename, failed):
+    result = runtest_silent(filename)
     if result.failed != failed:
-        print(message %result.failed)
+        print(runtest(filename))
 
-def _add_issue_doctest(filename, message, failed=0):
+def _add_issue_doctest(filename, failed=0):
     def append_docstring(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -34,8 +35,8 @@ def _add_issue_doctest(filename, message, failed=0):
         if wrapper.__doc__ is None:
             wrapper.__doc__ = ""
         wrapper.__doc__ += """
-            \n            >>> %s._issue_record('%s', '%s', failed=%d)
-            """ % (__name__, filename, message, failed)
+            \n            >>> %s._issue_record('%s', failed=%d)
+            """ % (__name__, filename, failed)
         return wrapper
     return append_docstring
 
@@ -68,8 +69,7 @@ def report_issue(filename, failed=1):
         >>> doctest.run_docstring_examples(func, locals())
         >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     """
-    return _add_issue_doctest(filename,
-                'Expected: '+str(failed)+' failures, got: %d', failed)
+    return _add_issue_doctest(filename, failed)
 
 def fix_issue(filename):
     """
@@ -100,5 +100,5 @@ def fix_issue(filename):
         TestResults(failed=1, ...
         >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     """
-    return _add_issue_doctest(filename, 'Expected: success, got: %d failures')
+    return _add_issue_doctest(filename)
 
