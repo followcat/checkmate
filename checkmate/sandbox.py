@@ -160,3 +160,28 @@ class Sandbox(object):
             if _initial.interface not in [_temp_init.interface for _temp_init in self.initial]:
                 self.initial.append(_initial)
                 self.final.append(transition.final[index])
+
+
+class RunCollectionSandbox(Sandbox):
+    def __call__(self, transition, foreign_transitions=False):
+        _outgoing = []
+        for component in self.application.components.values():
+            if not foreign_transitions and not transition in component.state_machine.transitions:
+                continue
+            _outgoing = component.simulate(transition)
+            if len(_outgoing) == 0:
+                continue
+            break
+        return self.process(self, _outgoing, checkmate._tree.Tree(transition, []))
+
+    def process(self, sandbox, exchanges, tree=None):
+        for _exchange in exchanges:
+            for _d in _exchange.destination:
+                _c = sandbox.application.components[_d]
+                _transitions = _c.get_transitions_by_input([_exchange])
+                for _t in _transitions:
+                    _outgoings = _c.process([_exchange], _t)
+                    new_sandbox = Sandbox(sandbox.application)
+                    tmp_tree = self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, []))
+                    tree.add_node(tmp_tree)
+        return tree

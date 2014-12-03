@@ -1,6 +1,7 @@
 import copy
 
 import checkmate._tree
+import checkmate.sandbox
 import checkmate.transition
 
 
@@ -87,6 +88,32 @@ class TransitionTree(checkmate._tree.Tree):
                 if node:
                     return node
 
+
+class SandboxRunCollection(list):
+    def __init__(self, application):
+        self.application = application()
+        self.application.start(default_state_value=False)
+        self.origin_transitions = self.get_origin_transition()
+
+    def get_origin_transition(self):
+        origin_transitions = []
+        for _component in self.application.components.values():
+            for _transition in _component.state_machine.transitions:
+                if not len(_transition.incoming):
+                    origin_transitions.append(_transition)
+        return origin_transitions
+
+    def start(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData
+            >>> src = checkmate.runs.SandboxRunCollection(a)
+            >>> src.start()
+        """
+        for _o in self.origin_transitions:
+            sandbox = checkmate.sandbox.RunCollectionSandbox(self.application)
+            self.append(sandbox(_o))
 
 
 class RunCollection(list):
