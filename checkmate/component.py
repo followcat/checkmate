@@ -102,6 +102,24 @@ class Component(object):
         self.pending_incoming = []
         self.expected_return_code = None
 
+    def get_transitions_by_input(self, exchange):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> c = a.components['C1']
+        >>> c.start(default_state_value=False)
+        >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
+        >>> transition_list = c.get_transitions_by_input([r_tm])
+        >>> transition_list[0] == c.state_machine.transitions[0], transition_list[1] == c.state_machine.transitions[3]
+        (True, True)
+        """
+        transition_list = []
+        for _t in self.state_machine.transitions:
+            if (_t.is_matching_initial(self.states) and
+                _t.is_matching_incoming(exchange)):
+                transition_list.append(_t)
+        return transition_list
+
     def get_transition_by_input(self, exchange):
         """
         >>> import sample_app.application
