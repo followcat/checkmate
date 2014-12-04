@@ -9,7 +9,7 @@ the component should be able to execute the transition:
     >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> t = c1.get_transition_by_input([ap_r2])
+    >>> t = c1.get_transitions_by_input([ap_r2])[0]
     >>> t.is_matching_initial(c1.states)
     True
     >>> sample_app.exchanges.ActionCode(True) in c1.process([ap_r2])

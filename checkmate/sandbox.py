@@ -127,7 +127,10 @@ class Sandbox(object):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
-                _transition = _c.get_transition_by_input([_exchange])
+                try:
+                    _transition = _c.get_transitions_by_input([_exchange])[0]
+                except IndexError:
+                    _transition = None
                 _outgoings = self.generate(_c, _exchange, _transition)
                 if _transition is None:
                     continue

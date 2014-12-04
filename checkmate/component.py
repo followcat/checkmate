@@ -120,23 +120,6 @@ class Component(object):
                 transition_list.append(_t)
         return transition_list
 
-    def get_transition_by_input(self, exchange):
-        """
-        >>> import sample_app.application
-        >>> a = sample_app.application.TestData()
-        >>> c = a.components['C1']
-        >>> c.start()
-        >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
-        >>> c.get_transition_by_input([r_tm]) == c.state_machine.transitions[0]
-        True
-        """
-        for _t in self.state_machine.transitions:
-            if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange)):
-                return _t
-        return None
-
-            
     def get_transition_by_output(self, exchange):
         """
         >>> import sample_app.application
@@ -226,8 +209,9 @@ class Component(object):
     def _do_process(self, exchange, transition):
         """"""
         if transition is None:
-            _transition = self.get_transition_by_input(exchange)
-            if _transition is None:
+            try:
+                _transition = self.get_transitions_by_input(exchange)[0]
+            except IndexError:
                 raise NoTransitionFound("No transition for incoming %s " %(exchange[0]))
         else:
             _transition = transition
@@ -283,7 +267,7 @@ class Component(object):
             >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c1.get_transition_by_input([exchange])
+            >>> transition = c1.get_transitions_by_input([exchange])[0]
             >>> c1.validate(transition)
             False
             >>> out = c1.process([exchange])
