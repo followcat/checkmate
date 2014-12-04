@@ -212,6 +212,8 @@ class Component(object):
             try:
                 _transition = self.get_transitions_by_input(exchange)[0]
             except IndexError:
+                if exchange[0].return_code:
+                    return []
                 raise NoTransitionFound("No transition for incoming %s " %(exchange[0]))
         else:
             _transition = transition

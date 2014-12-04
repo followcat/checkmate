@@ -142,10 +142,7 @@ class Sandbox(object):
         try:
             _outgoings = component.process([_exchange])
         except checkmate.component.NoTransitionFound:
-            if _exchange.return_code is True:
-                return []
-            else:
-                raise checkmate.component.NoTransitionFound()
+            raise checkmate.component.NoTransitionFound()
         return _outgoings
 
     def fill_procedure(self, procedure):
