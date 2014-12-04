@@ -129,19 +129,12 @@ class Sandbox(object):
                     _transition = _c.get_transitions_by_input([_exchange])[0]
                 except IndexError:
                     _transition = None
-                _outgoings = self.generate(_c, _exchange, _transition)
+                _outgoings = _c.process([_exchange])
                 if _transition is None:
                     continue
                 tmp_tree = self.process(_outgoings, checkmate._tree.Tree(_transition, []))
                 tree.add_node(tmp_tree)
         return tree
-
-    def generate(self, component, _exchange, _transition):
-        try:
-            _outgoings = component.process([_exchange])
-        except checkmate.component.NoTransitionFound:
-            raise checkmate.component.NoTransitionFound()
-        return _outgoings
 
     def fill_procedure(self, procedure):
         if self.is_run:
