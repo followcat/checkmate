@@ -91,11 +91,19 @@ class TransitionTree(checkmate._tree.Tree):
 
 class SandboxRunCollection(list):
     def __init__(self, application):
-        self.application = application()
+        self.application = type(application)()
         self.application.start(default_state_value=False)
         self.origin_transitions = self.get_origin_transition()
 
     def get_origin_transition(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> a = sample_app.application.TestData()
+            >>> src = checkmate.runs.SandboxRunCollection(a)
+            >>> [_t.outgoing[0].code for _t in src.origin_transitions]
+            ['PBAC', 'PBRL', 'PBPP']
+        """
         origin_transitions = []
         for _component in self.application.components.values():
             for _transition in _component.state_machine.transitions:
@@ -103,14 +111,9 @@ class SandboxRunCollection(list):
                     origin_transitions.append(_transition)
         return origin_transitions
 
-    def start(self):
-        """
-            >>> import checkmate.runs
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData
-            >>> src = checkmate.runs.SandboxRunCollection(a)
-            >>> src.start()
-        """
+    @checkmate.report_issue('checkmate/issues/sandbox_runcollection.rst', failed=2)
+    def get_runs(self):
+        self.clear()
         for _o in self.origin_transitions:
             sandbox = checkmate.sandbox.RunCollectionSandbox(self.application)
             self.append(sandbox(_o))
