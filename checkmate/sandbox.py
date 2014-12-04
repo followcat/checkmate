@@ -109,7 +109,7 @@ class Sandbox(object):
         except checkmate.component.NoTransitionFound:
             self.transitions = None
         if self.is_run:
-            self.update_required_states(transition)
+            self.update_required_states(self.transitions)
         return self.is_run
 
     def process(self, exchanges, tree=None):
@@ -141,7 +141,6 @@ class Sandbox(object):
     def generate(self, component, _exchange, _transition):
         try:
             _outgoings = component.process([_exchange])
-            self.update_required_states(_transition)
         except checkmate.component.NoTransitionFound:
             if _exchange.return_code is True:
                 return []
@@ -156,13 +155,16 @@ class Sandbox(object):
             procedure.transitions = self.transitions
             procedure.components = list(self.application.components.keys())
 
-    def update_required_states(self, transition):
+    def update_required_states(self, tree):
         """
         """
+        transition = tree.root
         for index, _initial in enumerate(transition.initial):
             if _initial.interface not in [_temp_init.interface for _temp_init in self.initial]:
                 self.initial.append(_initial)
                 self.final.append(transition.final[index])
+        for _node in tree.nodes:
+            self.update_required_states(_node)
 
 
 class RunCollectionSandbox(Sandbox):
