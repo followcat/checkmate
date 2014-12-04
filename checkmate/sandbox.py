@@ -108,8 +108,6 @@ class Sandbox(object):
             self.transitions = self.process(outgoing, checkmate._tree.Tree(self.transitions, []))
         except checkmate.component.NoTransitionFound:
             self.transitions = None
-        if self.is_run:
-            self.update_required_states(self.transitions)
         return self.is_run
 
     def process(self, exchanges, tree=None):
@@ -147,6 +145,7 @@ class Sandbox(object):
 
     def fill_procedure(self, procedure):
         if self.is_run:
+            self.update_required_states(self.transitions)
             procedure.final = self.final
             procedure.initial = self.initial
             procedure.transitions = self.transitions

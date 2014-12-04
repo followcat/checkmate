@@ -110,6 +110,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> box(transition_list[0], foreign_transitions=True)
         True
+        >>> box.update_required_states(box.transitions)
         >>> len(box.initial)
         3
 
