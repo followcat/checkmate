@@ -6,7 +6,7 @@ import checkmate.sandbox
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_runs.rst")
 def _find_runs(application, target):
     """"""
-    used_runs = _next_run(application, target, application.origin_transitions, collections.OrderedDict())
+    used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
     return used_runs
 
 
