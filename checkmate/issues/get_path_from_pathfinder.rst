@@ -11,7 +11,7 @@
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
         >>> runs = checkmate.runs.RunCollection()
-        >>> runs.build_trees_from_application(_class())
+        >>> runs.get_runs_from_application(_class())
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.Action('AC')

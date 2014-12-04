@@ -163,26 +163,27 @@ class Sandbox(object):
             self.update_required_states(_node)
 
 
-class RunCollectionSandbox(Sandbox):
-    def __call__(self, transition, foreign_transitions=False):
-        _outgoing = []
-        for component in self.application.components.values():
-            if not foreign_transitions and not transition in component.state_machine.transitions:
-                continue
-            _outgoing = component.simulate(transition)
-            if len(_outgoing) == 0:
-                continue
-            break
-        return self.process(self, _outgoing, checkmate._tree.Tree(transition, []))
+class CollectionSandbox(Sandbox):
+    def run_process(self, outgoing, transition):
+        return self.process(self, outgoing, checkmate._tree.Tree(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
+        split = False
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = sandbox.application.components[_d]
                 _transitions = _c.get_transitions_by_input([_exchange])
                 for _t in _transitions:
-                    _outgoings = _c.process([_exchange], _t)
                     new_sandbox = Sandbox(sandbox.application)
-                    tmp_tree = self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, []))
-                    tree.add_node(tmp_tree)
-        return tree
+                    _c = new_sandbox.application.components[_d]
+                    _outgoings = _c.process([_exchange], _t)
+                    for split, tmp_tree in self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, [])):
+                        if len(_transitions) > 1 or split:
+                            split = True
+                            new_tree = tree.copy()
+                            new_tree.add_node(tmp_tree)
+                            yield (split, new_tree)
+                        else:
+                            tree.add_node(tmp_tree)
+        if split is False:
+            yield (split, tree)
