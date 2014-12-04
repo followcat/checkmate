@@ -172,6 +172,8 @@ class CollectionSandbox(Sandbox):
                 _c = sandbox.application.components[_d]
                 _transitions = _c.get_transitions_by_input([_exchange])
                 for _t in _transitions:
+                    new_sandbox = Sandbox(sandbox.application)
+                    _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _t)
                     new_sandbox = Sandbox(sandbox.application)
                     tmp_tree = self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, []))
