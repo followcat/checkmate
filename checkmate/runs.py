@@ -111,12 +111,13 @@ class SandboxRunCollection(list):
                     origin_transitions.append(_transition)
         return origin_transitions
 
-    @checkmate.report_issue('checkmate/issues/sandbox_runcollection.rst', failed=2)
+    @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
     def get_runs(self):
         self.clear()
         for _o in self.origin_transitions:
             sandbox = checkmate.sandbox.CollectionSandbox(self.application)
-            self.append(sandbox(_o))
+            for split, _t in sandbox(_o):
+                self.append(_t)
 
 
 class RunCollection(list):

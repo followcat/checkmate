@@ -167,6 +167,7 @@ class CollectionSandbox(Sandbox):
         return self.process(self, outgoing, checkmate._tree.Tree(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
+        split = False
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = sandbox.application.components[_d]
@@ -175,7 +176,13 @@ class CollectionSandbox(Sandbox):
                     new_sandbox = Sandbox(sandbox.application)
                     _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _t)
-                    new_sandbox = Sandbox(sandbox.application)
-                    tmp_tree = self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, []))
-                    tree.add_node(tmp_tree)
-        return tree
+                    for split, tmp_tree in self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, [])):
+                        if len(_transitions) > 1 or split:
+                            split = True
+                            new_tree = tree.copy()
+                            new_tree.add_node(tmp_tree)
+                            yield (split, new_tree)
+                        else:
+                            tree.add_node(tmp_tree)
+        if split is False:
+            yield (split, tree)
