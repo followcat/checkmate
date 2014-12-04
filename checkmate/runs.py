@@ -115,7 +115,7 @@ class SandboxRunCollection(list):
     def get_runs(self):
         self.clear()
         for _o in self.origin_transitions:
-            sandbox = checkmate.sandbox.RunCollectionSandbox(self.application)
+            sandbox = checkmate.sandbox.CollectionSandbox(self.application)
             self.append(sandbox(_o))
 
 

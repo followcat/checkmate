@@ -162,17 +162,9 @@ class Sandbox(object):
                 self.final.append(transition.final[index])
 
 
-class RunCollectionSandbox(Sandbox):
-    def __call__(self, transition, foreign_transitions=False):
-        _outgoing = []
-        for component in self.application.components.values():
-            if not foreign_transitions and not transition in component.state_machine.transitions:
-                continue
-            _outgoing = component.simulate(transition)
-            if len(_outgoing) == 0:
-                continue
-            break
-        return self.process(self, _outgoing, checkmate._tree.Tree(transition, []))
+class CollectionSandbox(Sandbox):
+    def run_process(self, outgoing, transition):
+        return self.process(self, outgoing, checkmate._tree.Tree(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
         for _exchange in exchanges:
