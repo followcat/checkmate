@@ -50,6 +50,7 @@ define a transition to to process AP(R2)
 When using a transition defining AP(R2) to process AP(R, default=False),
 the component should be able to execute the transition:
 
+Setup:
     >>> import sample_app.application
     >>> import checkmate._storage
     >>> import checkmate.transition
@@ -63,7 +64,8 @@ the component should be able to execute the transition:
     >>> saved_transition = c1.state_machine.transitions[1]
     >>> c1.state_machine.transitions[1] = t
 
-    >>> ap = sample_app.exchanges.Action('AP', default=True)
+Default behavior. The exchange AP(R2) can't be processed.
+    >>> ap = sample_app.exchanges.Action('AP')
     >>> ap.R.C.value, ap.R.P.value
     ('AT1', 'NORM')
     >>> t.is_matching_incoming([ap])
@@ -76,6 +78,8 @@ the component should be able to execute the transition:
     >>> sample_app.exchanges.ActionCode(True) in res
     False
 
+All state value to None. The exchange AP(R2) can be processed and
+the expected final state is reached.
     >>> ap = sample_app.exchanges.Action('AP', default=False)
     >>> ap.R.C.value, ap.R.P.value
     (None, None)
@@ -83,6 +87,10 @@ the component should be able to execute the transition:
     True
     >>> sample_app.exchanges.ActionCode(True) in c1.process([ap])
     True
+    >>> c1.states[1].R.C.value, c1.states[1].R.P.value
+    ('AT2', 'HIGH')
+
+Restore original transition for further testing.
     >>> c1.state_machine.transitions[1] = saved_transition
     >>>
 
