@@ -165,7 +165,7 @@ class Component(object):
     def stop(self):
         pass
 
-    @checkmate.fix_issue("checkmate/issues/process_pending_incoming.diff")
+    @checkmate.fix_issue("checkmate/issues/process_pending_incoming.rst")
     def process(self, exchange, transition=None):
         """
         >>> import sample_app.application
