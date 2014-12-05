@@ -13,10 +13,10 @@ def _find_runs(application, target):
 @checkmate.fix_issue("checkmate/issues/pathfinder_next_run.rst")
 def _next_run(application, target, runs, used_runs):
     """"""
-    box = checkmate.sandbox.Sandbox(application)
     for _run in runs:
         if _run in used_runs:
             continue
+        box = checkmate.sandbox.Sandbox(application)
         box(_run.root)
         if box.is_run:
             if box.application.compare_states(target):
