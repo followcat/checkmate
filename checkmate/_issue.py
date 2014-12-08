@@ -1,7 +1,6 @@
 import os
 import doctest
 import functools
-import multiprocessing
 
 
 __all__ = ['report_issue', 'fix_issue', 'runtest']
