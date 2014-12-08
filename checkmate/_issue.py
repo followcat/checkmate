@@ -26,6 +26,10 @@ def _issue_record(filename, failed):
     result = runtest_silent(filename)
     if result.failed != failed:
         print(runtest(filename))
+        if failed == 0:
+            print("Expected: success, got: %d failures" % result.failed)
+        else:
+            print("Expected: %d failures, got: %d" % (failed, result.failed))
 
 def _add_issue_doctest(filename, failed=0):
     def append_docstring(func):
