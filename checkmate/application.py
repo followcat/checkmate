@@ -121,7 +121,7 @@ class Application(object):
             for _c in components:
                 self.components[_c] = _class(_c, self.service_registry)
 
-    @checkmate.report_issue('checkmate/issues/match_R2_in_runs.rst', failed=2)
+    @checkmate.report_issue('checkmate/issues/match_R2_in_runs.rst', failed=1)
     def __getattr__(self, name):
         """
         >>> import sample_app.application
