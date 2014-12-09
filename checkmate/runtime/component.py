@@ -1,7 +1,7 @@
 import copy
+import queue
 import logging
 import threading
-import collections
 
 import zope.interface
 import zope.component
@@ -101,8 +101,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         Component.__init__(self, component)
         checkmate.runtime._threading.Thread.__init__(self, name=component.name)
 
-        self.exchange_deque = collections.deque()
-        self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_deque)
+        self.exchange_queue = queue.Queue()
+        self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_queue)
         self.validation_lock = threading.Lock()
 
     def setup(self, runtime):
@@ -129,21 +129,19 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
-        def check_recv():
-            return len(self.exchange_deque) > 0
-        condition = threading.Condition()
         while True:
             if self.check_for_stop():
                 break
-            with condition:
-                if condition.wait_for(check_recv, checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC):
-                    exchange = self.exchange_deque.popleft()
-                    with self.validation_lock:
-                        try:
-                            self.process([exchange])
-                        except Exception as e:
-                            if not self.check_for_stop():
-                                raise e
+            try:
+                exchange = self.exchange_queue.get(timeout=checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC)
+                with self.validation_lock:
+                    try:
+                        self.process([exchange])
+                    except Exception as e:
+                        if not self.check_for_stop():
+                            raise e
+            except queue.Empty:
+                pass
 
     def simulate(self, transition):
         return super().simulate(transition)
