@@ -1,4 +1,3 @@
-import copy
 import collections
 
 import zope.interface
@@ -224,7 +223,6 @@ class InternalStorage(object):
             ('AT2', 'HIGH')
         """
         _attributes = {}
-        _cls = checkmate._module.get_class_implementing(self.interface)
         if states is not None:
             for input in states:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
@@ -232,8 +230,7 @@ class InternalStorage(object):
             for input in exchanges:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
         _attributes.update(self.resolved_arguments)
-        _kwargs = _cls._sig.bind_partial(**_attributes).arguments
-        return _kwargs
+        return collections.OrderedDict(_attributes)
 
     def match(self, target_copy, reference=None, incoming_list=None):
         """
