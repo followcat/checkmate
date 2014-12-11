@@ -11,13 +11,13 @@
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
         >>> runs = checkmate.runs.RunCollection()
-        >>> runs.build_trees_from_application(_class())
+        >>> runs.get_runs_from_application(_class())
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.Action('AC')
         >>> ex1.origin_destination('C2', 'C1')
         >>> _t = box.application.components['C2'].get_transition_by_output([ex1])
-        >>> transitions = box.generate([ex1], checkmate._tree.Tree(_t, []))
+        >>> transitions = box.process([ex1], checkmate._tree.Tree(_t, []))
         >>> app = box.application
         >>> app.components['C3'].states[0].value
         'True'

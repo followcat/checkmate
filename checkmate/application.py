@@ -121,24 +121,17 @@ class Application(object):
             for _c in components:
                 self.components[_c] = _class(_c, self.service_registry)
 
-    @checkmate.report_issue('checkmate/issues/match_R2_in_runs.rst', failed=2)
     def __getattr__(self, name):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate.runs.TransitionTree object at ...
-        >>> a.origin_transitions #doctest: +ELLIPSIS
-        [<checkmate.runs.TransitionTree object at ...
+        [<checkmate._tree.Tree object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
-            self.run_collection.build_trees_from_application(self)
+            self.run_collection.get_runs_from_application(self)
             return self.run_collection
-        if name == 'origin_transitions':
-            setattr(self, 'origin_transitions', checkmate.runs.RunCollection())
-            self.origin_transitions.get_origin_transition(self)
-            return self.origin_transitions
         super().__getattr__(self, name)
 
     def start(self, default_state_value=True):

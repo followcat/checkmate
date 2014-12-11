@@ -21,3 +21,18 @@ can't generic incoming "AP(R2)" as alway consider states'attribute_list first is
     ('AT2', 'HIGH')
     >>> t.is_matching_incoming(exchanges)
     True
+
+When filling the generic incmoing for a component with default_state_value=False,
+the attributes' values are set to None but the exchange value is filled:
+    >>> import sample_app.application
+    >>> app = sample_app.application.TestData()
+    >>> c1 = app.components['C1']
+    >>> app.start(default_state_value=False)
+    >>> c1.default_state_value
+    False
+    >>> tr = c1.state_machine.transitions[1]
+    >>> ex = tr.generic_incoming(c1.states, default=c1.default_state_value)
+    >>> ex[0].R.C.value
+    >>> ex[0].value
+    'AP'
+

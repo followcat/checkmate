@@ -100,25 +100,27 @@ class Component(object):
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
         self.pending_incoming = []
+        self.pending_outgoing = []
         self.expected_return_code = None
 
-    def get_transition_by_input(self, exchange):
+    def get_transitions_by_input(self, exchange):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
-        >>> c.start()
+        >>> c.start(default_state_value=False)
         >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
-        >>> c.get_transition_by_input([r_tm]) == c.state_machine.transitions[0]
-        True
+        >>> transition_list = c.get_transitions_by_input([r_tm])
+        >>> transition_list[0] == c.state_machine.transitions[0], transition_list[1] == c.state_machine.transitions[3]
+        (True, True)
         """
+        transition_list = []
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
                 _t.is_matching_incoming(exchange)):
-                return _t
-        return None
+                transition_list.append(_t)
+        return transition_list
 
-            
     def get_transition_by_output(self, exchange):
         """
         >>> import sample_app.application
@@ -156,14 +158,15 @@ class Component(object):
 
     def reset(self):
         self.pending_incoming = []
+        self.pending_outgoing = []
         self.expected_return_code = None
         self.validation_list.clear()
 
     def stop(self):
         pass
 
-    @checkmate.report_issue("checkmate/issues/process_pending_incoming.diff", failed=4)
-    def process(self, exchange):
+    @checkmate.fix_issue("checkmate/issues/process_pending_incoming.rst")
+    def process(self, exchange, transition=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -180,36 +183,48 @@ class Component(object):
         >>> transition.is_matching_initial(c.states)
         False
         """
-        def process_pending_incoming(self, output):
-            for _incoming in self.pending_incoming[:]:
-                _incremental_output = self._do_process([_incoming])
-                output.extend(_incremental_output)
-                self.pending_incoming.remove(_incoming)
-                if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
-                    break
-            return output
-
-        output = []
+        output = self.process_pending_outgoing()
         if self.expected_return_code is None:
             if len(self.pending_incoming) > 0:
                 output = self.process_pending_incoming(output)
-            output.extend(self._do_process(exchange))
+            output.extend(self._do_process(exchange, transition))
         else:
             if isinstance(exchange[0], self.expected_return_code.return_type):
                 self.expected_return_code = None
-                output = self._do_process(exchange)
+                output = self._do_process(exchange, transition)
                 output = self.process_pending_incoming(output)
             else:
                 self.pending_incoming.append(exchange[0])
 
-        assert(self.expected_return_code is None or len(output) == 0)
         return output
 
-    def _do_process(self, exchange):
+    def process_pending_incoming(self, output):
+        for _incoming in self.pending_incoming[:]:
+            _incremental_output = self._do_process([_incoming])
+            output.extend(_incremental_output)
+            self.pending_incoming.remove(_incoming)
+            if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
+                break
+        return output
+
+    def process_pending_outgoing(self):
+        output = self.pending_outgoing
+        self.pending_outgoing = []
+        return output
+
+    def _do_process(self, exchange, transition=None):
         """"""
-        _transition = self.get_transition_by_input(exchange)
-        if _transition is None:
-            raise NoTransitionFound("No transition for incoming %s" %(exchange[0]))
+        if transition is None:
+            try:
+                _transition = self.get_transitions_by_input(exchange)[0]
+            except IndexError:
+                if (exchange[0].return_code and self.expected_return_code is not None and
+                    isinstance(exchange[0], self.expected_return_code.return_type)):
+                    self.expected_return_code = None
+                    return self.process_pending_outgoing()
+                raise NoTransitionFound("No transition for incoming %s " %(exchange[0]))
+        else:
+            _transition = transition
         output = []
         self.validation_list.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange):
@@ -223,6 +238,12 @@ class Component(object):
                 return_exchange._return_code = True
                 return_exchange.origin_destination(self.name, exchange[0].origin)
                 output.insert(0, return_exchange)
+        for _index, _e in enumerate(output):
+            if _e.data_returned:
+                self.expected_return_code = _e
+                self.pending_outgoing.extend(output[_index+1:])
+                output = output[:_index+1]
+                break
         return output
 
     @checkmate.report_issue("checkmate/issues/simulate_return_code.rst")
@@ -262,7 +283,7 @@ class Component(object):
             >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c1.get_transition_by_input([exchange])
+            >>> transition = c1.get_transitions_by_input([exchange])[0]
             >>> c1.validate(transition)
             False
             >>> out = c1.process([exchange])

@@ -79,10 +79,14 @@ class State(checkmate.partition.Partition):
                 if value not in self.value:
                     self.value.append(value)
             else:
-                for key, value in list(kwargs.items()):
-                    if {key: value} not in self.value:
-                        setattr(self, key, value)
-                        self.value.append({key: value})
+                for key in self.partition_attribute:
+                    try:
+                        value = kwargs[key]
+                        if {key: value} not in self.value:
+                            setattr(self, key, value)
+                            self.value.append({key: value})
+                    except KeyError:
+                        continue
         except:
             pass
 
