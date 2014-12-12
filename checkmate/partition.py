@@ -162,6 +162,17 @@ class Partition(object):
         else:
             return dict(map(lambda x:(x, getattr(self, x)), keyset.intersection(self.partition_attribute)))
 
+    def carbon_copy(self, other):
+        assert(type(self) == type(other))
+        self.value = other.value
+        for attr in self.partition_attribute:
+            other_attr = getattr(other, attr)
+            self_attr = getattr(self, attr)
+            if isinstance(self_attr, Partition):
+                self_attr.carbon_copy(other_attr)
+            elif isinstance(other_attr, Partition):
+                setattr(self, attr, type(other_attr)(**other_attr._dump()))
+
     @property
     def partition_id(self):
         return self.description()[0]

@@ -44,14 +44,14 @@ class Sandbox(object):
                     for initial_state in self.initial_application.components[component.name].states:
                         if not interface.providedBy(initial_state):
                             continue
-                        state.value = initial_state.value
+                        state.carbon_copy(initial_state)
                         done = True
                         break
                     for transition in self.initial_transitions:
                         for initial in transition.initial:
                             if not initial.interface.providedBy(state):
                                 continue
-                            state.value = initial.factory().value
+                            state.carbon_copy(initial.factory())
                             done = True
                             break
                         if done:
