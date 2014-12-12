@@ -143,7 +143,11 @@ class Partition(object):
         dump_dict = {}
         dump_dict['value'] = self.value
         for attr in dir(self):
-            dump_dict[attr] = getattr(self, attr)._dump()
+            attr_value = getattr(self, attr)
+            if isinstance(attr_value, Partition):
+                dump_dict[attr] = attr_value._dump()
+            else:
+                dump_dict[attr] = attr_value
         return dump_dict
 
     def description(self):
