@@ -100,16 +100,16 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> state_modules = []
         >>> for name in components:
         ...         state_modules.append(_application.components[name].state_module)
-        >>> transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules)
-        >>> transition_list.sort(key=lambda x:x.incoming[0].code)
-        >>> transition_list[0].incoming[0].code
+        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules)
+        >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
+        >>> run_list[0].root.incoming[0].code
         'AC'
-        >>> box = checkmate.sandbox.Sandbox(_application, [transition_list[0]])
-        >>> box.application.components['C1'].states[0].value == transition_list[0].initial[0].values[0]
+        >>> box = checkmate.sandbox.Sandbox(_application, [run_list[0].root])
+        >>> box.application.components['C1'].states[0].value == run_list[0].root.initial[0].values[0]
         True
-        >>> box.application.compare_states(transition_list[0].initial)
+        >>> box.application.compare_states(run_list[0].root.initial)
         True
-        >>> box(transition_list[0], foreign_transitions=True)
+        >>> box(run_list[0].root, foreign_transitions=True)
         True
         >>> box.update_required_states(box.transitions)
         >>> len(box.initial)
@@ -136,12 +136,12 @@ def TestProcedureFeaturesGenerator(application_class):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = checkmate.parser.feature_visitor.get_transitions_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
+    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
 
-    for _transition in transition_list:
-        box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box(_transition, foreign_transitions=True)
-        yield build_procedure(box, _transition), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+    for _run in run_list:
+        box = checkmate.sandbox.Sandbox(_application, [_run.root])
+        box(_run.root, foreign_transitions=True)
+        yield build_procedure(box, _run.root), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureRunsGenerator(application_class):
     """

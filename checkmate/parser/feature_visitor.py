@@ -14,6 +14,7 @@ import fresher.cuke
 import fresher.core
 import fresher.stepregistry
 
+import checkmate.runs
 import checkmate.partition_declarator
 
 
@@ -153,7 +154,7 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_transitions_from_features(exchange_module, state_modules, path=None):
+def get_runs_from_features(exchange_module, state_modules, path=None):
     """
             >>> import os
             >>> import checkmate.state
@@ -166,11 +167,11 @@ def get_transitions_from_features(exchange_module, state_modules, path=None):
             >>> state_modules = []
             >>> for name in list(a.components.keys()):
             ...     state_modules.append(a.components[name].state_module)
-            >>> transitions = checkmate.parser.feature_visitor.get_transitions_from_features(a.exchange_module, state_modules)
-            >>> len(transitions)
+            >>> runs = checkmate.parser.feature_visitor.get_runs_from_features(a.exchange_module, state_modules)
+            >>> len(runs)
             14
-            >>> transitions # doctest: +ELLIPSIS
-            [<checkmate.transition.Transition object at ...
+            >>> runs # doctest: +ELLIPSIS
+            [<checkmate.runs.Run object at ...
         """
     try:
         path = os.path.join(os.getenv('CHECKMATE_HOME'), path)
@@ -180,8 +181,9 @@ def get_transitions_from_features(exchange_module, state_modules, path=None):
         array_list = get_array_list([path])
     except FileNotFoundError:
         return []
-    initial_transitions = []
+    runs = []
     for array_items in array_list:
-        initial_transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
-    return initial_transitions 
+        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
+        runs.append(run)
+    return runs
 
