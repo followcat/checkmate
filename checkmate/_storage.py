@@ -197,19 +197,19 @@ class InternalStorage(object):
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve(states)
-            OrderedDict([('R', None)])
+            {'R': None}
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
             >>> inc.R.value
             ['AT2', 'HIGH']
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=1)
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
@@ -230,7 +230,7 @@ class InternalStorage(object):
             for input in exchanges:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
         _attributes.update(self.resolved_arguments)
-        return collections.OrderedDict(_attributes)
+        return _attributes
 
     def match(self, target_copy, reference=None, incoming_list=None):
         """
