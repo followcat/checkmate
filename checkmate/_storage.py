@@ -1,5 +1,3 @@
-import collections
-
 import zope.interface
 
 import checkmate._module
