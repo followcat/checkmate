@@ -126,7 +126,7 @@ class Application(object):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate._tree.Tree object at ...
+        [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())

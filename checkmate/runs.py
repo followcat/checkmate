@@ -3,6 +3,14 @@ import checkmate.sandbox
 import checkmate.transition
 
 
+class Run(checkmate._tree.Tree):
+    def __init__(self, transition, nodes=None):
+        assert type(transition) == checkmate.transition.Transition
+        if nodes is None:
+            nodes = []
+        super(Run, self).__init__(transition, nodes)
+
+
 class RunCollection(list):
     def get_origin_transition(self):
         """
