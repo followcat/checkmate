@@ -170,8 +170,7 @@ def TestProcedureRunsGenerator(application_class):
     runs = checkmate.runs.RunCollection()
     runs.get_runs_from_application(application_class()) 
     for _run in runs:
-        _transitions = _run.walk()
-        box = checkmate.sandbox.Sandbox(_application, _transitions)
-        box(_transitions[0], foreign_transitions=True) 
+        box = checkmate.sandbox.Sandbox(_application, _run.walk())
+        box(_run.root, foreign_transitions=True) 
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
