@@ -29,7 +29,7 @@ def new_load_step_definitions(paths):
         >>> import fresher.core
         >>> import fresher.stepregistry
         >>> paths = sys.argv[1:] or ["features"]
-        >>> fresher.glc.clear() 
+        >>> fresher.glc.clear()
         >>> language = fresher.core.load_language('en')
         >>> registry = fresher.cuke.load_step_definitions(paths)
         Traceback (most recent call last):
@@ -112,7 +112,8 @@ def _compatible_fresher_language(languages):
         if languages[_id] in conversion.keys():
             fresher_languages[_id] = conversion[languages[_id]]
     return fresher_languages
-            
+
+
 def _get_languages(makefile_path):
     """
         >>> import os
@@ -142,7 +143,7 @@ def get_array_list(paths, localization_path=None):
     if localization_path is None:
         localization_path = paths[0]
     _languages = _get_languages(localization_path)
-    fresher.glc.clear() 
+    fresher.glc.clear()
     for _lang in _languages:
         _locale = gettext.translation("checkmate-features", localedir=os.path.join(localization_path, 'translations'), languages=["en_US"])
         _locale.install()
@@ -156,7 +157,6 @@ def get_array_list(paths, localization_path=None):
 
 def get_runs_from_features(exchange_module, state_modules, path=None):
     """
-            >>> import os
             >>> import checkmate.state
             >>> import checkmate.exchange
             >>> import checkmate.component
@@ -186,4 +186,3 @@ def get_runs_from_features(exchange_module, state_modules, path=None):
         run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
         runs.append(run)
     return runs
-

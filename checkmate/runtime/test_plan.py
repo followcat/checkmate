@@ -21,7 +21,7 @@ def get_runs_from_test(application):
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> checkmate.runtime.test_plan.get_runs_from_test(a) #doctest: +ELLIPSIS 
+        >>> checkmate.runtime.test_plan.get_runs_from_test(a) #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
     """
 
@@ -169,9 +169,8 @@ def TestProcedureRunsGenerator(application_class):
 
     _application = application_class()
     runs = checkmate.runs.RunCollection()
-    runs.get_runs_from_application(application_class()) 
+    runs.get_runs_from_application(application_class())
     for _run in runs:
         box = checkmate.sandbox.Sandbox(_application, _run.walk())
-        box(_run.root, foreign_transitions=True) 
+        box(_run.root, foreign_transitions=True)
         yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
-
