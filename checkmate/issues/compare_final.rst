@@ -9,12 +9,12 @@ Using compare_state() with transition's final InternalStorage as target does not
     >>> r.start_test()
     >>> _application = sample_app.application.TestData()
     >>> components = list(_application.components.keys())
-    >>> transition_list = checkmate.runtime.test_plan.get_transitions_from_test(_application)
-    >>> _transition = transition_list[1]
-    >>> box = checkmate.sandbox.Sandbox(_application, [_transition])
-    >>> box(_transition, foreign_transitions=True)
+    >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(_application)
+    >>> _run = run_list[1]
+    >>> box = checkmate.sandbox.Sandbox(_application, [_run.root])
+    >>> box(_run.root, foreign_transitions=True)
     True
-    >>> proc = checkmate.runtime.test_plan.build_procedure(box, _transition)
+    >>> proc = checkmate.runtime.test_plan.build_procedure(box, _run.root)
     >>> proc.final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
     >>> proc2 = checkmate.runtime.test_plan.build_procedure(box, proc.transitions.nodes[0].root)

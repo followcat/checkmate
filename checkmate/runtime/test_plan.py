@@ -16,13 +16,13 @@ def build_procedure(sandbox, transition=None):
         proc.final = transition.final
     return proc
 
-def get_transitions_from_test(application):
+def get_runs_from_test(application):
     """
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> checkmate.runtime.test_plan.get_transitions_from_test(a) #doctest: +ELLIPSIS 
-        [<checkmate.transition.Transition object at ...
+        >>> checkmate.runtime.test_plan.get_runs_from_test(a) #doctest: +ELLIPSIS 
+        [<checkmate.runs.Run object at ...
     """
 
     exchange_module = application.exchange_module
@@ -39,10 +39,11 @@ def get_transitions_from_test(application):
     _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
     for data in _output['transitions']:
         array_list.append(data)
-    transitions = []
+    runs = []
     for array_items in array_list:
-        transitions.append(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
-    return transitions
+        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
+        runs.append(run)
+    return runs
 
 def TestProcedureInitialGenerator(application_class, transition_list=None):
     """
@@ -82,12 +83,12 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    transition_list = get_transitions_from_test(_application)
+    run_list = get_runs_from_test(_application)
 
-    for _transition in transition_list:
-        box = checkmate.sandbox.Sandbox(_application, [_transition])
-        box(_transition, foreign_transitions=True)
-        yield build_procedure(box, _transition), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+    for _run in run_list:
+        box = checkmate.sandbox.Sandbox(_application, [_run.root])
+        box(_run.root, foreign_transitions=True)
+        yield build_procedure(box, _run.root), box.transitions.root.owner, box.transitions.root.outgoing[0].code
 
 def TestProcedureFeaturesGenerator(application_class):
     """
