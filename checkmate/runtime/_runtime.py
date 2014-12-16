@@ -8,6 +8,7 @@ import zope.component.interfaces
 
 import checkmate.logger
 import checkmate.component
+import checkmate.pathfinder
 import checkmate.application
 import checkmate.timeout_manager
 import checkmate.runtime.registry
@@ -141,4 +142,16 @@ class Runtime(object):
     def execute(self, procedure, result=None):
         if checkmate.runtime.interfaces.IProcedure.providedBy(procedure):
             procedure(self, result)
+
+    def transform_to_procedure_initial(self, procedure):
+        if self.application.compare_states(procedure.initial):
+            return True
+        path = checkmate.runtime.procedure.get_path_from_pathfinder(self.application, procedure.initial)
+        if len(path) == 0:
+            checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
+            return False
+        for _proc in path:
+            self.execute(_proc)
+        return True
+
 
