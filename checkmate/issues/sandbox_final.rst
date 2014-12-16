@@ -15,7 +15,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> box = checkmate.sandbox.Sandbox(_application, [_run.root])
     >>> box(_run.root, foreign_transitions=True)
     True
-    >>> proc = checkmate.runtime.test_plan.build_procedure(box,  box)
+    >>> proc = r.build_procedure(box.transitions)
     >>> len(proc.final)
     3
     >>> proc.final[0].function #doctest: +ELLIPSIS

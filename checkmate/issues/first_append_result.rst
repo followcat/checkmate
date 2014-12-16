@@ -15,13 +15,13 @@ Setup:
     >>> c2 = r.runtime_components['C2']
     >>> c3 = r.runtime_components['C3']
     >>> user = r.runtime_components['USER']
-    >>> procedures = []
-    >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
-    ...     procedures.append(p[0])
+    >>> runs = []
+    >>> for run in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
+    ...     runs.append(run[0])
 
 
 Send 'AC' for append default 'R':
-    >>> proc = [_p for _p in procedures if len(_p.transitions.root.incoming) > 0 and _p.transitions.root.incoming[0].code == 'PBAC'][0]
+    >>> proc = [r.build_procedure(_r) for _r in runs if len(_r.root.incoming) > 0 and _r.root.incoming[0].code == 'PBAC'][0]
     >>> import checkmate.sandbox
     >>> saved = checkmate.sandbox.Sandbox(r.application)
     >>> proc(r)

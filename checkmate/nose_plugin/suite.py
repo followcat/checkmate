@@ -6,6 +6,7 @@ import nose.case
 import nose.suite
 import nose.proxy
 
+import checkmate.runs
 import checkmate.runtime.interfaces
 
 
@@ -34,7 +35,10 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def runTest(self):
         """"""
         config_as_dict = self.config.todict()
-        self.test(runtime=config_as_dict['runtime'])
+        runtime = config_as_dict['runtime']
+        if type(self.test) == checkmate.runs.Run: 
+            self.test = runtime.build_procedure(self.test)
+        self.test(runtime)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):

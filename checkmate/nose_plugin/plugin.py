@@ -13,6 +13,7 @@ import nose.config
 import nose.failure
 import nose.plugins
 
+import checkmate.runs
 import checkmate.nose_plugin
 import checkmate.runtime._runtime
 import checkmate.nose_plugin.suite
@@ -158,8 +159,6 @@ class Checkmate(nose.plugins.Plugin):
             try:
                 for test in g(self.application_class):
                     test_func, arg = self.loader.parseGeneratedTest(test)
-                    if not isinstance(test_func, collections.Callable):
-                        test_func = getattr(m, test_func)
                     generated = True
                     yield checkmate.nose_plugin.suite.FunctionTestCase(test_func, config=self.config, arg=arg, descriptor=g)
                 if not generated:

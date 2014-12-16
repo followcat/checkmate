@@ -94,12 +94,13 @@ class Procedure(object):
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
             >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
             >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-            >>> procedures = []
-            >>> for p in gen:
-            ...     procedures.append(p[0])
+            >>> runs = []
+            >>> for run in gen:
+            ...     runs.append(run[0])
 
-            >>> proc = procedures[0]
+            >>> proc = r.build_procedure(runs[0])
             >>> proc.transitions.root.outgoing[0].code
             'AC'
 

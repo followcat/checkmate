@@ -234,11 +234,13 @@ class InternalStorage(object):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
+            >>> import checkmate.runtime.communication
             >>> import sample_app.application
             >>> import sample_app.component.component_1_states
             >>> import sample_app.component.component_3_states
             >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-            >>> proc = [p[0] for p in gen][0]
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
+            >>> proc = r.build_procedure([run[0] for run in gen][0])
             >>> app = sample_app.application.TestData()
             >>> app.start()
             >>> saved = app.state_list()

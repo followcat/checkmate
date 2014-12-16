@@ -12,6 +12,7 @@ import checkmate.application
 import checkmate.timeout_manager
 import checkmate.runtime.registry
 import checkmate.runtime.component
+import checkmate.runtime.procedure
 import checkmate.runtime.interfaces
 
 
@@ -124,4 +125,17 @@ class Runtime(object):
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
 
         checkmate.logger.global_logger.stop_exchange_logger()
+
+    def build_procedure(self, run):
+        app = self.application_class()
+        proc = checkmate.runtime.procedure.Procedure()
+        transitions = run.walk()
+        sandbox = checkmate.sandbox.Sandbox(app, transitions)
+        sandbox(transitions[0], foreign_transitions=True)
+        sandbox.fill_procedure(proc)
+        if len(transitions) == 1:
+            #force checking final from transition if run contains only 1 transition
+            proc.final = transitions[0].final
+        return proc
+
 

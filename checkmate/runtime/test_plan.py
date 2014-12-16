@@ -8,14 +8,6 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def build_procedure(sandbox, transition=None):
-    proc = checkmate.runtime.procedure.Procedure()
-    sandbox.fill_procedure(proc)
-    if transition is not None:
-        #force checking final from transition if given
-        proc.final = transition.final
-    return proc
-
 def get_runs_from_test(application):
     """
         >>> import checkmate.runtime.test_plan
@@ -66,12 +58,12 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c3.context.states[0].value
         'True'
         >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> procedures = []
-        >>> for p in gen:
-        ...     p[0].application = r.application
-        ...     procedures.append(p[0])
+        >>> runs = []
+        >>> for run in gen:
+        ...     run[0].application = r.application
+        ...     runs.append(run[0])
 
-        >>> proc = procedures[0]
+        >>> proc = r.build_procedure(runs[0])
         >>> r.application.compare_states(proc.initial)
         False
         >>> proc(r)
@@ -83,12 +75,10 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
     state_modules = []
     for name in components:
         state_modules.append(_application.components[name].state_module)
-    run_list = get_runs_from_test(_application)
 
-    for _run in run_list:
-        box = checkmate.sandbox.Sandbox(_application, [_run.root])
-        box(_run.root, foreign_transitions=True)
-        yield build_procedure(box, _run.root), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+    for _run in get_runs_from_test(_application):
+        yield _run, _run.root.name
+
 
 def TestProcedureFeaturesGenerator(application_class):
     """
@@ -124,10 +114,10 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
-        >>> procedures = []
-        >>> for p in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
-        ...     procedures.append(p[0])
-        >>> proc = procedures[0]
+        >>> runs = []
+        >>> for run in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
+        ...     runs.append(run[0])
+        >>> proc = r.build_procedure(runs[0])
         >>> proc(r)
         >>> r.stop_test()
     """
@@ -139,9 +129,8 @@ def TestProcedureFeaturesGenerator(application_class):
     run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
 
     for _run in run_list:
-        box = checkmate.sandbox.Sandbox(_application, [_run.root])
-        box(_run.root, foreign_transitions=True)
-        yield build_procedure(box, _run.root), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield _run, _run.root.name
+        
 
 def TestProcedureRunsGenerator(application_class):
     """
@@ -149,21 +138,22 @@ def TestProcedureRunsGenerator(application_class):
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
-        >>> procedures = []
-        >>> for p in checkmate.runtime.test_plan.TestProcedureRunsGenerator(sample_app.application.TestData):
-        ...     procedures.append(p[0])
-        >>> procedures[0].transitions.root.outgoing[0].code
+        >>> runs = []
+        >>> for run in checkmate.runtime.test_plan.TestProcedureRunsGenerator(sample_app.application.TestData):
+        ...     runs.append(run[0])
+        >>> runs[0].root.outgoing[0].code
         'PBAC'
-        >>> procedures[1].transitions.root.outgoing[0].code
+        >>> runs[1].root.outgoing[0].code
         'PBAC'
-        >>> procedures[2].transitions.root.outgoing[0].code
+        >>> runs[2].root.outgoing[0].code
         'PBRL'
-        >>> procedures[3].transitions.root.outgoing[0].code
+        >>> runs[3].root.outgoing[0].code
         'PBPP'
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C2'])
         >>> r.start_test()
-        >>> procedures[0](r)
+        >>> proc = r.build_procedure(runs[0])
+        >>> proc(r)
         >>> r.stop_test()
     """
 
@@ -171,6 +161,4 @@ def TestProcedureRunsGenerator(application_class):
     runs = checkmate.runs.RunCollection()
     runs.get_runs_from_application(application_class())
     for _run in runs:
-        box = checkmate.sandbox.Sandbox(_application, _run.walk())
-        box(_run.root, foreign_transitions=True)
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield _run, _run.root.name
