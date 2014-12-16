@@ -51,3 +51,7 @@ class IProcedure(zope.interface.Interface):
     def shortDescription(self):
         """"""
 
+
+class IRun(zope.interface.Interface):
+    """"""
+

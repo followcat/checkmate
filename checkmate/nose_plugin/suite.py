@@ -6,7 +6,6 @@ import nose.case
 import nose.suite
 import nose.proxy
 
-import checkmate.runs
 import checkmate.runtime.interfaces
 
 
@@ -36,7 +35,7 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
-        if type(self.test) == checkmate.runs.Run: 
+        if checkmate.runtime.interfaces.IRun.providedBy(self.test):
             self.test = runtime.build_procedure(self.test)
         self.test(runtime)
 
