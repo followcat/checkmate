@@ -66,7 +66,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> proc = r.build_procedure(runs[0])
         >>> r.application.compare_states(proc.initial)
         False
-        >>> proc(r)
+        >>> r.execute(proc)
         >>> r.stop_test()
 
     """
@@ -118,7 +118,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> for run in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     runs.append(run[0])
         >>> proc = r.build_procedure(runs[0])
-        >>> proc(r)
+        >>> r.execute(proc)
         >>> r.stop_test()
     """
     _application = application_class()
@@ -153,7 +153,7 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.setup_environment(['C2'])
         >>> r.start_test()
         >>> proc = r.build_procedure(runs[0])
-        >>> proc(r)
+        >>> r.execute(proc)
         >>> r.stop_test()
     """
 

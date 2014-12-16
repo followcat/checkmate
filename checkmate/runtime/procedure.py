@@ -51,7 +51,7 @@ def _compatible_skip_test(procedure, message):
         checkmate.component.NoTransitionFound: ...
         >>> _outgoing = []
         >>> setattr(proc, 'exchanges', checkmate._tree.Tree(_incoming, [checkmate._tree.Tree(_output, []) for _output in _outgoing]))
-        >>> proc(r)
+        >>> r.execute(proc)
         Traceback (most recent call last):
         ...
         unittest.case.SkipTest: Procedure components do not match SUT
@@ -123,12 +123,12 @@ class Procedure(object):
 
         When the procedure is run in the provided Runtime instance,
         other instances' components are unaffected when not called.
-            >>> proc(r1)
+            >>> r1.execute(proc)
             >>> (r1_c1.value, r1_c3.value)
             ('False', 'True')
             >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
             False
-            >>> proc(r2)
+            >>> r2.execute(proc)
             >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
             True
 
@@ -158,7 +158,7 @@ class Procedure(object):
             _compatible_skip_test(self, "Can't find a path to inital state")
             return False
         for _procedure in path:
-            _procedure(runtime=self.runtime)
+            self.runtime.execute(_procedure)
         return True
 
     def _components_match_sut(self, system_under_test):

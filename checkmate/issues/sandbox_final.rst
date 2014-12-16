@@ -26,6 +26,6 @@ Setting the procedure.final from the sandbox does not work.
     <function State.append at ...
     >>> r.application.compare_states(proc.initial)
     True
-    >>> proc(r)
+    >>> r.execute(proc)
     >>> r.stop_test()
     >>> 

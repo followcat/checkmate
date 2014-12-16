@@ -138,4 +138,7 @@ class Runtime(object):
             proc.final = transitions[0].final
         return proc
 
+    def execute(self, procedure, result=None):
+        if checkmate.runtime.interfaces.IProcedure.providedBy(procedure):
+            procedure(self, result)
 

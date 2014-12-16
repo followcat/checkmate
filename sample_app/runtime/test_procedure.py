@@ -21,7 +21,7 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             'AP'
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].root.incoming[0].code
             'DA'
-            >>> proc(result=None, runtime=r)
+            >>> r.execute(proc)
             >>> r.stop_test()
         """
         super(TestProcedureRun1Threaded, self).__init__(application_class, test)
@@ -79,7 +79,7 @@ def TestProcedureGenerator(application_class):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> for g in sample_app.runtime.test_procedure.TestProcedureGenerator(sample_app.application.TestData):
-            ...     g[0](r)
+            ...     r.execute(g[0])
             >>> r.stop_test()
     """
     box = checkmate.sandbox.Sandbox(application_class())
