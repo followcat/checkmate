@@ -55,7 +55,7 @@ def _compatible_skip_test(procedure, message):
         Traceback (most recent call last):
         ...
         unittest.case.SkipTest: Procedure components do not match SUT
-        >>> proc._components_match_sut(sut)
+        >>> proc._components_match_sut()
         False
         >>> r.stop_test()
     """
@@ -128,36 +128,34 @@ class Procedure(object):
         if not hasattr(runtime, 'application'):
             #happens with using --with-doctest on checkmate procedure generator
             return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
-        self.application = runtime.application
-        self.system_under_test = runtime.application.system_under_test
-        if not self.is_setup and not self._components_match_sut(self.system_under_test):
+        if not self.is_setup and not self._components_match_sut():
             return _compatible_skip_test(self, "Procedure components do not match SUT")
-        if self.transitions.root.owner in self.system_under_test:
+        if self.transitions.root.owner in self.runtime.application.system_under_test:
             return _compatible_skip_test(self, "SUT do NOT simulate")
-        self._run_from_startpoint(self.transitions)
+        self._run_from_startpoint()
 
-    def _components_match_sut(self, system_under_test):
-        for _sut in system_under_test:
+    def _components_match_sut(self):
+        for _sut in self.runtime.application.system_under_test:
             if _sut not in self.components:
                 return False
         return True
 
-    def _run_from_startpoint(self, current_node):
+    def _run_from_startpoint(self):
         if self.result is not None:
             self.result.startTest(self)
                 
         for _c in self.runtime.runtime_components.values():
             _c.reset()
 
-        saved_initial = checkmate.sandbox.Sandbox(self.application)
-        stub = self.runtime.runtime_components[current_node.root.owner]
-        stub.simulate(current_node.root)
-        self._follow_up(current_node)
+        saved_initial = checkmate.sandbox.Sandbox(self.runtime.application)
+        stub = self.runtime.runtime_components[self.transitions.root.owner]
+        stub.simulate(self.transitions.root)
+        self._follow_up(self.transitions)
 
         if hasattr(self, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.application.compare_states(self.final, saved_initial.application.state_list())
+                return self.runtime.application.compare_states(self.final, saved_initial.application.state_list())
             if not check_compare_states():
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
@@ -165,7 +163,6 @@ class Procedure(object):
             self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
-        if self.result is not None:
             self.result.stopTest(self)
 
     def _follow_up(self, node):
