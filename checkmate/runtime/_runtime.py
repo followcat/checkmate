@@ -155,12 +155,15 @@ class Runtime(object):
     def transform_to_procedure_initial(self, procedure):
         if self.application.compare_states(procedure.initial):
             return True
-        path = checkmate.runtime.procedure.get_path_from_pathfinder(self.application, procedure.initial)
+        path = []
+        for _run, _app in checkmate.pathfinder._find_runs(self.application, procedure.initial).items():
+            proc = checkmate.runtime.procedure.Procedure(type(self.application), is_setup=True)
+            _app.fill_procedure(proc)
+            path.append(proc)
+            self.execute(proc)
         if len(path) == 0:
             checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
             return False
-        for _proc in path:
-            self.execute(_proc)
         return True
 
 

@@ -68,17 +68,6 @@ def _compatible_skip_test(procedure, message):
     raise nose.plugins.skip.SkipTest(message)
 
 
-@checkmate.fix_issue("checkmate/issues/get_path_from_pathfinder.rst")
-def get_path_from_pathfinder(application, target):
-    """"""
-    path = []
-    for _run, _app in checkmate.pathfinder._find_runs(application, target).items():
-        proc = Procedure(type(application), is_setup=True)
-        _app.fill_procedure(proc)
-        path.append(proc)
-    return path
-
-
 @zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
     def __init__(self, test=None, is_setup=False):
