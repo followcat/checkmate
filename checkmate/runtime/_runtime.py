@@ -139,8 +139,17 @@ class Runtime(object):
             proc.final = transitions[0].final
         return proc
 
-    def execute(self, procedure, result=None):
+    def execute(self, procedure, result=None, transform=True):
         if checkmate.runtime.interfaces.IProcedure.providedBy(procedure):
+            if hasattr(procedure, 'initial'):
+                if not transform:
+                    if not self.application.compare_states(procedure.initial):
+                        return checkmate.runtime.procedure._compatible_skip_test(procedure,
+                                "Procedure components states do not match Initial")
+                else:
+                    if not self.transform_to_procedure_initial(procedure):
+                        return checkmate.runtime.procedure._compatible_skip_test(procedure,
+                                "Procedure components states do not match Initial")
             procedure(self, result)
 
     def transform_to_procedure_initial(self, procedure):
