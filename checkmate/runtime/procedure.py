@@ -143,10 +143,6 @@ class Procedure(object):
     def _run_from_startpoint(self):
         if self.result is not None:
             self.result.startTest(self)
-                
-        for _c in self.runtime.runtime_components.values():
-            _c.reset()
-
         saved_initial = checkmate.sandbox.Sandbox(self.runtime.application)
         stub = self.runtime.runtime_components[self.transitions.root.owner]
         stub.simulate(self.transitions.root)

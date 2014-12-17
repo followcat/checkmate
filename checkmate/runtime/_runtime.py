@@ -150,6 +150,8 @@ class Runtime(object):
                     if not self.transform_to_procedure_initial(procedure):
                         return checkmate.runtime.procedure._compatible_skip_test(procedure,
                                 "Procedure components states do not match Initial")
+            for _c in self.runtime_components.values():
+                _c.reset()
             procedure(self, result)
 
     def transform_to_procedure_initial(self, procedure):
