@@ -135,10 +135,7 @@ class Procedure(object):
         self._run_from_startpoint()
 
     def _components_match_sut(self):
-        for _sut in self.runtime.application.system_under_test:
-            if _sut not in self.components:
-                return False
-        return True
+        return set(self.runtime.application.system_under_test).issubset(set(self.components))
 
     def _run_from_startpoint(self):
         if self.result is not None:
