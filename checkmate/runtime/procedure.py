@@ -55,8 +55,6 @@ def _compatible_skip_test(procedure, message):
         Traceback (most recent call last):
         ...
         unittest.case.SkipTest: Procedure components do not match SUT
-        >>> proc._components_match_sut()
-        False
         >>> r.stop_test()
     """
     if hasattr(procedure.result, 'addSkip'):
@@ -128,14 +126,11 @@ class Procedure(object):
         if not hasattr(runtime, 'application'):
             #happens with using --with-doctest on checkmate procedure generator
             return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
-        if not self.is_setup and not self._components_match_sut():
+        if not self.is_setup and not set(self.runtime.application.system_under_test).issubset(set(self.components)):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         if self.transitions.root.owner in self.runtime.application.system_under_test:
             return _compatible_skip_test(self, "SUT do NOT simulate")
         self._run_from_startpoint()
-
-    def _components_match_sut(self):
-        return set(self.runtime.application.system_under_test).issubset(set(self.components))
 
     def _run_from_startpoint(self):
         if self.result is not None:
