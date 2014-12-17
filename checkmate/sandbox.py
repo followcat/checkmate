@@ -36,8 +36,8 @@ class Sandbox(object):
         self.application.start()
 
         for component in self.application.components.values():
-            done = False
             for interface in [state_definition[0] for state_definition in component.state_machine.states]:
+                done = False
                 for state in component.states:
                     if not interface.providedBy(state):
                         continue
