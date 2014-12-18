@@ -142,6 +142,11 @@ class Runtime(object):
         return proc
 
     def execute(self, procedure, result=None, transform=True):
+        #if checkmate.runtime.interfaces.IRun.providedBy(procedure):
+        #    self.build_procedure(procedure, self.application)
+        self._process(procedure, result=result, transform=transform)
+
+    def _process(self, procedure, result=None, transform=True):
         if checkmate.runtime.interfaces.IProcedure.providedBy(procedure):
             if hasattr(procedure, 'initial'):
                 if not transform:

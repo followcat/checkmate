@@ -24,7 +24,7 @@ class TestCase(nose.case.Test):
             config_as_dict = self.config.todict()
             runtime = config_as_dict['runtime']
             self.test = runtime.build_procedure(test)
-            runtime.execute(self.test, result)
+            runtime._process(self.test, result)
             self.test = test
         else:
             test(result)
