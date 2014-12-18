@@ -127,9 +127,11 @@ class Runtime(object):
 
         checkmate.logger.global_logger.stop_exchange_logger()
 
-    def build_procedure(self, run):
-        app = self.application_class()
-        proc = checkmate.runtime.procedure.Procedure()
+    def build_procedure(self, run, application=None, is_setup=False):
+        app = application
+        if app is None:
+            app = self.application_class()
+        proc = checkmate.runtime.procedure.Procedure(is_setup=is_setup)
         transitions = run.walk()
         sandbox = checkmate.sandbox.Sandbox(app, transitions)
         sandbox(transitions[0], foreign_transitions=True)
@@ -158,11 +160,10 @@ class Runtime(object):
         if self.application.compare_states(procedure.initial):
             return True
         path = []
-        for _run, _app in checkmate.pathfinder._find_runs(self.application, procedure.initial).items():
-            proc = checkmate.runtime.procedure.Procedure(type(self.application), is_setup=True)
-            _app.fill_procedure(proc)
+        for _run in checkmate.pathfinder._find_runs(self.application, procedure.initial).keys():
+            proc = self.build_procedure(_run, self.application, is_setup=True)
             path.append(proc)
-            self.execute(proc)
+            self.execute(proc, transform=False)
         if len(path) == 0:
             checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
             return False
