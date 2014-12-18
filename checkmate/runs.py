@@ -14,6 +14,8 @@ class Run(checkmate._tree.Tree):
             nodes = []
         super(Run, self).__init__(transition, nodes)
 
+    def __call__(self):
+        pass
 
 class RunCollection(list):
     def get_origin_transition(self):

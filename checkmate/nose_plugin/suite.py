@@ -20,9 +20,12 @@ class TestCase(nose.case.Test):
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
-        if checkmate.runtime.interfaces.IProcedure.providedBy(test):
+        if checkmate.runtime.interfaces.IRun.providedBy(test):
             config_as_dict = self.config.todict()
-            config_as_dict['runtime'].execute(test, result)
+            runtime = config_as_dict['runtime']
+            self.test = runtime.build_procedure(test)
+            runtime.execute(self.test, result)
+            self.test = test
         else:
             test(result)
 

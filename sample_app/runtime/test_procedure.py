@@ -1,11 +1,11 @@
 import checkmate._tree
 import checkmate.sandbox
-import checkmate.runtime.procedure
+import checkmate.runs
 
 
-class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
+class TestProcedureRun1Threaded(checkmate.runs.Run):
     """"""
-    def __init__(self, application_class, test=None):
+    def __init__(self, application_class):
         """
             >>> import checkmate.runtime._pyzmq
             >>> import checkmate.runtime._runtime
@@ -14,7 +14,8 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
-            >>> proc = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
+            >>> run = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
+            >>> proc = r.build_procedure(run, r.application)
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].root.incoming[0].code
             'ARE'
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code
@@ -24,16 +25,15 @@ class TestProcedureRun1Threaded(checkmate.runtime.procedure.Procedure):
             >>> r.execute(proc)
             >>> r.stop_test()
         """
-        super(TestProcedureRun1Threaded, self).__init__(application_class, test)
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
         box(c2.state_machine.transitions[0])
-        box.fill_procedure(self)
+        super(TestProcedureRun1Threaded, self).__init__(box.transitions.root, box.transitions.nodes)
 
 
-class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
+class TestProcedureRun2Threaded(checkmate.runs.Run):
     """"""
-    def __init__(self, application_class, test=None):
+    def __init__(self, application_class):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
@@ -41,7 +41,8 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> proc = TestProcedureRun2Threaded(sample_app.application.TestData)
+            >>> run = TestProcedureRun2Threaded(sample_app.application.TestData)
+            >>> proc = r.build_procedure(run)
             >>> proc.transitions.root.outgoing[0].code
             'PBRL'
             >>> proc.transitions.nodes[0].root.incoming[0].code
@@ -50,7 +51,6 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
             'DR'
             >>> r.stop_test()
         """
-        super(TestProcedureRun2Threaded, self).__init__(application_class, test)
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
         box(c2.state_machine.transitions[0])
@@ -58,15 +58,14 @@ class TestProcedureRun2Threaded(checkmate.runtime.procedure.Procedure):
         transition_rl_index = [_t for _t in c2.state_machine.transitions
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         new_box(transition_rl_index[0])
-        new_box.fill_procedure(self)
+        super(TestProcedureRun2Threaded, self).__init__(new_box.transitions.root, new_box.transitions.nodes)
 
 
 def build_procedure(sandbox):
-    class TestProc(checkmate.runtime.procedure.Procedure):
+    class TestRun(checkmate.runs.Run):
         """"""
-    proc = TestProc(type(sandbox.application))
-    sandbox.fill_procedure(proc)
-    return proc
+    run = TestRun(sandbox.transitions.root, sandbox.transitions.nodes)
+    return run
 
 
 def TestProcedureGenerator(application_class):
@@ -79,7 +78,8 @@ def TestProcedureGenerator(application_class):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> for g in sample_app.runtime.test_procedure.TestProcedureGenerator(sample_app.application.TestData):
-            ...     r.execute(g[0])
+            ...     proc = r.build_procedure(g[0])
+            ...     r.execute(proc)
             >>> r.stop_test()
     """
     box = checkmate.sandbox.Sandbox(application_class())
