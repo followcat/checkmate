@@ -127,13 +127,15 @@ class Runtime(object):
 
         checkmate.logger.global_logger.stop_exchange_logger()
 
-    def build_procedure(self, run, application=None, is_setup=False):
-        app = application
-        if app is None:
-            app = self.application_class()
-        proc = checkmate.runtime.procedure.Procedure(is_setup=is_setup)
-        sandbox = checkmate.sandbox.Sandbox(app, run.walk())
-        sandbox(run.root, foreign_transitions=True)
+    def build_procedure(self, run, application=None):
+        if application is None:
+            sandbox = checkmate.sandbox.Sandbox(self.application_class(), run.walk())
+            sandbox(run.root, foreign_transitions=True)
+            proc = checkmate.runtime.procedure.Procedure(is_setup=False)
+        else:
+            sandbox = checkmate.sandbox.Sandbox(application)
+            sandbox(run.root)
+            proc = checkmate.runtime.procedure.Procedure(is_setup=True)
         sandbox.fill_procedure(proc)
         if len(run.nodes) == 0:
             #force checking final from transition if run contains only the root
@@ -165,7 +167,7 @@ class Runtime(object):
             return True
         path = []
         for _run in checkmate.pathfinder._find_runs(self.application, procedure.initial).keys():
-            proc = self.build_procedure(_run, self.application, is_setup=True)
+            proc = self.build_procedure(_run, self.application)
             path.append(proc)
             self.execute(proc, transform=False)
         if len(path) == 0:
