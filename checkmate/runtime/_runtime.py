@@ -163,16 +163,12 @@ class Runtime(object):
             procedure(self, result)
 
     def transform_to_procedure_initial(self, procedure):
-        if self.application.compare_states(procedure.initial):
-            return True
-        path = []
-        for _run in checkmate.pathfinder._find_runs(self.application, procedure.initial).keys():
-            proc = self.build_procedure(_run, self.application)
-            path.append(proc)
-            self.execute(proc, transform=False)
-        if len(path) == 0:
-            checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
-            return False
+        if not self.application.compare_states(procedure.initial):
+            run_list = list(checkmate.pathfinder._find_runs(self.application, procedure.initial).keys())
+            if len(run_list) == 0:
+                checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
+                return False
+            for run in run_list:
+                proc = self.build_procedure(run, self.application)
+                proc(self)
         return True
-
-
