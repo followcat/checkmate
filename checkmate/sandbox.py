@@ -8,7 +8,7 @@ class Sandbox(object):
         self.initial_transitions = initial_transitions
         self.start()
 
-    @checkmate.report_issue('checkmate/issues/sandbox_run_R2_itp_transition.rst', failed=1)
+    @checkmate.fix_issue('checkmate/issues/sandbox_run_R2_itp_transition.rst')
     def start(self):
         """
             >>> import checkmate.sandbox
@@ -52,7 +52,7 @@ class Sandbox(object):
                         for initial in transition.initial:
                             if not initial.interface.providedBy(state):
                                 continue
-                            state.carbon_copy(initial.factory())
+                            state.carbon_copy(initial.factory(**initial.resolve()))
                             done = True
                             break
                         if done:
