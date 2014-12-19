@@ -8,6 +8,7 @@ class Sandbox(object):
         self.initial_transitions = initial_transitions
         self.start()
 
+    @checkmate.report_issue('checkmate/issues/sandbox_run_R2_itp_transition.rst', failed=1)
     def start(self):
         """
             >>> import checkmate.sandbox
