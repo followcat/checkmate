@@ -1,4 +1,3 @@
-import checkmate._tree
 import checkmate.sandbox
 import checkmate.runs
 
@@ -63,7 +62,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         super(TestProcedureRun2Threaded, self).__init__(new_box.transitions.root, new_box.transitions.nodes)
 
 
-def build_procedure(sandbox):
+def build_run(sandbox):
     class TestRun(checkmate.runs.Run):
         """"""
     run = TestRun(sandbox.transitions.root, sandbox.transitions.nodes)
@@ -80,8 +79,7 @@ def TestProcedureGenerator(application_class):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> for g in sample_app.runtime.test_procedure.TestProcedureGenerator(sample_app.application.TestData):
-            ...     proc = r.build_procedure(g[0])
-            ...     r._process(proc)
+            ...     r.execute(g[0])
             >>> r.stop_test()
     """
     box = checkmate.sandbox.Sandbox(application_class())
@@ -90,4 +88,4 @@ def TestProcedureGenerator(application_class):
     #Skip the third transition from the last as 'C3' state does not match
     for _t in c2.state_machine.transitions[:1]:
         box(_t)
-        yield build_procedure(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
+        yield build_run(box), box.transitions.root.owner, box.transitions.root.outgoing[0].code
