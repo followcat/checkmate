@@ -16,10 +16,21 @@ Replace the second transition in component1 to initial is AnotherState1(R1)
     >>> r.application.components['C1'].state_machine.transitions[1] = new_transition
 
 Make an itp transition which initial state is AnotherState1(R2):
-    >>> run_items = {'incoming': [{'Action': 'AP(R)'}], 'name': 'Append request C1 with AP', 'initial': [{'AnotherState': 'AnotherState1(R2)'}], 'final': [{'AnotherState': 'AnotherState1(R)'}]}
+    >>> pre_items = {'incoming': [], 'name': '', 'initial': [], 'final': []}
+    >>> run_items = {'incoming': [{'Action': 'AP(R)'}], 'name': 'Append request C1 with AP', 'initial': [{'State': 'State2', 'AnotherState': 'AnotherState1(R2)'}], 'final': [{'AnotherState': 'AnotherState1(R)'}]}
+    >>> per_transition = checkmate.partition_declarator.make_transition(pre_items, [exchange_module], state_modules)
     >>> run_transition = checkmate.partition_declarator.make_transition(run_items, [exchange_module], state_modules)
 
+All state in sandbox.application will be set as the run_transition initial state:
+    >>> box = checkmate.sandbox.Sandbox(r.application, [per_transition, run_transition])
+    >>> state_list = box.application.state_list()
+    >>> [_s.value for _s in state_list if isinstance(_s, sample_app.component.component_1_states.State)]
+    ['False']
+    >>> [_s.R.C.value for _s in state_list if isinstance(_s, sample_app.component.component_1_states.AnotherState)]
+    ['AT2']
+    >>> [_s.value for _s in state_list if isinstance(_s, sample_app.component.component_3_states.Acknowledge)]
+    ['False']
+
 Can not run sandbox:
-    >>> box = checkmate.sandbox.Sandbox(r.application, [run_transition])
     >>> box(run_transition, foreign_transitions=True)
     False

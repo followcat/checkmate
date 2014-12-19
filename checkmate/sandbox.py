@@ -49,6 +49,7 @@ class Sandbox(object):
                         done = True
                         break
                     for transition in self.initial_transitions:
+                    # if state not match self.initial_transitions[0]'s initial, the loop will break if done is True
                         for initial in transition.initial:
                             if not initial.interface.providedBy(state):
                                 continue
