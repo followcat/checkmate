@@ -129,13 +129,15 @@ class Runtime(object):
 
     def build_procedure(self, run, application=None):
         if application is None:
-            sandbox = checkmate.sandbox.Sandbox(self.application_class(), run.walk())
-            sandbox(run.root, foreign_transitions=True)
-            proc = checkmate.runtime.procedure.Procedure(is_setup=False)
+            application = self.application_class()
+            transitions = run.walk()
+            foreign_transitions = True
         else:
-            sandbox = checkmate.sandbox.Sandbox(application)
-            sandbox(run.root)
-            proc = checkmate.runtime.procedure.Procedure(is_setup=True)
+            transitions = []
+            foreign_transitions = False
+        sandbox = checkmate.sandbox.Sandbox(application, transitions)
+        sandbox(run.root, foreign_transitions=foreign_transitions)
+        proc = checkmate.runtime.procedure.Procedure(is_setup=(not foreign_transitions))
         sandbox.fill_procedure(proc)
         if len(run.nodes) == 0:
             #force checking final from transition if run contains only the root
