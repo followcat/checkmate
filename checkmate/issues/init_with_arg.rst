@@ -18,7 +18,7 @@ It is impossible to specify the final state by providing arguments (like __init_
     >>> r.application.compare_states(proc.initial)
     True
     >>> saved_initial = checkmate.sandbox.Sandbox(r.application)
-    >>> r.execute(proc)
+    >>> r.execute(runs[1])
     >>> proc.final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
     >>> ap = sample_app.exchanges.Action('AP')

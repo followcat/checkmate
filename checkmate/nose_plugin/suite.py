@@ -38,9 +38,7 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
-        if checkmate.runtime.interfaces.IRun.providedBy(self.test):
-            self.test = runtime.build_procedure(self.test)
-        runtime.execute(self.test)
+        runtime.execute(self.test, transform=True)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):

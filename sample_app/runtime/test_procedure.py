@@ -22,7 +22,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
             'AP'
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].root.incoming[0].code
             'DA'
-            >>> r.execute(proc)
+            >>> r.execute(run)
             >>> r.stop_test()
         """
         box = checkmate.sandbox.Sandbox(application_class())
@@ -38,10 +38,11 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.communication
             >>> import sample_app.application
-            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
+            >>> import sample_app.runtime.test_procedure
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> run = TestProcedureRun2Threaded(sample_app.application.TestData)
+            >>> run = sample_app.runtime.test_procedure.TestProcedureRun2Threaded(sample_app.application.TestData)
             >>> proc = r.build_procedure(run)
             >>> proc.transitions.root.outgoing[0].code
             'PBRL'
@@ -49,6 +50,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             'PBRL'
             >>> proc.transitions.nodes[0].nodes[0].nodes[0].root.incoming[0].code
             'DR'
+            >>> r.execute(run, transform=True)
             >>> r.stop_test()
         """
         box = checkmate.sandbox.Sandbox(application_class())
@@ -79,7 +81,7 @@ def TestProcedureGenerator(application_class):
             >>> r.start_test()
             >>> for g in sample_app.runtime.test_procedure.TestProcedureGenerator(sample_app.application.TestData):
             ...     proc = r.build_procedure(g[0])
-            ...     r.execute(proc)
+            ...     r._process(proc)
             >>> r.stop_test()
     """
     box = checkmate.sandbox.Sandbox(application_class())

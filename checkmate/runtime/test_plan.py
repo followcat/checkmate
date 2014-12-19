@@ -58,15 +58,11 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c3.context.states[0].value
         'True'
         >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> runs = []
-        >>> for run in gen:
-        ...     run[0].application = r.application
-        ...     runs.append(run[0])
-
+        >>> runs = [run[0] for run in gen]
         >>> proc = r.build_procedure(runs[0])
         >>> r.application.compare_states(proc.initial)
         False
-        >>> r.execute(proc)
+        >>> r.execute(runs[0], transform=True)
         >>> r.stop_test()
 
     """
@@ -117,8 +113,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> runs = []
         >>> for run in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
         ...     runs.append(run[0])
-        >>> proc = r.build_procedure(runs[0])
-        >>> r.execute(proc)
+        >>> r.execute(runs[0])
         >>> r.stop_test()
     """
     _application = application_class()
@@ -152,8 +147,7 @@ def TestProcedureRunsGenerator(application_class):
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
         >>> r.setup_environment(['C2'])
         >>> r.start_test()
-        >>> proc = r.build_procedure(runs[0])
-        >>> r.execute(proc)
+        >>> r.execute(runs[0])
         >>> r.stop_test()
     """
 
