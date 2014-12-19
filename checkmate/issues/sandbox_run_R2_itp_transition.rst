@@ -19,7 +19,7 @@ Make an itp transition which initial state is AnotherState1(R2):
     >>> run_items = {'incoming': [{'Action': 'AP(R)'}], 'name': 'Append request C1 with AP', 'initial': [{'AnotherState': 'AnotherState1(R2)'}], 'final': [{'AnotherState': 'AnotherState1(R)'}]}
     >>> run_transition = checkmate.partition_declarator.make_transition(run_items, [exchange_module], state_modules)
 
-Should not build a procedure have transitions:
+Can not run sandbox:
     >>> box = checkmate.sandbox.Sandbox(r.application, [run_transition])
     >>> box(run_transition, foreign_transitions=True)
     False
