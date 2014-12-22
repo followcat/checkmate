@@ -144,7 +144,7 @@ class Runtime(object):
             proc.final = run.root.final
         return proc
 
-    def execute(self, run, result=None, transform=False):
+    def execute(self, run, result=None, transform=True):
         proc = self.build_procedure(run)
         self._process(proc, result=result, transform=transform)
 
