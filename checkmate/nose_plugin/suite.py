@@ -22,10 +22,7 @@ class TestCase(nose.case.Test):
             test = plug_test
         if checkmate.runtime.interfaces.IRun.providedBy(test):
             config_as_dict = self.config.todict()
-            runtime = config_as_dict['runtime']
-            self.test = runtime.build_procedure(test)
-            runtime._process(self.test, result)
-            self.test = test
+            config_as_dict['runtime'].execute(test, result)
         else:
             test(result)
 
@@ -84,7 +81,7 @@ class ContextSuiteFactory(nose.suite.ContextSuiteFactory):
                 wrapped.append(self.makeSuite(test, context=test.context))
             else:
                 wrapped.append(
-                    TestCase(test, config=self.config, resultProxy=self.resultProxy)
+                    TestCase(test, config=self.config)
                     )
         return wrapped
 

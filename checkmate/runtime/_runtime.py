@@ -145,10 +145,7 @@ class Runtime(object):
         return proc
 
     def execute(self, run, result=None, transform=True):
-        proc = self.build_procedure(run)
-        self._process(proc, result=result, transform=transform)
-
-    def _process(self, procedure, result=None, transform=True):
+        procedure = self.build_procedure(run)
         if transform is True and not self.transform_to_procedure_initial(procedure):
             return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
         for _c in self.runtime_components.values():
