@@ -166,5 +166,5 @@ class Procedure(object):
         Return the procedure name.
         This is required by the nose framework.
         """
-        return self.name
+        return self.name if hasattr(self, 'name') else str(self) + self.transitions.root.name
 
