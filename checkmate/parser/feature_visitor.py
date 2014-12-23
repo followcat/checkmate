@@ -86,6 +86,8 @@ def new_run_features(step_registry, features, handler):
         fresher.glc.array_list = []
     for feature in features:
         fresher.cuke.run_feature(step_registry, feature, handler)
+        for index, _s in enumerate(feature.scenarios):
+                fresher.ftc.scenarios[index].update({'name': _s.name})
         fresher.glc.array_list.extend(fresher.ftc.scenarios)
 
 def translate_registry(registry, lang, localization_path):
