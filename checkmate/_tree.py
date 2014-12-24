@@ -96,3 +96,33 @@ class Tree(object):
         return_list = re_walk(self)
         return return_list
 
+    def visual_dump(self):
+        d = {}
+        try:
+            d['root'] = self.root._show()
+        except AttributeError:
+            d['root'] = self.root
+        d['nodes'] = []
+        for element in self.nodes:
+            d['nodes'].append(element.visual_dump())
+        return d
+
+    def show_buffer(self, level=0):
+        """
+            >>> import checkmate._tree
+            >>> t = checkmate._tree.Tree('archer', [checkmate._tree.Tree('captain', [checkmate._tree.Tree('marshal', [])]), checkmate._tree.Tree('hero', [checkmate._tree.Tree('champion', [])])])
+            >>> t.show_buffer()
+            '|archer\\n|     |___ captain\\n|          |___ marshal\\n|     |___ hero\\n|          |___ champion\\n'
+            >>> print(t.show_buffer())
+            |archer
+            |     |___ captain
+            |          |___ marshal
+            |     |___ hero
+            |          |___ champion
+            <BLANKLINE>
+        """
+        visual_dump = self.visual_dump()
+        string = "{0}{1}{2}\n".format('|' + ' ' * 5 * level, '|___ ' * bool(level), visual_dump['root'])
+        for element in self.nodes:
+            string += element.show_buffer(level + 1)
+        return string
