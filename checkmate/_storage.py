@@ -123,6 +123,7 @@ class InternalStorage(object):
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
+        self.origin_code = code
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
