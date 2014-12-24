@@ -21,7 +21,7 @@ class Transition(object):
             except KeyError:
                 setattr(self, item, [])
 
-    def _visual(self):
+    def __str__(self):
         return "{0}, {1}".format([i.origin_code for i in self.incoming], [o.origin_code for o in self.outgoing])
 
     def matching_list(self, matched_list, partition_list):

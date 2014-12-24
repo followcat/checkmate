@@ -98,10 +98,7 @@ class Tree(object):
 
     def visual_dump(self):
         d = {}
-        try:
-            d['root'] = self.root._show()
-        except AttributeError:
-            d['root'] = self.root
+        d['root'] = self.root.__str__()
         d['nodes'] = []
         for element in self.nodes:
             d['nodes'].append(element.visual_dump())
