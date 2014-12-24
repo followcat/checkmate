@@ -163,8 +163,11 @@ class Procedure(object):
 
     def shortDescription(self):
         """
-        Return the procedure name.
+        Return the procedure name if exist, else return the first transition'name.
         This is required by the nose framework.
         """
-        return self.name if hasattr(self, 'name') else str(self) + self.transitions.root.name
+        if hasattr(self, 'name'):
+            return self.name
+        else:
+            return str(self) + self.transitions.root.name
 
