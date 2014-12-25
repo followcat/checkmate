@@ -1,3 +1,5 @@
+import collections
+
 import zope.interface
 
 
@@ -95,6 +97,22 @@ class Tree(object):
             return return_list
         return_list = re_walk(self)
         return return_list
+
+    def breadthWalk(self):
+        """
+        >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
+        >>> t.breadthWalk()
+        ['archer', 'captain', 'hero', 'marshal', 'champion']
+        """
+        deque = collections.deque()
+        deque.append(self)
+        results = []
+        while(deque):
+            tree = deque.popleft()
+            results.append(tree.root)
+            for _n in tree.nodes:
+                deque.append(_n)
+        return results
 
     def show(self, level=0):
         """
