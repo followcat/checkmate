@@ -26,12 +26,16 @@ class Run(checkmate._tree.Tree):
         pass
 
     def visual_dump(self):
-        d = {}
-        d['root'] = self.root.__str__()
-        d['nodes'] = []
+        dump_dict = {}
+        dump_dict['root'] = self.root.name
+        dump_dict['owner'] = self.root.owner
+        dump_dict['incoming'] = [i.origin_code for i in self.root.incoming]
+        dump_dict['outgoing'] = [o.origin_code for o in self.root.outgoing]
+        dump_dict['states'] = dict(self.change_states)
+        dump_dict['nodes'] = []
         for element in self.nodes:
-            d['nodes'].append(element.visual_dump())
-        return d
+            dump_dict['nodes'].append(element.visual_dump())
+        return dump_dict
 
 
 class RunCollection(list):
