@@ -61,6 +61,13 @@ class Run(checkmate._tree.Tree):
             string += element.show_run(level + 1)
         return string
 
+    def final_states(self):
+        state_dict = {}
+        for run in self.breadthWalk():
+            for state in run.change_states:
+                state_dict[state[0]] = state[1]
+        return state_dict
+
 
 class RunCollection(list):
     def get_origin_transition(self):
