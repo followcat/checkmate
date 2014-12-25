@@ -37,6 +37,30 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump())
         return dump_dict
 
+    def show_run(self, level=0):
+        visual_dump = self.visual_dump()
+        tab_space = ' ' * 6 * level
+        final_string = ""
+        for state, values in visual_dump['states'].items():
+            final_string += """
+{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=visual_dump['owner'], state=state, value=values['value'])
+            attr_space_len = len(final_string) - len(values['value'].__str__())
+            for name, value in values.items():
+                if name != 'value':
+                    final_string += """
+{space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
+        string = """
+{space}|
+{space}|     +-----------------------+
+{space}|     | {incoming}
+{space}|_____|
+{space}      | {outgoing}
+{space}      +-----------------------+{final}
+        """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_string)
+        for element in self.nodes:
+            string += element.show_run(level + 1)
+        return string
+
 
 class RunCollection(list):
     def get_origin_transition(self):
