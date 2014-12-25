@@ -25,6 +25,14 @@ class Run(checkmate._tree.Tree):
     def __call__(self):
         pass
 
+    def visual_dump(self):
+        d = {}
+        d['root'] = self.root.__str__()
+        d['nodes'] = []
+        for element in self.nodes:
+            d['nodes'].append(element.visual_dump())
+        return d
+
 
 class RunCollection(list):
     def get_origin_transition(self):
