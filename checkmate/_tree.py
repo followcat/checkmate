@@ -101,7 +101,7 @@ class Tree(object):
     def breadthWalk(self):
         """
         >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
-        >>> t.breadthWalk()
+        >>> [tree.root for tree in t.breadthWalk()]
         ['archer', 'captain', 'hero', 'marshal', 'champion']
         """
         deque = collections.deque()
@@ -109,7 +109,7 @@ class Tree(object):
         results = []
         while(deque):
             tree = deque.popleft()
-            results.append(tree.root)
+            results.append(tree)
             for _n in tree.nodes:
                 deque.append(_n)
         return results
