@@ -142,8 +142,12 @@ class Partition(object):
         """
         dump_dict = {}
         dump_dict['value'] = self.value
-        for attr in dir(self):
-            dump_dict[attr] = getattr(self, attr)._dump()
+        for attr in self.partition_attribute:
+            self_attr = getattr(self, attr)
+            if isinstance(self_attr, Partition):
+                dump_dict[attr] = self_attr._dump()
+            else:
+                dump_dict[attr] = self_attr
         return dump_dict
 
     def description(self):
@@ -157,6 +161,17 @@ class Partition(object):
             return dict(map(lambda x:(x, getattr(self, x)), self.partition_attribute))
         else:
             return dict(map(lambda x:(x, getattr(self, x)), keyset.intersection(self.partition_attribute)))
+
+    def carbon_copy(self, other):
+        assert(type(self) == type(other))
+        self.value = other.value
+        for attr in self.partition_attribute:
+            other_attr = getattr(other, attr)
+            self_attr = getattr(self, attr)
+            if isinstance(self_attr, Partition):
+                self_attr.carbon_copy(other_attr)
+            elif isinstance(other_attr, Partition):
+                setattr(self, attr, type(other_attr)(**other_attr._dump()))
 
     @property
     def partition_id(self):

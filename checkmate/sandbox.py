@@ -8,6 +8,7 @@ class Sandbox(object):
         self.initial_transitions = initial_transitions
         self.start()
 
+    @checkmate.fix_issue('checkmate/issues/sandbox_run_R2_itp_transition.rst')
     def start(self):
         """
             >>> import checkmate.sandbox
@@ -36,22 +37,23 @@ class Sandbox(object):
         self.application.start()
 
         for component in self.application.components.values():
-            done = False
             for interface in [state_definition[0] for state_definition in component.state_machine.states]:
+                done = False
                 for state in component.states:
                     if not interface.providedBy(state):
                         continue
                     for initial_state in self.initial_application.components[component.name].states:
                         if not interface.providedBy(initial_state):
                             continue
-                        state.value = initial_state.value
+                        state.carbon_copy(initial_state)
                         done = True
                         break
                     for transition in self.initial_transitions:
+                    # if state not match self.initial_transitions[0]'s initial, the loop will break if done is True
                         for initial in transition.initial:
                             if not initial.interface.providedBy(state):
                                 continue
-                            state.value = initial.factory().value
+                            state.carbon_copy(initial.factory(**initial.resolve()))
                             done = True
                             break
                         if done:

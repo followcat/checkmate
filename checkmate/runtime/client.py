@@ -73,12 +73,12 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         'PA'
         >>> r.stop_test()
     """
-    def __init__(self, component, exchange_deque):
+    def __init__(self, component, exchange_queue):
         super(ThreadedClient, self).__init__(component)
         self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
-        self.exchange_deque = exchange_deque
+        self.exchange_queue = exchange_queue
 
         self.connections = []
         self.internal_connector = None
@@ -127,7 +127,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                 if _s.TYPE == zmq.SUB:
                     _s.recv()
                 exchange = _s.recv_pyobj()
-                self.exchange_deque.append(exchange)
+                self.exchange_queue.put(exchange)
                 self.logger.debug("%s receive exchange %s" % (self, exchange.value))
 
     def stop(self):
