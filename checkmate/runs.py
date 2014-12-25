@@ -8,14 +8,23 @@ import checkmate.runtime.interfaces
 
 @zope.interface.implementer(checkmate.runtime.interfaces.IRun)
 class Run(checkmate._tree.Tree):
-    def __init__(self, transition, nodes=None):
+    def __init__(self, transition, nodes=None, states=None):
         assert type(transition) == checkmate.transition.Transition
         if nodes is None:
             nodes = []
+        if states is None:
+            states = []
         super(Run, self).__init__(transition, nodes)
+        self.change_states = []
+        for f in transition.final:
+            for s in states:
+                if f.interface.providedBy(s):
+                    self.change_states.append((s.partition_id, s._dump()))
+                    break
 
     def __call__(self):
         pass
+
 
 class RunCollection(list):
     def get_origin_transition(self):
