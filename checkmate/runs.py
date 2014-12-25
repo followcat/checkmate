@@ -19,7 +19,7 @@ class Run(checkmate._tree.Tree):
         for f in transition.final:
             for s in states:
                 if f.interface.providedBy(s):
-                    self.change_states.append((s.partition_id, s._dump()))
+                    self.change_states.append((type(s).__name__, s._dump()))
                     break
 
     def __call__(self):
