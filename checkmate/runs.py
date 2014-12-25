@@ -61,7 +61,35 @@ class Run(checkmate._tree.Tree):
             string += element.show_run(level + 1)
         return string
 
+    def initial_states(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].initial_states()
+            >>> states['State']['value'], states['Acknowledge']['value']
+            ('True', 'False')
+        """
+        state_dict = {}
+        for run in self.breadthWalk():
+            for _s in run.root.initial:
+                state = _s.factory()
+                cls_name = type(state).__name__
+                if cls_name not in state_dict:
+                    state_dict[cls_name] = state._dump()
+        return state_dict
+
     def final_states(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].final_states()
+            >>> states['State']['value'], states['Acknowledge']['value']
+            ('False', 'True')
+        """
         state_dict = {}
         for run in self.breadthWalk():
             for state in run.change_states:
