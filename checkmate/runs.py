@@ -25,6 +25,45 @@ class Run(checkmate._tree.Tree):
     def __call__(self):
         pass
 
+    def initial_states(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].initial_states()
+            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
+            ('True', 'False')
+        """
+        state_dict = {}
+        for run in self.breadthWalk():
+            for _s in run.root.initial:
+                if run.root.owner not in state_dict:
+                    state_dict[run.root.owner] = {}
+                state = _s.factory()
+                cls_name = type(state).__name__
+                if cls_name not in state_dict:
+                    state_dict[run.root.owner][cls_name] = state._dump()
+        return state_dict
+
+    def final_states(self):
+        """
+            >>> import checkmate.runs
+            >>> import sample_app.application
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].final_states()
+            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
+            ('False', 'True')
+        """
+        state_dict = {}
+        for run in self.breadthWalk():
+            for state in run.change_states:
+                if run.root.owner not in state_dict:
+                    state_dict[run.root.owner] = {}
+                state_dict[run.root.owner][state[0]] = state[1]
+        return state_dict
+
     def visual_dump(self):
         dump_dict = {}
         dump_dict['root'] = self.root.name
@@ -83,45 +122,6 @@ class Run(checkmate._tree.Tree):
 
     def visual_show(self):
         return self.visual_initial() + self.visual_run() + self.visual_final()
-
-    def initial_states(self):
-        """
-            >>> import checkmate.runs
-            >>> import sample_app.application
-            >>> src = checkmate.runs.RunCollection()
-            >>> src.get_runs_from_application(sample_app.application.TestData())
-            >>> states = src[0].initial_states()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('True', 'False')
-        """
-        state_dict = {}
-        for run in self.breadthWalk():
-            for _s in run.root.initial:
-                if run.root.owner not in state_dict:
-                    state_dict[run.root.owner] = {}
-                state = _s.factory()
-                cls_name = type(state).__name__
-                if cls_name not in state_dict:
-                    state_dict[run.root.owner][cls_name] = state._dump()
-        return state_dict
-
-    def final_states(self):
-        """
-            >>> import checkmate.runs
-            >>> import sample_app.application
-            >>> src = checkmate.runs.RunCollection()
-            >>> src.get_runs_from_application(sample_app.application.TestData())
-            >>> states = src[0].final_states()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('False', 'True')
-        """
-        state_dict = {}
-        for run in self.breadthWalk():
-            for state in run.change_states:
-                if run.root.owner not in state_dict:
-                    state_dict[run.root.owner] = {}
-                state_dict[run.root.owner][state[0]] = state[1]
-        return state_dict
 
 
 class RunCollection(list):
