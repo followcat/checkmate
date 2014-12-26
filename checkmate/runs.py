@@ -51,7 +51,7 @@ class Run(checkmate._tree.Tree):
 {space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
         return return_str
 
-    def show_run(self, level=0):
+    def visual_run(self, level=0):
         visual_dump = self.visual_dump()
         tab_space = ' ' * 6 * level
 
@@ -66,7 +66,7 @@ class Run(checkmate._tree.Tree):
 {space}      +-----------------------+{final}
         """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_states)
         for element in self.nodes:
-            string += element.show_run(level + 1)
+            string += element.visual_run(level + 1)
         return string
 
     def initial_states(self):
