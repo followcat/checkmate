@@ -51,6 +51,18 @@ class Run(checkmate._tree.Tree):
 {space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
         return return_str
 
+    def visual_initial(self):
+        return_str = ""
+        for _c, states in self.initial_states().items():
+            return_str += self.visual_states(states, _c)
+        return return_str
+
+    def visual_final(self):
+        return_str = ""
+        for _c, states in self.final_states().items():
+            return_str += self.visual_states(states, _c)
+        return return_str
+
     def visual_run(self, level=0):
         visual_dump = self.visual_dump()
         tab_space = ' ' * 6 * level
@@ -68,6 +80,9 @@ class Run(checkmate._tree.Tree):
         for element in self.nodes:
             string += element.visual_run(level + 1)
         return string
+
+    def visual_show(self):
+        return self.visual_initial() + self.visual_run() + self.visual_final()
 
     def initial_states(self):
         """
