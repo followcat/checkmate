@@ -81,7 +81,7 @@ class Run(checkmate._tree.Tree):
         return_str = ""
         for state, values in states.items():
             state_str = """
-{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
+{space}{owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
             return_str += state_str
             attr_space_len = len(state_str) - len(values['value'].__str__())
             for name, value in values.items():
@@ -107,7 +107,7 @@ class Run(checkmate._tree.Tree):
         tab_space = ' ' * 6 * level
 
         owner = visual_dump['owner']
-        final_states = self.visual_states(visual_dump['states'], owner, level)
+        final_states = self.visual_states(visual_dump['states'], owner, level + 1)
         string = """
 {space}|
 {space}|     +-----------------------+
