@@ -37,22 +37,26 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump())
         return dump_dict
 
+    def visual_states(self, states, owner="", level=0):
+        tab_space = ' ' * 6 * level
+        return_str = ""
+        for state, values in states.items():
+            state_str = """
+{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
+            return_str += state_str
+            attr_space_len = len(state_str) - len(values['value'].__str__())
+            for name, value in values.items():
+                if name != 'value':
+                    return_str += """
+{space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
+        return return_str
+
     def show_run(self, level=0):
         visual_dump = self.visual_dump()
         tab_space = ' ' * 6 * level
 
-        final_string = ""
         owner = visual_dump['owner']
-        for state, values in visual_dump['states'].items():
-            state_string = """
-{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
-            final_string += state_string
-            attr_space_len = len(state_string) - len(values['value'].__str__())
-            for name, value in values.items():
-                if name != 'value':
-                    final_string += """
-{space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
-
+        final_states = self.visual_states(visual_dump['states'], owner, level)
         string = """
 {space}|
 {space}|     +-----------------------+
@@ -60,7 +64,7 @@ class Run(checkmate._tree.Tree):
 {space}|_____|
 {space}      | {outgoing}
 {space}      +-----------------------+{final}
-        """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_string)
+        """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_states)
         for element in self.nodes:
             string += element.show_run(level + 1)
         return string
