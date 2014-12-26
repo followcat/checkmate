@@ -22,9 +22,6 @@ class Run(checkmate._tree.Tree):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
-    def __call__(self):
-        pass
-
     def initial_states(self):
         """
             >>> import checkmate.runs
