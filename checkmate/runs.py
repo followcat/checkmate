@@ -40,15 +40,19 @@ class Run(checkmate._tree.Tree):
     def show_run(self, level=0):
         visual_dump = self.visual_dump()
         tab_space = ' ' * 6 * level
+
         final_string = ""
+        owner = visual_dump['owner']
         for state, values in visual_dump['states'].items():
-            final_string += """
-{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=visual_dump['owner'], state=state, value=values['value'])
-            attr_space_len = len(final_string) - len(values['value'].__str__())
+            state_string = """
+{space}      {owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
+            final_string += state_string
+            attr_space_len = len(state_string) - len(values['value'].__str__())
             for name, value in values.items():
                 if name != 'value':
                     final_string += """
 {space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
+
         string = """
 {space}|
 {space}|     +-----------------------+
