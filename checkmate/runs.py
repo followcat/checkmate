@@ -65,10 +65,9 @@ class Run(checkmate._tree.Tree):
     def visual_dump_steps(self):
         dump_dict = {}
         dump_dict['root'] = self.root.name
-        dump_dict['owner'] = self.root.owner
         dump_dict['incoming'] = [i.origin_code for i in self.root.incoming]
         dump_dict['outgoing'] = [o.origin_code for o in self.root.outgoing]
-        dump_dict['states'] = dict(self.change_states)
+        dump_dict['states'] = {self.root.owner: dict(self.change_states)}
         dump_dict['nodes'] = []
         for element in self.nodes:
             dump_dict['nodes'].append(element.visual_dump_steps())
