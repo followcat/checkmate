@@ -155,7 +155,7 @@ class Runtime(object):
 
     def execute(self, run, result=None, transform=True):
         self.runs_log.info("\n---\nTitle: ExecuteRun")
-        self.runs_log.info("Application Start State:%s\n" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1, command="#"))
+        self.runs_log.info("Application Start State:%s\n" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1))
         self.runs_log.info("Run: %s" % run.root.name)
 
         procedure = self.build_procedure(run)
@@ -165,7 +165,7 @@ class Runtime(object):
             _c.reset()
         procedure(self, result)
 
-        self.runs_log.info("\nApplication Finish State:%s" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1, command="#"))
+        self.runs_log.info("\nApplication Finish State:%s" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1))
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):
