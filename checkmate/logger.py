@@ -12,26 +12,40 @@ def runtime_log_name():
     """"""
     return _log_name('runtime')
 
+def runs_log_name():
+    """"""
+    return _log_name('runs')
+
 def exchange_log_name():
     """"""
     return _log_name('exchange')
 
 def start_runtime_logger():
-    logger = logging.getLogger("checkmate")  
-    logger.setLevel(logging.INFO)  
+    logger = logging.getLogger("checkmate")
+    logger.setLevel(logging.INFO)
 
     # add a general file log handler to handle DEBUG level log message
-    fhandler=logging.FileHandler(runtime_log_name())
+    fhandler = logging.FileHandler(runtime_log_name())
     fhandler.setLevel(logging.INFO)
     formatter = logging.Formatter("[%(asctime)s] - [%(name)s] - %(levelname)s: %(message)s")
     fhandler.setFormatter(formatter)
     logger.addHandler(fhandler)
 
     #add a streamHandler to handler the ERROR level log message
-    shandler=logging.StreamHandler()
+    shandler = logging.StreamHandler()
     shandler.setLevel(logging.ERROR)
     shandler.setFormatter(formatter)
     logger.addHandler(shandler)
+
+    # add a general file log handler to handle runs log message
+    rlogger = logging.getLogger("runs")
+    rlogger.setLevel(logging.INFO)
+
+    rfhandler = logging.FileHandler(runs_log_name())
+    rfhandler.setLevel(logging.INFO)
+    rformatter = logging.Formatter("%(message)s")
+    rfhandler.setFormatter(rformatter)
+    rlogger.addHandler(rfhandler)
 
 class Logger(object):
     """"""
