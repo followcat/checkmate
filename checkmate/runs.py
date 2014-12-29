@@ -1,6 +1,7 @@
 import zope.interface
 
 import checkmate._tree
+import checkmate._visual
 import checkmate.sandbox
 import checkmate.transition
 import checkmate.runtime.interfaces
@@ -73,38 +74,12 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump())
         return dump_dict
 
-    def visual_states(self, states, owner="", level=0):
-        tab_space = ' ' * 6 * level
-        return_str = ""
-        for state, values in states.items():
-            state_str = """
-{space}{owner}: {state} - {value}""".format(space=tab_space, owner=owner, state=state, value=values['value'])
-            return_str += state_str
-            attr_space_len = len(state_str) - len(values['value'].__str__())
-            for name, value in values.items():
-                if name != 'value':
-                    return_str += """
-{space}{name}: {value}""".format(space=' ' * attr_space_len, name=name, value=value)
-        return return_str
-
-    def visual_initial(self):
-        return_str = ""
-        for _c, states in self.initial_states().items():
-            return_str += self.visual_states(states, _c)
-        return return_str
-
-    def visual_final(self):
-        return_str = ""
-        for _c, states in self.final_states().items():
-            return_str += self.visual_states(states, _c)
-        return return_str
-
     def visual_run(self, level=0):
         visual_dump = self.visual_dump()
         tab_space = ' ' * 6 * level
 
         owner = visual_dump['owner']
-        final_states = self.visual_states(visual_dump['states'], owner, level + 1)
+        final_states = checkmate._visual.visual_states(visual_dump['states'], owner, level + 1)
         string = """
 {space}|
 {space}|     +-----------------------+
@@ -118,7 +93,13 @@ class Run(checkmate._tree.Tree):
         return string
 
     def visual_show(self):
-        return self.visual_initial() + self.visual_run() + self.visual_final()
+        return_str = ""
+        for _c, states in self.initial_states().items():
+            return_str += checkmate._visual.visual_states(states, _c)
+        return_str += self.visual_run()
+        for _c, states in self.final_states().items():
+            return_str += checkmate._visual.visual_states(states, _c)
+        return return_str
 
 
 class RunCollection(list):
