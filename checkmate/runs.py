@@ -23,13 +23,13 @@ class Run(checkmate._tree.Tree):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
-    def initial_states(self):
+    def visual_dump_initial(self):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.RunCollection()
             >>> src.get_runs_from_application(sample_app.application.TestData())
-            >>> states = src[0].initial_states()
+            >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
             ('True', 'False')
         """
@@ -44,13 +44,13 @@ class Run(checkmate._tree.Tree):
                     state_dict[run.root.owner][cls_name] = state._dump()
         return state_dict
 
-    def final_states(self):
+    def visual_dump_final(self):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.RunCollection()
             >>> src.get_runs_from_application(sample_app.application.TestData())
-            >>> states = src[0].final_states()
+            >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
             ('False', 'True')
         """
@@ -62,7 +62,7 @@ class Run(checkmate._tree.Tree):
                 state_dict[run.root.owner][state[0]] = state[1]
         return state_dict
 
-    def visual_dump(self):
+    def visual_dump_steps(self):
         dump_dict = {}
         dump_dict['root'] = self.root.name
         dump_dict['owner'] = self.root.owner
@@ -71,7 +71,7 @@ class Run(checkmate._tree.Tree):
         dump_dict['states'] = dict(self.change_states)
         dump_dict['nodes'] = []
         for element in self.nodes:
-            dump_dict['nodes'].append(element.visual_dump())
+            dump_dict['nodes'].append(element.visual_dump_steps())
         return dump_dict
 
 

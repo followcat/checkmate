@@ -14,7 +14,7 @@ def visual_states(dump_states, owner="", level=0):
 
 
 def visual_run_steps(run, level=0):
-    visual_dump = run.visual_dump()
+    visual_dump = run.visual_dump_steps()
     tab_space = ' ' * 6 * level
 
     owner = visual_dump['owner']
@@ -34,9 +34,9 @@ def visual_run_steps(run, level=0):
 
 def visual_run(run):
     return_str = ""
-    for _c, states in run.initial_states().items():
+    for _c, states in run.visual_dump_initial().items():
         return_str += visual_states(states, _c)
     return_str += visual_run_steps(run)
-    for _c, states in run.final_states().items():
+    for _c, states in run.visual_dump_final().items():
         return_str += visual_states(states, _c)
     return return_str
