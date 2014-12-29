@@ -74,29 +74,11 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump())
         return dump_dict
 
-    def visual_run(self, level=0):
-        visual_dump = self.visual_dump()
-        tab_space = ' ' * 6 * level
-
-        owner = visual_dump['owner']
-        final_states = checkmate._visual.visual_states(visual_dump['states'], owner, level + 1)
-        string = """
-{space}|
-{space}|     +-----------------------+
-{space}|     | {incoming}
-{space}|_____|
-{space}      | {outgoing}
-{space}      +-----------------------+{final}
-        """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_states)
-        for element in self.nodes:
-            string += element.visual_run(level + 1)
-        return string
-
     def visual_show(self):
         return_str = ""
         for _c, states in self.initial_states().items():
             return_str += checkmate._visual.visual_states(states, _c)
-        return_str += self.visual_run()
+        return_str += checkmate._visual.visual_run(self)
         for _c, states in self.final_states().items():
             return_str += checkmate._visual.visual_states(states, _c)
         return return_str
