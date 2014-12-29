@@ -1,16 +1,17 @@
 def visual_states(dump_states, level=0, command=""):
     return_str = ""
+    tab_space = ' ' * 6 * level
     for _c, states in dump_states.items():
-        tab_space = ' ' * 6 * level
+        if len(states) == 0:
+            continue
+        return_str += "\n\
+{command}{space}{owner}:".format(command=command, space=tab_space, owner=_c)
         for state, values in states.items():
-            state_str = "\n\
-{command}{space}{owner}: {state} - {value}".format(command=command, space=tab_space, owner=_c, state=state, value=values['value'])
-            return_str += state_str
-            attr_space_len = len(state_str) - len(values['value'].__str__())
+            return_str += "\n\
+{command}{space}  {state}:".format(command=command, space=tab_space, state=state)
             for name, value in values.items():
-                if name != 'value':
-                    return_str += "\n\
-{command}{space}- {name}: {value}".format(command=command, space=' ' * attr_space_len, name=name, value=value)
+                return_str += "\n\
+{command}{space}    {name}: {value}".format(command=command, space=tab_space, name=name, value=value)
     return return_str
 
 
