@@ -154,6 +154,10 @@ class Runtime(object):
         return proc
 
     def execute(self, run, result=None, transform=True):
+        self.runs_log.info("\n---\nTitle: ExecuteRun")
+        self.runs_log.info("Application Start State:%s\n" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1))
+        self.runs_log.info("Run: %s" % run.root.name)
+
         procedure = self.build_procedure(run)
         if transform is True and not self.transform_to_procedure_initial(procedure):
             return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
@@ -161,13 +165,17 @@ class Runtime(object):
             _c.reset()
         procedure(self, result)
 
+        self.runs_log.info("\nApplication Finish State:%s" % checkmate._visual.visual_states(self.application.visual_dump_states(), level=1))
+
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):
             run_list = list(checkmate.pathfinder._find_runs(self.application, procedure.initial).keys())
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
                 return False
+            self.runs_log.info("Use transform_to_procedure_initial:")
             for run in run_list:
                 proc = self.build_procedure(run, self.application)
+                self.runs_log.info("  - %s" % run.root.name)
                 proc(self)
         return True
