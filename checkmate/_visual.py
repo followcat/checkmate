@@ -13,7 +13,7 @@ def visual_states(dump_states, owner="", level=0):
     return return_str
 
 
-def visual_run(run, level=0):
+def visual_run_steps(run, level=0):
     visual_dump = run.visual_dump()
     tab_space = ' ' * 6 * level
 
@@ -28,5 +28,15 @@ def visual_run(run, level=0):
 {space}      +-----------------------+{final}
     """.format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_states)
     for element in run.nodes:
-        string += visual_run(element, level + 1)
+        string += visual_run_steps(element, level + 1)
     return string
+
+
+def visual_run(run):
+    return_str = ""
+    for _c, states in run.initial_states().items():
+        return_str += visual_states(states, _c)
+    return_str += visual_run_steps(run)
+    for _c, states in run.final_states().items():
+        return_str += visual_states(states, _c)
+    return return_str

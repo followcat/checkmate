@@ -74,15 +74,6 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump())
         return dump_dict
 
-    def visual_show(self):
-        return_str = ""
-        for _c, states in self.initial_states().items():
-            return_str += checkmate._visual.visual_states(states, _c)
-        return_str += checkmate._visual.visual_run(self)
-        for _c, states in self.final_states().items():
-            return_str += checkmate._visual.visual_states(states, _c)
-        return return_str
-
 
 class RunCollection(list):
     def get_origin_transition(self):
