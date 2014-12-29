@@ -31,8 +31,8 @@ def visual_run_steps(run, level=0):
     return string
 
 
-def visual_run(run):
-    return_str = visual_states(run.visual_dump_initial())
-    return_str += visual_run_steps(run)
-    return_str += visual_states(run.visual_dump_final())
+def visual_run(run, level=0):
+    return_str = visual_states(run.visual_dump_initial(), level)
+    return_str += visual_run_steps(run, level)
+    return_str += visual_states(run.visual_dump_final(), level)
     return return_str
