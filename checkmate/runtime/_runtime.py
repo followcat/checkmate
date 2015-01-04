@@ -57,7 +57,6 @@ class Runtime(object):
         else:
             args_to_log.append('--sut=' + ','.join(sut))
 
-        checkmate.logger.global_logger.start_exchange_logger()
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s" % args_to_log)
         self.application.sut(sut)
 
@@ -126,8 +125,6 @@ class Runtime(object):
         condition = threading.Condition()
         with condition:
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
-
-        checkmate.logger.global_logger.stop_exchange_logger()
 
     def build_procedure(self, run, application=None):
         if application is None:

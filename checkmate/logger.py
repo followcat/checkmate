@@ -1,5 +1,4 @@
 import time
-import pickle
 import os.path
 import logging
 
@@ -17,10 +16,6 @@ def runtime_log_name():
 def runs_log_name():
     """"""
     return _log_name('runs')
-
-def exchange_log_name():
-    """"""
-    return _log_name('exchange')
 
 def start_runtime_logger():
     logger = logging.getLogger("checkmate")
@@ -61,32 +56,4 @@ class RunsFormatter(logging.Formatter):
         return super().format(record)
 
 
-class Logger(object):
-    """"""
-    def __init__(self):
-        """"""
-        start_runtime_logger()
-
-    def start_exchange_logger(self):
-        """"""
-        _ex_filename = exchange_log_name()
-        self.wf = open(_ex_filename, 'wb')
-
-    def log_exchange(self, exchange):
-        """"""
-        assert self._isexchangelogstarted()
-        if exchange is not None:
-            pickle.dump(exchange, self.wf)
-        
-    def _isexchangelogstarted(self):
-        try:
-            return self.wf.writable()
-        except:
-            return False
-
-    def stop_exchange_logger(self):
-        if self._isexchangelogstarted():
-            self.wf.flush()
-            self.wf.close()
-
-global_logger = Logger()
+start_runtime_logger()
