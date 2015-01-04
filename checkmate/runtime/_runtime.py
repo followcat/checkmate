@@ -109,6 +109,7 @@ class Runtime(object):
         for name in component_list:
             _component = self.runtime_components[name]
             _component.start()
+        self.runs_log.info(['State', self.application.visual_dump_states()])
 
     def stop_test(self):
         # Stop stubs last
@@ -146,17 +147,16 @@ class Runtime(object):
         return proc
 
     def execute(self, run, result=None, transform=True):
-        self.runs_log.info(["State", self.application.visual_dump_states()])
-        self.runs_log.info(["Run", run.root.name])
-
         procedure = self.build_procedure(run)
         if transform is True and not self.transform_to_procedure_initial(procedure):
             return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
         for _c in self.runtime_components.values():
             _c.reset()
-        procedure(self, result)
-
-        self.runs_log.info(["State", self.application.visual_dump_states()])
+        try:
+            procedure(self, result)
+            self.runs_log.info(['Run', run.root.name])
+        except ValueError:
+            self.runs_log.info(['Exception', self.application.visual_dump_states()])
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):

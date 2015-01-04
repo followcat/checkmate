@@ -56,6 +56,8 @@ class RunsFormatter(logging.Formatter):
             record.msg = "---\nRun: %s" % record.msg[1]
         elif record.msg[0] == 'State':
             record.msg = "---\nApplication State:%s" % checkmate._visual.visual_states(record.msg[1], level=1)
+        elif record.msg[0] == 'Exception':
+            record.msg = "---\nException Application State:%s" % checkmate._visual.visual_states(record.msg[1], level=1)
         return super().format(record)
 
 
