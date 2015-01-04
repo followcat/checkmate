@@ -165,9 +165,7 @@ class Runtime(object):
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
                 return False
-            self.runs_log.info("Use transform_to_procedure_initial:")
             for run in run_list:
                 proc = self.build_procedure(run, self.application)
-                self.runs_log.info("  - %s" % run.root.name)
                 proc(self)
         return True
