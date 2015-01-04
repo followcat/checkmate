@@ -3,6 +3,8 @@ import pickle
 import os.path
 import logging
 
+import checkmate._visual
+
 
 def _log_name(output='out'):
     """"""
@@ -43,9 +45,17 @@ def start_runtime_logger():
 
     rfhandler = logging.FileHandler(runs_log_name())
     rfhandler.setLevel(logging.INFO)
-    rformatter = logging.Formatter("%(message)s")
+    rformatter = RunsFormatter("%(message)s")
     rfhandler.setFormatter(rformatter)
     rlogger.addHandler(rfhandler)
+
+
+class RunsFormatter(logging.Formatter):
+    def format(self, record):
+        if isinstance(record.msg, dict):
+            record.msg = "\nApplication State:%s" % checkmate._visual.visual_states(record.msg, level=1)
+        return super().format(record)
+
 
 class Logger(object):
     """"""
