@@ -52,8 +52,10 @@ def start_runtime_logger():
 
 class RunsFormatter(logging.Formatter):
     def format(self, record):
-        if isinstance(record.msg, dict):
-            record.msg = "\nApplication State:%s" % checkmate._visual.visual_states(record.msg, level=1)
+        if record.msg[0] == 'Run':
+            record.msg = "---\nRun: %s" % record.msg[1]
+        elif record.msg[0] == 'State':
+            record.msg = "---\nApplication State:%s" % checkmate._visual.visual_states(record.msg[1], level=1)
         return super().format(record)
 
 

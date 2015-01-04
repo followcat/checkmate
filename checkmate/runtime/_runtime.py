@@ -146,9 +146,8 @@ class Runtime(object):
         return proc
 
     def execute(self, run, result=None, transform=True):
-        self.runs_log.info("\n---\nTitle: ExecuteRun")
-        self.runs_log.info(self.application.visual_dump_states())
-        self.runs_log.info("Run: %s" % run.root.name)
+        self.runs_log.info(["State", self.application.visual_dump_states()])
+        self.runs_log.info(["Run", run.root.name])
 
         procedure = self.build_procedure(run)
         if transform is True and not self.transform_to_procedure_initial(procedure):
@@ -157,7 +156,7 @@ class Runtime(object):
             _c.reset()
         procedure(self, result)
 
-        self.runs_log.info(self.application.visual_dump_states())
+        self.runs_log.info(["State", self.application.visual_dump_states()])
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):
