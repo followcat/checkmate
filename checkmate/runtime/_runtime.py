@@ -58,13 +58,6 @@ class Runtime(object):
         else:
             args_to_log.append('--sut=' + ','.join(sut))
 
-        self.runs_log.info("---\nPart: Initial information")
-        self.runs_log.info("Application: %s" % (type(self.application)))
-        self.runs_log.info("SUT: %s" % (sut))
-        self.runs_log.info("Find %s runs:" % (len(self.application.run_collection)))
-        for _r in self.application.run_collection:
-            self.runs_log.info("################################\n  - %s%s" % (_r.root.name, checkmate._visual.visual_run(_r, level=1, command="#")))
-
         checkmate.logger.global_logger.start_exchange_logger()
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s" % args_to_log)
         self.application.sut(sut)
