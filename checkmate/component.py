@@ -101,6 +101,7 @@ class Component(object):
             _tr.owner = self.name
         self.pending_incoming = []
         self.pending_outgoing = []
+        self.default_state_value = True
         self.expected_return_code = None
 
     def get_transitions_by_input(self, exchange):
@@ -155,6 +156,7 @@ class Component(object):
         for interface, state in self.state_machine.states:
             self.states.append(state.storage[0].factory(default=default_state_value))
         self.service_registry.register(self, self.service_interfaces)
+        self.default_state_value = default_state_value
 
     def reset(self):
         self.pending_incoming = []
