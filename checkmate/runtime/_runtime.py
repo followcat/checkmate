@@ -38,14 +38,14 @@ class Runtime(object):
 
         if self.threaded:
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.IStub)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.IStub)
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.ISut)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.ISut)
         else:
             self._registry.registerAdapter(checkmate.runtime.component.Stub,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.IStub)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.IStub)
             self._registry.registerAdapter(checkmate.runtime.component.Sut,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.ISut)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.ISut)
 
     def setup_environment(self, sut):
         args_to_log = sys.argv[:]
@@ -61,12 +61,12 @@ class Runtime(object):
         self.application.sut(sut)
 
         for component in self.application.stubs:
-            stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.IStub)
+            stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.interfaces.IStub)
             self.runtime_components[component] = stub
             stub.setup(self)
 
         for component in self.application.system_under_test:
-            sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.component.ISut)
+            sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.interfaces.ISut)
             self.runtime_components[component] = sut
             sut.setup(self)
 
@@ -81,6 +81,7 @@ class Runtime(object):
         """
             >>> import checkmate.component
             >>> import checkmate.runtime._runtime
+            >>> import checkmate.runtime.interfaces
             >>> import checkmate.runtime.communication
             >>> import sample_app.application
             >>> ac = sample_app.application.TestData
@@ -89,13 +90,13 @@ class Runtime(object):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> c2_stub = r.runtime_components['C2']
-            >>> checkmate.runtime.component.IStub.providedBy(c2_stub)
+            >>> checkmate.runtime.interfaces.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
             >>> simulated_transition = a.components['C2'].state_machine.transitions[0]
             >>> o = c2_stub.simulate(simulated_transition) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
-            >>> checkmate.runtime.component.IStub.providedBy(c1)
+            >>> checkmate.runtime.interfaces.IStub.providedBy(c1)
             False
             >>> c1.process(o) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

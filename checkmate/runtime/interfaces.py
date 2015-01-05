@@ -1,7 +1,17 @@
 import zope.interface
 
-#from checkmate.exchange import IExchange
-#from checkmate.runtime.component import IStub
+
+class ISut(zope.interface.Interface):
+    """"""
+
+
+class IStub(ISut):
+    """"""
+    def simulate(self, transition):
+        """"""
+
+    def validate(self, transition):
+        """"""
 
 
 class IRuntime(zope.interface.Interface):
