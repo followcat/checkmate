@@ -2,6 +2,7 @@ import zope.interface
 
 import checkmate._module
 import checkmate.transition
+import checkmate.interfaces
 import checkmate._exec_tools
 
 
@@ -105,13 +106,7 @@ class TransitionStorage(object):
         return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
 
 
-class IStorage(zope.interface.Interface):
-    """"""
-    def factory(self, args=[], kwargs={}):
-        """"""
-
-
-@zope.interface.implementer(IStorage)
+@zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
     def __init__(self, interface, code, description, value=None, arguments=None):
