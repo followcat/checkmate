@@ -5,10 +5,10 @@ import zope.interface.interface
 import zope.component.interfaces
 import zope.component.globalregistry
 
-import checkmate.exchange
+import checkmate.interfaces
 
 
-@zope.component.adapter(checkmate.exchange.IExchange)
+@zope.component.adapter(checkmate.interfaces.IExchange)
 @zope.interface.implementer(zope.component.interfaces.IFactory)
 class ServiceFactory(object):
     """"""
@@ -35,7 +35,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
     """
     def __init__(self):
         super(ServiceRegistry, self).__init__()
-        self.registerAdapter(ServiceFactory, (checkmate.exchange.IExchange,), zope.component.interfaces.IFactory)
+        self.registerAdapter(ServiceFactory, (checkmate.interfaces.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
 
     def register(self, component, services):
