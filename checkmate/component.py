@@ -3,6 +3,7 @@ import os
 import zope.interface
 
 import checkmate._module
+import checkmate.interfaces
 import checkmate._validation
 import checkmate.state_machine
 import checkmate.parser.yaml_visitor
@@ -77,10 +78,7 @@ class ComponentMeta(type):
             raise e
 
 
-class IComponent(zope.interface.Interface):
-    """"""
-
-@zope.interface.implementer(IComponent)
+@zope.interface.implementer(checkmate.interfaces.IComponent)
 class Component(object):
     def __init__(self, name, service_registry):
         """

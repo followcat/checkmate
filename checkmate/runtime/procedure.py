@@ -1,7 +1,5 @@
 import logging
 
-import zope.interface
-
 import nose.plugins.skip
 
 import checkmate.sandbox
@@ -66,7 +64,6 @@ def _compatible_skip_test(procedure, message):
     raise nose.plugins.skip.SkipTest(message)
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
     def __init__(self, test=None, is_setup=False):
         self.test = test
@@ -130,6 +127,7 @@ class Procedure(object):
             return _compatible_skip_test(self, "Procedure components do not match SUT")
         if self.transitions.root.owner in self.runtime.application.system_under_test:
             return _compatible_skip_test(self, "SUT do NOT simulate")
+        self.name = self.transitions.root.name
         self._run_from_startpoint()
 
     def _run_from_startpoint(self):
@@ -163,11 +161,7 @@ class Procedure(object):
 
     def shortDescription(self):
         """
-        Return the procedure name if exist, else return the first transition'name.
         This is required by the nose framework.
         """
-        if hasattr(self, 'name'):
-            return self.name
-        else:
-            return str(self) + self.transitions.root.name
+        return self.name
 

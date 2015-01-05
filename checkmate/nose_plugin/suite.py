@@ -6,7 +6,7 @@ import nose.case
 import nose.suite
 import nose.proxy
 
-import checkmate.runtime.interfaces
+import checkmate.interfaces
 
 
 class TestCase(nose.case.Test):
@@ -20,7 +20,7 @@ class TestCase(nose.case.Test):
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
-        if checkmate.runtime.interfaces.IRun.providedBy(test):
+        if checkmate.interfaces.IRun.providedBy(test):
             config_as_dict = self.config.todict()
             config_as_dict['runtime'].execute(test, result)
         else:
@@ -51,7 +51,6 @@ class ContextSuite(nose.suite.ContextSuite):
         for test in self._get_tests():
             if isinstance(test, TestCase) or isinstance(test, unittest.TestSuite):
                 yield test
-#            elif checkmate.runtime.interfaces.IProcedure.providedBy(test):
             else:
                 yield TestCase(test,
                            config=self.config,

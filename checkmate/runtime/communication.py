@@ -3,14 +3,11 @@ import pickle
 import threading
 
 import zmq
-import zope.interface
 
 import checkmate.runtime._threading
-import checkmate.runtime.interfaces
 import checkmate.runtime._zmq_wrapper
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IProtocol)
 class Connector(object):
     """"""
     def __init__(self, component=None, communication=None, is_server=False, is_reading=False, is_broadcast=False):
@@ -40,7 +37,6 @@ class Connector(object):
         """"""
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.ICommunication)
 class Communication(object):
     """"""
     def __init__(self, component=None):

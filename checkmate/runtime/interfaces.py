@@ -1,57 +1,15 @@
 import zope.interface
 
-#from checkmate.exchange import IExchange
-#from checkmate.runtime.component import IStub
 
-
-class IRuntime(zope.interface.Interface):
-    """"""
-    def setup_environment(self, sut):
-        """"""
-
-    def start_test(self):
-        """"""
-
-    def stop_test(self):
-        """"""
-
-
-class IProtocol(zope.interface.Interface):
+class ISut(zope.interface.Interface):
     """"""
 
 
-class ICommunication(zope.interface.Interface):
+class IStub(ISut):
     """"""
-    def initialize(self):
+    def simulate(self, transition):
         """"""
 
-    def close(self):
+    def validate(self, transition):
         """"""
-
-
-class IConnection(zope.interface.Interface):
-    """"""
-    def start(self):
-        """"""
-
-    def stop(self):
-        """"""
-
-    def send(self, exchange):
-        """"""
-
-    def read(self):
-        """"""
-
-
-class IProcedure(zope.interface.Interface):
-    """"""
-    exchange_list = zope.interface.Attribute("List of exchanges")
-
-    def shortDescription(self):
-        """"""
-
-
-class IRun(zope.interface.Interface):
-    """"""
 

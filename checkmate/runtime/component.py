@@ -8,25 +8,13 @@ import zope.component
 
 import checkmate.logger
 import checkmate.component
-import checkmate.application
+import checkmate.interfaces
 import checkmate.runtime._pyzmq
 import checkmate.runtime.client
 import checkmate.timeout_manager
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
-
-
-class ISut(zope.interface.Interface):
-    """"""
-
-
-class IStub(ISut):
-    """"""
-    def simulate(self, transition):
-        """"""
-
-    def validate(self, transition):
-        """"""
+import checkmate.runtime.interfaces
 
 
 class Component(object):
@@ -74,14 +62,14 @@ class Component(object):
         return self.context.validate(transition)
 
 
-@zope.interface.implementer(ISut)
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.interface.implementer(checkmate.runtime.interfaces.ISut)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 class Sut(Component):
     """"""
 
 
-@zope.interface.implementer(IStub)
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.interface.implementer(checkmate.runtime.interfaces.IStub)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 class Stub(Component):
     """"""
 
@@ -150,8 +138,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             return super().validate(transition)
 
 
-@zope.component.adapter(checkmate.component.IComponent)
-@zope.interface.implementer(ISut)
+@zope.component.adapter(checkmate.interfaces.IComponent)
+@zope.interface.implementer(checkmate.runtime.interfaces.ISut)
 class ThreadedSut(ThreadedComponent, Sut):
     """"""
     using_internal_client = True
@@ -186,8 +174,8 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).stop()
 
 
-@zope.component.adapter(checkmate.component.IComponent)
-@zope.interface.implementer(IStub)
+@zope.component.adapter(checkmate.interfaces.IComponent)
+@zope.interface.implementer(checkmate.runtime.interfaces.IStub)
 class ThreadedStub(ThreadedComponent, Stub):
     """"""
     using_internal_client = True

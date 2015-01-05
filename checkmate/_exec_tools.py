@@ -111,7 +111,7 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
                     ['interface_ancestor_class', 'interface_class',
                      'ancestor_class', 'classname', 'values'])
     if partition_type == 'exchanges':
-        element = class_element('checkmate.exchange.IExchange', interface_class,
+        element = class_element('checkmate.interfaces.IExchange', interface_class,
                                 'checkmate.exchange.Exchange', classname, values)
         run_code = get_define_str(element)
     elif partition_type == 'data_structure':
@@ -123,7 +123,7 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
         for _v in values:
             if not is_method(_v):
                 valid_values_list.append(_v)
-        element = class_element('checkmate.state.IState', interface_class,
+        element = class_element('checkmate.interfaces.IState', interface_class,
                                 'checkmate.state.State', classname, valid_values_list)
         run_code = get_define_str(element)
 
