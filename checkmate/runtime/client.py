@@ -1,15 +1,12 @@
 import logging
 
 import zmq
-import zope.interface
 
 import checkmate.logger
 import checkmate.runtime._threading
-import checkmate.runtime.interfaces
 import checkmate.runtime._zmq_wrapper
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class Client(object):
     """"""
     def __init__(self, component):
@@ -36,7 +33,6 @@ class Client(object):
         return False
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IConnection)
 class ThreadedClient(checkmate.runtime._threading.Thread):
     """
         >>> import time

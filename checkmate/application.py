@@ -1,5 +1,3 @@
-import zope.interface
-
 import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
@@ -95,10 +93,6 @@ class ApplicationMeta(type):
         return result
 
 
-class IApplication(zope.interface.Interface):
-    """"""
-
-@zope.interface.implementer(IApplication)
 class Application(object):
     component_classes = {}
     communication_list = ()

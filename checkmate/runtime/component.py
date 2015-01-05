@@ -9,12 +9,12 @@ import zope.component
 import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
-import checkmate.application
 import checkmate.runtime._pyzmq
 import checkmate.runtime.client
 import checkmate.timeout_manager
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
+import checkmate.runtime.interfaces
 
 
 class Component(object):

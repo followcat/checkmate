@@ -1,7 +1,5 @@
 import logging
 
-import zope.interface
-
 import nose.plugins.skip
 
 import checkmate.sandbox
@@ -66,7 +64,6 @@ def _compatible_skip_test(procedure, message):
     raise nose.plugins.skip.SkipTest(message)
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IProcedure)
 class Procedure(object):
     def __init__(self, test=None, is_setup=False):
         self.test = test

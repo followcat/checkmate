@@ -2,14 +2,9 @@ import sys
 import logging
 import threading
 
-import zope.interface
-import zope.component
-import zope.component.interfaces
-
 import checkmate.logger
 import checkmate.interfaces
 import checkmate.pathfinder
-import checkmate.application
 import checkmate.timeout_manager
 import checkmate.runtime.registry
 import checkmate.runtime.component
@@ -17,8 +12,6 @@ import checkmate.runtime.procedure
 import checkmate.runtime.interfaces
 
 
-@zope.interface.implementer(checkmate.runtime.interfaces.IRuntime)
-@zope.component.adapter((checkmate.application.IApplication, checkmate.runtime.interfaces.IProtocol))
 class Runtime(object):
     """"""
     def __init__(self, application, communication, threaded=False):
