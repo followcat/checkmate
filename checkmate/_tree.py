@@ -1,3 +1,5 @@
+import collections
+
 import zope.interface
 
 import checkmate.interfaces
@@ -94,3 +96,37 @@ class Tree(object):
         return_list = re_walk(self)
         return return_list
 
+    def breadthWalk(self):
+        """
+        >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
+        >>> [tree.root for tree in t.breadthWalk()]
+        ['archer', 'captain', 'hero', 'marshal', 'champion']
+        """
+        deque = collections.deque()
+        deque.append(self)
+        results = []
+        while(deque):
+            tree = deque.popleft()
+            results.append(tree)
+            for _n in tree.nodes:
+                deque.append(_n)
+        return results
+
+    def show(self, level=0):
+        """
+            >>> import checkmate._tree
+            >>> t = checkmate._tree.Tree('archer', [checkmate._tree.Tree('captain', [checkmate._tree.Tree('marshal', [])]), checkmate._tree.Tree('hero', [checkmate._tree.Tree('champion', [])])])
+            >>> t.show()
+            '|archer\\n|     |___ captain\\n|          |___ marshal\\n|     |___ hero\\n|          |___ champion\\n'
+            >>> print(t.show())
+            |archer
+            |     |___ captain
+            |          |___ marshal
+            |     |___ hero
+            |          |___ champion
+            <BLANKLINE>
+        """
+        string = "{0}{1}{2}\n".format('|' + ' ' * 5 * level, '|___ ' * bool(level), self.root)
+        for element in self.nodes:
+            string += element.show(level + 1)
+        return string

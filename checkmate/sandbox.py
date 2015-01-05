@@ -170,7 +170,7 @@ class CollectionSandbox(Sandbox):
                     new_sandbox = Sandbox(sandbox.application)
                     _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _t)
-                    for split, tmp_run in self.process(new_sandbox, _outgoings, checkmate.runs.Run(_t, [])):
+                    for split, tmp_run in self.process(new_sandbox, _outgoings, checkmate.runs.Run(_t, [], states=_c.states)):
                         if len(_transitions) > 1 or split:
                             split = True
                             new_run = tree.copy()

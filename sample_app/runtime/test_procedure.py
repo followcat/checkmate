@@ -29,6 +29,9 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
         box(c2.state_machine.transitions[0])
         super(TestProcedureRun1Threaded, self).__init__(box.transitions.root, box.transitions.nodes)
 
+    def __call__(self):
+        pass
+
 
 class TestProcedureRun2Threaded(checkmate.runs.Run):
     """"""
@@ -60,6 +63,9 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         new_box(transition_rl_index[0])
         super(TestProcedureRun2Threaded, self).__init__(new_box.transitions.root, new_box.transitions.nodes)
+
+    def __call__(self):
+        pass
 
 
 def build_run(sandbox):

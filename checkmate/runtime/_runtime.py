@@ -16,6 +16,7 @@ class Runtime(object):
     """"""
     def __init__(self, application, communication, threaded=False):
         """"""
+        self.runs_log = logging.getLogger('runs.runtime')
         self.threaded = threaded
         self.runtime_components = {}
         self.communication_list = {}
@@ -48,8 +49,7 @@ class Runtime(object):
                 break
         else:
             args_to_log.append('--sut=' + ','.join(sut))
-            
-        checkmate.logger.global_logger.start_exchange_logger()
+
         logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s" % args_to_log)
         self.application.sut(sut)
 
@@ -102,6 +102,7 @@ class Runtime(object):
         for name in component_list:
             _component = self.runtime_components[name]
             _component.start()
+        self.runs_log.info(['State', self.application.visual_dump_states()])
 
     def stop_test(self):
         # Stop stubs last
@@ -118,8 +119,6 @@ class Runtime(object):
         condition = threading.Condition()
         with condition:
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
-
-        checkmate.logger.global_logger.stop_exchange_logger()
 
     def build_procedure(self, run, application=None):
         if application is None:
@@ -144,7 +143,11 @@ class Runtime(object):
             return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
         for _c in self.runtime_components.values():
             _c.reset()
-        procedure(self, result)
+        try:
+            procedure(self, result)
+            self.runs_log.info(['Run', run.root.name])
+        except ValueError:
+            self.runs_log.info(['Exception', self.application.visual_dump_states()])
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):

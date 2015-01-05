@@ -217,3 +217,12 @@ class Application(object):
                 return False
         return True
 
+    def visual_dump_states(self):
+        state_dict = {}
+        for _c, _v in self.components.items():
+            for _s in _v.states:
+                if _c not in state_dict:
+                    state_dict[_c] = {}
+                cls_name = type(_s).__name__
+                state_dict[_c][cls_name] = _s._dump()
+        return state_dict
