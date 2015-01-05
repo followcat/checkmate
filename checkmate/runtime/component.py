@@ -8,6 +8,7 @@ import zope.component
 
 import checkmate.logger
 import checkmate.component
+import checkmate.interfaces
 import checkmate.application
 import checkmate.runtime._pyzmq
 import checkmate.runtime.client
@@ -77,13 +78,13 @@ class Component(object):
 
 
 @zope.interface.implementer(ISut)
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 class Sut(Component):
     """"""
 
 
 @zope.interface.implementer(IStub)
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 class Stub(Component):
     """"""
 
@@ -152,7 +153,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             return super().validate(transition)
 
 
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 @zope.interface.implementer(ISut)
 class ThreadedSut(ThreadedComponent, Sut):
     """"""
@@ -188,7 +189,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).stop()
 
 
-@zope.component.adapter(checkmate.component.IComponent)
+@zope.component.adapter(checkmate.interfaces.IComponent)
 @zope.interface.implementer(IStub)
 class ThreadedStub(ThreadedComponent, Stub):
     """"""

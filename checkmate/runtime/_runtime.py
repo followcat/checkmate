@@ -7,7 +7,7 @@ import zope.component
 import zope.component.interfaces
 
 import checkmate.logger
-import checkmate.component
+import checkmate.interfaces
 import checkmate.pathfinder
 import checkmate.application
 import checkmate.timeout_manager
@@ -38,14 +38,14 @@ class Runtime(object):
 
         if self.threaded:
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
-                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.IStub)
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
-                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.ISut)
         else:
             self._registry.registerAdapter(checkmate.runtime.component.Stub,
-                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.IStub)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.IStub)
             self._registry.registerAdapter(checkmate.runtime.component.Sut,
-                                                                       (checkmate.component.IComponent,), checkmate.runtime.component.ISut)
+                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.component.ISut)
 
     def setup_environment(self, sut):
         args_to_log = sys.argv[:]
