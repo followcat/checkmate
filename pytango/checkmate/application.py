@@ -7,7 +7,7 @@ import pytango.checkmate.runtime.communication
 
 class Application(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
     feature_definition_path = 'sample_app/itp'
-    data_structure_definition_file = 'pytango/checkmate/data_structure.yaml'
+    data_structure_definition_file = 'pytango/checkmate/data_structures'
     exchange_definition_file = 'pytango/checkmate/exchanges'
     test_data_definition_file = 'pytango/checkmate/test_data.yaml'
     c2_env = {'PATH': os.environ['PY2_VIRTUAL_ENV'] + '/bin:' + os.environ['PATH'],

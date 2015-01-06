@@ -28,7 +28,7 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
 
     """
     feature_definition_path = 'sample_app/itp'
-    data_structure_definition_file = 'pytango/checkmate/data_structure.yaml'
+    data_structure_definition_file = 'pytango/checkmate/data_structures'
     exchange_definition_file = 'pytango/checkmate/exchanges'
     test_data_definition_file = 'pytango/checkmate/test_data.yaml'
 

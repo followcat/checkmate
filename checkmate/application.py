@@ -55,12 +55,10 @@ class ApplicationMeta(type):
             return definition_data
         define_data = get_definition_data(namespace['exchange_definition_file'])
         if 'data_structure_definition_file' in namespace:
-            with open(namespace['data_structure_definition_file'], 'r') as _file:
-                define_data = _file.read() + define_data
+            define_data = get_definition_data(namespace['data_structure_definition_file']) + define_data
         data_value = {}
         try:
-            with open(namespace['test_data_definition_file'], 'r') as _file:
-                value_data = _file.read()
+            value_data = get_definition_data(namespace['test_data_definition_file'])
             value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
                 data_value.update({code: (data_structure_module, structure)})
