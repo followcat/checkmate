@@ -96,7 +96,7 @@ class Transition(object):
         match_list = self.matching_list(self.initial, state_list)
         return len(match_list) == len(self.initial)
 
-    @checkmate.report_issue('checkmate/issues/generic_incoming_AP_R2.rst', failed=1)
+    @checkmate.fix_issue('checkmate/issues/generic_incoming_AP_R2.rst')
     def generic_incoming(self, states, *args, default=True):
         """ Generate a generic incoming for the provided state
 

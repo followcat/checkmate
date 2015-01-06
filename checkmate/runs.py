@@ -104,7 +104,7 @@ class RunCollection(list):
                     origin_transitions.append(_transition)
         return origin_transitions
 
-    @checkmate.report_issue('checkmate/issues/match_R2_in_runs.rst', failed=1)
+    @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
     def get_runs_from_application(self, application):
         self.clear()
