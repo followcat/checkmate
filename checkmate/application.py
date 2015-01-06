@@ -42,6 +42,9 @@ class ApplicationMeta(type):
             namespace['exchange_definition_file'] = namespace['__module__']
         with open(namespace['exchange_definition_file'], 'r') as _file:
             define_data = _file.read()
+        if 'data_structure_definition_file' in namespace:
+            with open(namespace['data_structure_definition_file'], 'r') as _file:
+                define_data = _file.read() + define_data
         data_value = {}
         try:
             with open(namespace['test_data_definition_file'], 'r') as _file:
