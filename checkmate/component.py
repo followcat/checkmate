@@ -229,7 +229,7 @@ class Component(object):
             _transition = transition
         output = []
         self.validation_list.record(_transition, exchange)
-        for _outgoing in _transition.process(self.states, exchange):
+        for _outgoing in _transition.process(self.states, exchange, default=self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
@@ -270,7 +270,7 @@ class Component(object):
         """
         output = []
         _incoming = _transition.generic_incoming(self.states)
-        for _outgoing in _transition.process(self.states, _incoming):
+        for _outgoing in _transition.process(self.states, _incoming, default=self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing, self.name):
                 if len(_incoming) != 0 and isinstance(_e, _incoming[0].return_type):
                     continue

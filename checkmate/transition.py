@@ -105,13 +105,13 @@ class Transition(object):
         incoming_exchanges = []
         for incoming in self.incoming:
             arguments = incoming.resolve(states)
-            incoming_exchanges.append(incoming.factory(**arguments))
+            incoming_exchanges.append(incoming.factory(*incoming.values, default=False, **arguments))
         return incoming_exchanges
             
 
     @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
     @checkmate.fix_issue("checkmate/issues/process_AP_R2.rst")
-    def process(self, states, _incoming):
+    def process(self, states, _incoming, *args, default=True):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
@@ -129,6 +129,11 @@ class Transition(object):
         if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming):
             return _outgoing_list
         for _state in states:
+            if not default:
+                for _initial in self.initial:
+                    _interface = _initial.interface
+                    if _initial == _interface:
+                        _state = _initial.factory()
             for _interface in zope.interface.providedBy(_state):
                 for _final in self.final:
                     if _final == None:
@@ -136,8 +141,8 @@ class Transition(object):
                     _final_interface = _final.interface
                     if _final_interface == _interface:
                         resolved_arguments = _final.resolve(states, _incoming)
-                        _final.factory(instance=_state, **resolved_arguments)
+                        _final.factory(instance=_state, default=default, **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = outgoing_exchange.resolve(states, _incoming)
-            _outgoing_list.append(outgoing_exchange.factory(**resolved_arguments))
+            _outgoing_list.append(outgoing_exchange.factory(*outgoing_exchange.values, default=default, **resolved_arguments))
         return _outgoing_list

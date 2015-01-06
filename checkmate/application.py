@@ -120,6 +120,7 @@ class Application(object):
         for components, _class in self.component_classes.items():
             for _c in components:
                 self.components[_c] = _class(_c, self.service_registry)
+        self.default_state_value = True
 
     def __getattr__(self, name):
         """
@@ -149,6 +150,7 @@ class Application(object):
             for component in list(self.components.values()):
                 component.start(default_state_value=default_state_value)
             self._started = True
+        self.default_state_value = default_state_value
 
     def sut(self, system_under_test):
         """
