@@ -272,8 +272,6 @@ class InternalStorage(object):
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
                 resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
             
-            if len(resolved_arguments) == 0:
-                resolved_arguments = self.resolve(target_copy)
             if _target == self.factory(instance=_initial[0], **resolved_arguments):
                 return _target
         return None
