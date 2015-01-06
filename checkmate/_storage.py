@@ -267,11 +267,13 @@ class InternalStorage(object):
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = [None]
-            resolved_arguments = {}
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
                 resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
+            else:
+                resolved_arguments = self.resolve()
             
-            if _target == self.factory(instance=_initial[0], **resolved_arguments):
+            if _target == self.factory(instance=_initial[0], *self.values,
+                              default=False, **resolved_arguments):
                 return _target
         return None
