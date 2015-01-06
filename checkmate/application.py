@@ -1,3 +1,5 @@
+import os
+
 import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
@@ -40,8 +42,18 @@ class ApplicationMeta(type):
         if 'exchange_definition_file' not in namespace:
             #will also be used to look for components' stae_machine yaml and itp.yaml
             namespace['exchange_definition_file'] = namespace['__module__']
-        with open(namespace['exchange_definition_file'], 'r') as _file:
-            define_data = _file.read()
+        def get_definition_data(definition_file):
+            if os.path.isfile(definition_file):
+                with open(definition_file, 'r') as _file:
+                    definition_data = _file.read()
+            elif os.path.isdir(definition_file):
+                definition_data = ''
+                for filename in os.listdir(definition_file):
+                    if filename.endswith(".yaml"):
+                        with open(os.path.join(definition_file, filename), 'r') as _file:
+                            definition_data += _file.read() 
+            return definition_data
+        define_data = get_definition_data(namespace['exchange_definition_file'])
         if 'data_structure_definition_file' in namespace:
             with open(namespace['data_structure_definition_file'], 'r') as _file:
                 define_data = _file.read() + define_data
