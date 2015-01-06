@@ -1,4 +1,4 @@
-import checkmate._tree
+import checkmate.runs
 import checkmate.component
 
 
@@ -107,7 +107,7 @@ class Sandbox(object):
         if len(outgoing) == 0:
             return False
         try:
-            self.transitions = self.process(outgoing, checkmate._tree.Tree(self.transitions, []))
+            self.transitions = self.process(outgoing, checkmate.runs.Run(self.transitions, []))
         except checkmate.component.NoTransitionFound:
             self.transitions = None
         return self.is_run
@@ -120,7 +120,7 @@ class Sandbox(object):
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
             >>> _t = box.application.components['C2'].get_transition_by_output([ex])
-            >>> transitions = box.process([ex], checkmate._tree.Tree(_t, []))
+            >>> transitions = box.process([ex], checkmate.runs.Run(_t, []))
             >>> box.application.components['C3'].states[0].value
             'True'
         """
@@ -134,8 +134,8 @@ class Sandbox(object):
                 _outgoings = _c.process([_exchange])
                 if _transition is None:
                     continue
-                tmp_tree = self.process(_outgoings, checkmate._tree.Tree(_transition, []))
-                tree.add_node(tmp_tree)
+                tmp_run = self.process(_outgoings, checkmate.runs.Run(_transition, []))
+                tree.add_node(tmp_run)
         return tree
 
     def fill_procedure(self, procedure):
@@ -160,7 +160,7 @@ class Sandbox(object):
 
 class CollectionSandbox(Sandbox):
     def run_process(self, outgoing, transition):
-        return self.process(self, outgoing, checkmate._tree.Tree(self.transitions, []))
+        return self.process(self, outgoing, checkmate.runs.Run(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
         split = False
@@ -172,13 +172,13 @@ class CollectionSandbox(Sandbox):
                     new_sandbox = Sandbox(sandbox.application)
                     _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _t)
-                    for split, tmp_tree in self.process(new_sandbox, _outgoings, checkmate._tree.Tree(_t, [])):
+                    for split, tmp_run in self.process(new_sandbox, _outgoings, checkmate.runs.Run(_t, [], states=_c.states)):
                         if len(_transitions) > 1 or split:
                             split = True
-                            new_tree = tree.copy()
-                            new_tree.add_node(tmp_tree)
-                            yield (split, new_tree)
+                            new_run = tree.copy()
+                            new_run.add_node(tmp_run)
+                            yield (split, new_run)
                         else:
-                            tree.add_node(tmp_tree)
+                            tree.add_node(tmp_run)
         if split is False:
             yield (split, tree)

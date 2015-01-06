@@ -1,5 +1,3 @@
-import zope.interface
-
 import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
@@ -95,10 +93,6 @@ class ApplicationMeta(type):
         return result
 
 
-class IApplication(zope.interface.Interface):
-    """"""
-
-@zope.interface.implementer(IApplication)
 class Application(object):
     component_classes = {}
     communication_list = ()
@@ -126,7 +120,7 @@ class Application(object):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate._tree.Tree object at ...
+        [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
@@ -223,3 +217,12 @@ class Application(object):
                 return False
         return True
 
+    def visual_dump_states(self):
+        state_dict = {}
+        for _c, _v in self.components.items():
+            for _s in _v.states:
+                if _c not in state_dict:
+                    state_dict[_c] = {}
+                cls_name = type(_s).__name__
+                state_dict[_c][cls_name] = _s._dump()
+        return state_dict

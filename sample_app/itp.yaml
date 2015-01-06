@@ -34,7 +34,7 @@ data:
           - Acknowledge:        Acknowledge1
 
   - Procedures:
-      - name: 'Toggle C1 state back (RL)'
+      - name: 'Toggle C1 state back PP'
         initial: 
           - State:              State2
           - Acknowledge:        Acknowledge1

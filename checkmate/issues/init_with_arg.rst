@@ -9,16 +9,16 @@ It is impossible to specify the final state by providing arguments (like __init_
     >>> r.start_test()
     >>> c1 = r.runtime_components['C1']
     >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-    >>> procedures = []
-    >>> for p in gen:
-    ...     p[0].application = r.application
-    ...     procedures.append(p[0])
+    >>> runs = []
+    >>> for run in gen:
+    ...     run[0].application = r.application
+    ...     runs.append(run[0])
     ... 
-    >>> proc = procedures[1]
+    >>> proc = r.build_procedure(runs[1])
     >>> r.application.compare_states(proc.initial)
     True
     >>> saved_initial = checkmate.sandbox.Sandbox(r.application)
-    >>> proc(r)
+    >>> r.execute(runs[1])
     >>> proc.final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
     >>> ap = sample_app.exchanges.Action('AP')

@@ -1,10 +1,8 @@
-import copy
-import collections
-
 import zope.interface
 
 import checkmate._module
 import checkmate.transition
+import checkmate.interfaces
 import checkmate._exec_tools
 
 
@@ -108,13 +106,7 @@ class TransitionStorage(object):
         return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
 
 
-class IStorage(zope.interface.Interface):
-    """"""
-    def factory(self, args=[], kwargs={}):
-        """"""
-
-
-@zope.interface.implementer(IStorage)
+@zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
     def __init__(self, interface, code, description, value=None, arguments=None):
@@ -126,6 +118,7 @@ class InternalStorage(object):
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
+        self.origin_code = code
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
@@ -198,19 +191,19 @@ class InternalStorage(object):
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve(states)
-            OrderedDict([('R', None)])
+            {'R': None}
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
             >>> inc.R.value
             ['AT2', 'HIGH']
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=1)
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
-            OrderedDict([('R', <sample_app.data_structure.ActionRequest object at ...
+            {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
             >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
@@ -224,7 +217,6 @@ class InternalStorage(object):
             ('AT2', 'HIGH')
         """
         _attributes = {}
-        _cls = checkmate._module.get_class_implementing(self.interface)
         if states is not None:
             for input in states:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
@@ -232,18 +224,19 @@ class InternalStorage(object):
             for input in exchanges:
                 _attributes.update(input.attribute_list(self.key_to_resolve))
         _attributes.update(self.resolved_arguments)
-        _kwargs = _cls._sig.bind_partial(**_attributes).arguments
-        return _kwargs
+        return _attributes
 
     def match(self, target_copy, reference=None, incoming_list=None):
         """
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
+            >>> import checkmate.runtime.communication
             >>> import sample_app.application
             >>> import sample_app.component.component_1_states
             >>> import sample_app.component.component_3_states
             >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-            >>> proc = [p[0] for p in gen][0]
+            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
+            >>> proc = r.build_procedure([run[0] for run in gen][0])
             >>> app = sample_app.application.TestData()
             >>> app.start()
             >>> saved = app.state_list()

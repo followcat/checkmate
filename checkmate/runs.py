@@ -1,90 +1,77 @@
+import zope.interface
+
 import checkmate._tree
+import checkmate._visual
 import checkmate.sandbox
 import checkmate.transition
+import checkmate.interfaces
 
 
-class TransitionTree(checkmate._tree.Tree):
-    """"""
-    def __init__(self, transition, nodes=None):
-        """
-            >>> import checkmate._storage
-            >>> import checkmate.transition
-            >>> import sample_app.application
-            >>> import sample_app.data_structure
-            >>> incoming_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'AC()', None, value='AC()')]
-            >>> outgoing_list = [checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'RE()', None, value='RE()'), checkmate._storage.InternalStorage(sample_app.data_structure.IActionRequest, 'ARE()', None, value='ARE()')]
-            >>> test_transition = checkmate.transition.Transition(incoming = incoming_list, outgoing = outgoing_list)
-            >>> tree = checkmate.runs.TransitionTree(test_transition)
-            >>> (tree.root.incoming[0].code, tree.root.outgoing[0].code, tree.root.outgoing[1].code)
-            ('AC', 'RE', 'ARE')
-            >>> tt = checkmate.runs.TransitionTree(sample_app.application.TestData().components['C1'].state_machine.transitions[0])
-            >>> tt.root #doctest: +ELLIPSIS
-            <checkmate.transition.Transition object at ...
-        """
+@zope.interface.implementer(checkmate.interfaces.IRun)
+class Run(checkmate._tree.Tree):
+    def __init__(self, transition, nodes=None, states=None):
         assert type(transition) == checkmate.transition.Transition
         if nodes is None:
             nodes = []
-        super(TransitionTree, self).__init__(transition, nodes)
+        if states is None:
+            states = []
+        super(Run, self).__init__(transition, nodes)
+        self.change_states = []
+        for f in transition.final:
+            for s in states:
+                if f.interface.providedBy(s):
+                    self.change_states.append((type(s).__name__, s._dump()))
+                    break
 
-    def merge(self, tree):
+    def visual_dump_initial(self):
         """
-            >>> import checkmate._storage
-            >>> import checkmate.transition
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> t1 = a.components['C1'].state_machine.transitions[0]
-            >>> t2 = a.components['C3'].state_machine.transitions[0]
-            >>> tree1 = checkmate.runs.TransitionTree(t1)
-            >>> tree2 = checkmate.runs.TransitionTree(t2)
-            >>> tree1.merge(tree2)
-            True
-            >>> len(tree1.nodes)
-            1
-            >>> tree1.nodes[0] == tree2
-            True
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].visual_dump_initial()
+            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
+            ('True', 'False')
         """
-        if self.match_parent(tree):
-            self.add_node(tree)
-            return True
-        merge = False
-        for node in self.nodes:
-            if node.merge(tree):
-                merge = True
-        return merge
+        state_dict = {}
+        for run in self.breadthWalk():
+            for _s in run.root.initial:
+                if run.root.owner not in state_dict:
+                    state_dict[run.root.owner] = {}
+                state = _s.factory()
+                cls_name = type(state).__name__
+                if cls_name not in state_dict:
+                    state_dict[run.root.owner][cls_name] = state._dump()
+        return state_dict
 
-    def match_parent(self, tree):
+    def visual_dump_final(self):
         """
-            >>> import checkmate._storage
-            >>> import checkmate.transition
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> t1 = a.components['C1'].state_machine.transitions[0]
-            >>> t2 = a.components['C3'].state_machine.transitions[0]
-            >>> tree1 = checkmate.runs.TransitionTree(t1)
-            >>> tree2 = checkmate.runs.TransitionTree(t2)
-            >>> tree1.match_parent(tree2)
-            True
-            >>> tree2.match_parent(tree1)
-            False
+            >>> src = checkmate.runs.RunCollection()
+            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> states = src[0].visual_dump_final()
+            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
+            ('False', 'True')
         """
-        if len(self.root.outgoing) == 0 or len(tree.root.incoming) == 0:
-            return False
-        action_code = tree.root.incoming[0].code
-        for _o in self.root.outgoing:
-            if _o.code == action_code:
-                return True
-        return False
+        state_dict = {}
+        for run in self.breadthWalk():
+            for state in run.change_states:
+                if run.root.owner not in state_dict:
+                    state_dict[run.root.owner] = {}
+                state_dict[run.root.owner][state[0]] = state[1]
+        return state_dict
 
-    def get_node_from_incoming(self, incoming):
-        if self.root.incoming and self.root.incoming[0].code == incoming.code:
-            return self
-        else:
-            for _n in self.nodes:
-                node = _n.get_node_from_incoming(incoming)
-                if node:
-                    return node
+    def visual_dump_steps(self):
+        dump_dict = {}
+        dump_dict['root'] = self.root.name
+        dump_dict['incoming'] = [i.origin_code for i in self.root.incoming]
+        dump_dict['outgoing'] = [o.origin_code for o in self.root.outgoing]
+        dump_dict['states'] = {self.root.owner: dict(self.change_states)}
+        dump_dict['nodes'] = []
+        for element in self.nodes:
+            dump_dict['nodes'].append(element.visual_dump_steps())
+        return dump_dict
 
 
 class RunCollection(list):

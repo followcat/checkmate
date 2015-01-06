@@ -6,7 +6,7 @@ import nose.case
 import nose.suite
 import nose.proxy
 
-import checkmate.runtime.interfaces
+import checkmate.interfaces
 
 
 class TestCase(nose.case.Test):
@@ -20,9 +20,9 @@ class TestCase(nose.case.Test):
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
-        if checkmate.runtime.interfaces.IProcedure.providedBy(test):
+        if checkmate.interfaces.IRun.providedBy(test):
             config_as_dict = self.config.todict()
-            test(config_as_dict['runtime'], result)
+            config_as_dict['runtime'].execute(test, result)
         else:
             test(result)
 
@@ -34,7 +34,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def runTest(self):
         """"""
         config_as_dict = self.config.todict()
-        self.test(runtime=config_as_dict['runtime'])
+        runtime = config_as_dict['runtime']
+        runtime.execute(self.test, transform=True)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
@@ -50,7 +51,6 @@ class ContextSuite(nose.suite.ContextSuite):
         for test in self._get_tests():
             if isinstance(test, TestCase) or isinstance(test, unittest.TestSuite):
                 yield test
-#            elif checkmate.runtime.interfaces.IProcedure.providedBy(test):
             else:
                 yield TestCase(test,
                            config=self.config,
@@ -80,7 +80,7 @@ class ContextSuiteFactory(nose.suite.ContextSuiteFactory):
                 wrapped.append(self.makeSuite(test, context=test.context))
             else:
                 wrapped.append(
-                    TestCase(test, config=self.config, resultProxy=self.resultProxy)
+                    TestCase(test, config=self.config)
                     )
         return wrapped
 

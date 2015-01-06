@@ -8,6 +8,7 @@ class Transition(object):
     """
     def __init__(self, **argc):
         """"""
+        self.owner = ''
         try:
             self.name = argc['tran_name']
         except KeyError:
