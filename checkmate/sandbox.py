@@ -34,7 +34,7 @@ class Sandbox(object):
         self.initial = []
         self.transitions = None
         self.application = type(self.initial_application)()
-        self.application.start()
+        self.application.start(self.initial_application.default_state_value)
 
         for component in self.application.components.values():
             for interface in [state_definition[0] for state_definition in component.state_machine.states]:
