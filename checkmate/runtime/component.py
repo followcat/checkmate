@@ -102,9 +102,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['default']
             self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
-            _communication = runtime.communication_list['']
-            connector_factory = _communication.connector_class
-            self.client.external_connector = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
+            #TODO set a list of external_connectors for different communications
+            for _key in runtime.communication_list.keys():
+                if _key == 'default':
+                    continue
+                _communication = runtime.communication_list[_key]
+                connector_factory = _communication.connector_class
+                self.client.external_connector = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
+                break
 
     def start(self):
         Component.start(self)
@@ -150,7 +155,7 @@ class ThreadedSut(ThreadedComponent, Sut):
     def setup(self, runtime):
         super().setup(runtime)
         if hasattr(self.context, 'launch_command'):
-            for communication_class in self.runtime.application.communication_list:
+            for communication_class in self.runtime.application.communication_list.values():
                 communication_class(self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)

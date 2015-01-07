@@ -26,9 +26,9 @@ class Runtime(object):
 
         self.communication_list['default'] = communication()
 
-        for _c in self.application.communication_list:
+        for _k, _c in self.application.communication_list.items():
             _communication = _c()
-            self.communication_list[''] = _communication
+            self.communication_list[_k] = _communication
 
         if self.threaded:
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,

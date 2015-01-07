@@ -83,7 +83,7 @@ class ApplicationMeta(type):
                  'data_structure_module': data_structure_module,
                  'exchange_definition_file': namespace['exchange_definition_file'],
                  '__module__': component_module.__name__,
-                 'connector_list': [_c.connector_class for _c in namespace['communication_list']]
+                 'connector_list': [_c.connector_class for _c in namespace['communication_list'].values()]
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
@@ -108,7 +108,7 @@ class ApplicationMeta(type):
 
 class Application(object):
     component_classes = {}
-    communication_list = ()
+    communication_list = {}
     feature_definition_path = None
 
     def __init__(self):
