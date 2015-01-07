@@ -20,7 +20,7 @@ def name_to_interface(name, modules):
 
 
 class Data(object):
-    def __init__(self, type, interface, code_value_list, full_description=None):
+    def __init__(self, type, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -30,10 +30,10 @@ class Data(object):
             >>> acr = sample_app.data_structure.ActionRequest()
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
-            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, [('AnotherState1()', 'None')])
+            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, {'AnotherState1()': 'None'})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, [('AP(R)', 'AP')])
+            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, {'AP(R)': 'AP'})
             >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
@@ -44,9 +44,7 @@ class Data(object):
 
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
-        for data in code_value_list:
-            code = data[0]
-            value = data[1]
+        for code, value in code_arguments.items():
             try:
                 code_description = self.full_description[code]
             except:

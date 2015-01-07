@@ -1,3 +1,5 @@
+import collections
+
 import checkmate._storage
 import checkmate._exec_tools
 import checkmate.parser.yaml_visitor
@@ -60,7 +62,8 @@ class Declarator(object):
         """
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.__class__.data_value, self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
-        partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, zip(codes_list, values_list), full_description)
+        code_arguments = collections.OrderedDict(zip(codes_list, values_list))
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_arguments, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
