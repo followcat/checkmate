@@ -168,9 +168,11 @@ class InternalStorage(object):
             >>> c.states[1].value
             []
         """
-        if len(args) == 0:
-            if 'default' not in kwargs or kwargs['default']:
+        if 'default' not in kwargs or kwargs['default']:
+            if len(args) == 0:
                 args = self.values
+            if len(kwargs) == 0:
+                kwargs.update(self.resolved_arguments)
         if instance is not None and self.interface.providedBy(instance):
             try:
                 value = self.values[0]
