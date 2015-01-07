@@ -30,10 +30,10 @@ class Data(object):
             >>> acr = sample_app.data_structure.ActionRequest()
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
-            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, {'AnotherState1()': 'None'})
+            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, {'AP(R)': 'AP'})
+            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
@@ -44,11 +44,15 @@ class Data(object):
 
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
-        for code, value in code_arguments.items():
+        for code, arguments in code_arguments.items():
             try:
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None)
+            try:
+                value = arguments.pop('value')
+            except KeyError:
+                value = None
             _storage = InternalStorage(self.interface, code, code_description, value=value)
             self.storage.append(_storage)
 
