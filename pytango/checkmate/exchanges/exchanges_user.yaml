@@ -1,0 +1,17 @@
+---
+title: "Exchange identification"
+data:
+  - Definition and accessibility: 'ExchangeButton'
+    Value partitions:
+    # [Partition,       State,    Valid value,     Comment]
+    - [X-EXBUTTON-01,   PBAC(),   'PBAC',          Press Button AC]
+    - [X-EXBUTTON-02,   PBRL(),   'PBRL',          Press Button RL]
+    - [X-EXBUTTON-03,   PBPP(),   'PBPP',          Press Button PP]
+
+  - Definition and accessibility: 'ValidateOutput'
+    Value partitions:
+    # [Partition,       State,    Valid value,     Comment]
+    - [X-VLOUTPUT-01,   VODA(),   'VODA',          Validate Output DA]
+    - [X-VLOUTPUT-02,   VODR(),   'VODR',          Validate Output DR]
+    - [X-VLOUTPUT-03,   VOPA(),   'VOPA',          Validate Output PA]
+

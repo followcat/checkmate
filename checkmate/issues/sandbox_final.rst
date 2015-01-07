@@ -10,12 +10,12 @@ Setting the procedure.final from the sandbox does not work.
     >>> c1 = r.runtime_components['C1']
     >>> _application = sample_app.application.TestData()
     >>> components = list(_application.components.keys())
-    >>> transition_list = checkmate.runtime.test_plan.get_transitions_from_test(_application)
-    >>> _transition = transition_list[0]
-    >>> box = checkmate.sandbox.Sandbox(_application, [_transition])
-    >>> box(_transition, foreign_transitions=True)
+    >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(_application)
+    >>> _run = run_list[0]
+    >>> box = checkmate.sandbox.Sandbox(_application, [_run.root])
+    >>> box(_run.root, foreign_transitions=True)
     True
-    >>> proc = checkmate.runtime.test_plan.build_procedure(box,  box)
+    >>> proc = r.build_procedure(box.transitions)
     >>> len(proc.final)
     3
     >>> proc.final[0].function #doctest: +ELLIPSIS
@@ -26,6 +26,6 @@ Setting the procedure.final from the sandbox does not work.
     <function State.append at ...
     >>> r.application.compare_states(proc.initial)
     True
-    >>> proc(r)
+    >>> r.execute(_run)
     >>> r.stop_test()
     >>> 

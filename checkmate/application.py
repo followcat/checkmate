@@ -1,4 +1,4 @@
-import zope.interface
+import os
 
 import checkmate.runs
 import checkmate._module
@@ -42,12 +42,23 @@ class ApplicationMeta(type):
         if 'exchange_definition_file' not in namespace:
             #will also be used to look for components' stae_machine yaml and itp.yaml
             namespace['exchange_definition_file'] = namespace['__module__']
-        with open(namespace['exchange_definition_file'], 'r') as _file:
-            define_data = _file.read()
+        def get_definition_data(definition_file):
+            if os.path.isfile(definition_file):
+                with open(definition_file, 'r') as _file:
+                    definition_data = _file.read()
+            elif os.path.isdir(definition_file):
+                definition_data = ''
+                for filename in os.listdir(definition_file):
+                    if filename.endswith(".yaml"):
+                        with open(os.path.join(definition_file, filename), 'r') as _file:
+                            definition_data += _file.read() 
+            return definition_data
+        define_data = get_definition_data(namespace['exchange_definition_file'])
+        if 'data_structure_definition_file' in namespace:
+            define_data = get_definition_data(namespace['data_structure_definition_file']) + define_data
         data_value = {}
         try:
-            with open(namespace['test_data_definition_file'], 'r') as _file:
-                value_data = _file.read()
+            value_data = get_definition_data(namespace['test_data_definition_file'])
             value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
                 data_value.update({code: (data_structure_module, structure)})
@@ -95,10 +106,6 @@ class ApplicationMeta(type):
         return result
 
 
-class IApplication(zope.interface.Interface):
-    """"""
-
-@zope.interface.implementer(IApplication)
 class Application(object):
     component_classes = {}
     communication_list = ()
@@ -127,7 +134,7 @@ class Application(object):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate._tree.Tree object at ...
+        [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection', checkmate.runs.RunCollection())
@@ -225,3 +232,12 @@ class Application(object):
                 return False
         return True
 
+    def visual_dump_states(self):
+        state_dict = {}
+        for _c, _v in self.components.items():
+            for _s in _v.states:
+                if _c not in state_dict:
+                    state_dict[_c] = {}
+                cls_name = type(_s).__name__
+                state_dict[_c][cls_name] = _s._dump()
+        return state_dict

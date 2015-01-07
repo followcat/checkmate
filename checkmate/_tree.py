@@ -1,11 +1,11 @@
+import collections
+
 import zope.interface
 
-
-class ITree(zope.interface.Interface):
-    """"""
+import checkmate.interfaces
 
 
-@zope.interface.implementer(ITree)
+@zope.interface.implementer(checkmate.interfaces.ITree)
 class Tree(object):
     def __init__(self, root, _nodes):
         """
@@ -17,7 +17,7 @@ class Tree(object):
         """
         assert type(_nodes) is list
         for _node in _nodes:
-            assert ITree.providedBy(_node)
+            assert checkmate.interfaces.ITree.providedBy(_node)
         self.root = root
         self.nodes = _nodes
 
@@ -41,7 +41,7 @@ class Tree(object):
             >>> t.nodes[1].nodes[0].root
             'longbowman'
         """
-        assert ITree.providedBy(tree)
+        assert checkmate.interfaces.ITree.providedBy(tree)
         self.nodes.append(tree)
 
     def copy(self, exclude_nodes=None):
@@ -96,3 +96,37 @@ class Tree(object):
         return_list = re_walk(self)
         return return_list
 
+    def breadthWalk(self):
+        """
+        >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
+        >>> [tree.root for tree in t.breadthWalk()]
+        ['archer', 'captain', 'hero', 'marshal', 'champion']
+        """
+        deque = collections.deque()
+        deque.append(self)
+        results = []
+        while(deque):
+            tree = deque.popleft()
+            results.append(tree)
+            for _n in tree.nodes:
+                deque.append(_n)
+        return results
+
+    def show(self, level=0):
+        """
+            >>> import checkmate._tree
+            >>> t = checkmate._tree.Tree('archer', [checkmate._tree.Tree('captain', [checkmate._tree.Tree('marshal', [])]), checkmate._tree.Tree('hero', [checkmate._tree.Tree('champion', [])])])
+            >>> t.show()
+            '|archer\\n|     |___ captain\\n|          |___ marshal\\n|     |___ hero\\n|          |___ champion\\n'
+            >>> print(t.show())
+            |archer
+            |     |___ captain
+            |          |___ marshal
+            |     |___ hero
+            |          |___ champion
+            <BLANKLINE>
+        """
+        string = "{0}{1}{2}\n".format('|' + ' ' * 5 * level, '|___ ' * bool(level), self.root)
+        for element in self.nodes:
+            string += element.show(level + 1)
+        return string

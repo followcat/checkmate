@@ -1,13 +1,10 @@
 import zope.interface.interface
 
 import checkmate.partition
+import checkmate.interfaces
 
 
-class IExchange(zope.interface.Interface):
-    """"""
-
-
-@zope.interface.implementer(IExchange)
+@zope.interface.implementer(checkmate.interfaces.IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
@@ -112,7 +109,7 @@ class Exchange(checkmate.partition.Partition):
             False
         """
         try:
-            return IExchange.implementedBy(self.return_type)
+            return checkmate.interfaces.IExchange.implementedBy(self.return_type)
         except AttributeError:
             return False
 

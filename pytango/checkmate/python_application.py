@@ -28,7 +28,8 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
 
     """
     feature_definition_path = 'sample_app/itp'
-    exchange_definition_file = 'pytango/checkmate/exchanges.yaml'
+    data_structure_definition_file = 'pytango/checkmate/data_structures'
+    exchange_definition_file = 'pytango/checkmate/exchanges'
     test_data_definition_file = 'pytango/checkmate/test_data.yaml'
 
     component_classes = {('C1',): ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
