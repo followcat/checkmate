@@ -35,6 +35,25 @@ def get_method_basename(signature):
     return basename
 
 
+def get_signature_arguments(signature, cls):
+    """
+        >>> import sample_app.application
+        >>> import sample_app.exchanges
+        >>> import checkmate._exec_tools
+        >>> action = sample_app.exchanges.Action
+        >>> checkmate._exec_tools.get_signature_arguments("Action('R')", action)
+        {}
+        >>> checkmate._exec_tools.get_signature_arguments("AP('R2')", action)
+        {'R': 'R2'}
+    """
+    found_label = signature.find('(')
+    parameters = signature[found_label:][1:-1].split(', ')
+    args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
+                  _p.strip("'") not in cls._sig.parameters.keys())])
+    arguments = cls._sig.bind_partial(*args).arguments
+    return dict(arguments)
+
+
 def get_exec_signature(signature, dependent_modules):
     """
         >>> import sample_app.application

@@ -90,7 +90,8 @@ class TransitionStorage(object):
                     interface = name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = checkmate._module.get_class_implementing(interface)
-                    generate_storage = InternalStorage(interface, _data, None, arguments=_data)
+                    arguments = checkmate._exec_tools.get_signature_arguments(_data, define_class)
+                    generate_storage = InternalStorage(interface, _data, None, arguments=arguments)
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
                             if _k == 'final':
@@ -109,7 +110,7 @@ class TransitionStorage(object):
 @zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, code, description, value=None, arguments=None):
+    def __init__(self, interface, code, description, value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -124,9 +125,7 @@ class InternalStorage(object):
         self.interface = interface
         self.function = checkmate._module.get_class_implementing(interface)
 
-        self.resolved_arguments = {}
-        if checkmate._exec_tools.is_method(arguments):
-            self.resolved_arguments = self.function.method_arguments(arguments)
+        self.resolved_arguments = self.function.method_arguments(arguments)
         self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
 

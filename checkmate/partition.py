@@ -3,24 +3,16 @@ class Partition(object):
     partition_attribute = tuple()
 
     @classmethod
-    def method_arguments(cls, signature):
+    def method_arguments(cls, arguments):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
-            >>> action = sample_app.exchanges.Action()
-            >>> action.method_arguments("PP('AT1')")
-            OrderedDict([('R', 'AT1')])
-            >>> action.method_arguments("Action('R')")
-            OrderedDict()
-            >>> action.method_arguments("AP('R2')")['R'].C.value, action.method_arguments("AP('R2')")['R'].P.value
+            >>> action = sample_app.exchanges.Action
+            >>> action.method_arguments({'R': 'AT1'})
+            {'R': 'AT1'}
+            >>> action.method_arguments({'R': 'R2'})['R'].C.value, action.method_arguments({'R': 'R2'})['R'].P.value
             ('AT2', 'HIGH')
         """
-        arguments = {}
-        found_label = signature.find('(')
-        parameters = signature[found_label:][1:-1].split(', ')
-        args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
-                      _p.strip("'") not in cls._sig.parameters.keys())])
-        arguments = cls._sig.bind_partial(*args).arguments
         for attr, value in arguments.items():
             data_cls = cls._construct_values[attr]
             if hasattr(data_cls, value):
