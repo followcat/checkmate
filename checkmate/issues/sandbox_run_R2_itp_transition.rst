@@ -10,6 +10,9 @@ In sample_app shuold not generate a procedure from AnotherState1(R2) itp transit
     >>> for name in list(r.application.components.keys()):
     ...     state_modules.append(r.application.components[name].state_module)
 
+Save transition which will be replaced
+    >>> save_transition = r.application.components['C1'].state_machine.transitions[1]
+
 Replace the second transition in component1 to initial is AnotherState1(R1) 
     >>> new_items = {'incoming': [{'Action': 'AP(R)'}], 'name': 'Append element ok tran01', 'initial': [{'AnotherState': 'AnotherState1(R1)'}], 'final': [{'AnotherState': 'append(R)'}], 'outgoing':[{'ThirdAction':'DA()'}]}
     >>> new_transition = checkmate.partition_declarator.make_transition(new_items, [exchange_module], state_modules)
@@ -34,3 +37,6 @@ All state in sandbox.application will be set as the run_transition initial state
 Can not run sandbox:
     >>> box(run_transition, foreign_transitions=True)
     False
+
+Recover transition:
+    >>> r.application.components['C1'].state_machine.transitions[1] = save_transition
