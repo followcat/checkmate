@@ -65,6 +65,8 @@ class Declarator(object):
         code_arguments = collections.OrderedDict()
         for code, value in zip(codes_list, values_list):
             code_arguments[code] = {'value': value}
+        if defined_class.__name__ in self.__class__.data_value:
+            code_arguments.update(self.__class__.data_value[defined_class.__name__])
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_arguments, full_description)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))

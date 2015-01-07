@@ -53,7 +53,7 @@ class Data(object):
                 value = arguments.pop('value')
             except KeyError:
                 value = None
-            _storage = InternalStorage(self.interface, code, code_description, value=value)
+            _storage = InternalStorage(self.interface, code, code_description, value=value, arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
