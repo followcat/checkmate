@@ -16,13 +16,10 @@ class Partition(object):
         kwargs = dict(arguments)
         for attr, value in arguments.items():
             data_cls = cls._construct_values[attr]
-            if hasattr(data_cls, value):
-                kwargs[attr] = data_cls(**getattr(data_cls, value))
-            else:
-                for _s in data_cls.partition_storage.storage:
-                    if _s.code == value:
-                        kwargs[attr] = _s.factory()
-                        break
+            for _s in data_cls.partition_storage.storage:
+                if _s.code == value:
+                    kwargs[attr] = _s.factory()
+                    break
         return kwargs
 
     def __init__(self, value=None, *args, default=True, **kwargs):
