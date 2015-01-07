@@ -151,7 +151,7 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, [data_structure_module, exec_module]))
     if classname in data_value:
-        for key, data in data_value[classname][1].items():
+        for key, data in data_value[classname].items():
             setattr(define_class, key, data)
     exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
