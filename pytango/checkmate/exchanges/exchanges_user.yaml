@@ -2,6 +2,7 @@
 title: "Exchange identification"
 data:
   - Definition and accessibility: 'ExchangeButton'
+    Communication type: pytango
     Value partitions:
     # [Partition,       State,    Valid value,     Comment]
     - [X-EXBUTTON-01,   PBAC(),   'PBAC',          Press Button AC]
@@ -9,6 +10,7 @@ data:
     - [X-EXBUTTON-03,   PBPP(),   'PBPP',          Press Button PP]
 
   - Definition and accessibility: 'ValidateOutput'
+    Communication type: pytango
     Value partitions:
     # [Partition,       State,    Valid value,     Comment]
     - [X-VLOUTPUT-01,   VODA(),   'VODA',          Validate Output DA]

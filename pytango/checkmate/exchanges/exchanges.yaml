@@ -2,6 +2,7 @@
 title: "Exchange identification"
 data:
   - Definition and accessibility: 'Action(R:ActionRequest)'
+    Communication type: pytango
     Value partitions:
     # [Partition,     State,      Valid value,    Comment]
     - [X-ACTION-01,   AC(),       'AC',           Comment AC action]
@@ -9,27 +10,32 @@ data:
     - [X-ACTION-03,   PP(R),      'PP',           Comment PP action]
 
   - Definition and accessibility: 'Reaction'
+    Communication type: pytango
     Value partitions:
     # [Partition,       State,    Valid value,    Comment]
     - [X-REACTION-01,   RE(),     'RE',           Comment]
     - [X-REACTION-02,   RL(),     'RL',           Comment]
 
   - Definition and accessibility: 'AnotherReaction'
+    Communication type: pytango
     Value partitions:
     # [Partition,       State,  Valid value,      Comment]
     - [X-ANOREACT-01,   ARE(),  'ARE',            Comment]
 
   - Definition and accessibility: 'ThirdReaction'
+    Communication type: pytango
     Value partitions:
     # [Partition,       State,  Valid value,      Comment]
     - [X-THRDREACT-01,  DR(),   'DR',             Comment]
 
   - Definition and accessibility: 'Pause'
+    Communication type: pytango
     Value partitions:
     # [Partition,   State,      Valid value,      Comment]
     - [X-PAUSE-01,  PA(),       'PA',             Comment]
 
   - Definition and accessibility: 'ThirdAction'
+    Communication type: pytango
     Type of data: "Description"
     Exchange: [component 1,component 2,third action]
     Value partitions:
