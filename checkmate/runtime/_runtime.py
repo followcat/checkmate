@@ -24,7 +24,7 @@ class Runtime(object):
         self.application = application()
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
-        self.communication_list['default'] = communication()
+        self.communication_list['internal'] = communication()
 
         for _k, _c in self.application.communication_list.items():
             _communication = _c()
