@@ -33,6 +33,7 @@ class Visitor():
         self._classname = ''
         self.codes_list = []
         self.values_list = []
+        self.communication_type = ''
         self.tran_items = []
 
         self.read_document(define_content)
@@ -91,21 +92,23 @@ class Visitor():
                 self._transitions.extend(self.tran_items)
             else:
                 self.partition_identification(_d)
+                _partitions = {'clsname': self._classname,
+                               'codes_list': self.codes_list,
+                               'values_list': self.values_list,
+                               'full_desc': self.full_description}
                 if title == "State identification":
-                    _partitions = self._state_partitions
+                    self._state_partitions.append(_partitions)
                 elif title == "Data structure":
-                    _partitions = self._data_structure_partitions
+                    self._data_structure_partitions.append(_partitions)
                 elif title == "Exchange identification":
-                    _partitions = self._exchange_partitions
-                _partitions.append({'clsname': self._classname,
-                                    'codes_list': self.codes_list,
-                                    'values_list': self.values_list,
-                                    'full_desc': self.full_description})
+                    _partitions.update({'communication_type': self.communication_type})
+                    self._exchange_partitions.append(_partitions)
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
             self.codes_list = []
             self.values_list = []
+            self.communication_type = ''
             self.tran_items = []
 
     def partition_identification(self, content):
@@ -114,6 +117,8 @@ class Visitor():
                 codes_list, values_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
+            elif _k == "Communication type":
+                self.communication_type = _v
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
