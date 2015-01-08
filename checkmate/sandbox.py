@@ -101,9 +101,9 @@ class Sandbox(object):
                     continue
                 self.transitions = transition
                 break
-        return self.run_process(_outgoing, transition)
+        return self.run_process(_outgoing)
 
-    def run_process(self, outgoing, transition):
+    def run_process(self, outgoing):
         if len(outgoing) == 0:
             return False
         try:
@@ -159,7 +159,7 @@ class Sandbox(object):
 
 
 class CollectionSandbox(Sandbox):
-    def run_process(self, outgoing, transition):
+    def run_process(self, outgoing):
         return self.process(self, outgoing, checkmate.runs.Run(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
