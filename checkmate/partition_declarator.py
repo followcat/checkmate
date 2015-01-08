@@ -33,7 +33,7 @@ class Declarator(object):
             'transitions': []}
 
     @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
-    def new_partition(self, partition_type, signature, codes_list, values_list, full_description=None):
+    def new_partition(self, partition_type, signature, codes_list, values_list, full_description=None, communication=''):
         """
         >>> import collections
         >>> import checkmate._module
@@ -52,15 +52,19 @@ class Declarator(object):
         >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue'], values_list=["True"])
         >>> de.get_output()['states'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'])
+        >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], communication='test_comm')
         >>> de.get_output()['exchanges'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> de.get_output()['exchanges'][0][-1].storage[0].factory().R._valid_values
         ['NORM']
+        >>> de.get_output()['exchanges'][0][-1].storage[0].factory().communication
+        'test_comm'
         """
         _module = self.module[partition_type]
         defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.__class__.data_value, self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, zip(codes_list, values_list), full_description)
+        if partition_type == 'exchanges':
+            setattr(defined_class, 'communication', communication)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
@@ -123,7 +127,10 @@ class Declarator(object):
                 if partition_type == 'transitions':
                     self.new_transition(data)
                 else:
-                    self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['full_desc'])
+                    communication = ''
+                    if partition_type == 'exchanges' and 'communication_type' in data.keys():
+                        communication = data['communication_type']
+                    self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['full_desc'], communication)
 
     def get_output(self):
         return self.output
