@@ -139,7 +139,6 @@ class Component(object):
                 return _t
         return None
 
-            
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application
@@ -152,7 +151,8 @@ class Component(object):
         [<sample_app.component.component_1_states.State object at ...
         """
         for interface, state in self.state_machine.states:
-            self.states.append(state.storage[0].factory(default=default_state_value))
+            cls = checkmate._module.get_class_implementing(interface)
+            self.states.append(cls.start(default=default_state_value))
         self.service_registry.register(self, self.service_interfaces)
         self.default_state_value = default_state_value
 

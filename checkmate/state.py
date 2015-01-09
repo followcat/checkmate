@@ -35,6 +35,9 @@ class State(checkmate.partition.Partition):
         """
         return super(State, self).__eq__(other)
 
+    @classmethod
+    def start(cls, default):
+        return cls.partition_storage.storage[0].factory(default=default)
 
     @checkmate.fix_issue('checkmate/issues/first_append_result.rst')
     def append(self, *args, **kwargs):
