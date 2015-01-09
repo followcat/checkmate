@@ -37,7 +37,11 @@ class State(checkmate.partition.Partition):
 
     @classmethod
     def start(cls, default):
-        return cls.partition_storage.storage[0].factory(default=default)
+        try:
+            state = cls.partition_storage.storage[0].factory(default=default)
+        except IndexError:
+            state = cls(default=default)
+        return state
 
     @checkmate.fix_issue('checkmate/issues/first_append_result.rst')
     def append(self, *args, **kwargs):
