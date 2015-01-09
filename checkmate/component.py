@@ -38,9 +38,9 @@ class ComponentMeta(type):
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        path = os.path.dirname(os.path.join(namespace['exchange_definition']))
+        path = namespace['component_definition']
         filename = name.lower() + '.yaml'
-        with open(os.sep.join([path, 'component', filename]), 'r') as _file:
+        with open(os.sep.join([path, filename]), 'r') as _file:
             define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:

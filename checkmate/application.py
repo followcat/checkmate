@@ -40,8 +40,11 @@ class ApplicationMeta(type):
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition' not in namespace:
-            #will also be used to look for components' stae_machine yaml and itp.yaml
-            namespace['exchange_definition'] = namespace['__module__']
+            namespace['exchange_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
+        if 'component_definition' not in namespace:
+            namespace['component_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1] + ['component'])
+        if 'itp_definition' not in namespace:
+            namespace['itp_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
         def get_definition_data(definition):
             if os.path.isfile(definition):
                 with open(definition, 'r') as _file:
@@ -81,7 +84,7 @@ class ApplicationMeta(type):
             component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
-                 'exchange_definition': namespace['exchange_definition'],
+                 'component_definition': namespace['component_definition'],
                  '__module__': component_module.__name__,
                  'connector_list': [_c.connector_class for _c in namespace['communication_list']]
                 }

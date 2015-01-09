@@ -27,6 +27,8 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
         >>> r.stop_test()
 
     """
+    component_definition = 'pytango/checkmate/component'
+    itp_definition = 'pytango/checkmate'
     feature_definition_path = 'sample_app/itp'
     data_structure_definition = 'pytango/checkmate/data_structures'
     exchange_definition = 'pytango/checkmate/exchanges'

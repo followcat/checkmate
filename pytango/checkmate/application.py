@@ -6,6 +6,8 @@ import pytango.checkmate.runtime.communication
 
 
 class Application(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
+    component_definition = 'pytango/checkmate/component'
+    itp_definition = 'pytango/checkmate'
     feature_definition_path = 'sample_app/itp'
     data_structure_definition = 'pytango/checkmate/data_structures'
     exchange_definition = 'pytango/checkmate/exchanges'
