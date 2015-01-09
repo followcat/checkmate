@@ -100,12 +100,7 @@ def get_define_str(element):
             \n            else:
             \n                _v = self.__class__._construct_values[_k]
             \n                if not isinstance(kwargs[_k], _v):
-            \n                    if isinstance(kwargs[_k], tuple):
-            \n                        if isinstance(kwargs[_k][0], tuple):
-            \n                            kwargs[_k] = _v(*kwargs[_k][0], default=default, **kwargs[_k][1])
-            \n                        else:
-            \n                            kwargs[_k] = _v(*kwargs[_k], default=default)
-            \n                    elif isinstance(kwargs[_k], dict):
+            \n                    if isinstance(kwargs[_k], dict):
             \n                        kwargs[_k] = _v(default=default, **kwargs[_k])
             \n                    else:
             \n                        kwargs[_k] = _v(kwargs[_k], default=default)
