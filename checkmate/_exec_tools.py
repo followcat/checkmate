@@ -79,7 +79,10 @@ def get_define_str(element):
             \n    def __init__(self, value=None, *args, default=True, **kwargs):
             \n        for _k,_v in self.__class__._annotated_values.items():
             \n            if _k not in kwargs or kwargs[_k] is None:
-            \n                kwargs[_k] = _v(default=default)
+            \n                try:
+            \n                    kwargs[_k] = _v(default=default)
+            \n                except TypeError:
+            \n                    kwargs[_k] = _v()
             \n            else:
             \n                _v = self.__class__._construct_values[_k]
             \n                if not isinstance(kwargs[_k], _v):
