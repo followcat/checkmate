@@ -91,10 +91,10 @@ class TransitionStorage(object):
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = checkmate._module.get_class_implementing(interface)
                     generate_storage = InternalStorage(interface, _data, None, arguments=_data)
+                    if _k == 'final':
+                        generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
-                            if _k == 'final':
-                                generate_storage.function = define_class.__init__
                             generate_storage.values = _s.values
                             break
                     else:
@@ -265,7 +265,7 @@ class InternalStorage(object):
                 resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
             else:
                 resolved_arguments = self.resolve()
-            
+
             if _target == self.factory(instance=_initial[0], *self.values,
                               default=False, **resolved_arguments):
                 return _target
