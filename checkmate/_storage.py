@@ -96,11 +96,11 @@ class TransitionStorage(object):
                             if _k == 'final':
                                 generate_storage.function = define_class.__init__
                             generate_storage.values = _s.values
-                            getattr(self, _k).append(generate_storage)
                             break
                     else:
-                        generate_storage.function = getattr(define_class, code)
-                        getattr(self, _k).append(generate_storage)
+                        if hasattr(define_class, code):
+                            generate_storage.function = getattr(define_class, code)
+                    getattr(self, _k).append(generate_storage)
 
     def factory(self):
         return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
