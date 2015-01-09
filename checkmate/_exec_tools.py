@@ -111,9 +111,16 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
                     ['interface_ancestor_class', 'interface_class',
                      'ancestor_class', 'classname', 'values'])
     if partition_type == 'exchanges':
+        communication = values.pop()
         element = class_element('checkmate.interfaces.IExchange', interface_class,
                                 'checkmate.exchange.Exchange', classname, values)
         run_code = get_define_str(element)
+        run_code += """
+                    \n    @property
+                    \n    def communication(self):
+                    \n        return '{communication}'
+                    """.format(communication=communication)
+
     elif partition_type == 'data_structure':
         element = class_element('zope.interface.Interface', interface_class,
                                 'checkmate.data_structure.DataStructure', classname, values)
