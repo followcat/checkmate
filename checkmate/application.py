@@ -18,7 +18,7 @@ class ApplicationMeta(type):
         <module 'sample_app.exchanges' from ...
         >>> a.data_structure_module #doctest: +ELLIPSIS
         <module 'sample_app.data_structure' from ...
-        >>> a.exchange_definition_file
+        >>> a.exchange_definition
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
@@ -39,26 +39,26 @@ class ApplicationMeta(type):
         data_value_module = checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
-        if 'exchange_definition_file' not in namespace:
+        if 'exchange_definition' not in namespace:
             #will also be used to look for components' stae_machine yaml and itp.yaml
-            namespace['exchange_definition_file'] = namespace['__module__']
-        def get_definition_data(definition_file):
-            if os.path.isfile(definition_file):
-                with open(definition_file, 'r') as _file:
+            namespace['exchange_definition'] = namespace['__module__']
+        def get_definition_data(definition):
+            if os.path.isfile(definition):
+                with open(definition, 'r') as _file:
                     definition_data = _file.read()
-            elif os.path.isdir(definition_file):
+            elif os.path.isdir(definition):
                 definition_data = ''
-                for filename in os.listdir(definition_file):
+                for filename in os.listdir(definition):
                     if filename.endswith(".yaml"):
-                        with open(os.path.join(definition_file, filename), 'r') as _file:
+                        with open(os.path.join(definition, filename), 'r') as _file:
                             definition_data += _file.read() 
             return definition_data
-        define_data = get_definition_data(namespace['exchange_definition_file'])
-        if 'data_structure_definition_file' in namespace:
-            define_data = get_definition_data(namespace['data_structure_definition_file']) + define_data
+        define_data = get_definition_data(namespace['exchange_definition'])
+        if 'data_structure_definition' in namespace:
+            define_data = get_definition_data(namespace['data_structure_definition']) + define_data
         data_value = {}
         try:
-            value_data = get_definition_data(namespace['test_data_definition_file'])
+            value_data = get_definition_data(namespace['test_data_definition'])
             value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
                 data_value.update({code: (data_structure_module, structure)})
@@ -81,7 +81,7 @@ class ApplicationMeta(type):
             component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
-                 'exchange_definition_file': namespace['exchange_definition_file'],
+                 'exchange_definition': namespace['exchange_definition'],
                  '__module__': component_module.__name__,
                  'connector_list': [_c.connector_class for _c in namespace['communication_list']]
                 }

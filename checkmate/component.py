@@ -38,7 +38,7 @@ class ComponentMeta(type):
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        path = os.path.dirname(os.path.join(namespace['exchange_definition_file']))
+        path = os.path.dirname(os.path.join(namespace['exchange_definition']))
         filename = name.lower() + '.yaml'
         with open(os.sep.join([path, 'component', filename]), 'r') as _file:
             define_data = _file.read()

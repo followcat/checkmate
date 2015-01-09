@@ -21,7 +21,7 @@ def get_runs_from_test(application):
     state_modules = []
     for name in list(application.components.keys()):
             state_modules.append(application.components[name].state_module)
-    path = os.path.dirname(application.exchange_definition_file)
+    path = os.path.dirname(application.exchange_definition)
     array_list = []
     try:
         with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
