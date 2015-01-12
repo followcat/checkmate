@@ -28,8 +28,7 @@ class Launcher(object):
             command_env = dict(os.environ)
             if self.command_env is not None:
                 command_env.update(self.command_env) 
-            CLASSPATH = os.getenv('CHECKMATE_CLASSPATH', os.getenv('CLASSPATH'))
-            self.process = subprocess.Popen(shlex.split(self.command.format(classpath=CLASSPATH, component=self.component)),
+            self.process = subprocess.Popen(shlex.split(self.command.format(component=self.component)),
                                             env=command_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             self.runtime_component.initialize()
