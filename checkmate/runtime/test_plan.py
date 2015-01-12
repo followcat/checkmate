@@ -67,11 +67,6 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 
     """
     _application = application_class()
-    components = list(_application.components.keys())
-    state_modules = []
-    for name in components:
-        state_modules.append(_application.components[name].state_module)
-
     for _run in get_runs_from_test(_application):
         yield _run, _run.root.name
 
