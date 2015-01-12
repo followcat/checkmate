@@ -23,7 +23,6 @@ class Procedure(object):
     def __init__(self, test=None, is_setup=False):
         self.test = test
         self.is_setup = is_setup
-        self.components = []
         self.logger = logging.getLogger('checkmate.runtime.procedure')
 
     def __call__(self, runtime, result=None, *args):
@@ -78,8 +77,6 @@ class Procedure(object):
         if not hasattr(runtime, 'application'):
             #happens with using --with-doctest on checkmate procedure generator
             return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
-        if not self.is_setup and not set(self.runtime.application.system_under_test).issubset(set(self.components)):
-            return _compatible_skip_test(self, "Procedure components do not match SUT")
         if self.transitions.root.owner in self.runtime.application.system_under_test:
             return _compatible_skip_test(self, "SUT do NOT simulate")
         self.name = self.transitions.root.name

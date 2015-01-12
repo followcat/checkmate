@@ -144,7 +144,6 @@ class Sandbox(object):
             procedure.final = self.final
             procedure.initial = self.initial
             procedure.transitions = self.transitions
-            procedure.components = list(self.application.components.keys())
 
     def update_required_states(self, tree):
         """
