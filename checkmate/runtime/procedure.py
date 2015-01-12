@@ -20,9 +20,8 @@ def _compatible_skip_test(procedure, message):
 
 
 class Procedure(object):
-    def __init__(self, test=None, is_setup=False):
+    def __init__(self, test=None):
         self.test = test
-        self.is_setup = is_setup
         self.logger = logging.getLogger('checkmate.runtime.procedure')
 
     def __call__(self, runtime, result=None, *args):
@@ -97,8 +96,6 @@ class Procedure(object):
             if not check_compare_states():
                 self.logger.error('Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
-        if not self.is_setup:
-            self.logger.info('Procedure Done')
         if self.result is not None:
             self.result.addSuccess(self)
             self.result.stopTest(self)

@@ -130,7 +130,7 @@ class Runtime(object):
             foreign_transitions = False
         sandbox = checkmate.sandbox.Sandbox(application, transitions)
         sandbox(run.root, foreign_transitions=foreign_transitions)
-        proc = checkmate.runtime.procedure.Procedure(is_setup=(not foreign_transitions))
+        proc = checkmate.runtime.procedure.Procedure()
         sandbox.fill_procedure(proc)
         if len(run.nodes) == 0:
             #force checking final from transition if run contains only the root
@@ -148,6 +148,7 @@ class Runtime(object):
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info('Procedure Done')
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):
