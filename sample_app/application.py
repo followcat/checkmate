@@ -6,8 +6,8 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
     """"""
     __test__ = False
 
-    exchange_definition_file = 'sample_app/exchanges.yaml'
-    test_data_definition_file = 'sample_app/test_data.yaml'
+    exchange_definition = 'sample_app/exchanges.yaml'
+    test_data_definition = 'sample_app/test_data.yaml'
 
     component_classes = {('C1',): ('Component_1', {}),
                          ('C2',): ('Component_2', {}),
