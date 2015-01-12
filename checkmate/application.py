@@ -45,16 +45,19 @@ class ApplicationMeta(type):
             namespace['component_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1] + ['component'])
         if 'itp_definition' not in namespace:
             namespace['itp_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
-        def get_definition_data(definition):
-            if os.path.isfile(definition):
-                with open(definition, 'r') as _file:
-                    definition_data = _file.read()
-            elif os.path.isdir(definition):
-                definition_data = ''
-                for filename in os.listdir(definition):
-                    if filename.endswith(".yaml"):
-                        with open(os.path.join(definition, filename), 'r') as _file:
-                            definition_data += _file.read() 
+        def get_definition_data(definitions):
+            definition_data = ''
+            if type(definitions) != list:
+                definitions = [definitions]
+            for definition in definitions:
+                if os.path.isfile(definition):
+                    with open(definition, 'r') as _file:
+                        definition_data += _file.read()
+                elif os.path.isdir(definition):
+                    for filename in os.listdir(definition):
+                        if filename.endswith(".yaml"):
+                            with open(os.path.join(definition, filename), 'r') as _file:
+                                definition_data += _file.read() 
             return definition_data
         define_data = get_definition_data(namespace['exchange_definition'])
         if 'data_structure_definition' in namespace:
