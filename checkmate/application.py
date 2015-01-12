@@ -61,7 +61,7 @@ class ApplicationMeta(type):
             value_data = get_definition_data(namespace['test_data_definition_file'])
             value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
-                data_value.update({code: (data_structure_module, structure)})
+                data_value.update({code: structure})
             namespace['data_value'] = data_value
         except KeyError:
             pass

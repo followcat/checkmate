@@ -19,7 +19,7 @@ we can match R with R2 when we do collcet runs
         >>> c2.state_machine.transitions[2] = t_out
         >>> inc = c1.state_machine.transitions[1].incoming[0]
         >>> (inc.code, inc.resolved_arguments)
-        ('AP', OrderedDict())
+        ('AP', {})
         >>> out = c2.state_machine.transitions[2].outgoing[0]
         >>> (out.code, out.resolved_arguments['R'].C.value, out.resolved_arguments['R'].P.value)
         ('AP', 'AT2', 'HIGH')
@@ -47,7 +47,7 @@ we can match R with R2 when we do collcet runs
         ('AP', 'AT2', 'HIGH')
         >>> out = c2.state_machine.transitions[2].outgoing[0]
         >>> (out.code, out.resolved_arguments)
-        ('AP', OrderedDict())
+        ('AP', {})
         >>> runs = a.run_collection
         >>> len(runs)
         4

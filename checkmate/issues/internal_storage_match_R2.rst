@@ -3,7 +3,7 @@ This is checking that an 'AP(R2)' Action matches 'AP(R)' filter:
     >>> import sample_app.application
     >>> app = sample_app.application.TestData()
     >>> import sample_app.exchanges
-    >>> r2 = sample_app.application.TestData.data_value['ActionRequest'][1]['R2']
+    >>> r2 = sample_app.application.TestData.data_value['ActionRequest']['R2']
     >>> ap = sample_app.exchanges.Action('AP', R=r2)
     >>> ap.R.C.value
     'AT2'

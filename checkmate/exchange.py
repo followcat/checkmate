@@ -12,7 +12,7 @@ class Exchange(checkmate.partition.Partition):
     def __init__(self, value=None, *args, default=True, origin='', destination='', **kwargs):
         """
             >>> import sample_app.application
-            >>> r2 = sample_app.application.TestData.data_value['ActionRequest'][1]['R2']
+            >>> r2 = sample_app.application.TestData.data_value['ActionRequest']['R2']
             >>> sorted(r2.items())
             [('C', 'AT2'), ('P', 'HIGH')]
             >>> ap = sample_app.exchanges.Action('AP', R=r2)
