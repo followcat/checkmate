@@ -86,7 +86,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> state_modules = []
         >>> for name in components:
         ...         state_modules.append(_application.components[name].state_module)
-        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules)
+        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
         >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
         >>> run_list[0].root.incoming[0].code
         'AC'
@@ -117,12 +117,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> r.stop_test()
     """
     _application = application_class()
-    components = list(_application.components.keys())
-    state_modules = []
-    for name in components:
-        state_modules.append(_application.components[name].state_module)
-    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
-
+    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
     for _run in run_list:
         yield _run, _run.root.name
         
