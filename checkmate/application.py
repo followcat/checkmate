@@ -82,8 +82,7 @@ class ApplicationMeta(type):
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'exchange_definition_file': namespace['exchange_definition_file'],
-                 '__module__': component_module.__name__,
-                 'connector_list': [_c.connector_class for _c in namespace['communication_list'].values()]
+                 '__module__': component_module.__name__
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
