@@ -102,7 +102,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['internal']
             self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
-            for _key in runtime.communication_list.keys():
+            for _key in self.context.communication_list:
                 if _key == 'internal':
                     continue
                 _communication = runtime.communication_list[_key]
@@ -153,8 +153,8 @@ class ThreadedSut(ThreadedComponent, Sut):
     def setup(self, runtime):
         super().setup(runtime)
         if hasattr(self.context, 'launch_command'):
-            for communication_class in self.runtime.application.communication_list.values():
-                communication_class(self.context)
+            for communication_name in self.context.communication_list:
+                self.runtime.application.communication_list[communication_name](self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
 
