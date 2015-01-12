@@ -31,7 +31,7 @@ the attributes' values are set to None but the exchange value is filled:
     >>> c1.default_state_value
     False
     >>> tr = c1.state_machine.transitions[1]
-    >>> ex = tr.generic_incoming(c1.states, default=c1.default_state_value)
+    >>> ex = tr.generic_incoming(c1.states)
     >>> ex[0].R.C.value
     >>> ex[0].value
     'AP'

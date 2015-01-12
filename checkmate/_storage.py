@@ -229,6 +229,7 @@ class InternalStorage(object):
         _attributes.update(self.resolved_arguments)
         return _attributes
 
+    @checkmate.fix_issue("checkmate/issues/internal_storage_match_R2.rst")
     def match(self, target_copy, reference=None, incoming_list=None):
         """
             >>> import checkmate.runtime._runtime
@@ -262,13 +263,13 @@ class InternalStorage(object):
         """
         for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
             _initial = [None]
-            resolved_arguments = None
             if reference is not None:
                 _initial = [_i for _i in reference if self.interface.providedBy(_i)]
                 resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
+            else:
+                resolved_arguments = self.resolve()
             
-            if resolved_arguments is None:
-                resolved_arguments = self.resolve(target_copy)
-            if _target == self.factory(instance=_initial[0], **resolved_arguments):
+            if _target == self.factory(instance=_initial[0], *self.values,
+                              default=False, **resolved_arguments):
                 return _target
         return None
