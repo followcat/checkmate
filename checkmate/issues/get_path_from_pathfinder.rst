@@ -10,8 +10,7 @@
         >>> import sample_app.runtime.test_procedure
         >>> cc = checkmate.runtime.communication.Communication
         >>> _class = sample_app.application.TestData
-        >>> runs = checkmate.runs.RunCollection()
-        >>> runs.get_runs_from_application(_class())
+        >>> runs = checkmate.runs.get_runs_from_application(_class())
         >>> r = checkmate.runtime._runtime.Runtime(_class, cc)
         >>> box = checkmate.sandbox.Sandbox(_class())
         >>> ex1 = sample_app.exchanges.Action('AC')

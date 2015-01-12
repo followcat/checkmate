@@ -27,8 +27,7 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.RunCollection()
-            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
             ('True', 'False')
@@ -48,8 +47,7 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.RunCollection()
-            >>> src.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
             ('False', 'True')
@@ -74,31 +72,19 @@ class Run(checkmate._tree.Tree):
         return dump_dict
 
 
-class RunCollection(list):
-    def get_origin_transition(self):
-        """
-            >>> import checkmate.runs
-            >>> import sample_app.application
-            >>> src = checkmate.runs.RunCollection()
-            >>> src.get_runs_from_application(sample_app.application.TestData())
-            >>> [_t.outgoing[0].code for _t in src.origin_transitions]
-            ['PBAC', 'PBRL', 'PBPP']
-        """
-        origin_transitions = []
-        for _component in self.application.components.values():
-            for _transition in _component.state_machine.transitions:
-                if not len(_transition.incoming):
-                    origin_transitions.append(_transition)
-        return origin_transitions
-
-    @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
-    @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
-    def get_runs_from_application(self, application):
-        self.clear()
-        self.application = type(application)()
-        self.application.start(default_state_value=False)
-        self.origin_transitions = self.get_origin_transition()
-        for _o in self.origin_transitions:
-            sandbox = checkmate.sandbox.CollectionSandbox(self.application)
-            for split, _t in sandbox(_o):
-                self.append(_t)
+@checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
+@checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
+def get_runs_from_application(application):
+    runs = []
+    origin_transitions = []
+    application = type(application)()
+    application.start(default_state_value=False)
+    for _component in application.components.values():
+        for _transition in _component.state_machine.transitions:
+            if not len(_transition.incoming):
+                origin_transitions.append(_transition)
+    for _o in origin_transitions:
+        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        for split, _t in sandbox(_o):
+            runs.append(_t)
+    return runs
