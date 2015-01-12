@@ -5,7 +5,6 @@
 
 import os
 import re
-import sys
 import copy
 import gettext
 
@@ -25,6 +24,7 @@ def new_load_step_definitions(paths):
     """
         the load_steps_impl function at load_step_definitions in fresher.cuke only has 2 arguments,has problem:
 
+        >>> import sys
         >>> import fresher.cuke
         >>> import fresher.core
         >>> import fresher.stepregistry
