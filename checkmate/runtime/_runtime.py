@@ -121,20 +121,18 @@ class Runtime(object):
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
 
     def build_procedure(self, run, application=None):
-        if application is None:
-            application = self.application_class()
-            transitions = run.walk()
-            foreign_transitions = True
+        proc = checkmate.runtime.procedure.Procedure()
+        if len(run.nodes) == 0:
+            run = checkmate.runs.get_runs_from_itp(run.root, self.application_class())[0]
+            run.fill_procedure(proc)
         else:
             transitions = []
-            foreign_transitions = False
-        sandbox = checkmate.sandbox.Sandbox(application, transitions)
-        sandbox(run.root, foreign_transitions=foreign_transitions)
-        proc = checkmate.runtime.procedure.Procedure()
-        sandbox.fill_procedure(proc)
-        if len(run.nodes) == 0:
-            #force checking final from transition if run contains only the root
-            proc.final = run.root.final
+            if application is None:
+                application = self.application_class()
+                transitions = run.walk()
+            sandbox = checkmate.sandbox.Sandbox(application, transitions)
+            sandbox(run.root)
+            sandbox.fill_procedure(proc)
         return proc
 
     def execute(self, run, result=None, transform=True):
