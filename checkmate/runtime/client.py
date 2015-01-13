@@ -138,7 +138,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """
         if self.internal_connector:
             self.internal_connector.send(exchange)
-        for _name, _connector in self.external_connectors.items():
-            if _name == exchange.communication:
-                _connector.send(exchange)
+        try:
+            self.external_connectors[exchange.communication].send(exchange)
+        except KeyError:
+            #if no key exist in self.external_connectors, nothing can be done for now
+            pass
         self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
