@@ -24,6 +24,18 @@ class Run(checkmate._tree.Tree):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
+    def fill_procedure(self, procedure):
+        procedure.final = []
+        procedure.initial = []
+        for run in self.breadthWalk():
+            for index, _initial in enumerate(run.root.initial):
+                if _initial.interface not in [_temp_init.interface for _temp_init in procedure.initial]:
+                    procedure.initial.append(_initial)
+                    procedure.final.append(run.root.final[index])
+        procedure.transitions = self
+        if self.itp_transition is not None:
+            procedure.final = self.itp_transition.final
+
     def visual_dump_initial(self):
         """
             >>> import checkmate.runs
