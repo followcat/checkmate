@@ -65,7 +65,7 @@ class Sandbox(object):
     def is_run(self):
         return self.transitions is not None
 
-    def __call__(self, run, foreign_run=False):
+    def __call__(self, run, itp_run=False):
         """
             >>> import checkmate.sandbox
             >>> import checkmate.runs
@@ -86,7 +86,7 @@ class Sandbox(object):
         self.run = run
         self.transitions = None
         for component in self.application.components.values():
-            if not foreign_run and not run.root in component.state_machine.transitions:
+            if not itp_run and not run.root in component.state_machine.transitions:
                 continue
             if len(run.root.incoming) > 0:
                 _incoming = run.root.generic_incoming(component.states)

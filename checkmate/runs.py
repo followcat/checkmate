@@ -109,7 +109,7 @@ def get_runs_from_itp(itp_run, application):
     application = type(application)()
     application.start()
     sandbox = checkmate.sandbox.CollectionSandbox(application, itp_run.walk())
-    for split, _t in sandbox(itp_run, foreign_run=True):
+    for split, _t in sandbox(itp_run, itp_run=True):
         _t.itp_run = itp_run
         runs.append(_t)
     return runs

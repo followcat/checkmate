@@ -35,7 +35,7 @@ All state in sandbox.application will be set as the run_transition initial state
     ['False']
 
 Can not run sandbox:
-    >>> box(checkmate.runs.Run(run_transition), foreign_run=True)
+    >>> box(checkmate.runs.Run(run_transition), itp_run=True)
     False
 
 Recover transition:

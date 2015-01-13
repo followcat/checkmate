@@ -90,7 +90,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> box.application.compare_states(run_list[0].root.initial)
         True
-        >>> box(run_list[0], foreign_run=True)
+        >>> box(run_list[0], itp_run=True)
         True
         >>> box.update_required_states(box.transitions)
         >>> len(box.initial)
