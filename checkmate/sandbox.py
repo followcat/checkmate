@@ -65,16 +65,17 @@ class Sandbox(object):
     def is_run(self):
         return self.transitions is not None
 
-    def __call__(self, transition, foreign_transitions=False):
+    def __call__(self, run, foreign_run=False):
         """
             >>> import checkmate.sandbox
+            >>> import checkmate.runs
             >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
             'True'
-            >>> box(sample_app.application.TestData().components['C1'].state_machine.transitions[0])
+            >>> box(checkmate.runs.Run(sample_app.application.TestData().components['C1'].state_machine.transitions[0]))
             True
-            >>> box(sample_app.application.TestData().components['C3'].state_machine.transitions[1])
+            >>> box(checkmate.runs.Run(sample_app.application.TestData().components['C3'].state_machine.transitions[1]))
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
@@ -82,12 +83,13 @@ class Sandbox(object):
             'False'
         """
         _outgoing = []
+        self.run = run
         self.transitions = None
         for component in self.application.components.values():
-            if not foreign_transitions and not transition in component.state_machine.transitions:
+            if not foreign_run and not run.root in component.state_machine.transitions:
                 continue
-            if len(transition.incoming) > 0:
-                _incoming = transition.generic_incoming(component.states)
+            if len(run.root.incoming) > 0:
+                _incoming = run.root.generic_incoming(component.states)
                 for _c in self.application.components.values():
                     component_transition = _c.get_transition_by_output(_incoming)
                     if component_transition is not None:
@@ -95,11 +97,11 @@ class Sandbox(object):
                         self.transitions = component_transition
                         break
                 break
-            elif len(transition.outgoing) > 0:
-                _outgoing = component.simulate(transition)
+            elif len(run.root.outgoing) > 0:
+                _outgoing = component.simulate(run.root)
                 if len(_outgoing) == 0:
                     continue
-                self.transitions = transition
+                self.transitions = run.root
                 break
         return self.run_process(_outgoing)
 

@@ -16,7 +16,7 @@ class Run(checkmate._tree.Tree):
         if states is None:
             states = []
         super(Run, self).__init__(transition, nodes)
-        self.itp_transition = None
+        self.itp_run = None
         self.change_states = []
         for f in transition.final:
             for s in states:
@@ -33,8 +33,8 @@ class Run(checkmate._tree.Tree):
                     procedure.initial.append(_initial)
                     procedure.final.append(run.root.final[index])
         procedure.transitions = self
-        if self.itp_transition is not None:
-            procedure.final = self.itp_transition.final
+        if self.itp_run is not None:
+            procedure.final = self.itp_run.root.final
 
     def visual_dump_initial(self):
         """
@@ -98,17 +98,18 @@ def get_runs_from_application(application):
                 origin_transitions.append(_transition)
     for _o in origin_transitions:
         sandbox = checkmate.sandbox.CollectionSandbox(application)
-        for split, _t in sandbox(_o):
+        run = checkmate.runs.Run(_o)
+        for split, _t in sandbox(run):
             runs.append(_t)
     return runs
 
 
-def get_runs_from_itp(itp, application):
+def get_runs_from_itp(itp_run, application):
     runs = []
     application = type(application)()
     application.start()
-    sandbox = checkmate.sandbox.CollectionSandbox(application, [itp])
-    for split, _t in sandbox(itp, foreign_transitions=True):
-        _t.itp_transition = itp
+    sandbox = checkmate.sandbox.CollectionSandbox(application, itp_run.walk())
+    for split, _t in sandbox(itp_run, foreign_run=True):
+        _t.itp_run = itp_run
         runs.append(_t)
     return runs

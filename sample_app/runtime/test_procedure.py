@@ -26,7 +26,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
         """
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
-        box(c2.state_machine.transitions[0])
+        box(checkmate.runs.Run(c2.state_machine.transitions[0]))
         super(TestProcedureRun1Threaded, self).__init__(box.transitions.root, box.transitions.nodes)
 
     def __call__(self):
@@ -57,11 +57,11 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         """
         box = checkmate.sandbox.Sandbox(application_class())
         c2 = box.application.components['C2']
-        box(c2.state_machine.transitions[0])
+        box(checkmate.runs.Run(c2.state_machine.transitions[0]))
         new_box = checkmate.sandbox.Sandbox(box.application)
         transition_rl_index = [_t for _t in c2.state_machine.transitions
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
-        new_box(transition_rl_index[0])
+        new_box(checkmate.runs.Run(transition_rl_index[0]))
         super(TestProcedureRun2Threaded, self).__init__(new_box.transitions.root, new_box.transitions.nodes)
 
     def __call__(self):
@@ -93,5 +93,5 @@ def TestProcedureGenerator(application_class):
     #Skip the last two transitions as no outgoing sent to 'C1'
     #Skip the third transition from the last as 'C3' state does not match
     for _t in c2.state_machine.transitions[:1]:
-        box(_t)
+        box(checkmate.runs.Run(_t))
         yield build_run(box), box.transitions.root.name

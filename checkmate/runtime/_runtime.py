@@ -123,7 +123,7 @@ class Runtime(object):
     def build_procedure(self, run, application=None):
         proc = checkmate.runtime.procedure.Procedure()
         if len(run.nodes) == 0:
-            run = checkmate.runs.get_runs_from_itp(run.root, self.application_class())[0]
+            run = checkmate.runs.get_runs_from_itp(run, self.application_class())[0]
             run.fill_procedure(proc)
         else:
             transitions = []
@@ -131,7 +131,7 @@ class Runtime(object):
                 application = self.application_class()
                 transitions = run.walk()
             sandbox = checkmate.sandbox.Sandbox(application, transitions)
-            sandbox(run.root)
+            sandbox(run)
             sandbox.fill_procedure(proc)
         return proc
 

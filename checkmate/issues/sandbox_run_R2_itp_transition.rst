@@ -1,6 +1,6 @@
 In sample_app shuold not generate a procedure from AnotherState1(R2) itp transition when C1 'Append element ok tran01' transition's initial state is AnotherState1(R1).
     >>> import sample_app.application
-    >>> import checkmate._tree
+    >>> import checkmate.runs
     >>> import checkmate.runtime._runtime
     >>> ac = sample_app.application.TestData
     >>> cc = checkmate.runtime.communication.Communication
@@ -35,7 +35,7 @@ All state in sandbox.application will be set as the run_transition initial state
     ['False']
 
 Can not run sandbox:
-    >>> box(run_transition, foreign_transitions=True)
+    >>> box(checkmate.runs.Run(run_transition), foreign_run=True)
     False
 
 Recover transition:
