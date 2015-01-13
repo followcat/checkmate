@@ -76,6 +76,9 @@ class ComponentMeta(type):
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
             namespace['outgoings'] = outgoings
+            for _communication in communication_list:
+                if _communication not in namespace['communication_list']:
+                    raise KeyError("Communication '%s' is not defined in application" %_communication)
             namespace['communication_list'] = communication_list
 
             result = type.__new__(cls, name, bases, dict(namespace))

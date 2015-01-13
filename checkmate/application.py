@@ -82,7 +82,8 @@ class ApplicationMeta(type):
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'exchange_definition_file': namespace['exchange_definition_file'],
-                 '__module__': component_module.__name__
+                 '__module__': component_module.__name__,
+                 'communication_list': namespace['communication_list'].keys()
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
