@@ -123,7 +123,7 @@ class Runtime(object):
     def build_procedure(self, run, application=None):
         proc = checkmate.runtime.procedure.Procedure()
         if len(run.nodes) == 0:
-            run = checkmate.runs.get_runs_from_itp(run, self.application_class())[0]
+            run = checkmate.runs.get_runs_from_transition(self.application_class(), run.root, itp_transition=True)[0]
             run.fill_procedure(proc)
         else:
             transitions = []

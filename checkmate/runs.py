@@ -104,12 +104,17 @@ def get_runs_from_application(application):
     return runs
 
 
-def get_runs_from_itp(itp_run, application):
+def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
-    application = type(application)()
-    application.start()
-    sandbox = checkmate.sandbox.CollectionSandbox(application, itp_run.walk())
-    for split, _t in sandbox(itp_run, itp_run=True):
-        _t.itp_run = itp_run
+    transition_run = checkmate.runs.Run(transition)
+    if itp_transition:
+        application = type(application)()
+        application.start()
+        sandbox = checkmate.sandbox.CollectionSandbox(application, transition_run.walk())
+    else:
+        sandbox = checkmate.sandbox.CollectionSandbox(application)
+    for split, _t in sandbox(transition_run, itp_run=itp_transition):
+        if itp_transition:
+            _t.itp_run = transition_run
         runs.append(_t)
     return runs
