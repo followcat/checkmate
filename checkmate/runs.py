@@ -16,6 +16,7 @@ class Run(checkmate._tree.Tree):
         if states is None:
             states = []
         super(Run, self).__init__(transition, nodes)
+        self.itp_transition = None
         self.change_states = []
         for f in transition.final:
             for s in states:
@@ -87,4 +88,15 @@ def get_runs_from_application(application):
         sandbox = checkmate.sandbox.CollectionSandbox(application)
         for split, _t in sandbox(_o):
             runs.append(_t)
+    return runs
+
+
+def get_runs_from_itp(itp, application):
+    runs = []
+    application = type(application)()
+    application.start()
+    sandbox = checkmate.sandbox.CollectionSandbox(application, [itp])
+    for split, _t in sandbox(itp, foreign_transitions=True):
+        _t.itp_transition = itp
+        runs.append(_t)
     return runs
