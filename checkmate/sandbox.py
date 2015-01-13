@@ -1,5 +1,5 @@
 import checkmate.runs
-import checkmate.component
+import checkmate.exception
 
 
 class Sandbox(object):
@@ -110,7 +110,7 @@ class Sandbox(object):
             return False
         try:
             self.transitions = self.process(outgoing, checkmate.runs.Run(self.transitions, []))
-        except checkmate.component.NoTransitionFound:
+        except checkmate.exception.NoTransitionFound:
             self.transitions = None
         return self.is_run
 

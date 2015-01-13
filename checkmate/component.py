@@ -3,15 +3,13 @@ import os
 import zope.interface
 
 import checkmate._module
-import checkmate.interfaces
 import checkmate._validation
+import checkmate.exception
+import checkmate.interfaces
 import checkmate.state_machine
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
-
-class NoTransitionFound(RuntimeError):
-    """"""
 
 class ComponentMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
@@ -222,7 +220,7 @@ class Component(object):
                     isinstance(exchange[0], self.expected_return_code.return_type)):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
-                raise NoTransitionFound("No transition for incoming %s " %(exchange[0]))
+                raise checkmate.exception.NoTransitionFound("No transition for incoming %s " %(exchange[0]))
         else:
             _transition = transition
         output = []
