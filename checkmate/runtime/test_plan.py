@@ -77,10 +77,6 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
         >>> _application = sample_app.application.TestData()
-        >>> components = list(_application.components.keys())
-        >>> state_modules = []
-        >>> for name in components:
-        ...         state_modules.append(_application.components[name].state_module)
         >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
         >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
         >>> run_list[0].root.incoming[0].code
