@@ -24,10 +24,10 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
             >>> r.execute(run)
             >>> r.stop_test()
         """
-        box = checkmate.sandbox.Sandbox(application_class())
-        c2 = box.application.components['C2']
-        box(checkmate.runs.Run(c2.state_machine.transitions[0]))
-        super(TestProcedureRun1Threaded, self).__init__(box.transitions.root, box.transitions.nodes)
+        application = application_class()
+        c2 = application.components['C2']
+        runs = checkmate.runs.get_runs_from_transition(application, c2.state_machine.transitions[0])
+        super(TestProcedureRun1Threaded, self).__init__(runs[0].root, runs[0].nodes)
 
     def __call__(self):
         pass
@@ -55,24 +55,18 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             >>> r.execute(run, transform=True)
             >>> r.stop_test()
         """
-        box = checkmate.sandbox.Sandbox(application_class())
-        c2 = box.application.components['C2']
-        box(checkmate.runs.Run(c2.state_machine.transitions[0]))
-        new_box = checkmate.sandbox.Sandbox(box.application)
+        application = application_class()
+        c2 = application.components['C2']
+        run_pbac = checkmate.runs.get_runs_from_transition(application, c2.state_machine.transitions[0])[0]
+        box = checkmate.sandbox.Sandbox(application)
+        box(run_pbac)
         transition_rl_index = [_t for _t in c2.state_machine.transitions
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
-        new_box(checkmate.runs.Run(transition_rl_index[0]))
-        super(TestProcedureRun2Threaded, self).__init__(new_box.transitions.root, new_box.transitions.nodes)
+        run_pbrl = checkmate.runs.get_runs_from_transition(box.application, transition_rl_index[0])[0]
+        super(TestProcedureRun2Threaded, self).__init__(run_pbrl.root, run_pbrl.nodes)
 
     def __call__(self):
         pass
-
-
-def build_run(sandbox):
-    class TestRun(checkmate.runs.Run):
-        """"""
-    run = TestRun(sandbox.transitions.root, sandbox.transitions.nodes)
-    return run
 
 
 def TestProcedureGenerator(application_class):
@@ -88,7 +82,7 @@ def TestProcedureGenerator(application_class):
             ...     r.execute(g[0])
             >>> r.stop_test()
     """
-    box = checkmate.sandbox.Sandbox(application_class())
-    c2 = box.application.components['C2']
-    box(checkmate.runs.Run(c2.state_machine.transitions[0]))
-    yield build_run(box), box.transitions.root.name
+    application = application_class()
+    c2 = application.components['C2']
+    run_pbac = checkmate.runs.get_runs_from_transition(application, c2.state_machine.transitions[0])[0]
+    yield run_pbac, run_pbac.root.name
