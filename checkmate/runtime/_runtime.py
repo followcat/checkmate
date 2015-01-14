@@ -120,19 +120,9 @@ class Runtime(object):
         with condition:
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
 
-    def build_procedure(self, run, application=None):
+    def build_procedure(self, run):
         proc = checkmate.runtime.procedure.Procedure()
-        if len(run.nodes) == 0:
-            run = checkmate.runs.get_runs_from_transition(self.application_class(), run.root, itp_transition=True)[0]
-            run.fill_procedure(proc)
-        else:
-            transitions = []
-            if application is None:
-                application = self.application_class()
-                transitions = run.walk()
-            sandbox = checkmate.sandbox.Sandbox(application, transitions)
-            sandbox(run)
-            sandbox.fill_procedure(proc)
+        run.fill_procedure(proc)
         return proc
 
     def execute(self, run, result=None, transform=True):
@@ -155,6 +145,6 @@ class Runtime(object):
                 checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
                 return False
             for run in run_list:
-                proc = self.build_procedure(run, self.application)
+                proc = self.build_procedure(run)
                 proc(self)
         return True

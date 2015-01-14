@@ -27,7 +27,7 @@ This fails during the Procedure's compare_states(self.final), as the InternalSto
 only pass args and kwargs but not an instance.
 This lead to a strange error ('str' object has no attribute 'value') showing that first argument
 is used as if it was an instance.
-    >>> r.execute(proc.transitions.nodes[0]) #doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> r.execute(proc.transitions) #doctest: +IGNORE_EXCEPTION_DETAIL
     >>> r.stop_test()
     >>> 
 

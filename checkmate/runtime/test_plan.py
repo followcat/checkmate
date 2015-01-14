@@ -33,8 +33,9 @@ def get_runs_from_test(application):
         array_list.append(data)
     runs = []
     for array_items in array_list:
-        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
-        runs.append(run)
+        transition = checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules)
+        gen_runs = checkmate.runs.get_runs_from_transition(application, transition, itp_transition=True)
+        runs.append(gen_runs[0])
     return runs
 
 def TestProcedureInitialGenerator(application_class, transition_list=None):
@@ -74,22 +75,24 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 def TestProcedureFeaturesGenerator(application_class):
     """
         >>> import checkmate.sandbox
+        >>> import checkmate.runtime.procedure
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
         >>> _application = sample_app.application.TestData()
         >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
-        >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
+        >>> run_list.sort(key=lambda x:x.root.outgoing[0].code)
         >>> run_list[0].root.incoming[0].code
-        'AC'
-        >>> box = checkmate.sandbox.Sandbox(_application, [run_list[0].root])
-        >>> box.application.components['C1'].states[0].value == run_list[0].root.initial[0].values[0]
+        'PBAC'
+        >>> box = checkmate.sandbox.Sandbox(_application, run_list[0].walk())
+        >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].values[0]
         True
         >>> box.application.compare_states(run_list[0].root.initial)
         True
-        >>> box(run_list[0], itp_run=True)
+        >>> box(run_list[0])
         True
-        >>> box.update_required_states(box.transitions)
-        >>> len(box.initial)
+        >>> proc = checkmate.runtime.procedure.Procedure()
+        >>> run_list[0].fill_procedure(proc)
+        >>> len(proc.initial)
         3
 
         >>> import checkmate.runtime._pyzmq

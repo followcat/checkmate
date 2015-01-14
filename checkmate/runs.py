@@ -3,6 +3,7 @@ import zope.interface
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
+import checkmate.exception
 import checkmate.transition
 import checkmate.interfaces
 
@@ -23,6 +24,13 @@ class Run(checkmate._tree.Tree):
                 if f.interface.providedBy(s):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
+
+    def get_transition_by_input_states(self, exchanges, states):
+        for _t in self.walk():
+            if (_t.is_matching_initial(states) and _t.is_matching_incoming(exchanges)):
+                return _t
+        else:
+            raise checkmate.exception.NoTransitionFound
 
     def fill_procedure(self, procedure):
         procedure.final = []

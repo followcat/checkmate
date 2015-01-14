@@ -73,9 +73,10 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
             'True'
-            >>> box(checkmate.runs.Run(sample_app.application.TestData().components['C1'].state_machine.transitions[0]))
+            >>> runs = box.application.run_collection
+            >>> box(runs[0])
             True
-            >>> box(checkmate.runs.Run(sample_app.application.TestData().components['C3'].state_machine.transitions[1]))
+            >>> box(runs[2])
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
@@ -121,7 +122,9 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
+            >>> runs = box.application.run_collection
             >>> _t = box.application.components['C2'].get_transition_by_output([ex])
+            >>> box.run = runs[0]
             >>> transitions = box.process([ex], checkmate.runs.Run(_t, []))
             >>> box.application.components['C3'].states[0].value
             'True'
@@ -130,7 +133,7 @@ class Sandbox(object):
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
                 try:
-                    _transition = _c.get_transitions_by_input([_exchange])[0]
+                    _transition = self.run.get_transition_by_input_states([_exchange], _c.states)
                 except IndexError:
                     _transition = None
                 _outgoings = _c.process([_exchange])

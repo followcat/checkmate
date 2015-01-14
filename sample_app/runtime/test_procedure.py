@@ -14,7 +14,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
             >>> r.start_test()
             >>> import sample_app.runtime.test_procedure
             >>> run = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
-            >>> proc = r.build_procedure(run, r.application)
+            >>> proc = r.build_procedure(run)
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].root.incoming[0].code
             'ARE'
             >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code

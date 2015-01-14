@@ -190,6 +190,7 @@ def get_runs_from_features(application):
     for name in components:
         state_modules.append(application.components[name].state_module)
     for array_items in array_list:
-        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [application.exchange_module], state_modules))
-        runs.append(run)
+        transition = checkmate.partition_declarator.make_transition(array_items, [application.exchange_module], state_modules)
+        gen_runs = checkmate.runs.get_runs_from_transition(application, transition, itp_transition=True)
+        runs.append(gen_runs[0])
     return runs
