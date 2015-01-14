@@ -35,6 +35,25 @@ def get_method_basename(signature):
     return basename
 
 
+def get_signature_arguments(signature, cls):
+    """
+        >>> import sample_app.application
+        >>> import sample_app.exchanges
+        >>> import checkmate._exec_tools
+        >>> action = sample_app.exchanges.Action
+        >>> checkmate._exec_tools.get_signature_arguments("Action('R')", action)
+        {}
+        >>> checkmate._exec_tools.get_signature_arguments("AP('R2')", action)
+        {'R': 'R2'}
+    """
+    found_label = signature.find('(')
+    parameters = signature[found_label:][1:-1].split(', ')
+    args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
+                  _p.strip("'") not in cls._sig.parameters.keys())])
+    arguments = cls._sig.bind_partial(*args).arguments
+    return dict(arguments)
+
+
 def get_exec_signature(signature, exec_module=None, data_structure_module=None):
     """
         >>> import sample_app.application
@@ -86,12 +105,7 @@ def get_define_str(element):
             \n            else:
             \n                _v = self.__class__._construct_values[_k]
             \n                if not isinstance(kwargs[_k], _v):
-            \n                    if isinstance(kwargs[_k], tuple):
-            \n                        if isinstance(kwargs[_k][0], tuple):
-            \n                            kwargs[_k] = _v(*kwargs[_k][0], default=default, **kwargs[_k][1])
-            \n                        else:
-            \n                            kwargs[_k] = _v(*kwargs[_k], default=default)
-            \n                    elif isinstance(kwargs[_k], dict):
+            \n                    if isinstance(kwargs[_k], dict):
             \n                        kwargs[_k] = _v(default=default, **kwargs[_k])
             \n                    else:
             \n                        kwargs[_k] = _v(kwargs[_k], default=default)
@@ -108,7 +122,7 @@ def get_define_str(element):
     return run_code
 
 
-def exec_class_definition(data_value, data_structure_module, partition_type, exec_module, signature, codes, values):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
@@ -136,9 +150,6 @@ def exec_class_definition(data_value, data_structure_module, partition_type, exe
     define_class = getattr(exec_module, classname)
     define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig', get_exec_signature(signature, exec_module=exec_module, data_structure_module=data_structure_module))
-    if classname in data_value:
-        for key, data in data_value[classname][1].items():
-            setattr(define_class, key, data)
     exec("_annotated_values = dict([(_k, _v.annotation) for (_k,_v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty])\
          \n_construct_values = dict(_annotated_values)\

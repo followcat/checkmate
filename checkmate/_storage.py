@@ -20,7 +20,7 @@ def name_to_interface(name, modules):
 
 
 class Data(object):
-    def __init__(self, type, interface, code_value_list, full_description=None):
+    def __init__(self, type, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -30,10 +30,10 @@ class Data(object):
             >>> acr = sample_app.data_structure.ActionRequest()
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
-            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, [('AnotherState1()', 'None')])
+            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, [('AP(R)', 'AP')])
+            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
@@ -44,14 +44,16 @@ class Data(object):
 
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
-        for data in code_value_list:
-            code = data[0]
-            value = data[1]
+        for code, arguments in code_arguments.items():
             try:
                 code_description = self.full_description[code]
             except:
                 code_description = (None, None)
-            _storage = InternalStorage(self.interface, code, code_description, value=value)
+            try:
+                value = arguments.pop('value')
+            except KeyError:
+                value = None
+            _storage = InternalStorage(self.interface, code, code_description, value=value, arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -90,7 +92,8 @@ class TransitionStorage(object):
                     interface = name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = checkmate._module.get_class_implementing(interface)
-                    generate_storage = InternalStorage(interface, _data, None, arguments=_data)
+                    arguments = checkmate._exec_tools.get_signature_arguments(_data, define_class)
+                    generate_storage = InternalStorage(interface, _data, None, arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
@@ -109,7 +112,7 @@ class TransitionStorage(object):
 @zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure) information in transition"""
-    def __init__(self, interface, code, description, value=None, arguments=None):
+    def __init__(self, interface, code, description, value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -124,9 +127,7 @@ class InternalStorage(object):
         self.interface = interface
         self.function = checkmate._module.get_class_implementing(interface)
 
-        self.resolved_arguments = {}
-        if checkmate._exec_tools.is_method(arguments):
-            self.resolved_arguments = self.function.method_arguments(arguments)
+        self.resolved_arguments = self.function.method_arguments(arguments)
         self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
 
@@ -167,9 +168,11 @@ class InternalStorage(object):
             >>> c.states[1].value
             []
         """
-        if len(args) == 0:
-            if 'default' not in kwargs or kwargs['default']:
+        if 'default' not in kwargs or kwargs['default']:
+            if len(args) == 0:
                 args = self.values
+            if len(kwargs) == 0:
+                kwargs.update(self.resolved_arguments)
         if instance is not None and self.interface.providedBy(instance):
             try:
                 value = self.values[0]

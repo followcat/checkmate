@@ -21,11 +21,17 @@ def get_runs_from_test(application):
     state_modules = []
     for name in list(application.components.keys()):
             state_modules.append(application.components[name].state_module)
-    path = os.path.dirname(application.exchange_definition_file)
+    paths = application.itp_definition
+    if type(paths) != list:
+        paths = [paths]
     array_list = []
     try:
-        with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
-            matrix = _file.read()
+        matrix = ''
+        for path in paths:
+            if not os.path.isdir(path):
+                continue
+            with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
+                matrix += _file.read()
     except FileNotFoundError:
         return []
     _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
