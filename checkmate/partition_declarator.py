@@ -1,3 +1,5 @@
+import collections
+
 import checkmate._storage
 import checkmate._exec_tools
 import checkmate.parser.yaml_visitor
@@ -61,8 +63,13 @@ class Declarator(object):
         'test_comm'
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.__class__.data_value, self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
-        partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, zip(codes_list, values_list), full_description)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
+        code_arguments = collections.OrderedDict()
+        for code, value in zip(codes_list, values_list):
+            code_arguments[code] = {'value': value}
+        if defined_class.__name__ in self.__class__.data_value:
+            code_arguments.update(self.__class__.data_value[defined_class.__name__])
+        partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_arguments, full_description)
         if partition_type == 'exchanges':
             setattr(defined_class, 'communication', communication)
         setattr(defined_class, 'partition_storage', partition_storage)
