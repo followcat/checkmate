@@ -103,9 +103,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
-                if _key == 'internal':
-                    continue
-                _communication = runtime.communication_list[_key]
+                try:
+                    _communication = runtime.communication_list[_key]
+                except KeyError:
+                    if _key not in self.client.external_connectors:
+                        _communication = checkmate.runtime._pyzmq.Communication()
+                        runtime.communication_list[_key] = _communication
                 connector_factory = _communication.connector_class
                 self.client.external_connectors[_key] = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
 
