@@ -84,7 +84,9 @@ class ComponentMeta(type):
             namespace['outgoings'] = outgoings
             for _communication in communication_list:
                 if _communication not in namespace['communication_list']:
-                    raise KeyError("Communication '%s' is not defined in application" %_communication)
+                    #if 'launch_command' is set, communication should be set as well
+                    if 'launch_command' in namespace:
+                        raise KeyError("Communication '%s' is not defined in application" %_communication)
             namespace['communication_list'] = communication_list
 
             result = type.__new__(cls, name, bases, dict(namespace))
