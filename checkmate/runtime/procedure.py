@@ -21,6 +21,7 @@ def _compatible_skip_test(procedure, message):
 
 class Procedure(object):
     def __init__(self, test=None):
+        self.result = None
         self.test = test
         self.logger = logging.getLogger('checkmate.runtime.procedure')
 
@@ -76,8 +77,6 @@ class Procedure(object):
         if not hasattr(runtime, 'application'):
             #happens with using --with-doctest on checkmate procedure generator
             return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
-        if self.transitions.root.owner in self.runtime.application.system_under_test:
-            return _compatible_skip_test(self, "SUT do NOT simulate")
         self.name = self.transitions.root.name
         self._run_from_startpoint()
 
