@@ -285,9 +285,9 @@ class Communication(checkmate.runtime.communication.Communication):
             self.device_family = \
                 type(component).__module__.split(os.extsep)[-1]
             self.server_name = self.create_tango_server(component.name)
-            _device_name = self.create_tango_device(
-                               component.__class__.__name__, component.name,
-                               self.device_family)
+            _device_name = \
+                self.create_tango_device(component.__class__.__name__,
+                    component.name, self.device_family)
             self.comp_device[component.name] = _device_name
         self.encoder = Encoder()
         self.router = checkmate.runtime.communication.Router(self.encoder)
