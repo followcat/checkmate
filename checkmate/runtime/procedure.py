@@ -74,9 +74,6 @@ class Procedure(object):
         """
         self.result = result
         self.runtime = runtime
-        if not hasattr(runtime, 'application'):
-            #happens with using --with-doctest on checkmate procedure generator
-            return _compatible_skip_test(self, "Procedure is given a runtime of type %s with no application" %type(runtime))
         self.name = self.transitions.root.name
         self._run_from_startpoint()
 
