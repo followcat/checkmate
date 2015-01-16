@@ -36,10 +36,16 @@ class ComponentMeta(type):
         state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        path = os.path.dirname(os.path.join(namespace['exchange_definition_file']))
+        paths = namespace['component_definition']
+        if type(paths) != list:
+            paths = [paths]
         filename = name.lower() + '.yaml'
-        with open(os.sep.join([path, 'component', filename]), 'r') as _file:
-            define_data = _file.read()
+        define_data = ''
+        for path in paths:
+            if not os.path.isdir(path):
+                continue
+            with open(os.sep.join([path, filename]), 'r') as _file:
+                define_data += _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module)
