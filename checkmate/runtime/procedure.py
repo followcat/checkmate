@@ -10,12 +10,6 @@ import checkmate.runtime.interfaces
 
 
 def _compatible_skip_test(procedure, message):
-    if hasattr(procedure.result, 'addSkip'):
-        if procedure.result is not None:
-            procedure.result.startTest(procedure)
-            procedure.result.addSkip(procedure, message)
-            procedure.result.stopTest(procedure)
-            return
     raise nose.plugins.skip.SkipTest(message)
 
 
