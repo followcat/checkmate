@@ -163,6 +163,13 @@ class Sandbox(object):
 
 
 class CollectionSandbox(Sandbox):
+    def __call__(self, run, itp_run=False):
+        results = super(CollectionSandbox, self).__call__(run, itp_run)
+        for _split, _run in results:
+            if itp_run is True:
+                _run.itp_run = run
+            yield _run
+
     def run_process(self, outgoing):
         return self.process(self, outgoing, checkmate.runs.Run(self.transitions, []))
 

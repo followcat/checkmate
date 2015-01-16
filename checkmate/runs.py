@@ -107,8 +107,8 @@ def get_runs_from_application(application):
     for _o in origin_transitions:
         sandbox = checkmate.sandbox.CollectionSandbox(application)
         run = checkmate.runs.Run(_o)
-        for split, _t in sandbox(run):
-            runs.append(_t)
+        for _run in sandbox(run):
+            runs.append(_run)
     return runs
 
 
@@ -121,8 +121,6 @@ def get_runs_from_transition(application, transition, itp_transition=False):
         sandbox = checkmate.sandbox.CollectionSandbox(application, transition_run.walk())
     else:
         sandbox = checkmate.sandbox.CollectionSandbox(application)
-    for split, _t in sandbox(transition_run, itp_run=itp_transition):
-        if itp_transition:
-            _t.itp_run = transition_run
-        runs.append(_t)
+    for _run in sandbox(transition_run, itp_run=itp_transition):
+        runs.append(_run)
     return runs
