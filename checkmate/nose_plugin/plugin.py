@@ -4,7 +4,6 @@ import time
 import shlex
 import inspect
 import importlib
-import collections
 
 import nose
 import nose.core
