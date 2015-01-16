@@ -10,7 +10,8 @@ import checkmate.runtime._zmq_wrapper
 
 class Connector(object):
     """"""
-    def __init__(self, component=None, communication=None, is_server=False, is_reading=False, is_broadcast=False):
+    def __init__(self, component=None, communication=None, is_server=False,
+                 is_reading=False, is_broadcast=False):
         self.component = component
         self.is_server = is_server
         self.is_reading = is_reading
@@ -69,7 +70,8 @@ class Router(checkmate.runtime._threading.Thread):
         self._broadcast_routerport = self.pickfreeport()
         self._publishport = self.pickfreeport()
         self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.broadcast_router.bind("tcp://127.0.0.1:%i" % self._broadcast_routerport)
+        self.broadcast_router.bind("tcp://127.0.0.1:%i" %
+            self._broadcast_routerport)
         self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
 
         self.poller.register(self.router)
@@ -106,7 +108,8 @@ class Encoder(object):
             >>> import sample_app.application
             >>> import checkmate.runtime.communication
             >>> a = sample_app.application.TestData()
-            >>> ac = a.components['C1'].state_machine.transitions[0].incoming[0].factory()
+            >>> t = a.components['C1'].state_machine.transitions[0]
+            >>> ac = t.incoming[0].factory()
             >>> dir(ac)
             ['R']
             >>> encoder = checkmate.runtime.communication.Encoder()
