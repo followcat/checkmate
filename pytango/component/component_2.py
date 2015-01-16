@@ -17,7 +17,8 @@ class Component_2(PyTango.Device_4Impl):
         self.user_dev = PyTango.DeviceProxy('sys/user/USER')
 
     def PBAC(self):
-        #Execute asynchronously in case of nested called caused infinitely wait
+        #Execute asynchronously in case of nested calls cause
+        #infinitely wait
         _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AC', _R)
 
@@ -29,7 +30,8 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('PP', _R)
 
     def ARE(self):
-        #Execute asynchronously in case of nested called caused infinitely wait
+        #Execute asynchronously in case of nested calls cause
+        #infinitely wait
         _R = ['AT1', 'NORM']
         self.c1_dev.command_inout_asynch('AP', _R)
 
