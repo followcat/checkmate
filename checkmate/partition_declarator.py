@@ -63,7 +63,7 @@ class Declarator(object):
         'test_comm'
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, values_list)
         code_arguments = collections.OrderedDict()
         for code, value in zip(codes_list, values_list):
             code_arguments[code] = {'value': value}

@@ -117,7 +117,7 @@ def get_define_str(element):
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, values):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
