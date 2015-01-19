@@ -43,7 +43,7 @@ class Component(object):
     def process(self, exchanges):
         try:
             output = self.context.process(exchanges)
-        except checkmate.component.NoTransitionFound:
+        except checkmate.exception.NoTransitionFound:
             output = []
         self.logger.info("%s process exchange %s" % (self.context.name, exchanges[0].value))
         for _o in output:

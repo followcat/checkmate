@@ -120,25 +120,15 @@ class Runtime(object):
         with condition:
             condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
 
-    def build_procedure(self, run, application=None):
-        if application is None:
-            application = self.application_class()
-            transitions = run.walk()
-            foreign_transitions = True
-        else:
-            transitions = []
-            foreign_transitions = False
-        sandbox = checkmate.sandbox.Sandbox(application, transitions)
-        sandbox(run.root, foreign_transitions=foreign_transitions)
-        proc = checkmate.runtime.procedure.Procedure(is_setup=(not foreign_transitions))
-        sandbox.fill_procedure(proc)
-        if len(run.nodes) == 0:
-            #force checking final from transition if run contains only the root
-            proc.final = run.root.final
+    def build_procedure(self, run):
+        proc = checkmate.runtime.procedure.Procedure()
+        run.fill_procedure(proc)
         return proc
 
     def execute(self, run, result=None, transform=True):
         procedure = self.build_procedure(run)
+        if procedure.transitions.root.owner in self.application.system_under_test:
+            return checkmate.runtime.procedure._compatible_skip_test(procedure, "SUT do NOT simulate")
         if transform is True and not self.transform_to_procedure_initial(procedure):
             return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
         for _c in self.runtime_components.values():
@@ -148,6 +138,7 @@ class Runtime(object):
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info('Procedure Done')
 
     def transform_to_procedure_initial(self, procedure):
         if not self.application.compare_states(procedure.initial):
@@ -156,6 +147,6 @@ class Runtime(object):
                 checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
                 return False
             for run in run_list:
-                proc = self.build_procedure(run, self.application)
+                proc = self.build_procedure(run)
                 proc(self)
         return True

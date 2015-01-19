@@ -5,7 +5,6 @@
 
 import os
 import re
-import sys
 import copy
 import gettext
 
@@ -25,6 +24,7 @@ def new_load_step_definitions(paths):
     """
         the load_steps_impl function at load_step_definitions in fresher.cuke only has 2 arguments,has problem:
 
+        >>> import sys
         >>> import fresher.cuke
         >>> import fresher.core
         >>> import fresher.stepregistry
@@ -157,7 +157,7 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_runs_from_features(exchange_module, state_modules, path=None):
+def get_runs_from_features(application):
     """
             >>> import checkmate.state
             >>> import checkmate.exchange
@@ -169,22 +169,28 @@ def get_runs_from_features(exchange_module, state_modules, path=None):
             >>> state_modules = []
             >>> for name in list(a.components.keys()):
             ...     state_modules.append(a.components[name].state_module)
-            >>> runs = checkmate.parser.feature_visitor.get_runs_from_features(a.exchange_module, state_modules)
+            >>> runs = checkmate.parser.feature_visitor.get_runs_from_features(a)
             >>> len(runs)
             14
             >>> runs # doctest: +ELLIPSIS
             [<checkmate.runs.Run object at ...
         """
     try:
-        path = os.path.join(os.getenv('CHECKMATE_HOME'), path)
+        path = os.path.join(os.getenv('CHECKMATE_HOME'), application.feature_definition_path)
     except AttributeError:
-        path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(exchange_module.__file__), 'itp')
+        path = os.path.join(os.getenv('CHECKMATE_HOME'), os.path.dirname(application.exchange_module.__file__), 'itp')
     try:
         array_list = get_array_list([path])
     except FileNotFoundError:
         return []
+
     runs = []
+    components = list(application.components.keys())
+    state_modules = []
+    for name in components:
+        state_modules.append(application.components[name].state_module)
     for array_items in array_list:
-        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
-        runs.append(run)
+        transition = checkmate.partition_declarator.make_transition(array_items, [application.exchange_module], state_modules)
+        gen_runs = checkmate.runs.get_runs_from_transition(application, transition, itp_transition=True)
+        runs.append(gen_runs[0])
     return runs

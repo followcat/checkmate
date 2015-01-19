@@ -143,8 +143,7 @@ class Application(object):
         [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
-            setattr(self, 'run_collection', checkmate.runs.RunCollection())
-            self.run_collection.get_runs_from_application(self)
+            setattr(self, 'run_collection', checkmate.runs.get_runs_from_application(self))
             return self.run_collection
         super().__getattr__(self, name)
 

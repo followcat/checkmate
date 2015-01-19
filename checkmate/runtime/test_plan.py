@@ -39,8 +39,9 @@ def get_runs_from_test(application):
         array_list.append(data)
     runs = []
     for array_items in array_list:
-        run = checkmate.runs.Run(checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules))
-        runs.append(run)
+        transition = checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules)
+        gen_runs = checkmate.runs.get_runs_from_transition(application, transition, itp_transition=True)
+        runs.append(gen_runs[0])
     return runs
 
 def TestProcedureInitialGenerator(application_class, transition_list=None):
@@ -73,11 +74,6 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 
     """
     _application = application_class()
-    components = list(_application.components.keys())
-    state_modules = []
-    for name in components:
-        state_modules.append(_application.components[name].state_module)
-
     for _run in get_runs_from_test(_application):
         yield _run, _run.root.name
 
@@ -85,26 +81,24 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 def TestProcedureFeaturesGenerator(application_class):
     """
         >>> import checkmate.sandbox
+        >>> import checkmate.runtime.procedure
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
         >>> _application = sample_app.application.TestData()
-        >>> components = list(_application.components.keys())
-        >>> state_modules = []
-        >>> for name in components:
-        ...         state_modules.append(_application.components[name].state_module)
-        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules)
-        >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
+        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
+        >>> run_list.sort(key=lambda x:x.root.outgoing[0].code)
         >>> run_list[0].root.incoming[0].code
-        'AC'
-        >>> box = checkmate.sandbox.Sandbox(_application, [run_list[0].root])
-        >>> box.application.components['C1'].states[0].value == run_list[0].root.initial[0].values[0]
+        'PBAC'
+        >>> box = checkmate.sandbox.Sandbox(_application, run_list[0].walk())
+        >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].values[0]
         True
         >>> box.application.compare_states(run_list[0].root.initial)
         True
-        >>> box(run_list[0].root, foreign_transitions=True)
+        >>> box(run_list[0])
         True
-        >>> box.update_required_states(box.transitions)
-        >>> len(box.initial)
+        >>> proc = checkmate.runtime.procedure.Procedure()
+        >>> run_list[0].fill_procedure(proc)
+        >>> len(proc.initial)
         3
 
         >>> import checkmate.runtime._pyzmq
@@ -123,12 +117,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> r.stop_test()
     """
     _application = application_class()
-    components = list(_application.components.keys())
-    state_modules = []
-    for name in components:
-        state_modules.append(_application.components[name].state_module)
-    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application.exchange_module, state_modules, path=_application.feature_definition_path)
-
+    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
     for _run in run_list:
         yield _run, _run.root.name
         
@@ -157,7 +146,6 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.stop_test()
     """
 
-    runs = checkmate.runs.RunCollection()
-    runs.get_runs_from_application(application_class())
+    runs = checkmate.runs.get_runs_from_application(application_class())
     for _run in runs:
         yield _run, _run.root.name
