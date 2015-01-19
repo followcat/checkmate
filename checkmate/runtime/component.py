@@ -9,7 +9,6 @@ import zope.component
 import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
-import checkmate.runtime._pyzmq
 import checkmate.runtime.client
 import checkmate.timeout_manager
 import checkmate.runtime.launcher
@@ -98,17 +97,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.client.set_exchange_module(_application.exchange_module)
 
         if self.using_internal_client:
-            connector_factory = checkmate.runtime._pyzmq.Connector
             _communication = runtime.communication_list['internal']
+            connector_factory = _communication.connector_class
             self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
-                try:
-                    _communication = runtime.communication_list[_key]
-                except KeyError:
-                    if _key not in self.client.external_connectors:
-                        _communication = checkmate.runtime._pyzmq.Communication()
-                        runtime.communication_list[_key] = _communication
+                _communication = runtime.communication_list[_key]
                 connector_factory = _communication.connector_class
                 self.client.external_connectors[_key] = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
 
