@@ -193,3 +193,4 @@ class CollectionSandbox(Sandbox):
                             tree.add_node(tmp_run)
         if split is False:
             yield (split, tree)
+

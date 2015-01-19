@@ -1,8 +1,11 @@
+import checkmate
+
 class Partition(object):
     """"""
     partition_attribute = tuple()
 
     @classmethod
+    @checkmate.report_issue("checkmate/issues/default_type_in_exchange.rst")
     def method_arguments(cls, arguments):
         """
             >>> import sample_app.application
