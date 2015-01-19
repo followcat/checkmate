@@ -33,7 +33,7 @@ class Visitor():
         self._classname = ''
         self.codes_list = []
         self.values_list = []
-        self.communication_type = ''
+        self.attributes = {}
         self.tran_items = []
 
         self.read_document(define_content)
@@ -95,20 +95,20 @@ class Visitor():
                 _partitions = {'clsname': self._classname,
                                'codes_list': self.codes_list,
                                'values_list': self.values_list,
-                               'full_desc': self.full_description}
+                               'full_desc': self.full_description,
+                               'attributes': self.attributes}
                 if title == "State identification":
                     self._state_partitions.append(_partitions)
                 elif title == "Data structure":
                     self._data_structure_partitions.append(_partitions)
                 elif title == "Exchange identification":
-                    _partitions.update({'communication_type': self.communication_type})
                     self._exchange_partitions.append(_partitions)
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
             self.codes_list = []
             self.values_list = []
-            self.communication_type = ''
+            self.attributes = {}
             self.tran_items = []
 
     def partition_identification(self, content):
@@ -118,7 +118,7 @@ class Visitor():
                 self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
             elif _k == "Communication type":
-                self.communication_type = _v
+                self.attributes['communication'] = _v
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
