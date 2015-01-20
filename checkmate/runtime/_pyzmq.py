@@ -128,8 +128,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.logger = \
             logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.encoder = checkmate.runtime.communication.Encoder()
-        self.router = checkmate.runtime.communication.Router(self.encoder)
+        self.router = checkmate.runtime.communication.Router()
 
     def initialize(self):
         """"""

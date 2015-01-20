@@ -112,7 +112,7 @@ def add_device_interface(services, component, encoder):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
-class Encoder(checkmate.runtime.communication.Encoder):
+class Encoder():
     def get_partition_values(self, partition, values_list=None):
         """
             >>> import pytango.checkmate.application
@@ -130,14 +130,6 @@ class Encoder(checkmate.runtime.communication.Encoder):
             if attr.value is not None:
                 values_list.append(attr.value)
         return values_list
-
-    def _dump(self, exchange_type, exchange_value, param):
-        partition = {}
-        return (exchange_type, exchange_value, partition)
-
-    def _load(self, data):
-        exchange_type, exchange_value, exchange_partition = data
-        return exchange_type(exchange_value, **exchange_partition)
 
 
 class Registry(checkmate.runtime._threading.Thread):
@@ -292,7 +284,7 @@ class Communication(checkmate.runtime.communication.Communication):
                     component.name, self.device_family)
             self.comp_device[component.name] = _device_name
         self.encoder = Encoder()
-        self.router = checkmate.runtime.communication.Router(self.encoder)
+        self.router = checkmate.runtime.communication.Router()
         self.dev_proxies = {}
 
     def initialize(self):

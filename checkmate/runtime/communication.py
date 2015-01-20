@@ -54,10 +54,9 @@ class Communication(object):
 
 class Router(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, encoder, name=None):
+    def __init__(self, name=None):
         """"""
         super(Router, self).__init__(name=name)
-        self.encoder = encoder
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
@@ -97,55 +96,3 @@ class Router(checkmate.runtime._threading.Thread):
             addr, port = _socket.getsockname()
             _socket.close()
         return port
-
-
-class Encoder(object):
-    def _dump(self, partition):
-        """
-            >>> import sample_app.application
-            >>> import checkmate.runtime.communication
-            >>> a = sample_app.application.TestData()
-            >>> t = a.components['C1'].state_machine.transitions[0]
-            >>> ac = t.incoming[0].factory()
-            >>> dir(ac)
-            ['R']
-            >>> encoder = checkmate.runtime.communication.Encoder()
-            >>> dump_data = encoder._dump(ac) #doctest: +ELLIPSIS
-            >>> dump_data[0]
-            <class 'sample_app.exchanges.Action'>
-            >>> dump_data[1]['value']
-            'AC'
-            >>> dump_data[1]['R']['C']['value']
-            'AT1'
-            >>> new_ac = encoder._load(dump_data)
-            >>> new_ac #doctest: +ELLIPSIS
-            <sample_app.exchanges.Action object at ...
-            >>> new_ac.R.P.value
-            'NORM'
-        """
-        partition_dict = partition._dump()
-        return (type(partition), partition_dict)
-
-    def _load(self, data):
-        exchange_type, params_dict = data
-        return exchange_type(**params_dict)
-
-    def encode(self, *args):
-        dump_data = pickle.dumps(self._dump(*args))
-        return dump_data
-
-    @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
-    def decode(self, message):
-        """
-        >>> import sample_app.application
-        >>> import checkmate.runtime.communication
-        >>> ac = sample_app.exchanges.Action('AC')
-        >>> encoder = checkmate.runtime.communication.Encoder()
-        >>> encode_exchange = encoder.encode(ac)
-        >>> decode_exchange = encoder.decode(encode_exchange)
-        >>> ac == decode_exchange
-        True
-        """
-        load_data = pickle.loads(message)
-        exchange = self._load(load_data)
-        return exchange
