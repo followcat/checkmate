@@ -70,9 +70,6 @@ class Declarator(object):
         if defined_class.__name__ in self.__class__.data_value:
             code_arguments.update(self.__class__.data_value[defined_class.__name__])
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_arguments, full_description)
-        if partition_type == 'exchanges':
-            if not hasattr(defined_class, 'communication'):
-                setattr(defined_class, 'communication', '')
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
