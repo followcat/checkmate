@@ -117,8 +117,8 @@ class Visitor():
                 codes_list, values_list = self.value_partitions(_v)
                 self.codes_list.extend(codes_list)
                 self.values_list.extend(values_list)
-            elif _k == "Communication type":
-                self.attributes['communication'] = _v
+            elif _k == "Attributes":
+                self.attributes = _v
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
