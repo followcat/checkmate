@@ -31,7 +31,9 @@ class ComponentMeta(type):
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
-        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
+        state_module = \
+            checkmate._module.get_module(
+                namespace['__module__'], name.lower() + '_states',)
         namespace['state_module'] = state_module
 
         paths = namespace['component_definition']
@@ -46,10 +48,17 @@ class ComponentMeta(type):
                 define_data += _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module)
+            declarator = \
+                checkmate.partition_declarator.Declarator(
+                    data_structure_module,
+                    exchange_module=exchange_module,
+                    state_module=state_module)
             declarator.new_definitions(data_source)
             declarator_output = declarator.get_output()
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
+            namespace['state_machine'] = \
+                checkmate.state_machine.StateMachine(
+                    declarator_output['states'],
+                    declarator_output['transitions'])
             services = []
             service_interfaces = []
             outgoings = []
@@ -93,7 +102,8 @@ class Component(object):
         """
         self.states = []
         self.name = name
-        self.validation_list = checkmate._validation.List(self.state_machine.transitions)
+        self.validation_list = \
+            checkmate._validation.List(self.state_machine.transitions)
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
@@ -110,13 +120,14 @@ class Component(object):
         >>> c.start(default_state_value=False)
         >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
         >>> transition_list = c.get_transitions_by_input([r_tm])
-        >>> transition_list[0] == c.state_machine.transitions[0], transition_list[1] == c.state_machine.transitions[3]
+        >>> transition_list[0] == c.state_machine.transitions[0],\
+        transition_list[1] == c.state_machine.transitions[3]
         (True, True)
         """
         transition_list = []
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange)):
+                    _t.is_matching_incoming(exchange)):
                 transition_list.append(_t)
         return transition_list
 
@@ -130,12 +141,13 @@ class Component(object):
         ...    print(c.service_registry._registry[service])
         ['C1']
         >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
-        >>> c.get_transition_by_output([r_tm]) == c.state_machine.transitions[0]
+        >>> c.get_transition_by_output([r_tm]) == \
+        c.state_machine.transitions[0]
         True
         """
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
-                _t.is_matching_outgoing(exchange)):
+                    _t.is_matching_outgoing(exchange)):
                 return _t
         return None
 
@@ -175,7 +187,8 @@ class Component(object):
         >>> transition=c.state_machine.transitions[0]
         >>> transition.is_matching_initial(c.states)
         True
-        >>> output = transition.process(c.states, [sample_app.exchanges.Action("AC")])
+        >>> output = transition.process(\
+            c.states, [sample_app.exchanges.Action("AC")])
         >>> output[0].value
         'RE'
         >>> output[1].value
@@ -203,7 +216,8 @@ class Component(object):
             _incremental_output = self._do_process([_incoming])
             output.extend(_incremental_output)
             self.pending_incoming.remove(_incoming)
-            if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
+            if (len([_e for _e in _incremental_output if _e.data_returned])
+                    == 0):
                 break
         return output
 
@@ -218,17 +232,22 @@ class Component(object):
             try:
                 _transition = self.get_transitions_by_input(exchange)[0]
             except IndexError:
-                if (exchange[0].return_code and self.expected_return_code is not None and
-                    isinstance(exchange[0], self.expected_return_code.return_type)):
+                if (exchange[0].return_code and
+                    self.expected_return_code is not None and
+                    isinstance(
+                        exchange[0], self.expected_return_code.return_type)):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
-                raise checkmate.exception.NoTransitionFound("No transition for incoming %s " %(exchange[0]))
+                raise checkmate.exception.NoTransitionFound(
+                    "No transition for incoming %s " %(exchange[0]))
         else:
             _transition = transition
         output = []
         self.validation_list.record(_transition, exchange)
-        for _outgoing in _transition.process(self.states, exchange, default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+        for _outgoing in _transition.process(
+                self.states, exchange, default=self.default_state_value):
+            for _e in self.service_registry.server_exchanges(
+                    _outgoing, self.name):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
@@ -236,7 +255,8 @@ class Component(object):
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
                 return_exchange._return_code = True
-                return_exchange.origin_destination(self.name, exchange[0].origin)
+                return_exchange.origin_destination(
+                    self.name, exchange[0].origin)
                 output.insert(0, return_exchange)
         for _index, _e in enumerate(output):
             if _e.data_returned:
@@ -256,7 +276,8 @@ class Component(object):
             >>> exchange = sample_app.exchanges.Action('AC')
             >>> transition = c2.get_transition_by_output([exchange])
 
-        We can't simulate a transition when no destination for outgoing is registered:
+        We can't simulate a transition when no destination 
+        for outgoing is registered:
             >>> c2.simulate(transition)
             []
 
@@ -268,9 +289,12 @@ class Component(object):
         """
         output = []
         _incoming = _transition.generic_incoming(self.states)
-        for _outgoing in _transition.process(self.states, _incoming, default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
-                if len(_incoming) != 0 and isinstance(_e, _incoming[0].return_type):
+        for _outgoing in _transition.process(
+                self.states, _incoming, default=self.default_state_value):
+            for _e in self.service_registry.server_exchanges(
+                    _outgoing, self.name):
+                if (len(_incoming) != 0 and
+                        isinstance(_e, _incoming[0].return_type)):
                     continue
                 output.append(_e)
         return output
