@@ -90,6 +90,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_queue)
         self.validation_lock = threading.Lock()
 
+    @checkmate.report_issue('checkmate/issues/use_default_communication.rst', failed=2)
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
