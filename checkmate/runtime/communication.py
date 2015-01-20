@@ -80,13 +80,14 @@ class Router(checkmate.runtime._threading.Thread):
                 break
             socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
-                message = sock.recv_multipart()
-                exchange = self.encoder.decode(message[2])
+                origin = sock.recv()
+                destination = sock.recv()
+                exchange = sock.recv_pyobj()
                 if exchange.broadcast:
-                    self.publish.send(message[1], flags=zmq.SNDMORE)
+                    self.publish.send(destination, flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
                 else:
-                    self.router.send(message[1], flags=zmq.SNDMORE)
+                    self.router.send(destination, flags=zmq.SNDMORE)
                     self.router.send_pyobj(exchange)
 
     def pickfreeport(self):

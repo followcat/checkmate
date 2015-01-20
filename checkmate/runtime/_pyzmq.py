@@ -90,8 +90,8 @@ class Connector(checkmate.runtime.communication.Connector):
             destination = exchange.origin.encode()
         else:
             destination = exchange.destination[0].encode()
-        self.socket_dealer_out.send_multipart([destination,
-                self.communication.encoder.encode(exchange)])
+        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
+        self.socket_dealer_out.send_pyobj(exchange)
 
 
 class Communication(checkmate.runtime.communication.Communication):

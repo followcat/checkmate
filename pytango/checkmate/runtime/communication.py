@@ -184,8 +184,10 @@ class Device(PyTango.Device_4Impl):
 
     def send(self, code, param):
         exchange_type, exchange_value = self.exchange_dict[code]
-        send_data = self.encoder.encode(exchange_type, exchange_value, param)
-        self.socket_dealer_out.send_multipart([self._name.encode(), send_data])
+        send_data = exchange_type(exchange_value)
+        self.socket_dealer_out.send(
+            self._name.encode(), flags=zmq.SNDMORE)
+        self.socket_dealer_out.send_pyobj(send_data)
 
 
 class DeviceInterface(PyTango.DeviceClass):
