@@ -205,7 +205,6 @@ class Communication(checkmate.runtime.communication.Communication):
                 self.create_tango_device(component.__class__.__name__,
                     component.name, self.device_family)
             self.comp_device[component.name] = _device_name
-        self.router = checkmate.runtime.communication.Router()
         self.dev_proxies = {}
 
     def initialize(self):
@@ -214,14 +213,11 @@ class Communication(checkmate.runtime.communication.Communication):
         self.pytango_server = \
             PyTango.Util(shlex.split(__file__ + ' ' + self.server_name))
 
-    def get_routerport(self):
-        return self.router._routerport
-
     def start(self):
+        super(Communication, self).start()
         self.event = threading.Event()
         self.registry = Registry(self.event)
         self.registry.start()
-        self.router.start()
         #wait for server initialized
         self.event.wait(timeout=2)
 
@@ -244,7 +240,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.delete_tango_device('/'.join(('dserver', self.device_family,
                                          self.server_name)))
         self.registry.stop()
-        self.router.stop()
+        super(Communication, self).close()
 
     def create_tango_server(self, server_name):
         comp = PyTango.DbDevInfo()

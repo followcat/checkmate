@@ -128,19 +128,13 @@ class Communication(checkmate.runtime.communication.Communication):
         self.logger = \
             logging.getLogger('checkmate.runtime._pyzmq.Communication')
         self.logger.info("%s initialize" % self)
-        self.router = checkmate.runtime.communication.Router()
 
     def initialize(self):
-        """"""
         super(Communication, self).initialize()
-        self.router.start()
+
+    def start(self):
+        super(Communication, self).start()
 
     def close(self):
-        self.router.stop()
+        super(Communication, self).close()
         self.logger.info("%s close" % self)
-
-    def get_routerport(self):
-        return self.router._routerport
-
-    def get_publishport(self):
-        return self.router._publishport

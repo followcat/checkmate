@@ -41,15 +41,24 @@ class Communication(object):
     """"""
     def __init__(self, component=None):
         """"""
+        self.router = Router()
 
     def initialize(self):
         """"""
 
     def start(self):
         """"""
+        self.router.start()
 
     def close(self):
         """"""
+        self.router.stop()
+
+    def get_routerport(self):
+        return self.router._routerport
+
+    def get_publishport(self):
+        return self.router._publishport
 
 
 class Router(checkmate.runtime._threading.Thread):
