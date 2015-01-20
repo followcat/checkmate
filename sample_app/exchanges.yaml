@@ -48,7 +48,9 @@ data:
     # [Partition,       State,  Valid value,      Comment]
     - [X-THRDREACT-01,  DR(),   'DR',             Comment]
 
-  - Definition and accessibility: 'Pause(broadcast=True)'
+  - Definition and accessibility: 'Pause'
+    Attributes:
+      broadcast: True
     Value partitions:
     # [Partition,   State,      Valid value,      Comment]
     - [X-PAUSE-01,  PA(),       'PA',             Comment]
