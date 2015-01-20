@@ -63,7 +63,7 @@ class Declarator(object):
         'test_comm'
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, values_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, values_list, attributes)
         code_arguments = collections.OrderedDict()
         for code, value in zip(codes_list, values_list):
             code_arguments[code] = {'value': value}
@@ -71,9 +71,8 @@ class Declarator(object):
             code_arguments.update(self.__class__.data_value[defined_class.__name__])
         partition_storage = checkmate._storage.PartitionStorage(partition_type, defined_interface, code_arguments, full_description)
         if partition_type == 'exchanges':
-            if 'communication' not in attributes:
-                attributes['communication'] = ''
-            setattr(defined_class, 'communication', attributes['communication'])
+            if not hasattr(defined_class, 'communication'):
+                setattr(defined_class, 'communication', '')
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
