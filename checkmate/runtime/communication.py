@@ -19,7 +19,6 @@ class Connector(object):
         self.communication = communication
         self.socket_dealer_in = None
         self.socket_dealer_out = None
-        self.socket_pub = None
         self.socket_sub = None
 
     def initialize(self):
@@ -67,11 +66,8 @@ class Router(checkmate.runtime._threading.Thread):
         self.get_assign_port_lock = threading.Lock()
 
         self._routerport = self.pickfreeport()
-        self._broadcast_routerport = self.pickfreeport()
         self._publishport = self.pickfreeport()
         self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.broadcast_router.bind("tcp://127.0.0.1:%i" %
-            self._broadcast_routerport)
         self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
 
         self.poller.register(self.router)
@@ -86,12 +82,12 @@ class Router(checkmate.runtime._threading.Thread):
             for sock in iter(socks):
                 message = sock.recv_multipart()
                 exchange = self.encoder.decode(message[2])
-                if sock == self.router:
-                    self.router.send(message[1], flags=zmq.SNDMORE)
-                    self.router.send_pyobj(exchange)
-                if sock == self.broadcast_router:
+                if exchange.broadcast:
                     self.publish.send(message[1], flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
+                else:
+                    self.router.send(message[1], flags=zmq.SNDMORE)
+                    self.router.send_pyobj(exchange)
 
     def pickfreeport(self):
         with self.get_assign_port_lock:

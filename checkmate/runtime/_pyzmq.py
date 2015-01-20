@@ -20,8 +20,6 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> connector.initialize()
         >>> connector.socket_dealer_in.TYPE == zmq.DEALER
         True
-        >>> connector.socket_pub.Type == zmq.DEALER
-        True
         >>> connector.socket_sub == None
         True
         >>> connector.close()
@@ -30,8 +28,6 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> connector.initialize()
         >>> connector.socket_dealer_in.TYPE == zmq.DEALER
         True
-        >>> connector.socket_pub == None
-        True
         >>> connector.socket_sub.TYPE == zmq.SUB
         True
         >>> connector.close()
@@ -39,8 +35,6 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> connector = checkmate.runtime._pyzmq.Connector(c3, c)
         >>> connector.initialize()
         >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_pub == None
         True
         >>> connector.socket_sub.TYPE == zmq.SUB
         True
@@ -54,24 +48,17 @@ class Connector(checkmate.runtime.communication.Connector):
         self._name = component.name
         self.is_reading = is_reading
         self.broadcast_map = component.broadcast_map
-        self.is_publish = component.is_publish
 
-        self.socket_pub = None
         self.socket_sub = None
         self.socket_dealer_in = None
         self.socket_dealer_out = None
 
         self.zmq_context = zmq.Context.instance()
         self._routerport = self.communication.get_routerport()
-        self._broadcast_routerport = \
-            self.communication.get_broadcast_routerport()
         self._publishport = self.communication.get_publishport()
 
     def initialize(self):
         super(Connector, self).initialize()
-        if self.is_publish:
-            self.socket_pub = \
-                self.open_router_socket(zmq.DEALER, self._broadcast_routerport)
         if self.broadcast_map:
             self.socket_sub = \
                 self.open_router_socket(zmq.SUB, self._publishport)
@@ -92,8 +79,6 @@ class Connector(checkmate.runtime.communication.Connector):
         """"""
 
     def close(self):
-        if self.socket_pub:
-            self.socket_pub.close()
         if self.socket_sub:
             self.socket_sub.close()
         self.socket_dealer_in.close()
@@ -102,11 +87,10 @@ class Connector(checkmate.runtime.communication.Connector):
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send_multipart([exchange.origin.encode(),
-                self.communication.encoder.encode(exchange)])
+            destination = exchange.origin.encode()
         else:
-            self.socket_dealer_out.send_multipart(
-                [exchange.destination[0].encode(),
+            destination = exchange.destination[0].encode()
+        self.socket_dealer_out.send_multipart([destination,
                 self.communication.encoder.encode(exchange)])
 
 
@@ -158,9 +142,6 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def get_routerport(self):
         return self.router._routerport
-
-    def get_broadcast_routerport(self):
-        return self.router._broadcast_routerport
 
     def get_publishport(self):
         return self.router._publishport
