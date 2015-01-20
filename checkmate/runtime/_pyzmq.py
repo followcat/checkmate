@@ -45,17 +45,6 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True):
         super(Connector, self).__init__(component,
             communication=communication, is_reading=is_reading)
-        self._name = component.name
-        self.is_reading = is_reading
-        self.broadcast_map = component.broadcast_map
-
-        self.socket_sub = None
-        self.socket_dealer_in = None
-        self.socket_dealer_out = None
-
-        self.zmq_context = zmq.Context.instance()
-        self._routerport = self.communication.get_routerport()
-        self._publishport = self.communication.get_publishport()
 
     def initialize(self):
         super(Connector, self).initialize()

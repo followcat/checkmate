@@ -140,10 +140,7 @@ class Connector(checkmate.runtime.communication.Connector):
             self.communication.create_tango_device(
                 self.device_class.__name__, self.component.name,
                 type(self.component).__module__.split(os.extsep)[-1])
-        self._name = component.name
         self.communication.comp_device[component.name] = self.device_name
-        self._routerport = self.communication.get_routerport()
-        self.zmq_context = zmq.Context.instance()
 
     def initialize(self):
         if self.is_server:

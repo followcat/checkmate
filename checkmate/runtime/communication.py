@@ -12,14 +12,22 @@ class Connector(object):
     """"""
     def __init__(self, component=None, communication=None, is_server=False,
                  is_reading=False, is_broadcast=False):
+        self._name = component.name
         self.component = component
+        self.broadcast_map = component.broadcast_map
+
         self.is_server = is_server
         self.is_reading = is_reading
         self.is_broadcast = is_broadcast
-        self.communication = communication
+
+        self.zmq_context = zmq.Context.instance()
         self.socket_dealer_in = None
         self.socket_dealer_out = None
         self.socket_sub = None
+
+        self.communication = communication
+        self._routerport = communication.get_routerport()
+        self._publishport = self.communication.get_publishport()
 
     def initialize(self):
         """"""
