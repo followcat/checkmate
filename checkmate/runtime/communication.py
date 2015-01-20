@@ -28,12 +28,21 @@ class Connector(object):
 
     def initialize(self):
         """"""
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" %
+            self._routerport)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
+            self._routerport)
 
     def open(self):
         """"""
 
     def close(self):
         """"""
+        self.socket_dealer_in.close()
+        self.socket_dealer_out.close()
 
     def send(self, exchange):
         """"""

@@ -53,11 +53,6 @@ class Connector(checkmate.runtime.communication.Connector):
                 self.open_router_socket(zmq.SUB, self._publishport)
             for _cname in self.broadcast_map.values():
                 self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
-        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
-        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def open_router_socket(self, mode, port):
         new_socket = self.zmq_context.socket(mode)
@@ -68,10 +63,9 @@ class Connector(checkmate.runtime.communication.Connector):
         """"""
 
     def close(self):
+        super(Connector, self).close()
         if self.socket_sub:
             self.socket_sub.close()
-        self.socket_dealer_in.close()
-        self.socket_dealer_out.close()
 
     def send(self, exchange):
         """"""

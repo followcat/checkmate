@@ -142,13 +142,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.communication.comp_device[component.name] = self.device_name
 
     def initialize(self):
-        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" %
-            self._routerport)
-        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
-            self._routerport)
+        super(Connector, self).initialize()
         setattr(self.device_class, '_routerport', self._routerport)
         self.communication.pytango_server.add_class(self.interface_class,
             self.device_class, self.device_class.__name__)
@@ -163,6 +157,7 @@ class Connector(checkmate.runtime.communication.Connector):
                 check(dev_proxy)
 
     def close(self):
+        super(Connector, self).close()
         self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
