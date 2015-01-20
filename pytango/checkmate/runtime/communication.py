@@ -202,13 +202,14 @@ class Connector(checkmate.runtime.communication.Connector):
                  is_broadcast=False):
         super().__init__(component, communication, is_server=True,
             is_reading=is_reading, is_broadcast=is_broadcast)
+        self.encoder = Encoder()
         self.device_class = \
             type(component.name + 'Device', (Device,),
                 add_device_service(component.services, self.component))
         self.interface_class = \
             type(component.name + 'Interface', (DeviceInterface,),
                 add_device_interface(component.services,
-                    self.component, self.communication.encoder))
+                    self.component, self.encoder))
         self.device_name = \
             self.communication.create_tango_device(
                 self.device_class.__name__, self.component.name,
@@ -228,7 +229,6 @@ class Connector(checkmate.runtime.communication.Connector):
             self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
                 self._routerport)
             setattr(self.device_class, '_routerport', self._routerport)
-            setattr(self.device_class, 'encoder', self.communication.encoder)
             self.communication.pytango_server.add_class(self.interface_class,
                 self.device_class, self.device_class.__name__)
 
@@ -250,7 +250,7 @@ class Connector(checkmate.runtime.communication.Connector):
                                             exchange]))
         else:
             attribute_values = \
-                self.communication.encoder.get_partition_values(exchange)
+                self.encoder.get_partition_values(exchange)
             param = None
             if attribute_values:
                 param_type = PyTango.DevVarStringArray
@@ -283,7 +283,6 @@ class Communication(checkmate.runtime.communication.Communication):
                 self.create_tango_device(component.__class__.__name__,
                     component.name, self.device_family)
             self.comp_device[component.name] = _device_name
-        self.encoder = Encoder()
         self.router = checkmate.runtime.communication.Router()
         self.dev_proxies = {}
 
