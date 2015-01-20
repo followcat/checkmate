@@ -126,7 +126,7 @@ class DeviceInterface(PyTango.DeviceClass):
 class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True,
                  is_broadcast=False):
-        super().__init__(component, communication, is_server=True,
+        super().__init__(component, communication,
             is_reading=is_reading, is_broadcast=is_broadcast)
         self.encoder = Encoder()
         self.device_class = \
@@ -143,17 +143,16 @@ class Connector(checkmate.runtime.communication.Connector):
         self.communication.comp_device[component.name] = self.device_name
 
     def initialize(self):
-        if self.is_server:
-            self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
-            self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
-            self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-            self.socket_dealer_in.connect("tcp://127.0.0.1:%i" %
-                self._routerport)
-            self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
-                self._routerport)
-            setattr(self.device_class, '_routerport', self._routerport)
-            self.communication.pytango_server.add_class(self.interface_class,
-                self.device_class, self.device_class.__name__)
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" %
+            self._routerport)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
+            self._routerport)
+        setattr(self.device_class, '_routerport', self._routerport)
+        self.communication.pytango_server.add_class(self.interface_class,
+            self.device_class, self.device_class.__name__)
 
     def open(self):
         @checkmate.timeout_manager.WaitOnException(timeout=10)
