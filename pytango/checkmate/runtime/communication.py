@@ -34,12 +34,11 @@ def add_device_service(services, component):
     return d
 
 
-def add_device_interface(services, component, encoder):
+def add_device_interface(services, component):
     command = {}
     for _service in services:
         name = _service[0]
-        args = encoder.get_partition_values(_service[1])
-        if args:
+        if len(_service[1].partition_attribute) > 0:
             command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
@@ -136,7 +135,7 @@ class Connector(checkmate.runtime.communication.Connector):
         self.interface_class = \
             type(component.name + 'Interface', (DeviceInterface,),
                 add_device_interface(component.services,
-                    self.component, self.encoder))
+                    self.component))
         self.device_name = \
             self.communication.create_tango_device(
                 self.device_class.__name__, self.component.name,
