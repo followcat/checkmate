@@ -15,10 +15,6 @@ import checkmate.runtime.communication
 
 
 def add_device_service(services, component):
-    publishs = component.publish_exchange
-    subscribes = component.subscribe_exchange
-    broadcast_map = component.broadcast_map
-
     exchange_dict = {}
     d = {}
     code = """
@@ -27,88 +23,28 @@ def add_device_service(services, component):
         \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
-        \n    self.subscribe_event_id_dict = {}
-        \n    self.subscribe_event_done = False
         \n    self._name = '%s'""" % component.name
-    for _publish in publishs:
-        code += """
-            \n    self.attr_%(pub)s_read = 1
-            \n    self.%(pub)s_counter = 0
-            \n    %(pub)s = self.get_device_attr().get_attr_by_name('%(pub)s')
-            \n    %(pub)s.set_data_ready_event(True)""" % {'pub': _publish}
-
-    for _subscribe in subscribes:
-        component_name = broadcast_map[_subscribe]
-        device_name = '/'.join(['sys', 'component_' +
-                              component_name.lstrip('C'), component_name])
-        code += """
-            \n    self.dev_%(name)s = PyTango.DeviceProxy('%(device)s')""" % {
-                'name': component_name, 'device': device_name}
-
-    code += """
-        \ndef subscribe_event_run(self):"""
-    for _subscribe in subscribes:
-        component_name = broadcast_map[_subscribe]
-        code += """
-            \n    id = self.dev_%(name)s.subscribe_event( \
-                           '%(sub)s', \
-                            PyTango.EventType.DATA_READY_EVENT, \
-                            self.%(sub)s,\
-                            stateless=False)
-            \n    self.subscribe_event_id_dict[id] = self.dev_%(name)s""" % {
-                'sub': _subscribe, 'name': component_name}
-    code += """
-        \n    self.subscribe_event_done = True
-        \n    pass"""
-
     for _service in services:
         name = _service[0]
         exchange_dict[name] = ([type(_service[1]), _service[1].value])
-        if name not in publishs and name not in subscribes:
-            code += """
-                \ndef %(name)s(self, param=[]):
-                \n    self.send('%(name)s', param)""" % {'name': name}
-
-    for _subscribe in subscribes:
-        component_name = broadcast_map[_subscribe]
         code += """
-            \ndef %(sub)s(self, *args):
-            \n    if self.subscribe_event_done:
-            \n        self.send(('%(sub)s', None))""" % {'sub': _subscribe}
-
-    for _publish in publishs:
-        code += """
-            \n
-            \ndef read_%(pub)s(self, attr):
-            \n    attr.set_value(self.attr_%(pub)s_read)
-            \n
-            \ndef write_%(pub)s(self, attr):
-            \n    self.attr_%(pub)s_read += 1
-            \n    self.push_data_ready_event('%(pub)s', \
-                      self.attr_%(pub)s_read)""" % {'pub': _publish}
-
+            \ndef %(name)s(self, param=[]):
+            \n    self.send('%(name)s', param)""" % {'name': name}
     exec(code, d)
     d['exchange_dict'] = exchange_dict
     return d
 
 
 def add_device_interface(services, component, encoder):
-    publishs = component.publish_exchange
-    subscribes = component.subscribe_exchange
     command = {}
     for _service in services:
         name = _service[0]
         args = encoder.get_partition_values(_service[1])
-        if name in publishs or name in subscribes:
-            continue
         if args:
             command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
     attribute = {}
-    for _publish in publishs:
-        attribute[_publish] = \
-            [[PyTango.DevBoolean, PyTango.SCALAR, PyTango.READ_WRITE]]
     return {'cmd_list': command, 'attr_list': attribute}
 
 
@@ -139,15 +75,7 @@ class Registry(checkmate.runtime._threading.Thread):
         self.pytango_util = PyTango.Util.instance()
 
     def event_loop(self):
-        for _device in self.pytango_util.get_device_list('*'):
-            if (hasattr(_device, 'subscribe_event_done') and
-                    not _device.subscribe_event_done):
-                try:
-                    _device.subscribe_event_run()
-                except:
-                    continue
-            else:
-                time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
+        time.sleep(checkmate.timeout_manager.PYTANGO_REGISTRY_SEC)
         if self.check_for_stop():
             dserver = self.pytango_util.get_dserver_device()
             dserver.kill()
@@ -245,22 +173,18 @@ class Connector(checkmate.runtime.communication.Connector):
         self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
-        if exchange.broadcast:
-            self.socket_dealer_out.send(pickle.dumps([self.device_name,
-                                            exchange]))
-        else:
-            attribute_values = \
-                self.encoder.get_partition_values(exchange)
-            param = None
-            if attribute_values:
-                param_type = PyTango.DevVarStringArray
-                param = PyTango.DeviceData()
-                param.insert(param_type, attribute_values)
-            for des in exchange.destination:
-                device_proxy = self.communication.get_device_proxy(
-                                   self.communication.comp_device[des])
-                call = getattr(device_proxy, exchange.value)
-                call(param)
+        attribute_values = \
+            self.encoder.get_partition_values(exchange)
+        param = None
+        if attribute_values:
+            param_type = PyTango.DevVarStringArray
+            param = PyTango.DeviceData()
+            param.insert(param_type, attribute_values)
+        for des in exchange.destination:
+            device_proxy = self.communication.get_device_proxy(
+                               self.communication.comp_device[des])
+            call = getattr(device_proxy, exchange.value)
+            call(param)
 
 
 class Communication(checkmate.runtime.communication.Communication):
@@ -313,12 +237,6 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def close(self):
         pytango_util = PyTango.Util.instance()
-        for _device in pytango_util.get_device_list('*'):
-            if (_device.get_name() ==
-                    pytango_util.get_dserver_device().get_name()):
-                continue
-            for _id, _dev in _device.subscribe_event_id_dict.items():
-                _dev.unsubscribe_event(_id)
         try:
             pytango_util.unregister_server()
         except PyTango.DevFailed as e:
