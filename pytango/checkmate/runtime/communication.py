@@ -17,9 +17,6 @@ def add_device_service(services, component):
     exchange_dict = {}
     d = {}
     code = """
-        \nimport time
-        \n
-        \nimport PyTango
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)
         \n    self._name = '%s'""" % component.name
