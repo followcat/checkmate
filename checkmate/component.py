@@ -97,7 +97,7 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.name
         'C1'
-        >>> len(c.states) 
+        >>> len(c.states)
         2
         """
         self.states = []
@@ -239,7 +239,7 @@ class Component(object):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
                 raise checkmate.exception.NoTransitionFound(
-                    "No transition for incoming %s " %(exchange[0]))
+                    "No transition for incoming %s " % (exchange[0]))
         else:
             _transition = transition
         output = []
@@ -276,7 +276,7 @@ class Component(object):
             >>> exchange = sample_app.exchanges.Action('AC')
             >>> transition = c2.get_transition_by_output([exchange])
 
-        We can't simulate a transition when no destination 
+        We can't simulate a transition when no destination
         for outgoing is registered:
             >>> c2.simulate(transition)
             []
