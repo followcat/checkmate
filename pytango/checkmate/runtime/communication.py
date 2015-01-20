@@ -124,10 +124,9 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, is_reading=True,
-                 is_broadcast=False):
+    def __init__(self, component, communication=None, is_reading=True):
         super().__init__(component, communication,
-            is_reading=is_reading, is_broadcast=is_broadcast)
+            is_reading=is_reading)
         self.encoder = Encoder()
         self.device_class = \
             type(component.name + 'Device', (Device,),

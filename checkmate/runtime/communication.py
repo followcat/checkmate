@@ -10,14 +10,12 @@ import checkmate.runtime._zmq_wrapper
 
 class Connector(object):
     """"""
-    def __init__(self, component=None, communication=None,
-                 is_reading=False, is_broadcast=False):
+    def __init__(self, component=None, communication=None, is_reading=False):
         self._name = component.name
         self.component = component
         self.broadcast_map = component.broadcast_map
 
         self.is_reading = is_reading
-        self.is_broadcast = is_broadcast
 
         self.zmq_context = zmq.Context.instance()
         self.socket_dealer_in = None
