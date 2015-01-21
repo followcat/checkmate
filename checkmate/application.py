@@ -32,40 +32,51 @@ class ApplicationMeta(type):
         >>> c3.broadcast_map
         {'PA': 'C1'}
         """
-        exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
+        exchange_module = \
+            checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
 
-        data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
-        data_value_module = checkmate._module.get_module(namespace['__module__'], '_data')
+        data_structure_module = \
+            checkmate._module.get_module(namespace['__module__'],
+                'data_structure')
+        data_value_module = \
+            checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition' not in namespace:
-            namespace['exchange_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
+            namespace['exchange_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1])
         if 'component_definition' not in namespace:
-            namespace['component_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1] + ['component'])
+            namespace['component_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1] +
+                    ['component'])
         if 'itp_definition' not in namespace:
-            namespace['itp_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
+            namespace['itp_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1])
         def get_definition_data(definitions):
             definition_data = ''
             if type(definitions) != list:
                 definitions = [definitions]
-            for definition in definitions:
-                if os.path.isfile(definition):
-                    with open(definition, 'r') as _file:
+            for _d in definitions:
+                if os.path.isfile(_d):
+                    with open(_d, 'r') as _file:
                         definition_data += _file.read()
-                elif os.path.isdir(definition):
-                    for filename in os.listdir(definition):
+                elif os.path.isdir(_d):
+                    for filename in os.listdir(_d):
                         if filename.endswith(".yaml"):
-                            with open(os.path.join(definition, filename), 'r') as _file:
-                                definition_data += _file.read() 
+                            _fullname = os.path.join(_d, filename)
+                            with open(_fullname, 'r') as _file:
+                                definition_data += _file.read()
             return definition_data
         define_data = get_definition_data(namespace['exchange_definition'])
         if 'data_structure_definition' in namespace:
-            define_data = get_definition_data(namespace['data_structure_definition']) + define_data
+            define_data += \
+                get_definition_data(namespace['data_structure_definition'])
         data_value = {}
         try:
             value_data = get_definition_data(namespace['test_data_definition'])
-            value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+            value_source = \
+                checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
                 data_value.update({code: structure})
             namespace['data_value'] = data_value
@@ -73,8 +84,9 @@ class ApplicationMeta(type):
             pass
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module,
-                                                   exchange_module, data_value=data_value)
+            declarator = checkmate.partition_declarator.Declarator(
+                            data_structure_module, exchange_module,
+                            data_value=data_value)
             declarator.new_definitions(data_source)
             output = declarator.get_output()
 
@@ -83,12 +95,15 @@ class ApplicationMeta(type):
         finally:
             pass
 
+        _component_classes = namespace['component_classes']
         if 'communication_list' in namespace:
             communication_list = namespace['communication_list'].keys()
         else:
             communication_list = []
-        for key, (class_name, class_dict) in namespace['component_classes'].items():
-            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
+        for key, (class_name, class_dict) in _component_classes.items():
+            component_module = \
+                checkmate._module.get_module(namespace['__module__'],
+                    class_name.lower(), 'component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'component_definition': namespace['component_definition'],
@@ -96,22 +111,24 @@ class ApplicationMeta(type):
                  'communication_list': communication_list
                 }
             d.update(class_dict)
-            _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
+            _class = checkmate.component.ComponentMeta(class_name,
+                        (checkmate.component.Component,), d)
             setattr(component_module, class_name, _class)
-            namespace['component_classes'][key] = _class
-            
+            _component_classes[key] = _class
+
         publish_map = {}
-        for _name_tuple in namespace['component_classes']:
+        for _name_tuple in _component_classes:
             for _name in _name_tuple:
-                publish_map[_name] = namespace['component_classes'][_name_tuple].publish_exchange
-        for _c in namespace['component_classes']:
+                publish_map[_name] = \
+                    _component_classes[_name_tuple].publish_exchange
+        for _c in _component_classes:
             broadcast_map = {}
-            for _e in namespace['component_classes'][_c].subscribe_exchange:
+            for _e in _component_classes[_c].subscribe_exchange:
                 for _name, _p in publish_map.items():
                     if _e in _p:
                         broadcast_map[_e] = _name
-            setattr(namespace['component_classes'][_c], 'broadcast_map', broadcast_map)
-            
+            setattr(_component_classes[_c], 'broadcast_map', broadcast_map)
+
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
@@ -147,7 +164,8 @@ class Application(object):
         [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
-            setattr(self, 'run_collection', checkmate.runs.get_runs_from_application(self))
+            setattr(self, 'run_collection',
+                checkmate.runs.get_runs_from_application(self))
             return self.run_collection
         super().__getattr__(self, name)
 
@@ -201,11 +219,11 @@ class Application(object):
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_states(self, target, reference_state_list=None):
-        """Comparison between the states of the application's components and a target.
+        """Compare states of the application's components to target
 
-        This comparison is  taking the length of the target into account.
-        If a matching state is twice in the target, the comparison will fail.
-        This should probably be fixed.
+        This comparison is taking the length of the target into account.
+        If a matching state is twice in the target, the comparison will
+        fail. This should probably be fixed.
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
             >>> app.start()
@@ -233,7 +251,8 @@ class Application(object):
         match_list = []
         for _target in target:
             _length = len(local_copy)
-            match_item = _target.match(local_copy, reference_state_list, incoming_list)
+            match_item = _target.match(local_copy, reference_state_list,
+                            incoming_list)
             if match_item is not None:
                 match_list.append(match_item)
                 local_copy.remove(match_item)
