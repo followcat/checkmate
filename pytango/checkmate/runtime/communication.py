@@ -91,10 +91,6 @@ class Device(PyTango.Device_4Impl):
     def init_device(self):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
-        self.zmq_context = zmq.Context.instance()
-        self.incoming = []
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def send(self, code, param):
         exchange_type, exchange_value = self.exchange_dict[code]
@@ -195,6 +191,7 @@ class Communication(checkmate.runtime.communication.Communication):
             check(dev_proxy)
 
     def connector_factory(self, component, is_reading=True):
+        connector = self.connector_class(component, self, is_reading=is_reading)
         device_class = \
             type(component.name + 'Device', (Device,),
                 add_device_service(component.services, component))
@@ -205,10 +202,10 @@ class Communication(checkmate.runtime.communication.Communication):
             self.create_tango_device(
                 device_class.__name__, component.name,
                 type(component).__module__.split(os.extsep)[-1])
-        setattr(device_class, '_routerport', self.router._routerport)
+        setattr(device_class, 'socket_dealer_out', connector.socket_dealer_out)
         self.dev_class[device_name] = (interface_class, device_class)
         self.comp_device[component.name] = device_name
-        return self.connector_class(component, self, is_reading=is_reading)
+        return connector
 
     def get_device_proxy(self, device_name):
         if device_name in list(self.dev_proxies.keys()):
