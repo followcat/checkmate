@@ -96,10 +96,6 @@ class ApplicationMeta(type):
             pass
 
         _component_classes = namespace['component_classes']
-        if 'communication_list' in namespace:
-            communication_list = namespace['communication_list'].keys()
-        else:
-            communication_list = []
         for key, (class_name, class_dict) in _component_classes.items():
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
@@ -108,7 +104,7 @@ class ApplicationMeta(type):
                  'data_structure_module': data_structure_module,
                  'component_definition': namespace['component_definition'],
                  '__module__': component_module.__name__,
-                 'communication_list': communication_list
+                 'communication_list': namespace['communication_list'].keys()
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name,
