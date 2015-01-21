@@ -13,9 +13,9 @@
         >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'PBRL'][0]
 
         >>> box = checkmate.sandbox.Sandbox(a)
-        >>> box(ac_run.root)
+        >>> box(ac_run)
         True
-        >>> box(rl_run.root)
+        >>> box(rl_run)
         True
         >>> proc = []
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)

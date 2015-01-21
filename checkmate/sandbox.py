@@ -1,5 +1,5 @@
 import checkmate.runs
-import checkmate.component
+import checkmate.exception
 
 
 class Sandbox(object):
@@ -65,16 +65,18 @@ class Sandbox(object):
     def is_run(self):
         return self.transitions is not None
 
-    def __call__(self, transition, foreign_transitions=False):
+    def __call__(self, run, itp_run=False):
         """
             >>> import checkmate.sandbox
+            >>> import checkmate.runs
             >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
             'True'
-            >>> box(sample_app.application.TestData().components['C1'].state_machine.transitions[0])
+            >>> runs = box.application.run_collection
+            >>> box(runs[0])
             True
-            >>> box(sample_app.application.TestData().components['C3'].state_machine.transitions[1])
+            >>> box(runs[2])
             True
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
@@ -82,12 +84,13 @@ class Sandbox(object):
             'False'
         """
         _outgoing = []
+        self.run = run
         self.transitions = None
         for component in self.application.components.values():
-            if not foreign_transitions and not transition in component.state_machine.transitions:
+            if not itp_run and not run.root in component.state_machine.transitions:
                 continue
-            if len(transition.incoming) > 0:
-                _incoming = transition.generic_incoming(component.states)
+            if len(run.root.incoming) > 0:
+                _incoming = run.root.generic_incoming(component.states)
                 for _c in self.application.components.values():
                     component_transition = _c.get_transition_by_output(_incoming)
                     if component_transition is not None:
@@ -95,20 +98,20 @@ class Sandbox(object):
                         self.transitions = component_transition
                         break
                 break
-            elif len(transition.outgoing) > 0:
-                _outgoing = component.simulate(transition)
+            elif len(run.root.outgoing) > 0:
+                _outgoing = component.simulate(run.root)
                 if len(_outgoing) == 0:
                     continue
-                self.transitions = transition
+                self.transitions = run.root
                 break
-        return self.run_process(_outgoing, transition)
+        return self.run_process(_outgoing)
 
-    def run_process(self, outgoing, transition):
+    def run_process(self, outgoing):
         if len(outgoing) == 0:
             return False
         try:
             self.transitions = self.process(outgoing, checkmate.runs.Run(self.transitions, []))
-        except checkmate.component.NoTransitionFound:
+        except checkmate.exception.NoTransitionFound:
             self.transitions = None
         return self.is_run
 
@@ -119,7 +122,9 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
+            >>> runs = box.application.run_collection
             >>> _t = box.application.components['C2'].get_transition_by_output([ex])
+            >>> box.run = runs[0]
             >>> transitions = box.process([ex], checkmate.runs.Run(_t, []))
             >>> box.application.components['C3'].states[0].value
             'True'
@@ -128,7 +133,7 @@ class Sandbox(object):
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
                 try:
-                    _transition = _c.get_transitions_by_input([_exchange])[0]
+                    _transition = self.run.get_transition_by_input_states([_exchange], _c.states)
                 except IndexError:
                     _transition = None
                 _outgoings = _c.process([_exchange])
@@ -144,7 +149,6 @@ class Sandbox(object):
             procedure.final = self.final
             procedure.initial = self.initial
             procedure.transitions = self.transitions
-            procedure.components = list(self.application.components.keys())
 
     def update_required_states(self, tree):
         """
@@ -159,7 +163,14 @@ class Sandbox(object):
 
 
 class CollectionSandbox(Sandbox):
-    def run_process(self, outgoing, transition):
+    def __call__(self, run, itp_run=False):
+        results = super(CollectionSandbox, self).__call__(run, itp_run)
+        for _split, _run in results:
+            if itp_run is True:
+                _run.itp_run = run
+            yield _run
+
+    def run_process(self, outgoing):
         return self.process(self, outgoing, checkmate.runs.Run(self.transitions, []))
 
     def process(self, sandbox, exchanges, tree=None):
@@ -182,3 +193,4 @@ class CollectionSandbox(Sandbox):
                             tree.add_node(tmp_run)
         if split is False:
             yield (split, tree)
+

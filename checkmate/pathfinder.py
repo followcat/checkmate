@@ -4,6 +4,7 @@ import checkmate.sandbox
 
 
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_runs.rst")
+@checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
 def _find_runs(application, target):
     """"""
     used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
@@ -17,7 +18,7 @@ def _next_run(application, target, runs, used_runs):
         if _run in used_runs:
             continue
         box = checkmate.sandbox.Sandbox(application)
-        box(_run.root)
+        box(_run)
         if box.is_run:
             if box.application.compare_states(target):
                 used_runs[_run] = box

@@ -14,8 +14,12 @@ class Runner(doctest.DocTestRunner):
          pass
 
 def runtest(filename, runner=doctest.DocTestRunner()):
-    with open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename])) as _f:
-        test = _f.read()
+    if os.path.isfile(filename):
+        _f = open(filename)
+    else:
+        _f = open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
+    test = _f.read()
+    _f.close()
     return runner.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
 
 def runtest_silent(filename):

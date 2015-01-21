@@ -94,16 +94,16 @@ class TransitionStorage(object):
                     define_class = checkmate._module.get_class_implementing(interface)
                     arguments = checkmate._exec_tools.get_signature_arguments(_data, define_class)
                     generate_storage = InternalStorage(interface, _data, None, arguments=arguments)
+                    if _k == 'final':
+                        generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
-                            if _k == 'final':
-                                generate_storage.function = define_class.__init__
                             generate_storage.values = _s.values
-                            getattr(self, _k).append(generate_storage)
                             break
                     else:
-                        generate_storage.function = getattr(define_class, code)
-                        getattr(self, _k).append(generate_storage)
+                        if hasattr(define_class, code):
+                            generate_storage.function = getattr(define_class, code)
+                    getattr(self, _k).append(generate_storage)
 
     def factory(self):
         return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
@@ -268,7 +268,7 @@ class InternalStorage(object):
                 resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
             else:
                 resolved_arguments = self.resolve()
-            
+
             if _target == self.factory(instance=_initial[0], *self.values,
                               default=False, **resolved_arguments):
                 return _target
