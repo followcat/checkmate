@@ -58,23 +58,34 @@ class ComponentMeta(type):
             namespace['is_publish'] = False
             namespace['subscribe_exchange'] = []
             namespace['publish_exchange'] = []
+            communication_list = set()
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
+                    _ex = _i.factory()
                     if _i.code not in [_service[0] for _service in services]:
-                        services.append((_i.code, _i.factory()))
+                        services.append((_i.code, _ex))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
-                    if _i.factory().broadcast:
+                    if _ex.broadcast:
                         namespace['subscribe_exchange'].append(_i.code)
+                    communication_list.add(_ex.communication)
                 for _o in _t.outgoing:
+                    _ex = _o.factory()
                     if _o.code not in outgoings:
                         outgoings.append(_o.code)
-                    if _o.factory().broadcast:
+                    if _ex.broadcast:
                         namespace['publish_exchange'].append(_o.code)
                         namespace['is_publish'] = True
+                    communication_list.add(_ex.communication)
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
             namespace['outgoings'] = outgoings
+            for _communication in communication_list:
+                if _communication not in namespace['communication_list']:
+                    #if 'launch_command' is set, communication should be set as well
+                    if 'launch_command' in namespace:
+                        raise KeyError("Communication '%s' is not defined in application" %_communication)
+            namespace['communication_list'] = communication_list
 
             result = type.__new__(cls, name, bases, dict(namespace))
             return result

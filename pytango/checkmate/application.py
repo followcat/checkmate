@@ -21,5 +21,5 @@ class Application(checkmate.application.Application, metaclass=checkmate.applica
                          ('USER',): ('User', {}),
                         }
 
-    communication_list = (pytango.checkmate.runtime.communication.Communication,)
+    communication_list = {'pytango': pytango.checkmate.runtime.communication.Communication}
 

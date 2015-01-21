@@ -15,7 +15,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
                          ('USER',): ('User', {}),
                           }
 
-    communication_list = (checkmate.runtime._pyzmq.Communication,)
+    communication_list = {'': checkmate.runtime._pyzmq.Communication}
 
 
     def __init__(self):

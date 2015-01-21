@@ -48,7 +48,9 @@ data:
     # [Partition,       State,  Valid value,      Comment]
     - [X-THRDREACT-01,  DR(),   'DR',             Comment]
 
-  - Definition and accessibility: 'Pause(broadcast=True)'
+  - Definition and accessibility: 'Pause'
+    Attributes:
+      broadcast: True
     Value partitions:
     # [Partition,   State,      Valid value,      Comment]
     - [X-PAUSE-01,  PA(),       'PA',             Comment]
@@ -62,6 +64,8 @@ data:
     - [X-THRDACT-02,    DA(),     'DA',           Third action second valid value]
 
   - Definition and accessibility: 'ExchangeButton'
+    Attributes:
+      communication: interactive
     Value partitions:
     # [Partition,       State,    Valid value,     Comment]
     - [X-EXBUTTON-01,   PBAC(),   'PBAC',          Press Button AC]
@@ -69,6 +73,8 @@ data:
     - [X-EXBUTTON-03,   PBPP(),   'PBPP',          Press Button PP]
 
   - Definition and accessibility: 'ValidateOutput'
+    Attributes:
+      communication: interactive
     Value partitions:
     # [Partition,       State,    Valid value,     Comment]
     - [X-VLOUTPUT-01,   VODA(),   'VODA',          Validate Output DA]
