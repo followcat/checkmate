@@ -1,6 +1,7 @@
 import sys
 import logging
 import threading
+import collections
 
 import checkmate.logger
 import checkmate.interfaces
@@ -19,16 +20,13 @@ class Runtime(object):
         self.runs_log = logging.getLogger('runs.runtime')
         self.threaded = threaded
         self.runtime_components = {}
-        self.communication_list = {}
-        self.application_class = application
         self.application = application()
+        self.application_class = application
+        self.communication_list = collections.defaultdict(communication)
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
-        self.communication_list['default'] = communication()
-
-        for _c in self.application.communication_list:
-            _communication = _c()
-            self.communication_list[''] = _communication
+        for _k, _c in self.application.communication_list.items():
+            self.communication_list[_k] = _c()
 
         if self.threaded:
             self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,

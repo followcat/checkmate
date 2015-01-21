@@ -39,5 +39,5 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
                          ('C3',): ('Component_3', {'launch_command': "python ./pytango/component/component_3.py {component.name}"}),
                          ('USER',): ('User', {}),
                         }
-    communication_list = (pytango.checkmate.runtime.communication.Communication,)
+    communication_list = {'pytango': pytango.checkmate.runtime.communication.Communication}
 

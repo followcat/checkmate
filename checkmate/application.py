@@ -83,13 +83,17 @@ class ApplicationMeta(type):
         finally:
             pass
 
+        if 'communication_list' in namespace:
+            communication_list = namespace['communication_list'].keys()
+        else:
+            communication_list = []
         for key, (class_name, class_dict) in namespace['component_classes'].items():
             component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'component_definition': namespace['component_definition'],
                  '__module__': component_module.__name__,
-                 'connector_list': [_c.connector_class for _c in namespace['communication_list']]
+                 'communication_list': communication_list
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
@@ -114,7 +118,7 @@ class ApplicationMeta(type):
 
 class Application(object):
     component_classes = {}
-    communication_list = ()
+    communication_list = {}
     feature_definition_path = None
 
     def __init__(self):

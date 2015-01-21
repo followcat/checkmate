@@ -8,6 +8,7 @@ import checkmate.interfaces
 class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
+    communication = ''
 
     def __init__(self, value=None, *args, default=True, origin='', destination='', **kwargs):
         """

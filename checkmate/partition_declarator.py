@@ -35,7 +35,7 @@ class Declarator(object):
             'transitions': []}
 
     @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
-    def new_partition(self, partition_type, signature, codes_list, values_list, full_description=None):
+    def new_partition(self, partition_type, signature, codes_list, values_list, full_description=None, attributes={}):
         """
         >>> import collections
         >>> import checkmate._module
@@ -54,14 +54,16 @@ class Declarator(object):
         >>> de.new_partition('states', "TestState", codes_list=['TestStateTrue'], values_list=["True"])
         >>> de.get_output()['states'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.states.ITestState>, <checkmate._storage.PartitionStorage object at ...
-        >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'])
+        >>> de.new_partition('exchanges', 'TestAction(R:TestActionRequest)', codes_list=['AP(R)'], values_list=['AP'], attributes={'communication':'test_comm'})
         >>> de.get_output()['exchanges'][0] # doctest: +ELLIPSIS
         (<InterfaceClass checkmate.exchanges.ITestAction>, <checkmate._storage.PartitionStorage object at ...
         >>> de.get_output()['exchanges'][0][-1].storage[0].factory().R._valid_values
         ['NORM']
+        >>> de.get_output()['exchanges'][0][-1].storage[0].factory().communication
+        'test_comm'
         """
         _module = self.module[partition_type]
-        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, codes_list, values_list)
+        defined_class, defined_interface = checkmate._exec_tools.exec_class_definition(self.module['data_structure'], partition_type, _module, signature, values_list, attributes)
         code_arguments = collections.OrderedDict()
         for code, value in zip(codes_list, values_list):
             code_arguments[code] = {'value': value}
@@ -107,17 +109,20 @@ class Declarator(object):
         ...     'clsname': 'TestActionRequest',
         ...     'codes_list': ['TestActionRequestNORM'],
         ...     'values_list': ['NORM'],
-        ...     'full_desc': None}]),
+        ...     'full_desc': None,
+        ...     'attributes': {}}]),
         ... ('states', [{
         ...    'clsname': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
         ...    'values_list': ['True'],
-        ...    'full_desc': None}]),
+        ...    'full_desc': None,
+        ...    'attributes': {}}]),
         ... ('exchanges', [{
         ...    'clsname': 'TestAction(R:TestActionRequest)',
         ...    'codes_list': ['AP(R)'],
         ...    'values_list': ['AP'],
-        ...    'full_desc': None}])
+        ...    'full_desc': None,
+        ...    'attributes': {}}])
         ... ])
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> de.new_definitions(data_source)
@@ -130,7 +135,7 @@ class Declarator(object):
                 if partition_type == 'transitions':
                     self.new_transition(data)
                 else:
-                    self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['full_desc'])
+                    self.new_partition(partition_type, data['clsname'], data['codes_list'], data['values_list'], data['full_desc'], data['attributes'])
 
     def get_output(self):
         return self.output

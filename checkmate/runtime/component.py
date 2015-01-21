@@ -9,7 +9,6 @@ import zope.component
 import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
-import checkmate.runtime._pyzmq
 import checkmate.runtime.client
 import checkmate.timeout_manager
 import checkmate.runtime.launcher
@@ -91,6 +90,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_queue)
         self.validation_lock = threading.Lock()
 
+    @checkmate.fix_issue('checkmate/issues/use_default_communication.rst')
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
@@ -98,13 +98,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         self.client.set_exchange_module(_application.exchange_module)
 
         if self.using_internal_client:
-            connector_factory = checkmate.runtime._pyzmq.Connector
-            _communication = runtime.communication_list['default']
+            _communication = runtime.communication_list['internal']
+            connector_factory = _communication.connector_class
             self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
         if self.using_external_client:
-            _communication = runtime.communication_list['']
-            connector_factory = _communication.connector_class
-            self.client.external_connector = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
+            for _key in self.context.communication_list:
+                _communication = runtime.communication_list[_key]
+                connector_factory = _communication.connector_class
+                self.client.external_connectors[_key] = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
 
     def start(self):
         Component.start(self)
@@ -150,8 +151,8 @@ class ThreadedSut(ThreadedComponent, Sut):
     def setup(self, runtime):
         super().setup(runtime)
         if hasattr(self.context, 'launch_command'):
-            for communication_class in self.runtime.application.communication_list:
-                communication_class(self.context)
+            for communication_name in self.context.communication_list:
+                self.runtime.application.communication_list[communication_name](self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
 
