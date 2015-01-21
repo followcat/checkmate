@@ -13,20 +13,16 @@ import checkmate.runtime.communication
 
 
 def add_device_service(services, component):
-    exchange_dict = {}
     d = {}
     code = """
         \ndef __init__(self, *args):
-        \n    super(self.__class__, self).__init__(*args)
-        \n    self._name = '%s'""" % component.name
+        \n    super(self.__class__, self).__init__(*args)"""
     for _service in services:
         name = _service[0]
-        exchange_dict[name] = ([type(_service[1]), _service[1].value])
         code += """
             \ndef %(name)s(self, param=[]):
-            \n    self.send('%(name)s', param)""" % {'name': name}
+            \n    self.connector.inbound('%(name)s', param)""" % {'name': name}
     exec(code, d)
-    d['exchange_dict'] = exchange_dict
     return d
 
 
@@ -92,13 +88,6 @@ class Device(PyTango.Device_4Impl):
         self.get_device_properties(self.get_device_class())
         self.set_state(PyTango.DevState.ON)
 
-    def send(self, code, param):
-        exchange_type, exchange_value = self.exchange_dict[code]
-        send_data = exchange_type(exchange_value)
-        self.socket_dealer_out.send(
-            self._name.encode(), flags=zmq.SNDMORE)
-        self.socket_dealer_out.send_pyobj(send_data)
-
 
 class DeviceInterface(PyTango.DeviceClass):
     cmd_list = {}
@@ -119,6 +108,10 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True):
         super().__init__(component, communication,
             is_reading=is_reading)
+        self.exchange_dict = {}
+        for _service in component.services:
+            name = _service[0]
+            self.exchange_dict[name] = ([type(_service[1]), _service[1].value])
         self.encoder = Encoder()
 
     def initialize(self):
@@ -129,6 +122,11 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def close(self):
         super(Connector, self).close()
+
+    def inbound(self, code, param):
+        exchange_type, exchange_value = self.exchange_dict[code]
+        exchange = exchange_type(exchange_value, destination=self._name)
+        super(Connector, self).send(exchange)
 
     def send(self, exchange):
         attribute_values = \
@@ -204,7 +202,7 @@ class Communication(checkmate.runtime.communication.Communication):
             self.create_tango_device(
                 device_class.__name__, component.name,
                 type(component).__module__.split(os.extsep)[-1])
-        setattr(device_class, 'socket_dealer_out', connector.socket_dealer_out)
+        setattr(device_class, 'connector', connector)
         self.dev_class[device_name] = (interface_class, device_class)
         self.comp_device[component.name] = device_name
         return connector
