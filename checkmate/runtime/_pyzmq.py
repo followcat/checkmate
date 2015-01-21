@@ -57,12 +57,7 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def send(self, exchange):
         """"""
-        if exchange.broadcast:
-            destination = exchange.origin.encode()
-        else:
-            destination = exchange.destination[0].encode()
-        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
-        self.socket_dealer_out.send_pyobj(exchange)
+        super(Connector, self).send(exchange)
 
 
 class Communication(checkmate.runtime.communication.Communication):
