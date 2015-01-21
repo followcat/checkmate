@@ -119,23 +119,29 @@ def get_define_str(element):
             \n    def return_type(self):
             \n        return self._sig.return_annotation
         """
+    for _k, _v in element.attributes.items():
+        if type(_v) == str:
+            _v = _v.join('""')
+        run_code += """
+                \n    {key} = {value}
+            """.format(key=_k, value=_v)
     return run_code
 
 
-def exec_class_definition(data_structure_module, partition_type, exec_module, signature, codes, values):
+def exec_class_definition(data_structure_module, partition_type, exec_module, signature, values, attributes):
     classname = get_method_basename(signature)
     interface_class = 'I' + classname
 
     class_element = collections.namedtuple('class_element',
                     ['interface_ancestor_class', 'interface_class',
-                     'ancestor_class', 'classname', 'values'])
+                     'ancestor_class', 'classname', 'values', 'attributes'])
     if partition_type == 'exchanges':
         element = class_element('checkmate.interfaces.IExchange', interface_class,
-                                'checkmate.exchange.Exchange', classname, values)
+                                'checkmate.exchange.Exchange', classname, values, attributes)
         run_code = get_define_str(element)
     elif partition_type == 'data_structure':
         element = class_element('zope.interface.Interface', interface_class,
-                                'checkmate.data_structure.DataStructure', classname, values)
+                                'checkmate.data_structure.DataStructure', classname, values, attributes)
         run_code = get_define_str(element)
     elif partition_type == 'states':
         valid_values_list = []
@@ -143,7 +149,7 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
             if not is_method(_v):
                 valid_values_list.append(_v)
         element = class_element('checkmate.interfaces.IState', interface_class,
-                                'checkmate.state.State', classname, valid_values_list)
+                                'checkmate.state.State', classname, valid_values_list, attributes)
         run_code = get_define_str(element)
 
     exec(run_code, exec_module.__dict__)
@@ -156,13 +162,9 @@ def exec_class_definition(data_structure_module, partition_type, exec_module, si
          \n_annotated_values.update(dict([(_k, lambda default:_v.default) for (_k, _v) in _sig.parameters.items()\
            if _v.annotation != inspect._empty and _v.default != inspect._empty]))\
          \npartition_attribute = tuple([_k for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation != inspect._empty])\
-         \nclass_attributes = tuple([(_k, _v.default) for (_k, _v) in _sig.parameters.items()\
-           if _v.annotation == inspect._empty and _v.default != inspect._empty])",
+           if _v.annotation != inspect._empty])",
          dict(define_class.__dict__), globals())
     setattr(define_class, '_annotated_values', globals()['_annotated_values'])
     setattr(define_class, '_construct_values', globals()['_construct_values'])
     setattr(define_class, 'partition_attribute', globals()['partition_attribute'])
-    for _k, _v in globals()['class_attributes']:
-        setattr(define_class, _k , _v)
     return define_class, define_interface

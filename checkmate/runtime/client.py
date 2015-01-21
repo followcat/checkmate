@@ -78,7 +78,7 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
 
         self.connections = []
         self.internal_connector = None
-        self.external_connector = None
+        self.external_connectors = {}
         self.logger.debug("%s initial" % self)
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
 
@@ -89,22 +89,22 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """"""
         if self.internal_connector:
             self.internal_connector.initialize()
-        if self.external_connector:
-            self.external_connector.initialize()
+        for _connector in self.external_connectors.values():
+            _connector.initialize()
 
     def start(self):
         if self.internal_connector and self.internal_connector.is_reading:
             if self.internal_connector.socket_sub:
                 self.poller.register(self.internal_connector.socket_sub)
             self.poller.register(self.internal_connector.socket_dealer_in)
-        if self.external_connector and self.external_connector.is_reading:
-            if self.external_connector.socket_sub:
-                self.poller.register(self.external_connector.socket_sub)
-            self.poller.register(self.external_connector.socket_dealer_in)
+        for _connector in [_c for _c in self.external_connectors.values() if _c.is_reading]:
+            if _connector.socket_sub:
+                self.poller.register(_connector.socket_sub)
+            self.poller.register(_connector.socket_dealer_in)
         if self.internal_connector:
             self.internal_connector.open()
-        if self.external_connector:
-            self.external_connector.open()
+        for _connector in self.external_connectors.values():
+            _connector.open()
         super(ThreadedClient, self).start()
 
     def run(self):
@@ -114,8 +114,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             if self.check_for_stop():
                 if self.internal_connector:
                     self.internal_connector.close()
-                if self.external_connector:
-                    self.external_connector.close()
+                for _connector in self.external_connectors.values():
+                    _connector.close()
                 self.logger.debug("%s stop" % self)
                 break
             socks = self.poller.poll_with_timeout()
@@ -138,6 +138,9 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         """
         if self.internal_connector:
             self.internal_connector.send(exchange)
-        if self.external_connector:
-            self.external_connector.send(exchange)
+        try:
+            self.external_connectors[exchange.communication].send(exchange)
+        except KeyError:
+            #if no key exist in self.external_connectors, nothing can be done for now
+            pass
         self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
