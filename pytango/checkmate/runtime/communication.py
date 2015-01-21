@@ -124,24 +124,9 @@ class Connector(checkmate.runtime.communication.Connector):
         super().__init__(component, communication,
             is_reading=is_reading)
         self.encoder = Encoder()
-        self.device_class = \
-            type(component.name + 'Device', (Device,),
-                add_device_service(component.services, self.component))
-        self.interface_class = \
-            type(component.name + 'Interface', (DeviceInterface,),
-                add_device_interface(component.services,
-                    self.component))
-        self.device_name = \
-            self.communication.create_tango_device(
-                self.device_class.__name__, self.component.name,
-                type(self.component).__module__.split(os.extsep)[-1])
-        self.communication.comp_device[component.name] = self.device_name
 
     def initialize(self):
         super(Connector, self).initialize()
-        setattr(self.device_class, '_routerport', self._routerport)
-        self.communication.pytango_server.add_class(self.interface_class,
-            self.device_class, self.device_class.__name__)
 
     def open(self):
         super(Connector, self).open()
@@ -185,11 +170,15 @@ class Communication(checkmate.runtime.communication.Communication):
                     component.name, self.device_family)
             self.comp_device[component.name] = _device_name
         self.dev_proxies = {}
+        self.dev_class = {}
 
     def initialize(self):
         """"""
         super(Communication, self).initialize()
         self.pytango_server = PyTango.Util([__file__, self.server_name])
+        for key, values in self.dev_class.items():
+            self.pytango_server.add_class(values[0], values[1]
+                , values[1].__name__)
 
     def start(self):
         super(Communication, self).start()
@@ -206,6 +195,19 @@ class Communication(checkmate.runtime.communication.Communication):
             check(dev_proxy)
 
     def connector_factory(self, component, is_reading=True):
+        device_class = \
+            type(component.name + 'Device', (Device,),
+                add_device_service(component.services, component))
+        interface_class = \
+            type(component.name + 'Interface', (DeviceInterface,),
+                add_device_interface(component.services, component))
+        device_name = \
+            self.create_tango_device(
+                device_class.__name__, component.name,
+                type(component).__module__.split(os.extsep)[-1])
+        setattr(device_class, '_routerport', self.router._routerport)
+        self.dev_class[device_name] = (interface_class, device_class)
+        self.comp_device[component.name] = device_name
         return self.connector_class(component, self, is_reading=is_reading)
 
     def get_device_proxy(self, device_name):
