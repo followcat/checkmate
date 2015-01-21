@@ -39,7 +39,20 @@ def add_device_interface(services, component):
 
 
 class Encoder():
-    def get_partition_values(self, partition, values_list=None):
+    def __init__(self, component):
+        self.exchange_dict = {}
+        self.component = component
+        for _service in component.services:
+            name = _service[0]
+            self.exchange_dict[name] = ([type(_service[1]), _service[1].value])
+
+    def decode(self, code, param):
+        exchange_type, exchange_value = self.exchange_dict[code]
+        exchange = exchange_type(exchange_value,
+            destination=self.component.name)
+        return exchange
+
+    def encode(self, partition, values_list=None):
         """
             >>> import pytango.checkmate.application
             >>> import pytango.checkmate.runtime.communication
@@ -52,7 +65,7 @@ class Encoder():
             values_list = []
         for name in dir(partition):
             attr = getattr(partition, name)
-            self.get_partition_values(attr, values_list)
+            self.encode(attr, values_list)
             if attr.value is not None:
                 values_list.append(attr.value)
         return values_list
@@ -108,11 +121,7 @@ class Connector(checkmate.runtime.communication.Connector):
     def __init__(self, component, communication=None, is_reading=True):
         super().__init__(component, communication,
             is_reading=is_reading)
-        self.exchange_dict = {}
-        for _service in component.services:
-            name = _service[0]
-            self.exchange_dict[name] = ([type(_service[1]), _service[1].value])
-        self.encoder = Encoder()
+        self.encoder = Encoder(component)
 
     def initialize(self):
         super(Connector, self).initialize()
@@ -124,13 +133,12 @@ class Connector(checkmate.runtime.communication.Connector):
         super(Connector, self).close()
 
     def inbound(self, code, param):
-        exchange_type, exchange_value = self.exchange_dict[code]
-        exchange = exchange_type(exchange_value, destination=self._name)
+        exchange = self.encoder.decode(code, param)
         super(Connector, self).send(exchange)
 
     def send(self, exchange):
         attribute_values = \
-            self.encoder.get_partition_values(exchange)
+            self.encoder.encode(exchange)
         param = None
         if attribute_values:
             param_type = PyTango.DevVarStringArray
