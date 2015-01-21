@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import shlex
 import random
 import threading
 
@@ -190,8 +189,7 @@ class Communication(checkmate.runtime.communication.Communication):
     def initialize(self):
         """"""
         super(Communication, self).initialize()
-        self.pytango_server = \
-            PyTango.Util(shlex.split(__file__ + ' ' + self.server_name))
+        self.pytango_server = PyTango.Util([__file__, self.server_name])
 
     def start(self):
         super(Communication, self).start()
