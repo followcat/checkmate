@@ -145,17 +145,10 @@ class Connector(checkmate.runtime.communication.Connector):
             self.device_class, self.device_class.__name__)
 
     def open(self):
-        @checkmate.timeout_manager.WaitOnException(timeout=10)
-        def check(dev_proxy):
-            dev_proxy.attribute_list_query()
-        for dev_name in list(self.communication.comp_device.values()):
-            if dev_name != self.device_name:
-                dev_proxy = self.communication.get_device_proxy(dev_name)
-                check(dev_proxy)
+        super(Connector, self).open()
 
     def close(self):
         super(Connector, self).close()
-        self.communication.delete_tango_device(self.device_name)
 
     def send(self, exchange):
         attribute_values = \
@@ -207,6 +200,12 @@ class Communication(checkmate.runtime.communication.Communication):
         self.registry.start()
         #wait for server initialized
         self.event.wait(timeout=2)
+        @checkmate.timeout_manager.WaitOnException(timeout=10)
+        def check(dev_proxy):
+            dev_proxy.attribute_list_query()
+        for dev_name in self.comp_device.values():
+            dev_proxy = self.get_device_proxy(dev_name)
+            check(dev_proxy)
 
     def connector_factory(self, component, is_reading=True):
         return self.connector_class(component, self, is_reading=is_reading)
@@ -227,6 +226,8 @@ class Communication(checkmate.runtime.communication.Communication):
             #Bypass any exception as no failure can be reported at
             #this stage
             pass
+        for dev_name in self.comp_device.values():
+            self.delete_tango_device(dev_name)
         self.delete_tango_device('/'.join(('dserver', self.device_family,
                                          self.server_name)))
         self.registry.stop()
