@@ -173,8 +173,8 @@ class Communication(checkmate.runtime.communication.Communication):
         super(Communication, self).initialize()
         self.pytango_server = PyTango.Util([__file__, self.server_name])
         for key, values in self.dev_class.items():
-            self.pytango_server.add_class(values[0], values[1]
-                , values[1].__name__)
+            self.pytango_server.add_class(values[0], values[1],
+                values[1].__name__)
 
     def start(self):
         super(Communication, self).start()
@@ -183,6 +183,7 @@ class Communication(checkmate.runtime.communication.Communication):
         self.registry.start()
         #wait for server initialized
         self.event.wait(timeout=2)
+
         @checkmate.timeout_manager.WaitOnException(timeout=10)
         def check(dev_proxy):
             dev_proxy.attribute_list_query()
@@ -191,7 +192,8 @@ class Communication(checkmate.runtime.communication.Communication):
             check(dev_proxy)
 
     def connector_factory(self, component, is_reading=True):
-        connector = self.connector_class(component, self, is_reading=is_reading)
+        connector = self.connector_class(component, self,
+            is_reading=is_reading)
         device_class = \
             type(component.name + 'Device', (Device,),
                 add_device_service(component.services, component))
