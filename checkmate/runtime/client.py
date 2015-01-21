@@ -82,9 +82,6 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         self.logger.debug("%s initial" % self)
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
 
-    def set_exchange_module(self, exchange_module):
-        self.exchange_module = exchange_module
-
     def initialize(self):
         """"""
         if self.internal_connector:

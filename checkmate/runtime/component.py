@@ -94,9 +94,6 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def setup(self, runtime):
         super().setup(runtime)
         _application = runtime.application
-
-        self.client.set_exchange_module(_application.exchange_module)
-
         if self.using_internal_client:
             _communication = runtime.communication_list['internal']
             connector_factory = _communication.connector_class
