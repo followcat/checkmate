@@ -121,3 +121,6 @@ class Communication(checkmate.runtime.communication.Communication):
     def close(self):
         super(Communication, self).close()
         self.logger.info("%s close" % self)
+
+    def connector_factory(self, component, is_reading=True):
+        return self.connector_class(component, self, is_reading=is_reading)

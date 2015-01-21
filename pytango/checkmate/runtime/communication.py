@@ -208,6 +208,9 @@ class Communication(checkmate.runtime.communication.Communication):
         #wait for server initialized
         self.event.wait(timeout=2)
 
+    def connector_factory(self, component, is_reading=True):
+        return self.connector_class(component, self, is_reading=is_reading)
+
     def get_device_proxy(self, device_name):
         if device_name in list(self.dev_proxies.keys()):
             return self.dev_proxies[device_name]
