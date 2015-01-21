@@ -18,9 +18,9 @@ class Connector(object):
         self.is_reading = is_reading
 
         self.zmq_context = zmq.Context.instance()
-        self.socket_dealer_in = None
-        self.socket_dealer_out = None
-        self.socket_sub = None
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_sub = self.zmq_context.socket(zmq.SUB)
 
         self.communication = communication
         self._routerport = communication.get_routerport()
@@ -28,19 +28,20 @@ class Connector(object):
 
     def initialize(self):
         """"""
-        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        if self.broadcast_map:
+            self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
+            for _cname in self.broadcast_map.values():
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
         self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" %
-            self._routerport)
-        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" %
-            self._routerport)
+        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def open(self):
         """"""
 
     def close(self):
         """"""
+        self.socket_sub.close()
         self.socket_dealer_in.close()
         self.socket_dealer_out.close()
 

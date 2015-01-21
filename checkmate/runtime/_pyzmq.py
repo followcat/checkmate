@@ -20,7 +20,7 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> connector.initialize()
         >>> connector.socket_dealer_in.TYPE == zmq.DEALER
         True
-        >>> connector.socket_sub == None
+        >>> connector.socket_sub.TYPE == zmq.SUB
         True
         >>> connector.close()
 
@@ -48,24 +48,12 @@ class Connector(checkmate.runtime.communication.Connector):
 
     def initialize(self):
         super(Connector, self).initialize()
-        if self.broadcast_map:
-            self.socket_sub = \
-                self.open_router_socket(zmq.SUB, self._publishport)
-            for _cname in self.broadcast_map.values():
-                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
-
-    def open_router_socket(self, mode, port):
-        new_socket = self.zmq_context.socket(mode)
-        new_socket.connect("tcp://127.0.0.1:%i" % port)
-        return new_socket
 
     def open(self):
         """"""
 
     def close(self):
         super(Connector, self).close()
-        if self.socket_sub:
-            self.socket_sub.close()
 
     def send(self, exchange):
         """"""
