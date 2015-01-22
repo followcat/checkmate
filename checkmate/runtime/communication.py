@@ -8,7 +8,42 @@ import checkmate.runtime._zmq_wrapper
 
 
 class Connector(object):
-    """"""
+    """
+        >>> import zmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime.communication
+        >>> a = sample_app.application.TestData()
+        >>> c = checkmate.runtime.communication.Communication()
+        >>> c.initialize()
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> connector = checkmate.runtime.communication.Connector(c1, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime.communication.Connector(c2, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime.communication.Connector(c3, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> c.close()
+    """
     def __init__(self, component=None, communication=None, is_reading=False):
         self._name = component.name
         self.component = component

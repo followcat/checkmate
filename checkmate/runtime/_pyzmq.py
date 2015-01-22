@@ -3,61 +3,6 @@ import logging
 import checkmate.runtime.communication
 
 
-class Connector(checkmate.runtime.communication.Connector):
-    """
-        >>> import zmq
-        >>> import sample_app.application
-        >>> import checkmate.runtime._pyzmq
-        >>> a = sample_app.application.TestData()
-        >>> c = checkmate.runtime._pyzmq.Communication()
-        >>> c.initialize()
-        >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
-        >>> connector = checkmate.runtime._pyzmq.Connector(c1, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> connector = checkmate.runtime._pyzmq.Connector(c2, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> connector = checkmate.runtime._pyzmq.Connector(c3, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> c.close()
-    """
-    def __init__(self, component, communication=None, is_reading=True):
-        super(Connector, self).__init__(component,
-            communication=communication, is_reading=is_reading)
-
-    def initialize(self):
-        super(Connector, self).initialize()
-
-    def open(self):
-        """"""
-
-    def close(self):
-        super(Connector, self).close()
-
-    def send(self, exchange):
-        """"""
-        super(Connector, self).send(exchange)
-
-
 class Communication(checkmate.runtime.communication.Communication):
     """
         >>> import time
@@ -84,7 +29,7 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> time.sleep(1)
         >>> r.stop_test()
     """
-    connector_class = Connector
+    connector_class = checkmate.runtime.communication.Connector
 
     def __init__(self, component=None):
         """"""
