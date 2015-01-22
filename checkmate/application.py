@@ -113,10 +113,9 @@ class ApplicationMeta(type):
             _component_classes[key] = _class
 
         publish_map = {}
-        for _name_tuple in _component_classes:
-            for _name in _name_tuple:
-                publish_map[_name] = \
-                    _component_classes[_name_tuple].publish_exchange
+        for _name in _component_classes:
+            publish_map[_name] = \
+                _component_classes[_name].publish_exchange
         for _c in _component_classes:
             broadcast_map = {}
             for _e in _component_classes[_c].subscribe_exchange:
@@ -147,9 +146,9 @@ class Application(object):
         self._started = False
         self.components = {}
         self.service_registry = checkmate.service_registry.ServiceRegistry()
-        for components, _class in self.component_classes.items():
-            for _c in components:
-                self.components[_c] = _class(_c, self.service_registry)
+        for component, _class in self.component_classes.items():
+            self.components[component] = \
+                _class(component, self.service_registry)
         self.default_state_value = True
 
     def __getattr__(self, name):

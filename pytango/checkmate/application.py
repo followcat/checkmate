@@ -20,10 +20,10 @@ class Application(checkmate.application.Application,
               'LD_LIBRARY_PATH': os.environ['BOOST_ROOT_PY2'] + \
                                  '/lib:' + os.environ['LD_LIBRARY_PATH']}
 
-    component_classes = {('C1',): ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
-                         ('C2',): ('Component_2', {'launch_command': "python pytango/component/component_2_taurus.py", 'command_env': c2_env}),
-                         ('C3',): ('Component_3', {'launch_command': "./pytango/component/Component_3 {component.name}"}),
-                         ('USER',): ('User', {}),
+    component_classes = {'C1': ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
+                         'C2': ('Component_2', {'launch_command': "python pytango/component/component_2_taurus.py", 'command_env': c2_env}),
+                         'C3': ('Component_3', {'launch_command': "./pytango/component/Component_3 {component.name}"}),
+                         'USER': ('User', {}),
                         }
 
     communication_list = {
