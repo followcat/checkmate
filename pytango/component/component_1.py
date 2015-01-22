@@ -51,7 +51,7 @@ class C1Interface(PyTango.DeviceClass):
                 'AP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]],
                 'PP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
                }
-    attr_list = {'PA': [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ]],
+    attr_list = {
                 }
 
 

@@ -93,19 +93,13 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     @checkmate.fix_issue('checkmate/issues/use_default_communication.rst')
     def setup(self, runtime):
         super().setup(runtime)
-        _application = runtime.application
-
-        self.client.set_exchange_module(_application.exchange_module)
-
         if self.using_internal_client:
             _communication = runtime.communication_list['internal']
-            connector_factory = _communication.connector_class
-            self.client.internal_connector = connector_factory(self.context, _communication, is_reading=self.reading_internal_client)
+            self.client.internal_connector = _communication.connector_factory(self.context, is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
                 _communication = runtime.communication_list[_key]
-                connector_factory = _communication.connector_class
-                self.client.external_connectors[_key] = connector_factory(self.context, _communication, is_reading=self.reading_external_client)
+                self.client.external_connectors[_key] = _communication.connector_factory(self.context, is_reading=self.reading_external_client)
 
     def start(self):
         Component.start(self)

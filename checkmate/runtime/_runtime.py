@@ -3,7 +3,6 @@ import logging
 import threading
 import collections
 
-import checkmate.logger
 import checkmate.interfaces
 import checkmate.pathfinder
 import checkmate.timeout_manager

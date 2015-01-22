@@ -1,5 +1,4 @@
 import socket
-import pickle
 import threading
 
 import zmq
@@ -9,30 +8,85 @@ import checkmate.runtime._zmq_wrapper
 
 
 class Connector(object):
-    """"""
-    def __init__(self, component=None, communication=None, is_server=False,
-                 is_reading=False, is_broadcast=False):
+    """
+        >>> import zmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime.communication
+        >>> a = sample_app.application.TestData()
+        >>> c = checkmate.runtime.communication.Communication()
+        >>> c.initialize()
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> connector = checkmate.runtime.communication.Connector(c1, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime.communication.Connector(c2, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime.communication.Connector(c3, c)
+        >>> connector.initialize()
+        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> c.close()
+    """
+    def __init__(self, component=None, communication=None, is_reading=False):
+        self._name = component.name
         self.component = component
-        self.is_server = is_server
+        self.broadcast_map = component.broadcast_map
+
         self.is_reading = is_reading
-        self.is_broadcast = is_broadcast
+
+        self.zmq_context = zmq.Context.instance()
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_sub = self.zmq_context.socket(zmq.SUB)
+
         self.communication = communication
-        self.socket_dealer_in = None
-        self.socket_dealer_out = None
-        self.socket_pub = None
-        self.socket_sub = None
+        self._routerport = communication.get_routerport()
+        self._publishport = self.communication.get_publishport()
 
     def initialize(self):
         """"""
+        if self.broadcast_map:
+            self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
+            for _cname in self.broadcast_map.values():
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
+        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def open(self):
         """"""
 
     def close(self):
         """"""
+        self.socket_sub.close()
+        self.socket_dealer_in.close()
+        self.socket_dealer_out.close()
 
     def send(self, exchange):
         """"""
+        if exchange.broadcast:
+            destination = exchange.origin.encode()
+        else:
+            destination = exchange.destination[0].encode()
+        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
+        self.socket_dealer_out.send_pyobj(exchange)
 
     def receive(self):
         """"""
@@ -40,25 +94,37 @@ class Connector(object):
 
 class Communication(object):
     """"""
+    connector_class = Connector
     def __init__(self, component=None):
         """"""
+        self.router = Router()
 
     def initialize(self):
         """"""
 
     def start(self):
         """"""
+        self.router.start()
 
     def close(self):
         """"""
+        self.router.stop()
+
+    def get_routerport(self):
+        return self.router._routerport
+
+    def get_publishport(self):
+        return self.router._publishport
+
+    def connector_factory(self, component, is_reading=True):
+        return self.connector_class(component, self, is_reading=is_reading)
 
 
 class Router(checkmate.runtime._threading.Thread):
     """"""
-    def __init__(self, encoder, name=None):
+    def __init__(self, name=None):
         """"""
         super(Router, self).__init__(name=name)
-        self.encoder = encoder
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
         self.zmq_context = zmq.Context.instance()
         self.router = self.zmq_context.socket(zmq.ROUTER)
@@ -67,11 +133,8 @@ class Router(checkmate.runtime._threading.Thread):
         self.get_assign_port_lock = threading.Lock()
 
         self._routerport = self.pickfreeport()
-        self._broadcast_routerport = self.pickfreeport()
         self._publishport = self.pickfreeport()
         self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
-        self.broadcast_router.bind("tcp://127.0.0.1:%i" %
-            self._broadcast_routerport)
         self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
 
         self.poller.register(self.router)
@@ -84,14 +147,15 @@ class Router(checkmate.runtime._threading.Thread):
                 break
             socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
-                message = sock.recv_multipart()
-                exchange = self.encoder.decode(message[2])
-                if sock == self.router:
-                    self.router.send(message[1], flags=zmq.SNDMORE)
-                    self.router.send_pyobj(exchange)
-                if sock == self.broadcast_router:
-                    self.publish.send(message[1], flags=zmq.SNDMORE)
+                origin = sock.recv()
+                destination = sock.recv()
+                exchange = sock.recv_pyobj()
+                if exchange.broadcast:
+                    self.publish.send(destination, flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
+                else:
+                    self.router.send(destination, flags=zmq.SNDMORE)
+                    self.router.send_pyobj(exchange)
 
     def pickfreeport(self):
         with self.get_assign_port_lock:
@@ -100,55 +164,3 @@ class Router(checkmate.runtime._threading.Thread):
             addr, port = _socket.getsockname()
             _socket.close()
         return port
-
-
-class Encoder(object):
-    def _dump(self, partition):
-        """
-            >>> import sample_app.application
-            >>> import checkmate.runtime.communication
-            >>> a = sample_app.application.TestData()
-            >>> t = a.components['C1'].state_machine.transitions[0]
-            >>> ac = t.incoming[0].factory()
-            >>> dir(ac)
-            ['R']
-            >>> encoder = checkmate.runtime.communication.Encoder()
-            >>> dump_data = encoder._dump(ac) #doctest: +ELLIPSIS
-            >>> dump_data[0]
-            <class 'sample_app.exchanges.Action'>
-            >>> dump_data[1]['value']
-            'AC'
-            >>> dump_data[1]['R']['C']['value']
-            'AT1'
-            >>> new_ac = encoder._load(dump_data)
-            >>> new_ac #doctest: +ELLIPSIS
-            <sample_app.exchanges.Action object at ...
-            >>> new_ac.R.P.value
-            'NORM'
-        """
-        partition_dict = partition._dump()
-        return (type(partition), partition_dict)
-
-    def _load(self, data):
-        exchange_type, params_dict = data
-        return exchange_type(**params_dict)
-
-    def encode(self, *args):
-        dump_data = pickle.dumps(self._dump(*args))
-        return dump_data
-
-    @checkmate.fix_issue("checkmate/issues/decode_attribute.rst")
-    def decode(self, message):
-        """
-        >>> import sample_app.application
-        >>> import checkmate.runtime.communication
-        >>> ac = sample_app.exchanges.Action('AC')
-        >>> encoder = checkmate.runtime.communication.Encoder()
-        >>> encode_exchange = encoder.encode(ac)
-        >>> decode_exchange = encoder.decode(encode_exchange)
-        >>> ac == decode_exchange
-        True
-        """
-        load_data = pickle.loads(message)
-        exchange = self._load(load_data)
-        return exchange

@@ -23,8 +23,6 @@ class ComponentMeta(type):
         <module 'sample_app.exchanges' from ...
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
-        >>> c1.is_publish, c2.is_publish, c3.is_publish
-        (True, False, False)
         >>> c1.publish_exchange, c2.publish_exchange, c3.publish_exchange
         (['PA'], [], [])
         >>> c1.subscribe_exchange, c2.subscribe_exchange, c3.subscribe_exchange
@@ -55,7 +53,6 @@ class ComponentMeta(type):
             services = []
             service_interfaces = []
             outgoings = []
-            namespace['is_publish'] = False
             namespace['subscribe_exchange'] = []
             namespace['publish_exchange'] = []
             communication_list = set()
@@ -75,7 +72,6 @@ class ComponentMeta(type):
                         outgoings.append(_o.code)
                     if _ex.broadcast:
                         namespace['publish_exchange'].append(_o.code)
-                        namespace['is_publish'] = True
                     communication_list.add(_ex.communication)
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
