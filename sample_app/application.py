@@ -14,18 +14,22 @@ class TestData(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
-        C1:
-            - Component_1
-            - {}
-        C2:
-            - Component_2
-            - {}
-        C3:
-            - Component_3
-            - {}
-        USER:
-            - User
-            - {}
+        - class: Component_1
+          attributes: {}
+          instances:
+            - name: C1
+        - class: Component_2
+          attributes: {}
+          instances:
+            - name: C2
+        - class: Component_3
+          attributes: {}
+          instances:
+            - name: C3
+        - class: User
+          attributes: {}
+          instances:
+            - name: USER
         """)
 
     communication_list = {'': checkmate.runtime._pyzmq.Communication}

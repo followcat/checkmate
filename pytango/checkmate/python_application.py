@@ -43,21 +43,28 @@ class FullPython(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
-        C1:
-            - Component_1
-            - launch_command: "python ./pytango/component/component_1.py
-                                    {component.name}"
-        C2:
-            - Component_2
-            - launch_command: "python pytango/component/component_2.py
-                                    {component.name}"
-        C3:
-            - Component_3
-            - launch_command: "python pytango/component/component_3.py
-                                    {component.name}"
-        USER:
-            - User
-            - {}
+        - class: Component_1
+          attributes:
+            launch_command: "python ./pytango/component/component_1.py
+                                {component.name}"
+          instances:
+            - name: C1
+        - class: Component_2
+          attributes:
+            launch_command: "python ./pytango/component/component_2.py
+                                {component.name}"
+          instances:
+            - name: C2
+        - class: Component_3
+          attributes:
+            launch_command: "python ./pytango/component/component_3.py
+                                {component.name}"
+          instances:
+            - name: C3
+        - class: User
+          attributes: {}
+          instances:
+            - name: USER
         """)
 
     communication_list = {

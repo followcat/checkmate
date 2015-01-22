@@ -96,7 +96,9 @@ class ApplicationMeta(type):
             pass
 
         _component_classes = namespace['component_classes']
-        for key, (class_name, class_dict) in _component_classes.items():
+        for index, class_definition in enumerate(_component_classes):
+            class_name = class_definition['class']
+            class_dict = class_definition['attributes']
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
                     class_name.lower(), 'component')
@@ -110,19 +112,23 @@ class ApplicationMeta(type):
             _class = checkmate.component.ComponentMeta(class_name,
                         (checkmate.component.Component,), d)
             setattr(component_module, class_name, _class)
-            _component_classes[key] = _class
+            class_definition['class'] = _class
 
         publish_map = {}
-        for _name in _component_classes:
-            publish_map[_name] = \
-                _component_classes[_name].publish_exchange
-        for _c in _component_classes:
+        for index, class_definition in enumerate(_component_classes):
+            for _name in class_definition['instances']:
+                try:
+                    publish_map[_name['name']] = \
+                        class_definition['class'].publish_exchange
+                except:
+                    raise Exception(class_definition)
+        for index, class_definition in enumerate(_component_classes):
             broadcast_map = {}
-            for _e in _component_classes[_c].subscribe_exchange:
+            for _e in class_definition['class'].subscribe_exchange:
                 for _name, _p in publish_map.items():
                     if _e in _p:
                         broadcast_map[_e] = _name
-            setattr(_component_classes[_c], 'broadcast_map', broadcast_map)
+            setattr(class_definition['class'], 'broadcast_map', broadcast_map)
 
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
@@ -146,9 +152,12 @@ class Application(object):
         self._started = False
         self.components = {}
         self.service_registry = checkmate.service_registry.ServiceRegistry()
-        for component, _class in self.component_classes.items():
-            self.components[component] = \
-                _class(component, self.service_registry)
+        for _class_definition in self.component_classes:
+            _class = _class_definition['class']
+            for component in _class_definition['instances']:
+                _name = component['name']
+                self.components[_name] = \
+                    _class(_name, self.service_registry)
         self.default_state_value = True
 
     def __getattr__(self, name):
