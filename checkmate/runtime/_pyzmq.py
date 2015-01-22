@@ -1,13 +1,11 @@
 import logging
 
-import zmq
-
-import checkmate.timeout_manager
 import checkmate.runtime.communication
 
 
 class Connector(checkmate.runtime.communication.Connector):
     """
+        >>> import zmq
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> a = sample_app.application.TestData()

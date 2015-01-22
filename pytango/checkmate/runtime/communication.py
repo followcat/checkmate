@@ -4,7 +4,6 @@ import time
 import random
 import threading
 
-import zmq
 import PyTango
 
 import checkmate.timeout_manager
