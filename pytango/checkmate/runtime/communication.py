@@ -129,8 +129,7 @@ class Connector(checkmate.runtime.communication.Connector):
         super(Connector, self).send(exchange)
 
     def send(self, exchange):
-        attribute_values = \
-            self.encoder.encode(exchange)
+        attribute_values = self.encoder.encode(exchange)
         param = None
         if attribute_values:
             param_type = PyTango.DevVarStringArray
