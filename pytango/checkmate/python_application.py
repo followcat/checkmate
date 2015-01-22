@@ -1,3 +1,5 @@
+import yaml
+
 import checkmate.application
 
 import pytango.checkmate.runtime.communication
@@ -39,11 +41,25 @@ class FullPython(checkmate.application.Application,
     exchange_definition = ['pytango/checkmate/exchanges']
     test_data_definition = ['pytango/checkmate/test_data.yaml']
 
-    component_classes = {'C1': ('Component_1', {'launch_command': "python ./pytango/component/component_1.py {component.name}"}),
-                         'C2': ('Component_2', {'launch_command': "python ./pytango/component/component_2.py {component.name}"}),
-                         'C3': ('Component_3', {'launch_command': "python ./pytango/component/component_3.py {component.name}"}),
-                         'USER': ('User', {}),
-                        }
+    component_classes = yaml.load(
+        """
+        C1:
+            - Component_1
+            - launch_command: "python ./pytango/component/component_1.py
+                                    {component.name}"
+        C2:
+            - Component_2
+            - launch_command: "python pytango/component/component_2.py
+                                    {component.name}"
+        C3:
+            - Component_3
+            - launch_command: "python pytango/component/component_3.py
+                                    {component.name}"
+        USER:
+            - User
+            - {}
+        """)
+
     communication_list = {
         'pytango': pytango.checkmate.runtime.communication.Communication}
 
