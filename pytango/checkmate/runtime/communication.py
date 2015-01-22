@@ -55,9 +55,11 @@ class Encoder():
         """
             >>> import pytango.checkmate.application
             >>> import pytango.checkmate.runtime.communication
-            >>> ac = pytango.checkmate.exchanges.AC()
-            >>> encoder = pytango.checkmate.runtime.communication.Encoder()
-            >>> encoder.get_partition_values(ac)
+            >>> a = pytango.checkmate.application.Application()
+            >>> c1 = a.components['C1']
+            >>> ac = pytango.checkmate.exchanges.Action('AC')
+            >>> encoder = pytango.checkmate.runtime.communication.Encoder(c1)
+            >>> encoder.encode(ac)
             ['AT1', 'NORM']
         """
         if values_list is None:
