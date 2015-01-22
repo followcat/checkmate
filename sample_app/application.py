@@ -2,7 +2,8 @@ import checkmate.application
 import checkmate.runtime._pyzmq
 
 
-class TestData(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
+class TestData(checkmate.application.Application,
+               metaclass=checkmate.application.ApplicationMeta):
     """"""
     __test__ = False
 
@@ -33,7 +34,7 @@ class TestData(checkmate.application.Application, metaclass=checkmate.applicatio
             >>> c.process([i])[-1] # doctest: +ELLIPSIS
             <sample_app.exchanges.ThirdAction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': <sample_app.data_structure.ActionRequest object ...
             >>> i = sample_app.exchanges.Action('AC')
             >>> t = c.state_machine.transitions[0]
             >>> t.is_matching_incoming([i])

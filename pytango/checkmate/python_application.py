@@ -3,7 +3,8 @@ import checkmate.application
 import pytango.checkmate.runtime.communication
 
 
-class FullPython(checkmate.application.Application, metaclass=checkmate.application.ApplicationMeta):
+class FullPython(checkmate.application.Application,
+                 metaclass=checkmate.application.ApplicationMeta):
     """
         >>> import pytango.checkmate.application
         >>> import time
@@ -12,17 +13,21 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
         >>> import checkmate.runtime._runtime
         >>> ac = pytango.checkmate.python_application.FullPython
         >>> cc = checkmate.runtime._pyzmq.Communication
-        >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded=True)
+        >>> threaded = True
+        >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded)
         >>> r.setup_environment(['C3'])
         >>> time.sleep(1)
         >>> r.start_test()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
-        >>> simulated_transition = c2.context.get_transition_by_output([pytango.checkmate.exchanges.AC()])
+        >>> simulated_transition =
+        ...     c2.context.get_transition_by_output(
+        ...         [pytango.checkmate.exchanges.AC()])
         >>> o = c2.simulate(simulated_transition)
         >>> time.sleep(1)
-        >>> c1.context.state_machine.transitions[0].is_matching_incoming(o)
-        >>> c1.validate(c1.context.state_machine.transitions[0])
+        >>> _t = c1.context.state_machine.transitions[0]
+        >>> _t.is_matching_incoming(o)
+        >>> c1.validate(_t)
         True
         >>> r.stop_test()
 
@@ -39,5 +44,6 @@ class FullPython(checkmate.application.Application, metaclass=checkmate.applicat
                          ('C3',): ('Component_3', {'launch_command': "python ./pytango/component/component_3.py {component.name}"}),
                          ('USER',): ('User', {}),
                         }
-    communication_list = {'pytango': pytango.checkmate.runtime.communication.Communication}
+    communication_list = {
+        'pytango': pytango.checkmate.runtime.communication.Communication}
 
