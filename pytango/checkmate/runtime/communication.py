@@ -122,15 +122,6 @@ class Connector(checkmate.runtime.communication.Connector):
             is_reading=is_reading)
         self.encoder = Encoder(component)
 
-    def initialize(self):
-        super(Connector, self).initialize()
-
-    def open(self):
-        super(Connector, self).open()
-
-    def close(self):
-        super(Connector, self).close()
-
     def inbound(self, code, param):
         exchange = self.encoder.decode(code, param)
         super(Connector, self).send(exchange)
@@ -197,8 +188,9 @@ class Communication(checkmate.runtime.communication.Communication):
             check(dev_proxy)
 
     def connector_factory(self, component, is_reading=True):
-        connector = self.connector_class(component, self,
-            is_reading=is_reading)
+        connector = \
+            super(Communication, self).connector_factory(
+                component, is_reading=is_reading)
         device_class = \
             type(component.name + 'Device', (Device,),
                 add_device_service(component.services, component))

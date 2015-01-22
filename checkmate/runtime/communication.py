@@ -94,6 +94,7 @@ class Connector(object):
 
 class Communication(object):
     """"""
+    connector_class = Connector
     def __init__(self, component=None):
         """"""
         self.router = Router()
@@ -114,6 +115,9 @@ class Communication(object):
 
     def get_publishport(self):
         return self.router._publishport
+
+    def connector_factory(self, component, is_reading=True):
+        return self.connector_class(component, self, is_reading=is_reading)
 
 
 class Router(checkmate.runtime._threading.Thread):
