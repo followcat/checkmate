@@ -48,7 +48,7 @@ class Launcher(object):
         if self.command is not None:
             self.process.terminate()
             try:
-                outs, errs = self.process.communicate(timeout=0.5)
+                outs, errs = self.process.communicate()
             except subprocess.TimeoutExpired:
                 self.process.kill()
         else:
