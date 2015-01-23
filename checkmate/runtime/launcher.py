@@ -10,7 +10,9 @@ import checkmate.runtime.component
 
 
 class Launcher(object):
-    def __init__(self, component=None, command=None, command_env=None, runtime=None, *args):
+    def __init__(self, component=None, command=None, command_env=None,
+                 runtime=None, *args):
+        """"""
         self.command = command
         self.runtime = runtime
         self.component = component
@@ -18,7 +20,8 @@ class Launcher(object):
         if self.command is not None:
             pass
         elif self.component is not None:
-            self.runtime_component = checkmate.runtime.component.ThreadedComponent(self.component)
+            self.runtime_component = \
+                checkmate.runtime.component.ThreadedComponent(self.component)
             self.runtime_component.setup(self.runtime)
         else:
             raise Exception("No command nor component")
@@ -28,8 +31,12 @@ class Launcher(object):
             command_env = dict(os.environ)
             if self.command_env is not None:
                 command_env.update(self.command_env) 
-            self.process = subprocess.Popen(shlex.split(self.command.format(component=self.component)),
-                                            env=command_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.process = \
+                subprocess.Popen(
+                    shlex.split(self.command.format(component=self.component)),
+                    env=command_env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
         else:
             self.runtime_component.initialize()
 
@@ -46,5 +53,4 @@ class Launcher(object):
                 self.process.kill()
         else:
             self.runtime_component.stop()
-
 

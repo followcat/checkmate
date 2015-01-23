@@ -6,6 +6,8 @@ import checkmate.timeout_manager
 
 
 class Poller(zmq.Poller):
+    timeout_value = checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC
+
     def poll(self, timeout=None):
         if self.sockets:
             return super().poll(timeout)
@@ -17,5 +19,5 @@ class Poller(zmq.Poller):
         super().register(socket, zmq.POLLIN)
 
     def poll_with_timeout(self):
-        return dict(super().poll(checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC))
+        return dict(super().poll(self.timeout_value))
 
