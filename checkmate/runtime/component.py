@@ -20,7 +20,8 @@ class Component(object):
     def __init__(self, component):
         self.context = component
         self.client = checkmate.runtime.client.Client(self.context)
-        self.logger = logging.getLogger('checkmate.runtime.component.Component')
+        self.logger = \
+            logging.getLogger('checkmate.runtime.component.Component')
 
     def setup(self, runtime):
         self.runtime = runtime
@@ -44,17 +45,20 @@ class Component(object):
             output = self.context.process(exchanges)
         except checkmate.exception.NoTransitionFound:
             output = []
-        self.logger.info("%s process exchange %s" % (self.context.name, exchanges[0].value))
+        self.logger.info("%s process exchange %s" %
+            (self.context.name, exchanges[0].value))
         for _o in output:
             self.client.send(_o)
-            self.logger.info("%s send exchange %s to %s" % (self.context.name, _o.value, _o.destination))
+            self.logger.info("%s send exchange %s to %s" %
+                (self.context.name, _o.value, _o.destination))
         return output
 
     def simulate(self, transition):
         output = self.context.simulate(transition)
         for _o in output:
             self.client.send(_o)
-            self.logger.info("%s simulate transition and output %s to %s" % (self.context.name, _o.value, _o.destination))
+            self.logger.info("%s simulate transition and output %s to %s" %
+                (self.context.name, _o.value, _o.destination))
         return output
 
     def validate(self, transition):
@@ -84,10 +88,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def __init__(self, component):
         #Need to call both ancestors
         Component.__init__(self, component)
-        checkmate.runtime._threading.Thread.__init__(self, name=component.name)
+        checkmate.runtime._threading.Thread.__init__(self,
+            name=component.name)
 
         self.exchange_queue = queue.Queue()
-        self.client = checkmate.runtime.client.ThreadedClient(self.context, self.exchange_queue)
+        self.client = checkmate.runtime.client.ThreadedClient(self.context,
+                        self.exchange_queue)
         self.validation_lock = threading.Lock()
 
     @checkmate.fix_issue('checkmate/issues/use_default_communication.rst')
@@ -95,11 +101,15 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         super().setup(runtime)
         if self.using_internal_client:
             _communication = runtime.communication_list['internal']
-            self.client.internal_connector = _communication.connector_factory(self.context, is_reading=self.reading_internal_client)
+            self.client.internal_connector = \
+                _communication.connector_factory(self.context,
+                    is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
                 _communication = runtime.communication_list[_key]
-                self.client.external_connectors[_key] = _communication.connector_factory(self.context, is_reading=self.reading_external_client)
+                self.client.external_connectors[_key] = \
+                    _communication.connector_factory(self.context,
+                        is_reading=self.reading_external_client)
 
     def start(self):
         Component.start(self)
@@ -110,11 +120,12 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
+        timeout_value = checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC
         while True:
             if self.check_for_stop():
                 break
             try:
-                exchange = self.exchange_queue.get(timeout=checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC)
+                exchange = self.exchange_queue.get(timeout=timeout_value)
                 with self.validation_lock:
                     try:
                         self.process([exchange])
@@ -127,7 +138,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     def simulate(self, transition):
         return super().simulate(transition)
 
-    @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.VALIDATE_SEC, 100)
+    @checkmate.timeout_manager.WaitOnFalse(
+        checkmate.timeout_manager.VALIDATE_SEC, 100)
     def validate(self, transition):
         with self.validation_lock:
             return super().validate(transition)
@@ -145,18 +157,24 @@ class ThreadedSut(ThreadedComponent, Sut):
     def setup(self, runtime):
         super().setup(runtime)
         if hasattr(self.context, 'launch_command'):
-            for communication_name in self.context.communication_list:
-                self.runtime.application.communication_list[communication_name](self.context)
+            for _name in self.context.communication_list:
+                runtime.application.communication_list[_name](self.context)
         else:
-            self.launcher = checkmate.runtime.launcher.Launcher(component=copy.deepcopy(self.context), runtime=self.runtime)
+            self.launcher = checkmate.runtime.launcher.Launcher(
+                                component=copy.deepcopy(self.context),
+                                runtime=runtime)
 
     def initialize(self):
         if hasattr(self.context, 'launch_command'):
             if hasattr(self.context, 'command_env'):
-                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command,
-                                                                    command_env=self.context.command_env, component=self.context)
+                self.launcher = checkmate.runtime.launcher.Launcher(
+                                    command=self.context.launch_command,
+                                    command_env=self.context.command_env,
+                                    component=self.context)
             else:
-                self.launcher = checkmate.runtime.launcher.Launcher(command=self.context.launch_command, component=self.context)
+                self.launcher = checkmate.runtime.launcher.Launcher(
+                                    command=self.context.launch_command,
+                                    component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 

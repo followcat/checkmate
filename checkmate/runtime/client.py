@@ -42,7 +42,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         >>> import checkmate.runtime.component
         >>> ac = sample_app.application.TestData
         >>> cc = checkmate.runtime._pyzmq.Communication
-        >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded=True)
+        >>> threaded = True
+        >>> r = checkmate.runtime._runtime.Runtime(ac, cc, threaded)
         >>> r.setup_environment(['C3'])
         >>> r.start_test()
         >>> rc1 = r.runtime_components['C1']
@@ -71,7 +72,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
     """
     def __init__(self, component, exchange_queue):
         super(ThreadedClient, self).__init__(component)
-        self.logger = logging.getLogger('checkmate.runtime.client.ThreadedClient')
+        self.logger = \
+            logging.getLogger('checkmate.runtime.client.ThreadedClient')
         self.name = component.name
         self.component = component
         self.exchange_queue = exchange_queue
@@ -94,7 +96,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
             if self.internal_connector.socket_sub:
                 self.poller.register(self.internal_connector.socket_sub)
             self.poller.register(self.internal_connector.socket_dealer_in)
-        for _connector in [_c for _c in self.external_connectors.values() if _c.is_reading]:
+        for _connector in [_c for _c in self.external_connectors.values()
+                           if _c.is_reading]:
             if _connector.socket_sub:
                 self.poller.register(_connector.socket_sub)
             self.poller.register(_connector.socket_dealer_in)
@@ -121,7 +124,8 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
                     _s.recv()
                 exchange = _s.recv_pyobj()
                 self.exchange_queue.put(exchange)
-                self.logger.debug("%s receive exchange %s" % (self, exchange.value))
+                self.logger.debug("%s receive exchange %s" %
+                    (self, exchange.value))
 
     def stop(self):
         """"""
@@ -129,15 +133,13 @@ class ThreadedClient(checkmate.runtime._threading.Thread):
         super(ThreadedClient, self).stop()
 
     def send(self, exchange):
-        """Use connector to send exchange
-
-        It is up to the connector to manage the thread protection.
-        """
+        """Use connector to send exchange"""
         if self.internal_connector:
             self.internal_connector.send(exchange)
         try:
             self.external_connectors[exchange.communication].send(exchange)
         except KeyError:
-            #if no key exist in self.external_connectors, nothing can be done for now
+            #nothing can be done for now
             pass
-        self.logger.debug("%s send exchange %s to %s" % (self, exchange.value, exchange.destination))
+        self.logger.debug("%s send exchange %s to %s" %
+            (self, exchange.value, exchange.destination))
