@@ -78,10 +78,9 @@ class Device(checkmate.runtime._threading.Thread):
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
     def start(self):
-        if self.is_reading:
-            if self.socket_sub:
-                self.poller.register(self.socket_sub)
-            self.poller.register(self.socket_dealer_in)
+        if self.socket_sub:
+            self.poller.register(self.socket_sub)
+        self.poller.register(self.socket_dealer_in)
         checkmate.runtime._threading.Thread.start(self)
 
     def run(self):
@@ -98,7 +97,8 @@ class Device(checkmate.runtime._threading.Thread):
                 if _s.TYPE == zmq.SUB:
                     _s.recv()
                 exchange = _s.recv_pyobj()
-                self.connector.inbound(exchange)
+                if self.is_reading:
+                    self.connector.inbound(exchange)
 
     def send(self, exchange):
         """"""
