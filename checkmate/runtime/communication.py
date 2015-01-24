@@ -81,7 +81,7 @@ class Device(checkmate.runtime._threading.Thread):
         if self.socket_sub:
             self.poller.register(self.socket_sub)
         self.poller.register(self.socket_dealer_in)
-        checkmate.runtime._threading.Thread.start(self)
+        super().start()
 
     def run(self):
         """"""
@@ -112,7 +112,7 @@ class Device(checkmate.runtime._threading.Thread):
     def stop(self):
         """"""
         self.logger.debug("%s stop request" % self)
-        checkmate.runtime._threading.Thread.stop(self)
+        super().stop()
 
 
 class Encoder(object):
