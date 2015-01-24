@@ -14,6 +14,7 @@ import checkmate.timeout_manager
 import checkmate.runtime.launcher
 import checkmate.runtime._threading
 import checkmate.runtime.interfaces
+import checkmate.runtime.communication
 
 
 class Component(object):
@@ -98,7 +99,8 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.__init__(self,
             name=component.name)
 
-        self.client = checkmate.runtime.client.ThreadedClient(self.context,
+        self.client = checkmate.runtime.communication.ThreadedClient(
+                        self.context,
                         self.exchange_queue)
         self.validation_lock = threading.Lock()
 
