@@ -5,31 +5,83 @@ import threading
 import zmq
 
 import checkmate.logger
-import checkmate.runtime.client
 import checkmate.runtime._threading
 import checkmate.runtime._zmq_wrapper
 
 
-class ThreadedClient(checkmate.runtime.client.Client, 
-                     checkmate.runtime._threading.Thread):
-    """"""
-    def __init__(self, component, exchange_queue):
-        checkmate.runtime._threading.Thread.__init__(self, component)
-        super(ThreadedClient, self).__init__(component, exchange_queue)
+class Device(checkmate.runtime._threading.Thread):
+    """
+        >>> import zmq
+        >>> import sample_app.application
+        >>> import checkmate.runtime.communication
+        >>> a = sample_app.application.TestData()
+        >>> c = checkmate.runtime.communication.Communication()
+        >>> c.initialize()
+        >>> c1 = a.components['C1']
+        >>> c2 = a.components['C2']
+        >>> c3 = a.components['C3']
+        >>> connector = checkmate.runtime.communication.Connector(c1, c)
+        >>> connector.initialize()
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
 
+        >>> connector = checkmate.runtime.communication.Connector(c2, c)
+        >>> connector.initialize()
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> connector = checkmate.runtime.communication.Connector(c3, c)
+        >>> connector.initialize()
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
+        >>> connector.close()
+
+        >>> c.close()
+    """
+    def __init__(self, component=None, communication=None, is_reading=False):
+        super().__init__(component.name)
+        self._name = component.name
+        self.component = component
+        self.broadcast_map = component.broadcast_map
+
+        self.is_reading = is_reading
+
+        self.zmq_context = zmq.Context.instance()
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_sub = self.zmq_context.socket(zmq.SUB)
+
+        self.communication = communication
+        self._routerport = communication.get_routerport()
+        self._publishport = self.communication.get_publishport()
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
 
+        self.logger = \
+            logging.getLogger('checkmate.runtime.communication.Device')
+
+    def initialize(self):
+        """"""
+        if self.broadcast_map:
+            self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
+            for _cname in self.broadcast_map.values():
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
+        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
+        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
+        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
+
     def start(self):
-        if self.internal_connector and self.internal_connector.is_reading:
-            if self.internal_connector.socket_sub:
-                self.poller.register(self.internal_connector.socket_sub)
-            self.poller.register(self.internal_connector.socket_dealer_in)
-        for _connector in [_c for _c in self.external_connectors.values()
-                           if _c.is_reading]:
-            if _connector.socket_sub:
-                self.poller.register(_connector.socket_sub)
-            self.poller.register(_connector.socket_dealer_in)
-        super(ThreadedClient, self).start()
+        if self.is_reading:
+            if self.socket_sub:
+                self.poller.register(self.socket_sub)
+            self.poller.register(self.socket_dealer_in)
         checkmate.runtime._threading.Thread.start(self)
 
     def run(self):
@@ -37,14 +89,25 @@ class ThreadedClient(checkmate.runtime.client.Client,
         self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
-                super().stop()
+                self.socket_sub.close()
+                self.socket_dealer_in.close()
+                self.socket_dealer_out.close()
                 break
             socks = self.poller.poll_with_timeout()
             for _s in socks:
                 if _s.TYPE == zmq.SUB:
                     _s.recv()
                 exchange = _s.recv_pyobj()
-                super().receive(exchange)
+                self.connector.inbound(exchange)
+
+    def send(self, exchange):
+        """"""
+        if exchange.broadcast:
+            destination = exchange.origin.encode()
+        else:
+            destination = exchange.destination[0].encode()
+        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
+        self.socket_dealer_out.send_pyobj(exchange)
 
     def stop(self):
         """"""
@@ -62,94 +125,30 @@ class Encoder(object):
 
 
 class Connector(object):
-    """
-        >>> import zmq
-        >>> import sample_app.application
-        >>> import checkmate.runtime.communication
-        >>> a = sample_app.application.TestData()
-        >>> c = checkmate.runtime.communication.Communication()
-        >>> c.initialize()
-        >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
-        >>> connector = checkmate.runtime.communication.Connector(c1, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> connector = checkmate.runtime.communication.Connector(c2, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> connector = checkmate.runtime.communication.Connector(c3, c)
-        >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER
-        True
-        >>> connector.socket_sub.TYPE == zmq.SUB
-        True
-        >>> connector.close()
-
-        >>> c.close()
-    """
+    """"""
     def __init__(self, component=None, communication=None, queue=None,
                  is_reading=False):
         self.queue = queue
         self.encoder = Encoder()
-        self._name = component.name
         self.component = component
-        self.broadcast_map = component.broadcast_map
-
-        self.is_reading = is_reading
-
-        self.zmq_context = zmq.Context.instance()
-        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
-        self.socket_sub = self.zmq_context.socket(zmq.SUB)
-
         self.communication = communication
-        self._routerport = communication.get_routerport()
-        self._publishport = self.communication.get_publishport()
+        self.device = Device(component, communication, is_reading)
+        setattr(self.device, 'connector', self)
 
     def initialize(self):
-        """"""
-        if self.broadcast_map:
-            self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
-            for _cname in self.broadcast_map.values():
-                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
-        self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-        self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
-        self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
+        self.device.initialize()
 
     def open(self):
-        """"""
-
-    def close(self):
-        """"""
-        self.socket_sub.close()
-        self.socket_dealer_in.close()
-        self.socket_dealer_out.close()
+        self.device.start()
 
     def inbound(self, *message):
         self.queue.put(self.encoder.decode(*message))
 
     def send(self, exchange):
-        """"""
-        if exchange.broadcast:
-            destination = exchange.origin.encode()
-        else:
-            destination = exchange.destination[0].encode()
-        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
-        self.socket_dealer_out.send_pyobj(exchange)
+        self.device.send(self.encoder.encode(exchange))
 
-    def receive(self):
-        """"""
+    def close(self):
+        self.device.stop()
 
 
 class Communication(object):
