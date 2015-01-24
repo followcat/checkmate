@@ -109,12 +109,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['internal']
             self.client.internal_connector = \
                 _communication.connector_factory(self.context,
+                    queue=self.exchange_queue,
                     is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
                 _communication = runtime.communication_list[_key]
                 self.client.external_connectors[_key] = \
                     _communication.connector_factory(self.context,
+                        queue=self.exchange_queue,
                         is_reading=self.reading_external_client)
 
     def start(self):

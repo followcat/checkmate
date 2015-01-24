@@ -7,6 +7,15 @@ import checkmate.runtime._threading
 import checkmate.runtime._zmq_wrapper
 
 
+class Encoder(object):
+    """"""
+    def encode(self, exchange):
+        return exchange
+
+    def decode(self, message):
+        return message
+
+
 class Connector(object):
     """
         >>> import zmq
@@ -44,7 +53,10 @@ class Connector(object):
 
         >>> c.close()
     """
-    def __init__(self, component=None, communication=None, is_reading=False):
+    def __init__(self, component=None, queue=None, communication=None,
+                 is_reading=False):
+        self.queue = queue
+        self.encoder = Encoder()
         self._name = component.name
         self.component = component
         self.broadcast_map = component.broadcast_map
@@ -78,6 +90,9 @@ class Connector(object):
         self.socket_sub.close()
         self.socket_dealer_in.close()
         self.socket_dealer_out.close()
+
+    def inbound(self, *message):
+        self.queue.put(self.encoder.decode(*message))
 
     def send(self, exchange):
         """"""
@@ -116,8 +131,9 @@ class Communication(object):
     def get_publishport(self):
         return self.router._publishport
 
-    def connector_factory(self, component, is_reading=True):
-        return self.connector_class(component, self, is_reading=is_reading)
+    def connector_factory(self, component, queue, is_reading=True):
+        return self.connector_class(component, queue, self,
+                    is_reading=is_reading)
 
 
 class Router(checkmate.runtime._threading.Thread):

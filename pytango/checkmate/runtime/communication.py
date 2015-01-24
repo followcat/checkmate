@@ -119,14 +119,11 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, is_reading=True):
-        super().__init__(component, communication,
+    def __init__(self, component, queue=None, communication=None,
+                 is_reading=True):
+        super().__init__(component, queue, communication,
             is_reading=is_reading)
         self.encoder = Encoder(component)
-
-    def inbound(self, code, param):
-        exchange = self.encoder.decode(code, param)
-        super(Connector, self).send(exchange)
 
     def send(self, exchange):
         attribute_values = self.encoder.encode(exchange)
@@ -188,10 +185,10 @@ class Communication(checkmate.runtime.communication.Communication):
             dev_proxy = self.get_device_proxy(dev_name)
             check(dev_proxy)
 
-    def connector_factory(self, component, is_reading=True):
+    def connector_factory(self, component, queue, is_reading=True):
         connector = \
             super(Communication, self).connector_factory(
-                component, is_reading=is_reading)
+                component, queue, is_reading=is_reading)
         device_class = \
             type(component.name + 'Device', (Device,),
                 add_device_service(component.services, component))
