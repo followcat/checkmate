@@ -53,7 +53,7 @@ class Connector(object):
 
         >>> c.close()
     """
-    def __init__(self, component=None, queue=None, communication=None,
+    def __init__(self, component=None, communication=None, queue=None,
                  is_reading=False):
         self.queue = queue
         self.encoder = Encoder()
@@ -132,7 +132,7 @@ class Communication(object):
         return self.router._publishport
 
     def connector_factory(self, component, queue, is_reading=True):
-        return self.connector_class(component, queue, self,
+        return self.connector_class(component, self, queue,
                     is_reading=is_reading)
 
 

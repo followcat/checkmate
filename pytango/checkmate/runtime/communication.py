@@ -119,9 +119,9 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, queue=None, communication=None,
+    def __init__(self, component, communication=None, queue=None,
                  is_reading=True):
-        super().__init__(component, queue, communication,
+        super().__init__(component, communication, queue,
             is_reading=is_reading)
         self.encoder = Encoder(component)
 
