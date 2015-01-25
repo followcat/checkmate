@@ -92,13 +92,17 @@ class Device(checkmate.runtime._threading.Thread):
                 self.socket_dealer_in.close()
                 self.socket_dealer_out.close()
                 break
-            socks = self.poller.poll_with_timeout()
-            for _s in socks:
-                if _s.TYPE == zmq.SUB:
-                    _s.recv()
-                exchange = _s.recv_pyobj()
-                if self.is_reading:
-                    self.connector.inbound(exchange)
+            try:
+                socks = self.poller.poll_with_timeout()
+                for _s in socks:
+                    if _s.TYPE == zmq.SUB:
+                        _s.recv()
+                    exchange = _s.recv_pyobj()
+                    if self.is_reading:
+                        self.connector.inbound(exchange)
+            except zmq.error.ZMQError as e:
+                if not self.check_for_stop():
+                    raise e
 
     def send(self, exchange):
         """"""
