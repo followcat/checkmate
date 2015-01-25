@@ -18,6 +18,7 @@ class Poller(zmq.Poller):
     def register(self, socket):
         super().register(socket, zmq.POLLIN)
 
+    @checkmate.report_issue("checkmate/issues/poll_with_timeout.rst")
     def poll_with_timeout(self):
         return dict(super().poll(self.timeout_value))
 
