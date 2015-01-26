@@ -50,7 +50,6 @@ class Device(checkmate.runtime._threading.Thread):
         super().__init__(component.name)
         self._name = component.name
         self.component = component
-        self.broadcast_map = component.broadcast_map
 
         self.is_reading = is_reading
 

@@ -22,15 +22,6 @@ class ApplicationMeta(type):
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
-        >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
-        >>> c1.broadcast_map
-        {}
-        >>> c2.broadcast_map
-        {'PA': 'C1'}
-        >>> c3.broadcast_map
-        {'PA': 'C1'}
         """
         exchange_module = \
             checkmate._module.get_module(namespace['__module__'], 'exchanges')
@@ -111,19 +102,6 @@ class ApplicationMeta(type):
                         (checkmate.component.Component,), d)
             setattr(component_module, class_name, _class)
             _component_classes[key] = _class
-
-        publish_map = {}
-        for _name_tuple in _component_classes:
-            for _name in _name_tuple:
-                publish_map[_name] = \
-                    _component_classes[_name_tuple].publish_exchange
-        for _c in _component_classes:
-            broadcast_map = {}
-            for _e in _component_classes[_c].subscribe_exchange:
-                for _name, _p in publish_map.items():
-                    if _e in _p:
-                        broadcast_map[_e] = _name
-            setattr(_component_classes[_c], 'broadcast_map', broadcast_map)
 
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
