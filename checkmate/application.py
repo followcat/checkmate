@@ -102,11 +102,17 @@ class ApplicationMeta(type):
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
                     class_name.lower(), 'component')
+            instance_attributes = {}
+            for _instance in class_definition['instances']:
+                if 'attributes' in _instance:
+                    instance_attributes[_instance['name']] = \
+                        _instance['attributes']
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'component_definition': namespace['component_definition'],
                  '__module__': component_module.__name__,
-                 'communication_list': namespace['communication_list'].keys()
+                 'communication_list': namespace['communication_list'].keys(),
+                 'instance_attributes': instance_attributes
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name,
