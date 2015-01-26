@@ -37,10 +37,10 @@ def add_device_interface(services, component):
     return {'cmd_list': command, 'attr_list': attribute}
 
 
-class Encoder():
+class Encoder(checkmate.runtime.communication.Encoder):
     def __init__(self, component):
+        super().__init__(component)
         self.exchange_dict = {}
-        self.component = component
         for _service in component.services:
             name = _service[0]
             self.exchange_dict[name] = ([type(_service[1]), _service[1].value])
@@ -119,11 +119,8 @@ class DeviceInterface(PyTango.DeviceClass):
 
 
 class Connector(checkmate.runtime.communication.Connector):
-    def __init__(self, component, communication=None, queue=None,
-                 is_reading=True):
-        super().__init__(component, communication, queue,
-            is_reading=is_reading)
-        self.encoder = Encoder(component)
+    """"""
+    encoder_class = Encoder
 
     def send(self, exchange):
         attribute_values = self.encoder.encode(exchange)

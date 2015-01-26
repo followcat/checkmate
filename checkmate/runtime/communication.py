@@ -3,6 +3,9 @@ import logging
 
 class Encoder(object):
     """"""
+    def __init__(self, component):
+        self.component = component
+
     def encode(self, exchange):
         return exchange
 
@@ -12,10 +15,12 @@ class Encoder(object):
 
 class Connector(object):
     """"""
+    encoder_class = Encoder
+
     def __init__(self, component=None, communication=None, queue=None,
                  is_reading=False):
         self.queue = queue
-        self.encoder = Encoder()
+        self.encoder = self.encoder_class(component)
         self.component = component
         self.communication = communication
 
