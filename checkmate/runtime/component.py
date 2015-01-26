@@ -17,9 +17,13 @@ import checkmate.runtime.interfaces
 
 
 class Component(object):
+    timeout_value = checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC
+
     def __init__(self, component):
         self.context = component
-        self.client = checkmate.runtime.client.Client(self.context)
+        self.exchange_queue = queue.Queue()
+        self.client = \
+            checkmate.runtime.client.Client(self.context, self.exchange_queue)
         self.logger = \
             logging.getLogger('checkmate.runtime.component.Component')
 
@@ -39,6 +43,9 @@ class Component(object):
     def stop(self):
         self.context.stop()
         self.client.stop()
+
+    def receive(self):
+        return self.exchange_queue.get(timeout=self.timeout_value)
 
     def process(self, exchanges):
         try:
@@ -91,8 +98,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.__init__(self,
             name=component.name)
 
-        self.exchange_queue = queue.Queue()
-        self.client = checkmate.runtime.client.ThreadedClient(self.context,
+        self.client = checkmate.runtime.client.Client(self.context,
                         self.exchange_queue)
         self.validation_lock = threading.Lock()
 
@@ -103,12 +109,14 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             _communication = runtime.communication_list['internal']
             self.client.internal_connector = \
                 _communication.connector_factory(self.context,
+                    queue=self.exchange_queue,
                     is_reading=self.reading_internal_client)
         if self.using_external_client:
             for _key in self.context.communication_list:
                 _communication = runtime.communication_list[_key]
                 self.client.external_connectors[_key] = \
                     _communication.connector_factory(self.context,
+                        queue=self.exchange_queue,
                         is_reading=self.reading_external_client)
 
     def start(self):
@@ -120,12 +128,11 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
         checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
-        timeout_value = checkmate.timeout_manager.SAMPLE_APP_RECEIVE_SEC
         while True:
             if self.check_for_stop():
                 break
             try:
-                exchange = self.exchange_queue.get(timeout=timeout_value)
+                exchange = self.receive()
                 with self.validation_lock:
                     try:
                         self.process([exchange])

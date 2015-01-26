@@ -4,6 +4,7 @@ import argparse
 import importlib
 import subprocess
 
+import checkmate.timeout_manager
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.runtime.component
@@ -48,7 +49,9 @@ class Launcher(object):
         if self.command is not None:
             self.process.terminate()
             try:
-                outs, errs = self.process.communicate()
+                outs, errs = \
+                    self.process.communicate(
+                        timeout=checkmate.timeout_manager.THREAD_STOP_SEC)
             except subprocess.TimeoutExpired:
                 self.process.kill()
         else:
