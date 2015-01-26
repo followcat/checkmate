@@ -30,8 +30,6 @@ class ApplicationMeta(type):
         data_structure_module = \
             checkmate._module.get_module(namespace['__module__'],
                 'data_structure')
-        data_value_module = \
-            checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition' not in namespace:
