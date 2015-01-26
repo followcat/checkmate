@@ -15,11 +15,13 @@ POLLING_TIMEOUT_MILLSEC = 1000
 
 THREAD_STOP_SEC = 1
 
+
 class TimeoutManager():
-    #set it to None to use timeit computation
+    # set it to None to use timeit computation
     timeout_value = 1
     processing_benchmark = False
     logger = logging.getLogger('checkmate.timeout_manager.TimeoutManager')
+
     @staticmethod
     def get_timeout_value():
         if TimeoutManager.timeout_value is None:
@@ -61,11 +63,13 @@ class App(checkmate.application.Application):
     exchange_module = checkmate.exchange
     def __init__(self):
         super().__init__()
-        self.components = {'a': Comp('a', self.service_registry), 'b': Comp('b', self.service_registry)}
+        self.components = {'a': Comp('a', self.service_registry),
+             'b': Comp('b', self.service_registry)}
         self.components['a'].connecting_components = ['b']
         self.components['b'].connecting_components = ['a']
 
-runtime = checkmate.runtime._runtime.Runtime(App, checkmate.runtime._pyzmq.Communication, True)
+runtime = checkmate.runtime._runtime.Runtime(App,
+            checkmate.runtime._pyzmq.Communication, True)
 
 runtime.setup_environment(['b'])
 sa = runtime.runtime_components['a']
@@ -82,12 +86,19 @@ for i in range(0, 10000):
 logging.disable(logging.NOTSET)
 
 #stop everything except the logger
-sa.stop(); sb.stop(); runtime.communication_list['default'].close(); runtime.communication_list[''].close();
-sa.join(); sb.join(); runtime.communication_list['default'].registry.join(); runtime.communication_list[''].registry.join()
+sa.stop(); sb.stop();
+runtime.communication_list['default'].close();
+runtime.communication_list[''].close();
+sa.join(); sb.join();
+runtime.communication_list['default'].registry.join();
+runtime.communication_list[''].registry.join()
 """)
-        TimeoutManager.timeout_value = round(max(test_code.repeat(1, 1))/4, 2)
+        TimeoutManager.timeout_value = round(
+            max(test_code.repeat(1, 1)) / 4, 2)
         TimeoutManager.processing_benchmark = False
-        TimeoutManager.logger.info("TimeoutManager.timeout_value is %f"%TimeoutManager.timeout_value)
+        TimeoutManager.logger.info("TimeoutManager.timeout_value is %f" %
+                                   TimeoutManager.timeout_value)
+
 
 class SleepAfterCall():
     def __init__(self, timeout=0.06):
@@ -109,6 +120,7 @@ class SleepAfterCall():
             return go_without_args
         else:
             return call_(func)
+
 
 class WaitOn():
     """
@@ -138,18 +150,21 @@ class WaitOn():
         >>> tt2.get_after_run_have_num_with_function_waiter()
         0
     """
-    def __init__(self, timeout=1, loops = 10):
+    def __init__(self, timeout=1, loops=10):
         self.loops = loops
         self.timeout = timeout
-        self.logger = logging.getLogger('checkmate.timeout_manager.WaitOnException')
+        self.logger = logging.getLogger(
+            'checkmate.timeout_manager.WaitOnException')
 
     def __call__(self, func):
         global EXCEPTION, FALSE
+
         def call_(func):
             @functools.wraps(func)
             def new_f(*args, **kwargs):
                 raised_exception = None
-                sleep_time = self.timeout * TimeoutManager.get_timeout_value() / self.loops
+                sleep_time = self.timeout * \
+                    TimeoutManager.get_timeout_value() / self.loops
 
                 for loop_times in range(self.loops):
                     begin_time = time.time()
@@ -162,11 +177,16 @@ class WaitOn():
                     try:
                         time.sleep(sleep_time - run_time)
                     except ValueError:
-                        #sleep_time - run_time < 0
+                        # sleep_time - run_time < 0
                         continue
-                    self.logger.debug("%s, At %s, Has Been Sleep %f"%(self, func, ((loop_times+1) * sleep_time)))
+                    self.logger.debug(
+                        "%s, At %s, Has Been Sleep %f" %
+                        (self, func, ((loop_times + 1) * sleep_time)))
                 else:
-                    self.logger.info("%s, %s, At %s, Use %d Loop, Sleep %f, But Not Enough."%(self, raised_exception, func, loop_times, ((loop_times+1) * sleep_time)))
+                    self.logger.info("%s, %s, At %s, Use %d Loop, Sleep %f,\
+                        But Not Enough." % (self, raised_exception, func,
+                                            loop_times,
+                                            ((loop_times + 1) * sleep_time)))
                     return func(*args, **kwargs)
                 return return_value
             return new_f
@@ -181,9 +201,11 @@ class WaitOn():
     def run_rule(self, func, *args, **kwargs):
         """"""
 
+
 class WaitOnException(WaitOn):
     def run_rule(self, func, *args, **kwargs):
         return func(*args, **kwargs)
+
 
 class WaitOnFalse(WaitOn):
     def run_rule(self, func, *args, **kwargs):
