@@ -51,7 +51,6 @@ import checkmate.runtime.component
 class Comp(checkmate.component.Component):
     name = ''
     service_interfaces = []
-    outgoings = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 

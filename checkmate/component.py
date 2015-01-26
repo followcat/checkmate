@@ -52,7 +52,6 @@ class ComponentMeta(type):
                                             declarator_output['transitions'])
             services = []
             service_interfaces = []
-            outgoings = []
             communication_list = set()
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
@@ -64,12 +63,9 @@ class ComponentMeta(type):
                     communication_list.add(_ex.communication)
                 for _o in _t.outgoing:
                     _ex = _o.factory()
-                    if _o.code not in outgoings:
-                        outgoings.append(_o.code)
                     communication_list.add(_ex.communication)
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
-            namespace['outgoings'] = outgoings
             for _communication in communication_list:
                 if (_communication not in namespace['communication_list'] and
                         'launch_command' in namespace):
