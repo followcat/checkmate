@@ -101,7 +101,7 @@ class ApplicationMeta(type):
             _tmp_dict = collections.defaultdict(dict)
             _tmp_dict.update(_definition)
             _component_classes[index] = _tmp_dict
-        for index, class_definition in enumerate(_component_classes):
+        for class_definition in _component_classes:
             class_name = class_definition['class']
             class_dict = class_definition['attributes']
             component_module = \
@@ -126,14 +126,14 @@ class ApplicationMeta(type):
             class_definition['class'] = _class
 
         publish_map = {}
-        for index, class_definition in enumerate(_component_classes):
+        for class_definition in _component_classes:
             for _name in class_definition['instances']:
                 try:
                     publish_map[_name['name']] = \
                         class_definition['class'].publish_exchange
                 except:
                     raise Exception(class_definition)
-        for index, class_definition in enumerate(_component_classes):
+        for class_definition in _component_classes:
             broadcast_map = {}
             for _e in class_definition['class'].subscribe_exchange:
                 for _name, _p in publish_map.items():
