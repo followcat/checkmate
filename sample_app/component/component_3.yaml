@@ -3,9 +3,8 @@ title: "State identification"
 data:
   - Definition and accessibility: 'Acknowledge'
     Value partitions:
-    # [Partition,     State,            Valid value,      Comment]
-    - [S-ACK-01,      Acknowledge1(),   'False',          False valid value,  State false value]
-    - [S-ACK-02,      Acknowledge2(),   'True',           True valid value,   State true value]
+    - [S-ACK-01, Acknowledge1(), 'False', 'False valid value']
+    - [S-ACK-02, Acknowledge2(), 'True',  'True valid value']
 
 ---
 title: "State machine"
