@@ -126,9 +126,6 @@ class Component(object):
         self.expected_return_code = None
         try:
             for _k, _v in self.instance_attributes[name].items():
-                if not hasattr(self, _k):
-                    raise AttributeError("'%s' has no attribute '%s'" 
-                        % (type(self), _k))
                 setattr(self, _k, _v)
         except KeyError:
             pass
