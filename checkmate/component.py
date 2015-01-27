@@ -17,18 +17,10 @@ class ComponentMeta(type):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
         >>> c1.exchange_module #doctest: +ELLIPSIS
         <module 'sample_app.exchanges' from ...
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
-        >>> c1.publish_exchange, c1.subscribe_exchange
-        (['PA'], [])
-        >>> c2.publish_exchange, c2.subscribe_exchange
-        ([], ['PA'])
-        >>> c3.publish_exchange, c3.subscribe_exchange
-        ([], ['PA'])
         """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
@@ -60,9 +52,6 @@ class ComponentMeta(type):
                                             declarator_output['transitions'])
             services = []
             service_interfaces = []
-            outgoings = []
-            namespace['subscribe_exchange'] = []
-            namespace['publish_exchange'] = []
             communication_list = set()
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
@@ -71,19 +60,12 @@ class ComponentMeta(type):
                         services.append((_i.code, _ex))
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
-                    if _ex.broadcast:
-                        namespace['subscribe_exchange'].append(_i.code)
                     communication_list.add(_ex.communication)
                 for _o in _t.outgoing:
                     _ex = _o.factory()
-                    if _o.code not in outgoings:
-                        outgoings.append(_o.code)
-                    if _ex.broadcast:
-                        namespace['publish_exchange'].append(_o.code)
                     communication_list.add(_ex.communication)
             namespace['services'] = services
             namespace['service_interfaces'] = service_interfaces
-            namespace['outgoings'] = outgoings
             for _communication in communication_list:
                 if (_communication not in namespace['communication_list'] and
                         'launch_command' in namespace):

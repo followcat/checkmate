@@ -43,6 +43,7 @@ data:
   - Definition and accessibility: 'Pause'
     Attributes:
       broadcast: True
+      channel: pause
     Value partitions:
     - [X-PAUSE-01, PA(), 'PA', Comment]
 
