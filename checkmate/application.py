@@ -1,4 +1,5 @@
 import os
+import collections
 
 import checkmate.runs
 import checkmate._module
@@ -102,7 +103,7 @@ class ApplicationMeta(type):
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
                     class_name.lower(), 'component')
-            instance_attributes = {}
+            instance_attributes = collections.defaultdict(dict)
             for _instance in class_definition['instances']:
                 if 'attributes' in _instance:
                     instance_attributes[_instance['name']] = \
