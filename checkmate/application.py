@@ -97,6 +97,10 @@ class ApplicationMeta(type):
             pass
 
         _component_classes = namespace['component_classes']
+        for index, _definition in enumerate(_component_classes):
+            _tmp_dict = collections.defaultdict(dict)
+            _tmp_dict.update(_definition)
+            _component_classes[index] = _tmp_dict
         for index, class_definition in enumerate(_component_classes):
             class_name = class_definition['class']
             class_dict = class_definition['attributes']
