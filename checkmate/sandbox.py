@@ -171,7 +171,11 @@ class CollectionSandbox(Sandbox):
             yield _run
 
     def run_process(self, outgoing):
-        return self.process(self, outgoing, checkmate.runs.Run(self.transitions, []))
+        try:
+            tree = checkmate.runs.Run(self.transitions, [])
+        except AssertionError:
+            return []
+        return self.process(self, outgoing, tree)
 
     def process(self, sandbox, exchanges, tree=None):
         split = False

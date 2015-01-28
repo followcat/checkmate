@@ -23,15 +23,6 @@ class ApplicationMeta(type):
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
-        >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
-        >>> c1.broadcast_map
-        {}
-        >>> c2.broadcast_map
-        {'PA': 'C1'}
-        >>> c3.broadcast_map
-        {'PA': 'C1'}
         """
         exchange_module = \
             checkmate._module.get_module(namespace['__module__'], 'exchanges')
@@ -40,8 +31,6 @@ class ApplicationMeta(type):
         data_structure_module = \
             checkmate._module.get_module(namespace['__module__'],
                 'data_structure')
-        data_value_module = \
-            checkmate._module.get_module(namespace['__module__'], '_data')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition' not in namespace:
@@ -122,22 +111,6 @@ class ApplicationMeta(type):
                         (checkmate.component.Component,), d)
             setattr(component_module, class_name, _class)
             class_definition['class'] = _class
-
-        publish_map = {}
-        for class_definition in _component_classes:
-            for _name in class_definition['instances']:
-                try:
-                    publish_map[_name['name']] = \
-                        class_definition['class'].publish_exchange
-                except:
-                    raise Exception(class_definition)
-        for class_definition in _component_classes:
-            broadcast_map = {}
-            for _e in class_definition['class'].subscribe_exchange:
-                for _name, _p in publish_map.items():
-                    if _e in _p:
-                        broadcast_map[_e] = _name
-            setattr(class_definition['class'], 'broadcast_map', broadcast_map)
 
         result = type.__new__(cls, name, bases, dict(namespace))
         return result

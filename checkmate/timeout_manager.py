@@ -50,11 +50,7 @@ import checkmate.runtime.component
 @zope.interface.implementer(checkmate.component.IComponent)
 class Comp(checkmate.component.Component):
     name = ''
-    is_publish = False
-    broadcast_map = {}
-    subscribe_exchange = []
     service_interfaces = []
-    outgoings = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 

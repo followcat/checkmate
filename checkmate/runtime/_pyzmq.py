@@ -50,7 +50,6 @@ class Device(checkmate.runtime._threading.Thread):
         super().__init__(component.name)
         self._name = component.name
         self.component = component
-        self.broadcast_map = component.broadcast_map
 
         self.is_reading = is_reading
 
@@ -69,10 +68,10 @@ class Device(checkmate.runtime._threading.Thread):
 
     def initialize(self):
         """"""
-        if self.broadcast_map:
-            self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
-            for _cname in self.broadcast_map.values():
-                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
+        self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
+        for _i in self.component.services.values():
+            if _i.broadcast is True:
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _i.channel.encode())
         self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
         self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
@@ -171,7 +170,8 @@ class Router(checkmate.runtime._threading.Thread):
                 destination = sock.recv()
                 exchange = sock.recv_pyobj()
                 if exchange.broadcast:
-                    self.publish.send(destination, flags=zmq.SNDMORE)
+                    channel = exchange.channel
+                    self.publish.send(channel.encode(), flags=zmq.SNDMORE)
                     self.publish.send_pyobj(exchange)
                 else:
                     self.router.send(destination, flags=zmq.SNDMORE)
