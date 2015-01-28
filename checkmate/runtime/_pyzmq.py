@@ -69,11 +69,9 @@ class Device(checkmate.runtime._threading.Thread):
     def initialize(self):
         """"""
         self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
-        for _t in self.component.services:
-            code, exchange = _t
-            if exchange.broadcast is True:
-                channel = exchange.channel
-                self.socket_sub.setsockopt(zmq.SUBSCRIBE, channel.encode())
+        for _i in self.component.services.values():
+            if _i.broadcast is True:
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _i.channel.encode())
         self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
         self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
