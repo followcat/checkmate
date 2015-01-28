@@ -6,27 +6,23 @@ import checkmate.timeout_manager
 
 
 class Launcher(object):
-    def __init__(self, component=None, command=None, command_env=None,
-                 runtime=None, *args):
+    def __init__(self, component, command, command_env=None,
+                 runtime=None, threaded=False, *args):
         """"""
         self.command = command
         self.runtime = runtime
+        self.threaded = threaded
         self.component = component
         self.command_env = command_env
-        if self.is_runtime_component():
+        if self.threaded:
+            self.runtime_component = command(component)
             if runtime is not None:
-                self.runtime_component = command(component)
                 self.runtime_component.setup(runtime)
-            else:
-                raise Exception("No command nor component")
         else:
             pass
 
-    def is_runtime_component(self):
-        return self.runtime is not None
-
     def initialize(self):
-        if self.is_runtime_component():
+        if self.threaded:
             self.runtime_component.initialize()
         else:
             command_env = dict(os.environ)
@@ -40,11 +36,11 @@ class Launcher(object):
                     stderr=subprocess.DEVNULL)
 
     def start(self):
-        if self.is_runtime_component():
+        if self.threaded:
             self.runtime_component.start()
 
     def end(self):
-        if self.is_runtime_component():
+        if self.threaded:
             self.runtime_component.stop()
         else:
             self.process.terminate()

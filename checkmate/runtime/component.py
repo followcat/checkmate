@@ -170,6 +170,7 @@ class ThreadedSut(ThreadedComponent, Sut):
             self.launcher = checkmate.runtime.launcher.Launcher(
                                 command=ThreadedComponent,
                                 component=copy.deepcopy(self.context),
+                                threaded=True,
                                 runtime=runtime)
 
     def initialize(self):
@@ -178,10 +179,12 @@ class ThreadedSut(ThreadedComponent, Sut):
                 self.launcher = checkmate.runtime.launcher.Launcher(
                                     command=self.context.launch_command,
                                     command_env=self.context.command_env,
+                                    threaded=False,
                                     component=self.context)
             else:
                 self.launcher = checkmate.runtime.launcher.Launcher(
                                     command=self.context.launch_command,
+                                    threaded=False,
                                     component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
