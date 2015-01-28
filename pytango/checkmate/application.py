@@ -11,7 +11,6 @@ class Application(checkmate.application.Application,
     """"""
     itp_definition = ['pytango/checkmate']
     feature_definition_path = 'sample_app/itp'
-    component_definition = 'pytango/checkmate/component'
     exchange_definition = ['pytango/checkmate/exchanges']
     test_data_definition = ['pytango/checkmate/test_data.yaml']
     data_structure_definition = ['pytango/checkmate/data_structures']
@@ -23,24 +22,24 @@ class Application(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
-        - class: Component_1
+        - class: pytango/checkmate/component/component_1.yaml
           attributes:
             launch_command: "python ./pytango/component/component_1.py
                                 {component.name}"
           instances:
             - name: C1
-        - class: Component_2
+        - class: pytango/checkmate/component/component_2.yaml
           attributes:
             launch_command: python pytango/component/component_2_taurus.py
             command_env: %s
           instances:
             - name: C2
-        - class: Component_3
+        - class: pytango/checkmate/component/component_3.yaml
           attributes:
             launch_command: ./pytango/component/Component_3 {component.name}
           instances:
             - name: C3
-        - class: User
+        - class: pytango/checkmate/component/user.yaml
           attributes: {}
           instances:
             - name: USER

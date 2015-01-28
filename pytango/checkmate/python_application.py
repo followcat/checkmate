@@ -34,7 +34,6 @@ class FullPython(checkmate.application.Application,
         >>> r.stop_test()
 
     """
-    component_definition = 'pytango/checkmate/component'
     itp_definition = 'pytango/checkmate'
     feature_definition_path = 'sample_app/itp'
     data_structure_definition = ['pytango/checkmate/data_structures']
@@ -43,25 +42,25 @@ class FullPython(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
-        - class: Component_1
+        - class: pytango/checkmate/component/component_1.yaml
           attributes:
             launch_command: "python ./pytango/component/component_1.py
                                 {component.name}"
           instances:
             - name: C1
-        - class: Component_2
+        - class: pytango/checkmate/component/component_2.yaml
           attributes:
             launch_command: "python ./pytango/component/component_2.py
                                 {component.name}"
           instances:
             - name: C2
-        - class: Component_3
+        - class: pytango/checkmate/component/component_3.yaml
           attributes:
             launch_command: "python ./pytango/component/component_3.py
                                 {component.name}"
           instances:
             - name: C3
-        - class: User
+        - class: pytango/checkmate/component/user.yaml
           attributes: {}
           instances:
             - name: USER

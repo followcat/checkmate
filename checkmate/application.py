@@ -47,10 +47,6 @@ class ApplicationMeta(type):
         if 'exchange_definition' not in namespace:
             namespace['exchange_definition'] = \
                 os.sep.join(namespace['__module__'].split('.')[0:-1])
-        if 'component_definition' not in namespace:
-            namespace['component_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1] +
-                    ['component'])
         if 'itp_definition' not in namespace:
             namespace['itp_definition'] = \
                 os.sep.join(namespace['__module__'].split('.')[0:-1])
@@ -102,11 +98,13 @@ class ApplicationMeta(type):
             _tmp_dict.update(_definition)
             _component_classes[index] = _tmp_dict
         for class_definition in _component_classes:
-            class_name = class_definition['class']
             class_dict = class_definition['attributes']
+            _tmp_list = class_definition['class'].split('/')
+            class_name = _tmp_list[-1].split('.')[0].capitalize()
+            alternative_package = _tmp_list[-2]
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
-                    class_name.lower(), 'component')
+                    class_name.lower(), alternative_package)
             instance_attributes = collections.defaultdict(dict)
             for _instance in class_definition['instances']:
                 if 'attributes' in _instance:
@@ -114,7 +112,7 @@ class ApplicationMeta(type):
                         _instance['attributes']
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
-                 'component_definition': namespace['component_definition'],
+                 'component_definition': class_definition['class'],
                  '__module__': component_module.__name__,
                  'communication_list': namespace['communication_list'].keys(),
                  'instance_attributes': instance_attributes

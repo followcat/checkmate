@@ -14,19 +14,19 @@ class TestData(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
-        - class: Component_1
+        - class: sample_app/component/component_1.yaml
           attributes: {}
           instances:
             - name: C1
-        - class: Component_2
+        - class: sample_app/component/component_2.yaml
           attributes: {}
           instances:
             - name: C2
-        - class: Component_3
+        - class: sample_app/component/component_3.yaml
           attributes: {}
           instances:
             - name: C3
-        - class: User
+        - class: sample_app/component/user.yaml
           attributes: {}
           instances:
             - name: USER
