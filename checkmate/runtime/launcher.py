@@ -3,7 +3,6 @@ import shlex
 import subprocess
 
 import checkmate.timeout_manager
-import checkmate.runtime.component
 
 
 class Launcher(object):
@@ -16,8 +15,7 @@ class Launcher(object):
         self.command_env = command_env
         if self.is_runtime_component():
             if runtime is not None:
-                self.runtime_component = \
-                    checkmate.runtime.component.ThreadedComponent(component)
+                self.runtime_component = command(component)
                 self.runtime_component.setup(runtime)
             else:
                 raise Exception("No command nor component")

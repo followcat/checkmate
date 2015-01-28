@@ -168,6 +168,7 @@ class ThreadedSut(ThreadedComponent, Sut):
                 runtime.application.communication_list[_name](self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(
+                                command=ThreadedComponent,
                                 component=copy.deepcopy(self.context),
                                 runtime=runtime)
 
