@@ -96,6 +96,7 @@ class Run(checkmate._tree.Tree):
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
+@checkmate.report_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 def get_runs_from_application(application):
     runs = []
     origin_transitions = []
