@@ -48,6 +48,37 @@ class Component(object):
         return self.exchange_queue.get(timeout=self.timeout_value)
 
     def process(self, exchanges):
+        """
+            >>> import time
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.timeout_manager
+            >>> import checkmate.runtime._runtime
+            >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(\
+                sample_app.application.TestData,\
+                checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r.setup_environment(['C1', 'C2', 'C3'])
+            >>> c1 = r.runtime_components['C1']
+            >>> c2 = r.runtime_components['C2']
+            >>> c3 = r.runtime_components['C3']
+            >>> r.start_test()
+            >>> pbac = sample_app.exchanges.ExchangeButton('PBAC')
+            >>> outgoing = c2.process([pbac])
+            >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
+            >>> pbrl = sample_app.exchanges.ExchangeButton('PBRL')
+            >>> outgoing = c2.process([pbrl])
+            >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
+            >>> pp = sample_app.exchanges.Action('PP')
+            >>> outgoing = c1.process([pp])
+            >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
+            >>> c1.context.validation_list[0][0] # doctest: +ELLIPSIS
+            <sample_app.exchanges.Action object at ...
+            >>> c2.context.validation_list[6][0] # doctest: +ELLIPSIS
+            <sample_app.exchanges.Pause object at ...
+            >>> c3.context.validation_list[2][0] # doctest: +ELLIPSIS
+            <sample_app.exchanges.Pause object at ...
+            >>> r.stop_test()
+        """
         try:
             output = self.context.process(exchanges)
         except checkmate.exception.NoTransitionFound:
