@@ -16,8 +16,7 @@ def add_device_service(services, component):
     code = """
         \ndef __init__(self, *args):
         \n    super(self.__class__, self).__init__(*args)"""
-    for _service in services:
-        name = _service[0]
+    for name in services.keys():
         code += """
             \ndef %(name)s(self, param=[]):
             \n    self.connector.inbound('%(name)s', param)""" % {'name': name}
@@ -27,9 +26,8 @@ def add_device_service(services, component):
 
 def add_device_interface(services, component):
     command = {}
-    for _service in services:
-        name = _service[0]
-        if len(_service[1].partition_attribute) > 0:
+    for name, exchange in services.items():
+        if len(exchange.partition_attribute) > 0:
             command[name] = [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
         else:
             command[name] = [[PyTango.DevVoid], [PyTango.DevVoid]]
@@ -41,9 +39,8 @@ class Encoder(checkmate.runtime.communication.Encoder):
     def __init__(self, component):
         super().__init__(component)
         self.exchange_dict = {}
-        for _service in component.services:
-            name = _service[0]
-            self.exchange_dict[name] = ([type(_service[1]), _service[1].value])
+        for name, exchange in component.services.items():
+            self.exchange_dict[name] = ([type(exchange), exchange.value])
 
     def decode(self, code, param):
         exchange_type, exchange_value = self.exchange_dict[code]

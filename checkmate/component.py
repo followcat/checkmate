@@ -50,14 +50,14 @@ class ComponentMeta(type):
             namespace['state_machine'] = checkmate.state_machine.StateMachine(
                                             declarator_output['states'],
                                             declarator_output['transitions'])
-            services = []
+            services = {}
             service_interfaces = []
             communication_list = set()
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
                     _ex = _i.factory()
-                    if _i.code not in [_service[0] for _service in services]:
-                        services.append((_i.code, _ex))
+                    if _i.code not in services:
+                        services[_i.code] = _ex
                     if _i.interface not in service_interfaces:
                         service_interfaces.append(_i.interface)
                     communication_list.add(_ex.communication)
