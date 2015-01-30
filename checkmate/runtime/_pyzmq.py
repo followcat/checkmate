@@ -134,23 +134,7 @@ class Device(checkmate.runtime._threading.Thread):
 
 class Connector(checkmate.runtime.communication.Connector):
     """"""
-    def __init__(self, component=None, communication=None, queue=None,
-                 is_reading=False):
-        super().__init__(component, communication, queue, is_reading)
-        self.device = Device(component, communication, is_reading)
-        setattr(self.device, 'connector', self)
-
-    def initialize(self):
-        self.device.initialize()
-
-    def open(self):
-        self.device.start()
-
-    def send(self, exchange):
-        self.device.send(self.encoder.encode(exchange))
-
-    def close(self):
-        self.device.stop()
+    device_class = Device
 
 
 class Router(checkmate.runtime._threading.Thread):
