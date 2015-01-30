@@ -1,34 +1,30 @@
 import os
 import shlex
-import argparse
-import importlib
 import subprocess
 
 import checkmate.timeout_manager
-import checkmate.runtime._pyzmq
-import checkmate.runtime._runtime
-import checkmate.runtime.component
 
 
 class Launcher(object):
-    def __init__(self, component=None, command=None, command_env=None,
-                 runtime=None, *args):
+    def __init__(self, component, command, command_env=None,
+                 runtime=None, threaded=False, *args):
         """"""
         self.command = command
         self.runtime = runtime
+        self.threaded = threaded
         self.component = component
         self.command_env = command_env
-        if self.command is not None:
-            pass
-        elif self.component is not None:
-            self.runtime_component = \
-                checkmate.runtime.component.ThreadedComponent(self.component)
-            self.runtime_component.setup(self.runtime)
+        if self.threaded:
+            self.runtime_component = command(component)
+            if runtime is not None:
+                self.runtime_component.setup(runtime)
         else:
-            raise Exception("No command nor component")
+            pass
 
     def initialize(self):
-        if self.command is not None:
+        if self.threaded:
+            self.runtime_component.initialize()
+        else:
             command_env = dict(os.environ)
             if self.command_env is not None:
                 command_env.update(self.command_env) 
@@ -38,15 +34,15 @@ class Launcher(object):
                     env=command_env,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
-        else:
-            self.runtime_component.initialize()
 
     def start(self):
-        if self.command is None:
+        if self.threaded:
             self.runtime_component.start()
 
     def end(self):
-        if self.command is not None:
+        if self.threaded:
+            self.runtime_component.stop()
+        else:
             self.process.terminate()
             try:
                 outs, errs = \
@@ -54,6 +50,4 @@ class Launcher(object):
                         timeout=checkmate.timeout_manager.THREAD_STOP_SEC)
             except subprocess.TimeoutExpired:
                 self.process.kill()
-        else:
-            self.runtime_component.stop()
 

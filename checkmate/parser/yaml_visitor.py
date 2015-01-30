@@ -10,11 +10,13 @@ class Visitor():
         """
             >>> import os
             >>> import checkmate.parser.yaml_visitor
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                                '/checkmate/parser/exchanges.yaml'
             >>> file1=open(input_file,'r')
             >>> c1 = file1.read()
             >>> file1.close()
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                                '/checkmate/parser/test_value.yaml'
             >>> file2=open(input_file,'r')
             >>> c2 = file2.read()
             >>> file2.close()
@@ -47,25 +49,30 @@ class Visitor():
             >>> import os
             >>> import yaml
             >>> import checkmate.parser.yaml_visitor
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                                '/checkmate/parser/exchanges.yaml'
             >>> f = open(input_file,'r')
             >>> c1 = f.read()
             >>> f.close()
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                                '/checkmate/parser/test_value.yaml'
             >>> f = open(input_file,'r')
             >>> c2 = f.read()
             >>> f.close()
-            >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+            >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                                '/checkmate/parser/state_machine.yaml'
             >>> f = open(input_file,'r')
             >>> c3 = f.read()
             >>> f.close()
             >>> visitor = checkmate.parser.yaml_visitor.Visitor(c1)
             >>> len(visitor._state_partitions)
             0
-            >>> value_source = checkmate.parser.yaml_visitor.call_data_visitor(c2)
+            >>> value_source =\
+                   checkmate.parser.yaml_visitor.call_data_visitor(c2)
             >>> 'R1' in value_source
             True
-            >>> [value_source['R1']['value']['Channel'], value_source['R1']['value']['Priority']]
+            >>> [value_source['R1']['value']['Channel'],\
+                   value_source['R1']['value']['Priority']]
             ['AT1', 'NORM']
             >>> list(yaml.load_all(c3))[0]['title']
             'State identification'
@@ -146,11 +153,13 @@ def call_visitor(define_content):
     """
         >>> import os
         >>> import checkmate.parser.yaml_visitor
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/exchanges.yaml'
+        >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                            '/checkmate/parser/exchanges.yaml'
         >>> f1 = open(input_file,'r')
         >>> c1 = f1.read()
         >>> f1.close()
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/test_value.yaml'
+        >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                             '/checkmate/parser/test_value.yaml'
         >>> f2 = open(input_file,'r')
         >>> c2 = f2.read()
         >>> f2.close()
@@ -159,7 +168,8 @@ def call_visitor(define_content):
         1
         >>> len(output['exchanges'])
         2
-        >>> input_file = os.getenv("CHECKMATE_HOME") + '/checkmate/parser/state_machine.yaml'
+        >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                             '/checkmate/parser/state_machine.yaml'
         >>> f1 = open(input_file,'r')
         >>> c = f1.read()
         >>> f1.close()

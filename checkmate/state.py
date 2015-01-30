@@ -16,7 +16,8 @@ class State(checkmate.partition.Partition):
     def __eq__(self, other):
         """
             import checkmate.state
-            >>> s1 = checkmate.state.State(); s2 = checkmate.state.State()
+            >>> s1 = checkmate.state.State()
+            >>> s2 = checkmate.state.State()
             >>> s2.append('R')
             >>> s1 == s2
             True
@@ -88,7 +89,9 @@ class State(checkmate.partition.Partition):
             except:
                 pass
         if self.value is not None:
-            self.value = self._valid_values[(len(self._valid_values) - 1) - (self._valid_values.index(self.value))]
+            self.value = self._valid_values[\
+                    (len(self._valid_values) - 1) -\
+                    (self._valid_values.index(self.value))]
 
     def flush(self, *args, **kwargs):
         """
@@ -186,7 +189,8 @@ class State(checkmate.partition.Partition):
             else:
                 for value in list(kwargs.items()):
                     try:
-                        return self.value.pop(self.value.index({value[0]: value[1]}))
+                        return self.value.pop(
+                                self.value.index({value[0]: value[1]}))
                     except ValueError:
                         pass
                     setattr(self, value[0], None)

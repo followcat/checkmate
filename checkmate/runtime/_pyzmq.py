@@ -67,7 +67,21 @@ class Device(checkmate.runtime._threading.Thread):
             logging.getLogger('checkmate.runtime.communication.Device')
 
     def initialize(self):
-        """"""
+        """
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(\
+                sample_app.application.TestData,\
+                checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r.setup_environment(['C1', 'C2', 'C3'])
+            >>> r.runtime_components['C2'].client.internal_connector.device.\
+                socket_dealer_in.getsockopt(zmq.IDENTITY)
+            b'C2'
+            >>> r.runtime_components['C3'].client.internal_connector.device.\
+                socket_dealer_in.getsockopt(zmq.IDENTITY)
+            b'C3'
+        """
         self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
         for _i in self.component.services.values():
             if _i.broadcast is True:
