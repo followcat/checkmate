@@ -36,8 +36,14 @@ class Declarator(object):
             'transitions': []}
 
     @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
-    def new_partition(self, partition_type, signature, codes_list,
-                      values_list, full_description=None, attributes={}):
+    def new_partition(self,
+                      partition_type,
+                      signature,
+                      codes_list,
+                      values_list,
+                      full_description=None,
+                      attributes={},
+                      define_attributes={}):
         """
         >>> import collections
         >>> import checkmate._module
@@ -109,6 +115,7 @@ class Declarator(object):
         partition_storage = checkmate._storage.PartitionStorage(
                                 partition_type, defined_interface,
                                 code_arguments, full_description)
+        setattr(defined_class, 'define_attributes', define_attributes)
         setattr(defined_class, 'partition_storage', partition_storage)
         self.output[partition_type].append((defined_interface, partition_storage))
 
@@ -176,19 +183,22 @@ class Declarator(object):
         ...     'codes_list': ['TestActionRequestNORM'],
         ...     'values_list': ['NORM'],
         ...     'full_desc': None,
-        ...     'attributes': {}}]),
+        ...     'attributes': {},
+        ...     'define_attributes': {}}]),
         ... ('states', [{
         ...    'clsname': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
         ...    'values_list': ['True'],
         ...    'full_desc': None,
-        ...    'attributes': {}}]),
+        ...    'attributes': {},
+        ...    'define_attributes': {}}]),
         ... ('exchanges', [{
         ...    'clsname': 'TestAction(R:TestActionRequest)',
         ...    'codes_list': ['AP(R)'],
         ...    'values_list': ['AP'],
         ...    'full_desc': None,
-        ...    'attributes': {}}])
+        ...    'attributes': {},
+        ...    'define_attributes': {}}])
         ... ])
         >>> de = checkmate.partition_declarator.Declarator(
         ...          data_structure_module,
@@ -215,7 +225,8 @@ class Declarator(object):
                                        data['codes_list'],
                                        data['values_list'],
                                        data['full_desc'],
-                                       data['attributes'])
+                                       data['attributes'],
+                                       data['define_attributes'])
 
     def get_output(self):
         return self.output

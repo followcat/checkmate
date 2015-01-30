@@ -17,7 +17,8 @@ Should not get Runs when simulate has no outgoing.
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
         ...    'full_desc': None,
-        ...    'attributes': {}}]
+        ...    'attributes': {},
+        ...    'define_attributes': {}}]
         ... }
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> de.new_definitions(data_source)
