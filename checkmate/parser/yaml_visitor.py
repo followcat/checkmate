@@ -38,7 +38,20 @@ class Visitor():
         self.attributes = {}
         self.tran_items = []
 
+        define_content = self.pre_process(define_content)
         self.read_document(define_content)
+
+    def pre_process(self, content):
+        lines = content.split('\n')
+        for index, line in enumerate(lines):
+            if '@from_' in line:
+                line = line.replace('(', ' [', 1)
+                line = line.replace(')', ',', 1)
+                line += ']'
+                lines[index] = line.replace('@',
+                    '!!python/object/apply:checkmate.parser.yaml_visitor.')
+        return '\n'.join(lines)
+            
 
     def read_document(self, define_content):
         for each in yaml.load_all(define_content):
@@ -183,6 +196,12 @@ def call_visitor(define_content):
         ('states', visitor._state_partitions),
         ('exchanges', visitor._exchange_partitions),
         ('transitions', visitor._transitions)])
+
+
+def from_attribute(attribute_name, classname):
+    return {'Definition and accessibility':classname,
+            'Definition name': attribute_name,
+            'Definition from': 'attribute'}
 
 
 class DataVisitor(collections.OrderedDict):
