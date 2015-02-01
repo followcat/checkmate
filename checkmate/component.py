@@ -29,16 +29,9 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        paths = namespace['component_definition']
-        if type(paths) != list:
-            paths = [paths]
-        filename = name.lower() + '.yaml'
-        define_data = ''
-        for path in paths:
-            if not os.path.isdir(path):
-                continue
-            with open(os.sep.join([path, filename]), 'r') as _file:
-                define_data += _file.read()
+        fullfilename = namespace['component_definition']
+        with open(fullfilename, 'r') as _file:
+            define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(
@@ -106,6 +99,8 @@ class Component(object):
         self.pending_outgoing = []
         self.default_state_value = True
         self.expected_return_code = None
+        for _k, _v in self.instance_attributes[name].items():
+            setattr(self, _k, _v)
 
     def get_transitions_by_input(self, exchange):
         """

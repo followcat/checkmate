@@ -22,11 +22,10 @@ Should not get Runs when simulate has no outgoing.
         >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
         >>> de.new_definitions(data_source)
         >>> communication_list = sample_app.application.TestData.communication_list.keys()
-        >>> component_definition = os.sep.join('sample_app.application'.split('.')[0:-1] + ['component'])
         >>> d = {'exchange_module': exchange_module,
         ... 'data_structure_module': data_structure_module,
         ... '__module__': component_module.__name__,
-        ... 'component_definition': component_definition,
+        ... 'component_definition': class_file,
         ... 'communication_list': communication_list}
         >>> _file = open(class_file, 'w')
         >>> _file.close()
