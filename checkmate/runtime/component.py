@@ -2,6 +2,7 @@ import copy
 import queue
 import logging
 import threading
+import multiprocessing
 
 import zope.interface
 import zope.component
@@ -21,7 +22,7 @@ class Component(object):
 
     def __init__(self, component):
         self.context = component
-        self.exchange_queue = queue.Queue()
+        self.exchange_queue = multiprocessing.Queue()
         self.client = \
             checkmate.runtime.client.Client(self.context, self.exchange_queue)
         self.logger = \
