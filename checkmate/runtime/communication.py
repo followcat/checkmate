@@ -87,7 +87,8 @@ class ConnectorProcess(Connector, checkmate.runtime._threading.Process):
         self.start()
 
     def run(self):
-        self.device = self.device_class(self.component, self.communication)
+        self.device = self.device_class(self.component, self.communication,
+                        self.is_reading)
         self.device.start()
         setattr(self.device, 'connector', self)
         timeout_value = \
