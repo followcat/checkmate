@@ -161,8 +161,8 @@ class Declarator(object):
         [<checkmate.transition.Transition object at ...
         """
         self.output['transitions'].append(
-            make_transition(
-                item, [self.module['exchanges']], [self.module['states']]))
+            make_transition(item, [self.module['exchanges']],
+            [self.module['states']]))
 
     def new_definitions(self, data_source):
         """

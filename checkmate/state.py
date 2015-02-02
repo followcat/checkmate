@@ -89,8 +89,8 @@ class State(checkmate.partition.Partition):
             except:
                 pass
         if self.value is not None:
-            self.value = self._valid_values[\
-                    (len(self._valid_values) - 1) -\
+            self.value = \
+                self._valid_values[(len(self._valid_values) - 1) -
                     (self._valid_values.index(self.value))]
 
     def flush(self, *args, **kwargs):
