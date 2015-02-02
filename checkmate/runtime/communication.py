@@ -90,7 +90,8 @@ class ConnectorProcess(Connector, checkmate.runtime._threading.Process):
         self.device = self.device_class(self.component, self.communication)
         self.device.start()
         setattr(self.device, 'connector', self)
-        timeout_value = checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC
+        timeout_value = \
+            checkmate.timeout_manager.POLLING_TIMEOUT_MILLSEC/1000.
         while True:
             if self.check_for_stop():
                 break
