@@ -142,7 +142,7 @@ class Component(object):
                 return _t
         return None
 
-    @checkmate.fix_issue("checkmate/issues/set_compoent_attribute_state.rst")
+    @checkmate.fix_issue("checkmate/issues/set_component_attribute_state.rst")
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application
