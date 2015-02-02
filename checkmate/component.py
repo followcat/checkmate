@@ -142,6 +142,7 @@ class Component(object):
                 return _t
         return None
 
+    @checkmate.report_issue("checkmate/issues/set_compoent_attribute_state.rst", failed=1)
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application
