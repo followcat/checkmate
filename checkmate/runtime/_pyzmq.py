@@ -53,7 +53,7 @@ class Device(checkmate.runtime._threading.Thread):
 
         self.is_reading = is_reading
 
-        self.zmq_context = zmq.Context.instance()
+        self.zmq_context = zmq.Context()
         self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_sub = self.zmq_context.socket(zmq.SUB)
@@ -143,7 +143,7 @@ class Router(checkmate.runtime._threading.Thread):
         """"""
         super(Router, self).__init__(name=name)
         self.poller = checkmate.runtime._zmq_wrapper.Poller()
-        self.zmq_context = zmq.Context.instance()
+        self.zmq_context = zmq.Context()
         self.router = self.zmq_context.socket(zmq.ROUTER)
         self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
         self.publish = self.zmq_context.socket(zmq.PUB)
