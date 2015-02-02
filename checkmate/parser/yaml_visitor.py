@@ -45,12 +45,16 @@ class Visitor():
     def pre_process(self, content):
         lines = content.split('\n')
         for index, line in enumerate(lines):
-            if '@from_' in line:
-                line = line.replace('(', ' [', 1)
-                line = line.replace(')', ',', 1)
-                line += ']'
-                lines[index] = line.replace('@',
-                    '!!python/object/apply:checkmate.parser.yaml_visitor.')
+            if '@from_' not in line:
+                continue
+            _s = line.rsplit(maxsplit=1)
+            line = ''.join((_s[0][:_s[0].index('(')+1], 
+                _s[1], ', ', _s[0][_s[0].index('(')+1:]))
+            line = line.replace('(', ' [', 1)
+            line = ''.join((line[:-1], ']'))
+            line = line.replace('@',
+                '!!python/object/apply:checkmate.parser.yaml_visitor.')
+            lines[index] = line
         return '\n'.join(lines)
             
 
@@ -203,7 +207,7 @@ def call_visitor(define_content):
         ('transitions', visitor._transitions)])
 
 
-def from_attribute(attribute_name, classname):
+def from_attribute(classname, attribute_name):
     return {'Definition and accessibility':classname,
             'Definition name': attribute_name,
             'Definition from': 'attribute'}
