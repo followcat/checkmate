@@ -51,7 +51,6 @@ class Thread(BaseClass, threading.Thread):
         """"""
         super().__init__()
         threading.Thread.__init__(self, name=name)
-        self.daemon = True
 
 
 class Process(BaseClass, multiprocessing.Process):
