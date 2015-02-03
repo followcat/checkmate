@@ -36,9 +36,27 @@ class Visitor():
         self.codes_list = []
         self.values_list = []
         self.attributes = {}
+        self.define_attributes = {}
         self.tran_items = []
 
+        define_content = self.pre_process(define_content)
         self.read_document(define_content)
+
+    def pre_process(self, content):
+        lines = content.split('\n')
+        for index, line in enumerate(lines):
+            if '@from_' not in line:
+                continue
+            _s = line.rsplit(maxsplit=1)
+            line = ''.join((_s[0][:_s[0].index('(')+1], 
+                _s[1], ', ', _s[0][_s[0].index('(')+1:]))
+            line = line.replace('(', ' [', 1)
+            line = ''.join((line[:-1], ']'))
+            line = line.replace('@',
+                '!!python/object/apply:checkmate.parser.yaml_visitor.')
+            lines[index] = line
+        return '\n'.join(lines)
+            
 
     def read_document(self, define_content):
         for each in yaml.load_all(define_content):
@@ -103,7 +121,8 @@ class Visitor():
                                'codes_list': self.codes_list,
                                'values_list': self.values_list,
                                'full_desc': self.full_description,
-                               'attributes': self.attributes}
+                               'attributes': self.attributes,
+                               'define_attributes': self.define_attributes}
                 if title == "State identification":
                     self._state_partitions.append(_partitions)
                 elif title == "Data structure":
@@ -116,6 +135,7 @@ class Visitor():
             self.codes_list = []
             self.values_list = []
             self.attributes = {}
+            self.define_attributes = {}
             self.tran_items = []
 
     def partition_identification(self, content):
@@ -126,6 +146,8 @@ class Visitor():
                 self.values_list.extend(values_list)
             elif _k == "Attributes":
                 self.attributes = _v
+            elif _k in ["Definition name", "Definition from"]:
+                self.define_attributes[_k] = _v
 
     def state_machine_or_test_procedure(self, content):
         for _k, _v in content.items():
@@ -183,6 +205,12 @@ def call_visitor(define_content):
         ('states', visitor._state_partitions),
         ('exchanges', visitor._exchange_partitions),
         ('transitions', visitor._transitions)])
+
+
+def from_attribute(classname, attribute_name):
+    return {'Definition and accessibility':classname,
+            'Definition name': attribute_name,
+            'Definition from': 'attribute'}
 
 
 class DataVisitor(collections.OrderedDict):

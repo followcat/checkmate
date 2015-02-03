@@ -1,0 +1,54 @@
+Should be able to set component state with component instance's attribute
+        >>> import os
+        >>> import collections
+        >>> import checkmate._module
+        >>> import checkmate._storage
+        >>> import checkmate.component
+        >>> import sample_app.application
+        >>> class_name = 'Dummycomponent'
+        >>> class_file = 'sample_app/component/dummycomponent.yaml'
+        >>> component_module = checkmate._module.get_module(
+        ...                         'sample_app.application', 
+        ...                         class_name.lower(), 'component')
+        >>> exchange_module = sample_app.exchanges
+        >>> data_structure_module = sample_app.data_structure
+        >>> state_module = checkmate._module.get_module(
+        ...                     'checkmate.application', 'states')
+
+    use yaml tab self define declarator @from_attribute
+    to set state 'InitState' from attribute ID
+        >>> class_content = "---\ntitle: 'State identification'\ndata:"
+        >>> class_content += "\n  - @from_attribute(ID) 'InitState()'"
+        >>> _file = open(class_file, 'w')
+        >>> _num = _file.write(class_content)
+        >>> _file.close()
+        >>> _dict = sample_app.application.TestData.communication_list
+        >>> communication_list = _dict.keys()
+        >>> instance_attributes = collections.defaultdict(dict)
+
+    set component instance attribute "ID" to '001'
+        >>> instance_attributes['D1'] = {'ID': '001'}
+        >>> d = {'exchange_module': exchange_module,
+        ...      'data_structure_module': data_structure_module,
+        ...      '__module__': component_module.__name__,
+        ...      'component_definition': class_file,
+        ...      'instance_attributes': instance_attributes,
+        ...      'communication_list': communication_list}
+
+        >>> _class = checkmate.component.ComponentMeta(class_name,
+        ...             (checkmate.component.Component,), d)
+        >>> setattr(component_module, class_name, _class)
+        >>> _app = sample_app.application.TestData()
+        >>> d1 = _class('D1', _app.service_registry)
+        >>> len(d1.states)
+        0
+        >>> d1.start()
+        >>> len(d1.states)
+        1
+        >>> d1.states[0].value
+        '001'
+
+    Revert changes for further use in doctest:
+        >>> os.remove(class_file)
+
+
