@@ -1,3 +1,5 @@
+import builtins
+
 import checkmate
 
 class Partition(object):
@@ -5,7 +7,7 @@ class Partition(object):
     partition_attribute = tuple()
 
     @classmethod
-    @checkmate.report_issue("checkmate/issues/default_type_in_exchange.rst")
+    @checkmate.fix_issue("checkmate/issues/default_type_in_exchange.rst")
     def method_arguments(cls, arguments):
         """
             >>> import sample_app.application
@@ -19,10 +21,13 @@ class Partition(object):
         kwargs = dict(arguments)
         for attr, value in arguments.items():
             data_cls = cls._construct_values[attr]
-            for _s in data_cls.partition_storage.storage:
-                if _s.code == value:
-                    kwargs[attr] = _s.factory()
-                    break
+            if hasattr(builtins, data_cls.__name__):
+                kwargs[attr] = data_cls(value)
+            else:
+                for _s in data_cls.partition_storage.storage:
+                    if _s.code == value:
+                        kwargs[attr] = _s.factory()
+                        break
         return kwargs
 
     def __init__(self, value=None, *args, default=True, **kwargs):
