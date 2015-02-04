@@ -156,14 +156,16 @@ class Component(object):
         """
         for interface, state in self.state_machine.states:
             cls = checkmate._module.get_class_implementing(interface)
-            _value = None
+            _kws = {}
             try:
                 if cls.define_attributes['Definition from'] == 'attribute':
-                    attribute = cls.define_attributes['Definition name']
-                    _value = getattr(self, attribute)
+                    kw_attributes = cls.define_attributes['Definition name']
+                    for _k, _v in kw_attributes.items():
+                        if _k in cls.partition_attribute and hasattr(self, _v):
+                            _kws[_k] = getattr(self, _v)
             except KeyError:
                 pass
-            self.states.append(cls.start(default=default_state_value, value=_value))
+            self.states.append(cls.start(default=default_state_value, kws=_kws))
         self.service_registry.register(self, self.service_interfaces)
         self.default_state_value = default_state_value
 
