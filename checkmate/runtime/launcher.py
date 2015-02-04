@@ -28,9 +28,19 @@ class Launcher(object):
             command_env = dict(os.environ)
             if self.command_env is not None:
                 command_env.update(self.command_env) 
+            try:
+                process_in_shell = self.component.launch_in_shell
+            except AttributeError:
+                process_in_shell = False
+            if process_in_shell:
+                command = self.command.format(component=self.component)
+            else:
+                command = \
+                    shlex.split(self.command.format(component=self.component))
             self.process = \
                 subprocess.Popen(
-                    shlex.split(self.command.format(component=self.component)),
+                    command,
+                    shell=process_in_shell,
                     env=command_env,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
