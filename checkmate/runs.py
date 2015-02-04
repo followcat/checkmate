@@ -39,7 +39,13 @@ class Run(checkmate._tree.Tree):
             for index, _initial in enumerate(run.root.initial):
                 if _initial.interface not in [_temp_init.interface for _temp_init in procedure.initial]:
                     procedure.initial.append(_initial)
-                    procedure.final.append(run.root.final[index])
+                    try:
+                        _final = [_f for _f in run.root.final
+                            if _f.interface == _initial.interface].pop()
+                        _index = run.root.final.index(_final)
+                        procedure.final.append(run.root.final[_index])
+                    except IndexError:
+                        pass
         procedure.transitions = self
         if self.itp_run is not None:
             procedure.final = self.itp_run.root.final
