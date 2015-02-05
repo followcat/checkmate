@@ -22,6 +22,10 @@ class TestData(checkmate.application.Application,
           attributes: {}
           instances:
             - name: C2
+              attributes:
+                request:
+                  C: AT1
+                  P: NORM
         - class: sample_app/component/component_3.yaml
           attributes: {}
           instances:

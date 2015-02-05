@@ -1,4 +1,9 @@
 ---
+title: "State identification"
+data:
+  - @from_attribute(R=request) 'RqState(R:ActionRequest)'
+
+---
 title: "State machine"
 data:
   - Transitions:
