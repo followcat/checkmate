@@ -99,7 +99,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> proc = checkmate.runtime.procedure.Procedure()
         >>> run_list[0].fill_procedure(proc)
         >>> len(proc.initial)
-        3
+        4
 
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime

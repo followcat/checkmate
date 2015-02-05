@@ -22,6 +22,8 @@ data:
           - ValidateOutput:     VOER()
 
       - name: '[Input/Final state/Output]'
+        initial:
+          - RqState:            R
         incoming:
           - AnotherReaction:    ARE()
         outgoing:
