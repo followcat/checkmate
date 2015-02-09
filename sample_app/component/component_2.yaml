@@ -1,7 +1,7 @@
 ---
 title: "State identification"
 data:
-  - @from_attribute(R=request) 'RqState(R:ActionRequest)'
+  - @from_attribute(R=request) 'RequestState(R:ActionRequest)'
 
 ---
 title: "State machine"
@@ -23,7 +23,7 @@ data:
 
       - name: '[Input/Final state/Output]'
         initial:
-          - RqState:            R
+          - RequestState:       R
         incoming:
           - AnotherReaction:    ARE()
         outgoing:
