@@ -298,13 +298,14 @@ class InternalStorage(object):
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
             <sample_app.component.component_1_states.State object at ...
 
+            >>> c3_states = sample_app.component.component_3_states
             >>> final = [_f for _f in run.final
-            ...          if _f.interface == c1_states.IAnotherState][0]
+            ...          if _f.interface == c3_states.IAcknowledge][0]
             >>> t3 = c3.state_machine.transitions[0]
             >>> c3.simulate(t3)
             []
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
-            <sample_app.component.component_1_states.AnotherState ...
+            <sample_app.component.component_3_states.Acknowledge ...
         """
         for _target in [_t for _t in target_copy
                         if self.interface.providedBy(_t)]:
