@@ -21,8 +21,6 @@ class Procedure(object):
         self.transitions = run
         self.initial = run.initial
         self.final = run.final
-        if run.itp_run is not None:
-            self.final = run.itp_run.root.final
 
     def __call__(self, runtime, result=None, *args):
         """Run procedure in Runtime instance.

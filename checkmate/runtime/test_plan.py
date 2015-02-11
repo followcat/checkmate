@@ -2,7 +2,6 @@ import os.path
 
 import checkmate.runs
 import checkmate.sandbox
-import checkmate.runtime.procedure
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
@@ -80,7 +79,6 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 def TestProcedureFeaturesGenerator(application_class):
     """
         >>> import checkmate.sandbox
-        >>> import checkmate.runtime.procedure
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
         >>> _application = sample_app.application.TestData()
@@ -95,8 +93,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> box(run_list[0])
         True
-        >>> proc = checkmate.runtime.procedure.Procedure(run_list[0])
-        >>> len(proc.initial)
+        >>> len(run_list[0].initial)
         3
 
         >>> import checkmate.runtime._pyzmq

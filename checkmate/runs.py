@@ -51,6 +51,8 @@ class Run(checkmate._tree.Tree):
                             self._final.append(run.root.final[_index])
                         except IndexError:
                             pass
+            if self.itp_run is not None:
+                self._final = self.itp_run.root.final
 
     def add_node(self, tree):
         self._initial = None

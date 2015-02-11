@@ -25,8 +25,7 @@ Send 'AC' for append default 'R':
     >>> import checkmate.sandbox
     >>> saved = checkmate.sandbox.Sandbox(r.application)
     >>> r.execute([_r for _r in runs if len(_r.root.incoming) > 0 and _r.root.incoming[0].code == 'PBAC'][0])
-    >>> proc = checkmate.runtime.procedure.Procedure(run)
-    >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_1_states.IAnotherState][0]
+    >>> final = [_f for _f in run.final if _f.interface == sample_app.component.component_1_states.IAnotherState][0]
     >>> final.function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
 
@@ -46,7 +45,7 @@ Check the resulting final state compared to transition's final:
 Result from compare_states():
     >>> final.match(r.application.state_list(), saved.application.state_list(), validated_incoming) #doctest: +ELLIPSIS
     <sample_app.component.component_1_states.AnotherState object at ...
-    >>> r.application.compare_states(proc.final, saved.application.state_list())
+    >>> r.application.compare_states(run.final, saved.application.state_list())
     True
     >>> 
     >>> r.stop_test()
