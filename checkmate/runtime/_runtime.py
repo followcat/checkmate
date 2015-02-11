@@ -140,15 +140,15 @@ class Runtime(object):
         return proc
 
     def execute(self, run, result=None, transform=True):
-        procedure = self.build_procedure(run)
-        if procedure.transitions.root.owner in self.application.system_under_test:
+        if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
                         "SUT do not simulate")
-        if transform is True and not self.transform_to_procedure_initial(procedure):
+        if transform is True and not self.transform_to_initial(run):
             return checkmate.runtime.procedure._compatible_skip_test(
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
+        procedure = self.build_procedure(run)
         try:
             procedure(self, result)
             self.runs_log.info(['Run', run.root.name])
@@ -157,10 +157,10 @@ class Runtime(object):
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
-    def transform_to_procedure_initial(self, procedure):
-        if not self.application.compare_states(procedure.initial):
+    def transform_to_initial(self, run):
+        if not self.application.compare_states(run.initial):
             run_list = list(checkmate.pathfinder._find_runs(
-                            self.application, procedure.initial).keys())
+                            self.application, run.initial).keys())
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")
