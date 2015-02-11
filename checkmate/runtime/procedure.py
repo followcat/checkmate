@@ -9,7 +9,7 @@ import checkmate.timeout_manager
 import checkmate.runtime.interfaces
 
 
-def _compatible_skip_test(procedure, message):
+def _compatible_skip_test(message):
     raise nose.plugins.skip.SkipTest(message)
 
 

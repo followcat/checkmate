@@ -142,10 +142,10 @@ class Runtime(object):
     def execute(self, run, result=None, transform=True):
         procedure = self.build_procedure(run)
         if procedure.transitions.root.owner in self.application.system_under_test:
-            return checkmate.runtime.procedure._compatible_skip_test(procedure,
+            return checkmate.runtime.procedure._compatible_skip_test(
                         "SUT do not simulate")
         if transform is True and not self.transform_to_procedure_initial(procedure):
-            return checkmate.runtime.procedure._compatible_skip_test(procedure,
+            return checkmate.runtime.procedure._compatible_skip_test(
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
@@ -162,7 +162,7 @@ class Runtime(object):
             run_list = list(checkmate.pathfinder._find_runs(
                             self.application, procedure.initial).keys())
             if len(run_list) == 0:
-                checkmate.runtime.procedure._compatible_skip_test(procedure,
+                checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")
                 return False
             for run in run_list:
