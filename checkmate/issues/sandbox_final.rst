@@ -15,16 +15,16 @@ Setting the procedure.final from the sandbox does not work.
     >>> box = checkmate.sandbox.Sandbox(_application, [_run.root])
     >>> box(_run, itp_run=True)
     True
-    >>> proc = r.build_procedure(box.transitions)
-    >>> len(proc.final)
+    >>> run = box.transitions
+    >>> len(run.final)
     3
-    >>> proc.final[0].function #doctest: +ELLIPSIS
+    >>> run.final[0].function #doctest: +ELLIPSIS
     <function State.__init__ at ...
-    >>> proc.final[1].function #doctest: +ELLIPSIS
+    >>> run.final[1].function #doctest: +ELLIPSIS
     <function State.toggle at ...
-    >>> proc.final[2].function #doctest: +ELLIPSIS
+    >>> run.final[2].function #doctest: +ELLIPSIS
     <function State.append at ...
-    >>> r.application.compare_states(proc.initial)
+    >>> r.application.compare_states(run.initial)
     True
     >>> r.execute(_run)
     >>> r.stop_test()

@@ -4,6 +4,7 @@ import checkmate.sandbox
 
 
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_runs.rst")
+@checkmate.fix_issue("checkmate/issues/get_path_from_pathfinder.rst")
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
 def _find_runs(application, target):
     """"""

@@ -17,6 +17,8 @@ class Run(checkmate._tree.Tree):
         if states is None:
             states = []
         super(Run, self).__init__(transition, nodes)
+        self._initial = None
+        self._final = None
         self.itp_run = None
         self.change_states = []
         for f in transition.final:
@@ -27,37 +29,47 @@ class Run(checkmate._tree.Tree):
 
     def get_transition_by_input_states(self, exchanges, states):
         for _t in self.walk():
-            if (_t.is_matching_initial(states) and _t.is_matching_incoming(exchanges)):
+            if (_t.is_matching_initial(states) and
+                    _t.is_matching_incoming(exchanges)):
                 return _t
         else:
             raise checkmate.exception.NoTransitionFound
 
-    def fill_procedure(self, procedure):
-        procedure.final = []
-        procedure.initial = []
-        for run in self.breadthWalk():
-            for index, _initial in enumerate(run.root.initial):
-                if _initial.interface not in [_temp_init.interface for _temp_init in procedure.initial]:
-                    procedure.initial.append(_initial)
-                    try:
-                        _final = [_f for _f in run.root.final
-                            if _f.interface == _initial.interface].pop()
-                        _index = run.root.final.index(_final)
-                        procedure.final.append(run.root.final[_index])
-                    except IndexError:
-                        pass
-        procedure.transitions = self
-        if self.itp_run is not None:
-            procedure.final = self.itp_run.root.final
+    def get_states(self):
+        if self._initial is None or self._final is None:
+            self._initial = []
+            self._final = []
+            for run in self.breadthWalk():
+                for index, _initial in enumerate(run.root.initial):
+                    if _initial.interface not in [_temp_init.interface for
+                                                  _temp_init in self._initial]:
+                        self._initial.append(_initial)
+                        try:
+                            _final = [_f for _f in run.root.final
+                                      if _f.interface == _initial.interface][0]
+                            _index = run.root.final.index(_final)
+                            self._final.append(run.root.final[_index])
+                        except IndexError:
+                            pass
+            if self.itp_run is not None:
+                self._final = self.itp_run.root.final
+
+    def add_node(self, tree):
+        self._initial = None
+        self._final = None
+        super().add_node(tree)
 
     def visual_dump_initial(self):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_initial()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('True', 'False')
+            >>> states['C1']['State']['value']
+            'True'
+            >>> states['C3']['Acknowledge']['value']
+            'False'
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -74,10 +86,13 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_final()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('False', 'True')
+            >>> states['C1']['State']['value']
+            'False'
+            >>> states['C3']['Acknowledge']['value']
+            'True'
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -97,6 +112,16 @@ class Run(checkmate._tree.Tree):
         for element in self.nodes:
             dump_dict['nodes'].append(element.visual_dump_steps())
         return dump_dict
+
+    @property
+    def initial(self):
+        self.get_states()
+        return self._initial
+
+    @property
+    def final(self):
+        self.get_states()
+        return self._final
 
 
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
@@ -126,7 +151,8 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     if itp_transition:
         application = type(application)()
         application.start()
-        sandbox = checkmate.sandbox.CollectionSandbox(application, transition_run.walk())
+        sandbox = checkmate.sandbox.CollectionSandbox(
+                    application, transition_run.walk())
     else:
         sandbox = checkmate.sandbox.CollectionSandbox(application)
     for _run in sandbox(transition_run, itp_run=itp_transition):

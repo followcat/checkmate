@@ -9,16 +9,16 @@
         >>> a = sample_app.application.TestData()
         >>> box = checkmate.sandbox.Sandbox(a)
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
-        >>> proc = []
-        >>> for p in checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData):
-        ...     proc.append(r.build_procedure(p[0]))
+        >>> runs = []
+        >>> for r in checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData):
+        ...     runs.append(r[0])
 
-        >>> proc[0].transitions.root.outgoing[0].code
+        >>> runs[0].root.outgoing[0].code
         'AC'
-        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, proc[0].initial, a.run_collection, collections.OrderedDict())]
+        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[0].initial, a.run_collection, collections.OrderedDict())]
         ['PBAC', 'PBRL', 'PBPP']
 
-        >>> proc[3].transitions.root.outgoing[0].code
+        >>> runs[3].root.outgoing[0].code
         'PP'
-        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, proc[3].initial, a.run_collection, collections.OrderedDict())]
+        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[3].initial, a.run_collection, collections.OrderedDict())]
         ['PBAC', 'PBRL']
