@@ -61,8 +61,8 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(\
-                        sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
             'True'
@@ -84,8 +84,8 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(\
-                        sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
             'False'
