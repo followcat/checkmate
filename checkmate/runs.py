@@ -34,23 +34,28 @@ class Run(checkmate._tree.Tree):
             raise checkmate.exception.NoTransitionFound
 
     def fill_procedure(self, procedure):
-        procedure.final = []
-        procedure.initial = []
+        procedure.initial = self.initial
+        procedure.final = self.final
+        procedure.transitions = self
+        if self.itp_run is not None:
+            procedure.final = self.itp_run.root.final
+
+    def get_states(self):
+        initial = []
+        final = []
         for run in self.breadthWalk():
             for index, _initial in enumerate(run.root.initial):
                 if _initial.interface not in [_temp_init.interface for
-                                              _temp_init in procedure.initial]:
-                    procedure.initial.append(_initial)
+                                              _temp_init in initial]:
+                    initial.append(_initial)
                     try:
                         _final = [_f for _f in run.root.final
                                   if _f.interface == _initial.interface].pop()
                         _index = run.root.final.index(_final)
-                        procedure.final.append(run.root.final[_index])
+                        final.append(run.root.final[_index])
                     except IndexError:
                         pass
-        procedure.transitions = self
-        if self.itp_run is not None:
-            procedure.final = self.itp_run.root.final
+        return initial, final
 
     def visual_dump_initial(self):
         """
@@ -105,6 +110,16 @@ class Run(checkmate._tree.Tree):
         for element in self.nodes:
             dump_dict['nodes'].append(element.visual_dump_steps())
         return dump_dict
+
+    @property
+    def initial(self):
+        initial, final = self.get_states()
+        return initial
+
+    @property
+    def final(self):
+        initial, final = self.get_states()
+        return final
 
 
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
