@@ -35,13 +35,6 @@ class Run(checkmate._tree.Tree):
         else:
             raise checkmate.exception.NoTransitionFound
 
-    def fill_procedure(self, procedure):
-        procedure.initial = self.initial
-        procedure.final = self.final
-        procedure.transitions = self
-        if self.itp_run is not None:
-            procedure.final = self.itp_run.root.final
-
     def get_states(self):
         if self._initial is None or self._final is None:
             self._initial = []

@@ -14,10 +14,15 @@ def _compatible_skip_test(message):
 
 
 class Procedure(object):
-    def __init__(self, test=None):
+    def __init__(self, run, test=None):
         self.result = None
         self.test = test
         self.logger = logging.getLogger('checkmate.runtime.procedure')
+        self.transitions = run
+        self.initial = run.initial
+        self.final = run.final
+        if run.itp_run is not None:
+            self.final = run.itp_run.root.final
 
     def __call__(self, runtime, result=None, *args):
         """Run procedure in Runtime instance.
@@ -36,8 +41,7 @@ class Procedure(object):
             >>> for run in gen:
             ...     runs.append(run[0])
 
-            >>> proc = r.build_procedure(runs[0])
-            >>> proc.transitions.root.outgoing[0].code
+            >>> runs[0].root.outgoing[0].code
             'AC'
 
         And we create two different Runtime instances:

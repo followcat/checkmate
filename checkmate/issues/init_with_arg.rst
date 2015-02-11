@@ -3,6 +3,7 @@ It is impossible to specify the final state by providing arguments (like __init_
     >>> import checkmate.runtime._pyzmq
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime.test_plan
+    >>> import checkmate.runtime.procedure
     >>> import sample_app.application
     >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
     >>> r.setup_environment(['C1'])
@@ -14,7 +15,7 @@ It is impossible to specify the final state by providing arguments (like __init_
     ...     run[0].application = r.application
     ...     runs.append(run[0])
     ... 
-    >>> proc = r.build_procedure(runs[1])
+    >>> proc = checkmate.runtime.procedure.Procedure(runs[1])
     >>> r.application.compare_states(proc.initial)
     True
     >>> saved_initial = checkmate.sandbox.Sandbox(r.application)

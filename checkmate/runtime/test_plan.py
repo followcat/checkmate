@@ -65,11 +65,10 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c3.context.states[0].value
         'True'
         >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> runs = [run[0] for run in gen]
-        >>> proc = r.build_procedure(runs[0])
-        >>> r.application.compare_states(proc.initial)
+        >>> run = [run[0] for run in gen][0]
+        >>> r.application.compare_states(run.initial)
         False
-        >>> r.execute(runs[0], transform=True)
+        >>> r.execute(run, transform=True)
         >>> r.stop_test()
 
     """
@@ -96,8 +95,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> box(run_list[0])
         True
-        >>> proc = checkmate.runtime.procedure.Procedure()
-        >>> run_list[0].fill_procedure(proc)
+        >>> proc = checkmate.runtime.procedure.Procedure(run_list[0])
         >>> len(proc.initial)
         3
 

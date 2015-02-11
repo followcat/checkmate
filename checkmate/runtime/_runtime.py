@@ -134,11 +134,6 @@ class Runtime(object):
             condition.wait_for(check_threads,
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
-    def build_procedure(self, run):
-        proc = checkmate.runtime.procedure.Procedure()
-        run.fill_procedure(proc)
-        return proc
-
     def execute(self, run, result=None, transform=True):
         if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
@@ -148,9 +143,8 @@ class Runtime(object):
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
-        procedure = self.build_procedure(run)
         try:
-            procedure(self, result)
+            checkmate.runtime.procedure.Procedure(run)(self, result)
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
@@ -166,6 +160,5 @@ class Runtime(object):
                     "Can't find a path to initial state")
                 return False
             for run in run_list:
-                proc = self.build_procedure(run)
-                proc(self)
+                checkmate.runtime.procedure.Procedure(run)(self)
         return True

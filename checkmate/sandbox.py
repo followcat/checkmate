@@ -143,13 +143,6 @@ class Sandbox(object):
                 tree.add_node(tmp_run)
         return tree
 
-    def fill_procedure(self, procedure):
-        if self.is_run:
-            self.update_required_states(self.transitions)
-            procedure.final = self.final
-            procedure.initial = self.initial
-            procedure.transitions = self.transitions
-
     def update_required_states(self, tree):
         """
         """
