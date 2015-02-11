@@ -26,8 +26,12 @@ class Procedure(object):
             >>> import checkmate.runtime._runtime
             >>> import checkmate.runtime.test_plan
             >>> import sample_app.application
-            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
-            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+            >>> r = checkmate.runtime._runtime.Runtime(
+            ... sample_app.application.TestData,
+            ... checkmate.runtime._pyzmq.Communication,
+            ... threaded=True)
+            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(
+            ...         sample_app.application.TestData)
             >>> runs = []
             >>> for run in gen:
             ...     runs.append(run[0])
@@ -37,7 +41,10 @@ class Procedure(object):
             'AC'
 
         And we create two different Runtime instances:
-            >>> r1 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r1 = checkmate.runtime._runtime.Runtime(
+            ...         sample_app.application.TestData,
+            ...         checkmate.runtime._pyzmq.Communication,
+            ...         threaded=True)
             >>> r1.setup_environment(['C1'])
             >>> r1.start_test()
             >>> r1_c1 = r1.runtime_components['C1'].context.states[0]
@@ -45,7 +52,10 @@ class Procedure(object):
             >>> (r1_c1.value, r1_c3.value)
             ('True', 'False')
 
-            >>> r2 = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r2 = checkmate.runtime._runtime.Runtime(
+            ...         sample_app.application.TestData,
+            ...         checkmate.runtime._pyzmq.Communication,
+            ...         threaded=True)
             >>> r2.setup_environment(['C3'])
             >>> r2.start_test()
             >>> r2_c1 = r2.runtime_components['C1'].context.states[0]
@@ -80,11 +90,14 @@ class Procedure(object):
         self._follow_up(self.transitions)
 
         if hasattr(self, 'final'):
-            @checkmate.timeout_manager.WaitOnFalse(checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
+            @checkmate.timeout_manager.WaitOnFalse(
+                checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.runtime.application.compare_states(self.final, saved_initial.application.state_list())
+                return self.runtime.application.compare_states(self.final,
+                            saved_initial.application.state_list())
             if not check_compare_states():
-                self.logger.error('Procedure Failed: Final states are not as expected')
+                self.logger.error(
+                    'Procedure Failed: Final states are not as expected')
                 raise ValueError("Final states are not as expected")
         if self.result is not None:
             self.result.addSuccess(self)
@@ -94,7 +107,8 @@ class Procedure(object):
         for _next in node.nodes:
             component = self.runtime.runtime_components[_next.root.owner]
             if not component.validate(_next.root):
-                raise Exception("No exchange '%s' received by component '%s'" %(_next.root.incoming[0].code, _next.root.owner))
+                raise Exception("No exchange '%s' received by component '%s'"
+                            % (_next.root.incoming[0].code, _next.root.owner))
         for _next in node.nodes:
             self._follow_up(_next)
 
@@ -103,4 +117,3 @@ class Procedure(object):
         This is required by the nose framework.
         """
         return self.name
-
