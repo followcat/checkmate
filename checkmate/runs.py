@@ -17,6 +17,8 @@ class Run(checkmate._tree.Tree):
         if states is None:
             states = []
         super(Run, self).__init__(transition, nodes)
+        self._initial = None
+        self._final = None
         self.itp_run = None
         self.change_states = []
         for f in transition.final:
@@ -41,21 +43,26 @@ class Run(checkmate._tree.Tree):
             procedure.final = self.itp_run.root.final
 
     def get_states(self):
-        initial = []
-        final = []
-        for run in self.breadthWalk():
-            for index, _initial in enumerate(run.root.initial):
-                if _initial.interface not in [_temp_init.interface for
-                                              _temp_init in initial]:
-                    initial.append(_initial)
-                    try:
-                        _final = [_f for _f in run.root.final
-                                  if _f.interface == _initial.interface].pop()
-                        _index = run.root.final.index(_final)
-                        final.append(run.root.final[_index])
-                    except IndexError:
-                        pass
-        return initial, final
+        if self._initial is None or self._final is None:
+            self._initial = []
+            self._final = []
+            for run in self.breadthWalk():
+                for index, _initial in enumerate(run.root.initial):
+                    if _initial.interface not in [_temp_init.interface for
+                                                  _temp_init in self._initial]:
+                        self._initial.append(_initial)
+                        try:
+                            _final = [_f for _f in run.root.final
+                                      if _f.interface == _initial.interface][0]
+                            _index = run.root.final.index(_final)
+                            self._final.append(run.root.final[_index])
+                        except IndexError:
+                            pass
+
+    def add_node(self, tree):
+        self._initial = None
+        self._final = None
+        super().add_node(tree)
 
     def visual_dump_initial(self):
         """
@@ -113,13 +120,13 @@ class Run(checkmate._tree.Tree):
 
     @property
     def initial(self):
-        initial, final = self.get_states()
-        return initial
+        self.get_states()
+        return self._initial
 
     @property
     def final(self):
-        initial, final = self.get_states()
-        return final
+        self.get_states()
+        return self._final
 
 
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
