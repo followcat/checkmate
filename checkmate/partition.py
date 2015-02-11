@@ -28,6 +28,9 @@ class Partition(object):
                     if _s.code == value:
                         kwargs[attr] = _s.factory()
                         break
+                else:
+                    if attr == value:
+                        kwargs.pop(attr)
         return kwargs
 
     def __init__(self, value=None, *args, default=True, **kwargs):

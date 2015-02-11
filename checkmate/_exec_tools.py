@@ -42,14 +42,13 @@ def get_signature_arguments(signature, cls):
         >>> import checkmate._exec_tools
         >>> action = sample_app.exchanges.Action
         >>> checkmate._exec_tools.get_signature_arguments("Action('R')", action)
-        {}
+        {'R': 'R'}
         >>> checkmate._exec_tools.get_signature_arguments("AP('R2')", action)
         {'R': 'R2'}
     """
     found_label = signature.find('(')
     parameters = signature[found_label:][1:-1].split(', ')
-    args = tuple([_p.strip("'") for _p in parameters if (_p != '' and
-                  _p.strip("'") not in cls._sig.parameters.keys())])
+    args = tuple([_p.strip("'") for _p in parameters if _p != ''])
     arguments = cls._sig.bind_partial(*args).arguments
     return dict(arguments)
 
