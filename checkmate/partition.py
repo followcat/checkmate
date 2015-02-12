@@ -33,6 +33,8 @@ class Partition(object):
                         kwargs.pop(attr)
         return kwargs
 
+    @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst",
+        failed=4)
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are stored in parameter dict.
