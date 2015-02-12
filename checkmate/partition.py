@@ -16,8 +16,10 @@ class Partition(object):
             >>> action = sample_app.exchanges.Action
             >>> action.method_arguments({'R': 'AT1'})
             {'R': 'AT1'}
-            >>> action.method_arguments({'R': 'R2'})['R'].C.value, action.method_arguments({'R': 'R2'})['R'].P.value
-            ('AT2', 'HIGH')
+            >>> action.method_arguments({'R': 'R2'})['R'].C.value
+            'AT2'
+            >>> action.method_arguments({'R': 'R2'})['R'].P.value
+            'HIGH'
         """
         kwargs = dict(arguments)
         for attr, value in arguments.items():
@@ -36,18 +38,21 @@ class Partition(object):
 
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
-        The arguments are of str type, the values are stored in parameter dict.
+        The arguments are of str type, the values are stored in
+        parameter dict.
             >>> e = Partition('CA', 'AUTO')
             >>> e.value
             'CA'
 
-        If the partition defines an attribute as implementing IStorage, the factory() is called to instantiate the attribute.
+        If the partition defines an attribute as implementing IStorage,
+        the factory() is called to instantiate the attribute.
             >>> import zope.interface
             >>> import checkmate.interfaces
             >>> import checkmate._storage
             >>> def factory(self): print("In factory")
             >>> A = type('A', (object,), {'factory': factory})
-            >>> _impl = zope.interface.implementer(checkmate.interfaces.IStorage)
+            >>> _impl = zope.interface.implementer(
+            ...             checkmate.interfaces.IStorage)
             >>> A = _impl(A)
             >>> setattr(Partition, 'A', A())
             >>> Partition.partition_attribute = ('A',)
@@ -64,7 +69,8 @@ class Partition(object):
 
         The default keyword only argument allow to use None as default:
             >>> import sample_app.application
-            >>> re = sample_app.data_structure.ActionRequest(default=False)
+            >>> re = sample_app.data_structure.ActionRequest(
+            ...         default=False)
             >>> re.C.value, re.P.value
             (None, None)
         """
@@ -161,9 +167,11 @@ class Partition(object):
 
     def attribute_list(self, keyset=None):
         if keyset is None:
-            return dict(map(lambda x:(x, getattr(self, x)), self.partition_attribute))
+            return dict(map(lambda x:(x, getattr(self, x)),
+                            self.partition_attribute))
         else:
-            return dict(map(lambda x:(x, getattr(self, x)), keyset.intersection(self.partition_attribute)))
+            return dict(map(lambda x:(x, getattr(self, x)),
+                            keyset.intersection(self.partition_attribute)))
 
     def carbon_copy(self, other):
         assert(type(self) == type(other))
