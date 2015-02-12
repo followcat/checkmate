@@ -35,7 +35,8 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
     """
     def __init__(self):
         super(ServiceRegistry, self).__init__()
-        self.registerAdapter(ServiceFactory, (checkmate.interfaces.IExchange,), zope.component.interfaces.IFactory)
+        self.registerAdapter(ServiceFactory, (checkmate.interfaces.IExchange,),
+            zope.component.interfaces.IFactory)
         self._registry = {}
 
     def register(self, component, services):
@@ -44,12 +45,14 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
-            >>> _service = c1.state_machine.transitions[0].incoming[0].interface
+            >>> _t = c1.state_machine.transitions[0]
+            >>> _service = _t.incoming[0].interface
             >>> c1.service_registry._registry[_service]
             ['C1']
         """
         for _service in services:
-            assert isinstance(_service, zope.interface.interface.InterfaceClass)
+            assert isinstance(_service,
+                        zope.interface.interface.InterfaceClass)
             if _service in self._registry.keys():
                 if component.name not in self._registry[_service]:
                     self._registry[_service].append(component.name)
@@ -63,12 +66,14 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> c3 = a.components['C3']
-            >>> e = c1.state_machine.transitions[0].outgoing[0].factory()
+            >>> _t = c1.state_machine.transitions[0]
+            >>> e = _t.outgoing[0].factory()
             >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
             ...     print(_e.destination)
             ['C3']
         """
-        _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
+        _factory = self.getAdapter(exchange,
+                        zope.component.interfaces.IFactory)
         for _service, _servers in self._registry.items():
             if _service.providedBy(exchange):
                 return _factory(component_name, _servers)
