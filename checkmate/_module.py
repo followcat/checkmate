@@ -11,19 +11,24 @@ def get_module(package_name, module_name, alternative_package=None):
     The provided package_name is expected to be a sub-package
     under the project main package (eg. 'main.sub').
 
-    This function can be used to create a module in an alternative package beside the provided one:
+    This function can be used to create a module in an alternative
+    package beside the provided one:
         >>> import checkmate._module
         >>> import sample_app.application
-        >>> mod = checkmate._module.get_module('sample_app.application', 'xxx', 'component')
+        >>> mod = checkmate._module.get_module(
+        ...         'sample_app.application', 'xxx', 'component')
         >>> mod # doctest: +ELLIPSIS
         <module 'sample_app.component.xxx' from ...
 
-    It can also be used to create a new module beside an existing one in the provided package:
-        >>> mod2 = checkmate._module.get_module('sample_app.component.xxx', 'yyy')
+    It can also be used to create a new module beside an existing one
+    in the provided package:
+        >>> mod2 = checkmate._module.get_module(
+        ...             'sample_app.component.xxx', 'yyy')
         >>> mod2 # doctest: +ELLIPSIS
         <module 'sample_app.component.yyy' from ...
 
-        >>> mod3 = checkmate._module.get_module('checkmate.application', 'data')
+        >>> mod3 = checkmate._module.get_module(
+        ...             'checkmate.application', 'data')
         >>> mod3 # doctest: +ELLIPSIS
         <module 'checkmate.data' from ...
     """
@@ -50,9 +55,12 @@ def get_module(package_name, module_name, alternative_package=None):
     else:
         module = imp.new_module(_name)
         module.__name__ = _name
-        module.__file__ = _file.replace(_fullname.replace('.', os.sep), _new_fullname.replace('.', os.sep))
+        module.__file__ = _file.replace(_fullname.replace('.', os.sep),
+                            _new_fullname.replace('.', os.sep))
         sys.modules[_name] = module
-        setattr(importlib.import_module(package_name.replace(_fullname, alternative_package), package_name.replace(_fullname, '')), module_name, module)
+        setattr(importlib.import_module(
+                    package_name.replace(_fullname, alternative_package),
+                    package_name.replace(_fullname, '')), module_name, module)
     return module
 
 
@@ -60,7 +68,9 @@ def get_module_defining(interface):
     """
     >>> import sample_app.application
     >>> import checkmate._module
-    >>> checkmate._module.get_module_defining(sample_app.data_structure.IActionRequest) #doctest: +ELLIPSIS
+    >>> interface = sample_app.data_structure.IActionRequest
+    >>> checkmate._module.get_module_defining(
+    ...     interface) #doctest: +ELLIPSIS
     <module 'sample_app.data_structure' from ...
     """
     module_name = interface.__module__
@@ -82,7 +92,8 @@ def get_class_implementing(interface):
     """
     >>> import sample_app.application
     >>> import checkmate._module
-    >>> checkmate._module.get_class_implementing(sample_app.data_structure.IActionRequest)
+    >>> interface = sample_app.data_structure.IActionRequest
+    >>> checkmate._module.get_class_implementing(interface)
     <class 'sample_app.data_structure.ActionRequest'>
     """
     module = get_module_defining(interface)
