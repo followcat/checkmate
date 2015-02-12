@@ -18,8 +18,13 @@ and given "(False)" signature.
 
 Add TestExchange type of exchange in checkmate.
 
-    >>> de.new_partition('exchanges', 'TestExchange(IA: bool)',
-    ...                   codes_list=['TE()'], values_list=['TE'])
+    >>> items = {
+    ...     'partition_type': 'exchanges',
+    ...     'signature': 'TestExchange(IA: bool)',
+    ...     'codes_list': ['TE()'],
+    ...     'values_list': ['TE']
+    ...     }
+    >>> de.new_partition(items)
     >>> arguments = checkmate._exec_tools.get_signature_arguments(
     ...             "Test(False)", checkmate.exchanges.TestExchange)
     >>> checkmate.exchanges.TestExchange.method_arguments(arguments)
