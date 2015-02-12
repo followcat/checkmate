@@ -17,18 +17,18 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData(),
             ...                                 [sample_app.application.TestData().components['C3'].state_machine.transitions[1]])
             >>> box.application.components['C1'].states[0].value
-            'True'
+            True
             >>> box.application.components['C3'].states[0].value
-            'True'
+            True
 
             >>> app = sample_app.application.TestData()
             >>> app.start()
             >>> out = app.components['C1'].process([sample_app.exchanges.Action('AC')])
             >>> app.components['C1'].states[0].value
-            'False'
+            False
             >>> box = checkmate.sandbox.Sandbox(app)
             >>> box.application.components['C1'].states[0].value
-            'False'
+            False
         """
         self.final = []
         self.initial = []
@@ -72,7 +72,7 @@ class Sandbox(object):
             >>> import sample_app.application
             >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData())
             >>> box.application.components['C1'].states[0].value
-            'True'
+            True
             >>> runs = box.application.run_collection
             >>> box(runs[0])
             True
@@ -81,7 +81,7 @@ class Sandbox(object):
             >>> box.application.components['C1'].states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object at ...
             >>> box.application.components['C3'].states[0].value
-            'False'
+            False
         """
         _outgoing = []
         self.run = run
@@ -127,7 +127,7 @@ class Sandbox(object):
             >>> box.run = runs[0]
             >>> transitions = box.process([ex], checkmate.runs.Run(_t, []))
             >>> box.application.components['C3'].states[0].value
-            'True'
+            True
         """
         for _exchange in exchanges:
             for _d in _exchange.destination:

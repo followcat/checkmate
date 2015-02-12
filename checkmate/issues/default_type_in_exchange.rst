@@ -15,7 +15,7 @@ We should be able to use python default types when defining exchanges:
     ...             data_structure_module, exchange_module,
     ...             state_module=state_module)
     >>> par = de.new_partition('exchanges', "BO(F:bool)",
-    ...             codes_list=['B1'], values_list=['TRUE'])
+    ...             codes_list=['B1'], values_list=[True])
 
     >>> import checkmate._storage
     >>> import checkmate.transition

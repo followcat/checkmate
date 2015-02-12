@@ -67,9 +67,9 @@ class Run(checkmate._tree.Tree):
             ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
-            'True'
+            True
             >>> states['C3']['Acknowledge']['value']
-            'False'
+            False
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -90,9 +90,9 @@ class Run(checkmate._tree.Tree):
             ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
-            'False'
+            False
             >>> states['C3']['Acknowledge']['value']
-            'True'
+            True
         """
         state_dict = {}
         for run in self.breadthWalk():

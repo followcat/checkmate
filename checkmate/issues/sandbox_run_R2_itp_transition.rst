@@ -28,11 +28,11 @@ All state in sandbox.application will be set as the run_transition initial state
     >>> box = checkmate.sandbox.Sandbox(r.application, [per_transition, run_transition])
     >>> state_list = box.application.state_list()
     >>> [_s.value for _s in state_list if isinstance(_s, sample_app.component.component_1_states.State)]
-    ['False']
+    [False]
     >>> [_s.R.C.value for _s in state_list if isinstance(_s, sample_app.component.component_1_states.AnotherState)]
     ['AT2']
     >>> [_s.value for _s in state_list if isinstance(_s, sample_app.component.component_3_states.Acknowledge)]
-    ['False']
+    [False]
 
 Can not run sandbox:
     >>> box(checkmate.runs.Run(run_transition), itp_run=True)

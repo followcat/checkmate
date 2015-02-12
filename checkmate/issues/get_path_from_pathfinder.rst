@@ -15,7 +15,7 @@
         >>> box(run)
         True
         >>> app.components['C3'].states[0].value
-        'True'
+        True
         >>> run = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
         >>> setup = checkmate.pathfinder._find_runs(app, run.initial)
         >>> for _s in setup:

@@ -3,8 +3,8 @@ title: "State identification"
 data:
   - Definition and accessibility: 'State'
     Value partitions:
-    - [S-STATE-01, State1(), 'True', 'State true value']
-    - [S-STATE-02, State2(), 'False', 'State false value']
+    - [S-STATE-01, State1(), True, 'State true value']
+    - [S-STATE-02, State2(), False, 'State false value']
 
   - Definition and accessibility: 'AnotherState(R:ActionRequest=None)'
     Value partitions:

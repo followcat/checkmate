@@ -42,7 +42,7 @@ class TestData(checkmate.application.Application,
             >>> c = a.components['C1']   
             >>> a.start()
             >>> c.states[0].value
-            'True'
+            True
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-01', ...
             >>> ds = sample_app.data_structure.ActionRequest('HIGH') 
@@ -58,7 +58,7 @@ class TestData(checkmate.application.Application,
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[0].value
-            'False'
+            False
             >>> c.states[0].description() # doctest: +ELLIPSIS
             ('S-STATE-02', ...
             >>> result = c.process([i])
@@ -67,7 +67,7 @@ class TestData(checkmate.application.Application,
             >>> result[1].value
             False
             >>> c.states[0].value
-            'False'
+            False
             >>> i = sample_app.exchanges.Action('PP')
             >>> t = c.state_machine.transitions[2]
             >>> t.is_matching_incoming([i])

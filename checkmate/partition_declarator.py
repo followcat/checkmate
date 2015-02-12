@@ -80,7 +80,7 @@ class Declarator(object):
         >>> de.new_partition('states',
         ...                  "TestState",
         ...                   codes_list=['TestStateTrue'],
-        ...                   values_list=["True"])
+        ...                   values_list=[True])
         >>> dst = de.get_output()['states']
         >>> dst[0][0]
         <InterfaceClass checkmate.states.ITestState>
@@ -144,7 +144,7 @@ class Declarator(object):
         ...                  "TestState",
         ...                   codes_list=['TestStateTrue()',
         ...                   'TestStateFalse()'],
-        ...                   values_list=['True', 'False'])
+        ...                   values_list=[True, False])
         >>> de.new_partition('exchanges',
         ...                  'TestAction(R:TestActionRequest)',
         ...                   codes_list=['AP(R)'],
@@ -188,7 +188,7 @@ class Declarator(object):
         ... ('states', [{
         ...    'clsname': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
-        ...    'values_list': ['True'],
+        ...    'values_list': [True],
         ...    'full_desc': None,
         ...    'attributes': {},
         ...    'define_attributes': {}}]),

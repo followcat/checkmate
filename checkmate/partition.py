@@ -102,10 +102,10 @@ class Partition(object):
             >>> s1 = sample_app.component.component_1_states.State()
             >>> s2 = sample_app.component.component_1_states.State()
             >>> s1.value, s2.value
-            ('True', 'True')
+            (True, True)
             >>> s1 == s2
             True
-            >>> s1.value = 'False'
+            >>> s1.value = False
             >>> s1 == s2
             False
         """
