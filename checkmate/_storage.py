@@ -81,6 +81,7 @@ class TransitionStorage(object):
         """"""
         super().__init__()
         self.name = ''
+        self.initializing = False
         self.final = []
         self.initial = []
         self.incoming = []
@@ -92,6 +93,9 @@ class TransitionStorage(object):
                 module_type = 'states'
             elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
                 module_type = 'exchanges'
+            elif _k == 'initializing' and _v == True:
+                self.initializing = True
+                continue
             elif _k == 'name':
                 self.name = _v
                 continue
@@ -120,6 +124,7 @@ class TransitionStorage(object):
 
     def factory(self):
         return checkmate.transition.Transition(tran_name=self.name,
+                                               initializing=self.initializing,
                                                initial=self.initial,
                                                incoming=self.incoming,
                                                final=self.final,
