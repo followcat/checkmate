@@ -1,7 +1,6 @@
 We should be able to define partitions from doctest
 without any reference to yaml file.
 
-    >>> import collections
     >>> import checkmate._module
     >>> import checkmate.application
     >>> import checkmate.data_structure
