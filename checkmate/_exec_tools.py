@@ -2,6 +2,8 @@ import os.path
 import inspect
 import collections
 
+import yaml
+
 import checkmate._module
 
 
@@ -45,10 +47,12 @@ def get_signature_arguments(signature, cls):
         {'R': 'R'}
         >>> checkmate._exec_tools.get_signature_arguments("AP('R2')", action)
         {'R': 'R2'}
+        >>> checkmate._exec_tools.get_signature_arguments(
+        ...     'AP([2, [3, "", null], True, AUTO])', action)
+        {'R': [2, [3, '', None], True, 'AUTO']}
     """
     found_label = signature.find('(')
-    parameters = signature[found_label:][1:-1].split(', ')
-    args = tuple([_p.strip("'") for _p in parameters if _p != ''])
+    args = tuple(yaml.load('[' + signature[found_label:][1:-1] + ']'))
     arguments = cls._sig.bind_partial(*args).arguments
     return dict(arguments)
 

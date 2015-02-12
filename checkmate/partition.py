@@ -8,7 +8,7 @@ class Partition(object):
 
     @classmethod
     @checkmate.fix_issue("checkmate/issues/default_type_in_exchange.rst")
-    @checkmate.report_issue("checkmate/issues/builtin_in_method_arguments.rst")
+    @checkmate.fix_issue("checkmate/issues/builtin_in_method_arguments.rst")
     def method_arguments(cls, arguments):
         """
             >>> import sample_app.application
