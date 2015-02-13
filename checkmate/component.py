@@ -168,6 +168,13 @@ class Component(object):
             self.states.append(cls.start(default=default_state_value, value=_value))
         self.service_registry.register(self, self.service_interfaces)
         self.default_state_value = default_state_value
+        outgoing = []
+        for transition in self.state_machine.transitions:
+            if transition.initializing:
+                outgoing.extend(self.simulate(transition))
+        if len(outgoing) > 0:
+            return outgoing
+                
 
     def reset(self):
         self.pending_incoming = []
