@@ -144,7 +144,7 @@ class Component(object):
 
     @checkmate.fix_issue("checkmate/issues/set_component_attribute_state.rst")
     @checkmate.report_issue(
-        "checkmate/issues/validate_initializing_transition.rst")
+        "checkmate/issues/validate_initializing_transition.rst", failed=2)
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application

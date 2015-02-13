@@ -1,6 +1,7 @@
 when component start, its initializing transition will be simulated.
 
         >>> import time
+        >>> import checkmate.sandbox
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
@@ -49,6 +50,12 @@ when component start, its initializing transition will be simulated.
         >>> outgoing = c2.simulate(t_out)
         >>> outgoing[0].value
         'AF'
+        
+        >>> box = checkmate.sandbox.Sandbox(
+        ...         sample_app.application.TestData())
+        >>> c1 = box.application.components['C1']
+        >>> c1.validate(t_in)
+        True
 
         >>> r = checkmate.runtime._runtime.Runtime(
         ...         sample_app.application.TestData,
