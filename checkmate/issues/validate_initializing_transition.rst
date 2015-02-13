@@ -54,7 +54,12 @@ when component start, its initializing transition will be simulated.
         ...         sample_app.application.TestData,
         ...         checkmate.runtime._pyzmq.Communication,
         ...         threaded=True)
-        >>> r.setup_environment(['C2'])
+        >>> r.setup_environment(['C3'])
+
+    send before starting the destination component of initializing
+    transition outgoing
+        >>> r.application.stubs.sort()
+        >>> r.application.stubs.reverse()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
