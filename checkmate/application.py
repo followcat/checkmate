@@ -132,7 +132,7 @@ class Application(object):
         """
         self.name = self.__module__.split('.')[-2]
         self._started = False
-        self.components = {}
+        self.components = collections.OrderedDict()
         self.service_registry = checkmate.service_registry.ServiceRegistry()
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
@@ -202,6 +202,7 @@ class Application(object):
             incoming_list += _component.get_all_validated_incoming()
         return incoming_list
 
+    @checkmate.report_issue('checkmate/issues/validated_compare_states.rst')
     def compare_states(self, target, reference_state_list=None):
         """Compare states of the application's components to target
 
