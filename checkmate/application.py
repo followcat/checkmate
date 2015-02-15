@@ -204,6 +204,7 @@ class Application(object):
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.report_issue('checkmate/issues/validated_compare_states.rst')
     def compare_states(self, target, reference_state_list=None):
         """Compare states of the application's components to target
 
