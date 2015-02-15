@@ -14,10 +14,10 @@ when component start, its initializing transition will be simulated.
         ...                 'checkmate.application', 'states')
         >>> data_source = {
         ... 'exchanges': [{
-        ...    'clsname': 'ForthAction',
+        ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'full_desc': None,
+        ...    'full_description': None,
         ...    'attributes': {},
         ...    'define_attributes': {}}]
         ... }

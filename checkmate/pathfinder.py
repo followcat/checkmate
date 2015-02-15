@@ -8,7 +8,8 @@ import checkmate.sandbox
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
 def _find_runs(application, target):
     """"""
-    used_runs = _next_run(application, target, application.run_collection, collections.OrderedDict())
+    used_runs = _next_run(application, target, application.run_collection,
+                    collections.OrderedDict())
     return used_runs
 
 
@@ -26,7 +27,8 @@ def _next_run(application, target, runs, used_runs):
                 return used_runs
             else:
                 used_runs.update({_run: box})
-                returned_runs = _next_run(box.application, target, runs, used_runs)
+                returned_runs = _next_run(box.application, target, runs,
+                                    used_runs)
                 if len(returned_runs) == 0:
                     del used_runs[_run]
                     box = checkmate.sandbox.Sandbox(application)
