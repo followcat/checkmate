@@ -22,6 +22,7 @@ class Procedure(object):
         self.initial = run.initial
         self.final = run.final
 
+
     def __call__(self, runtime, result=None, *args):
         """Run procedure in Runtime instance.
 
@@ -91,12 +92,13 @@ class Procedure(object):
         stub.simulate(self.transitions.root)
         self._follow_up(self.transitions)
 
-        if hasattr(self, 'final'):
+        if hasattr(self.transitions, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(
                 checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.runtime.application.compare_states(self.final,
-                            saved_initial.application.state_list())
+                return self.transitions.compare_final(
+                            self.runtime.application,
+                            saved_initial.application)
             if not check_compare_states():
                 self.logger.error(
                     'Procedure Failed: Final states are not as expected')

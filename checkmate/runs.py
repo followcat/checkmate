@@ -54,6 +54,12 @@ class Run(checkmate._tree.Tree):
             if self.itp_run is not None:
                 self._final = self.itp_run.root.final
 
+    def compare_initial(self, application):
+        return application.compare_states(self.initial)
+
+    def compare_final(self, application, reference):
+        return application.compare_states(self.final, reference.state_list())
+
     def add_node(self, tree):
         self._initial = None
         self._final = None
