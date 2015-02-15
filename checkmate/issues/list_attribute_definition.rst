@@ -2,8 +2,8 @@ This shows how to define an exchange using a list as attribute.
 
     >>> import checkmate._module
     >>> import checkmate.partition_declarator
-    >>> import sample_app.exchanges
     >>> import sample_app.application
+    >>> import sample_app.exchanges
     >>> import sample_app.component.component_1_states
 
     >>> exchange_module = checkmate._module.get_module(
@@ -77,8 +77,8 @@ A VAR_POSITIONAL parameter is turned into a list:
     >>> sample_app.exchanges.Exchange._sig.parameters['L']._kind
     <_ParameterKind: 'VAR_POSITIONAL'>
     >>> type(ex.L)
-    list
-    >>> len(ex.L) == len(_list)
+    <class 'list'>
+    >>> len(ex.L) == len(['IT', 'IT'])
     True
 
 The items in the list will be instantiated using the type
