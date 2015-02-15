@@ -25,10 +25,10 @@ The application.compare_states should get True.
     >>> ac.carbon_copy(add_ac)
     >>> add_ac.R.C = 'AT2'
 
-    >>> box_app.compare_states(runs[0].final, compare_app1.state_list())
+    >>> runs[0].compare_final(box_app, compare_app1)
     True
     >>> c2.validation_list[-1].append(add_ac)
     >>> c2.validation_list.validated_items[-1].append(add_ac)
-    >>> box_app.compare_states(runs[0].final, compare_app2.state_list())
+    >>> runs[0].compare_final(box_app, compare_app2)
     True
 
