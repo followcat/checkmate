@@ -45,12 +45,15 @@ when component start, its initializing transition will be simulated.
         ...     sample_app.exchanges.IForthAction)
         >>> app = sample_app.application.TestData()
         >>> app.start()
+        >>> app.initializing_outgoing #doctest: +ELLIPSIS
+        [[<sample_app.exchanges.ForthAction object at ...
+
         >>> c1 = app.components['C1']
         >>> c2 = app.components['C2']
         >>> outgoing = c2.simulate(t_out)
         >>> outgoing[0].value
         'AF'
-        
+
         >>> box = checkmate.sandbox.Sandbox(
         ...         sample_app.application.TestData())
         >>> c1 = box.application.components['C1']

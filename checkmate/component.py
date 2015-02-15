@@ -174,7 +174,6 @@ class Component(object):
                 outgoing.extend(self.simulate(transition))
         if len(outgoing) > 0:
             return outgoing
-                
 
     def reset(self):
         self.pending_incoming = []
