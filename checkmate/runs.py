@@ -75,9 +75,12 @@ class Run(checkmate._tree.Tree):
             for name, component in application.components.items():
                 if run.root in component.state_machine.transitions:
                     for final in run.root.final:
-                        state = [_s for _s in box.application.components[name].states
+                        state = [_s for _s in
+                                 box.application.components[name].states
                                  if final.interface.providedBy(_s)][0]
-                        index = box.application.components[name].states.index(state)
+                        index = \
+                            box.application.components[name].states.index(
+                                state)
                         incoming = \
                             component.validation_list.validated_items[
                                 component.validation_list.transitions.index(
