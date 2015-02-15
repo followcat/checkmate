@@ -55,19 +55,12 @@ class Run(checkmate._tree.Tree):
                 self._final = self.itp_run.root.final
 
     def compare_initial(self, application):
-        if len(self.initial) == 0:
-            return True
-
-        local_copy = application.state_list()[:]
-
-        match_list = []
-        for _target in self.initial:
-            _length = len(local_copy)
-            match_item = _target.match(local_copy)
-            if match_item is not None:
-                match_list.append(match_item)
-                local_copy.remove(match_item)
-            if len(local_copy) == _length:
+        for run in self.breadthWalk():
+            for component in application.components.values():
+                if run.root in component.state_machine.transitions:
+                    if run.root.is_matching_initial(component.states):
+                        break
+            else:
                 return False
         return True
 
