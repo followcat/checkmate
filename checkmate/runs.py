@@ -55,6 +55,7 @@ class Run(checkmate._tree.Tree):
                 self._final = self.itp_run.root.final
 
     def compare_initial(self, application):
+        """"""
         for run in self.breadthWalk():
             for component in application.components.values():
                 if run.root in component.state_machine.transitions:
@@ -67,23 +68,35 @@ class Run(checkmate._tree.Tree):
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_final(self, application, reference):
-        if len(self.final) == 0:
-            return True
-
-        local_copy = application.state_list()[:]
-        reference_state_list = reference.state_list()
-        incoming_list = application.validated_incoming_list()
-
-        match_list = []
-        for _target in self.final:
-            _length = len(local_copy)
-            match_item = _target.match(local_copy, reference_state_list,
-                            incoming_list)
-            if match_item is not None:
-                match_list.append(match_item)
-                local_copy.remove(match_item)
-            if len(local_copy) == _length:
-                return False
+        """"""
+        box = checkmate.sandbox.Sandbox(reference)
+        for run in self.breadthWalk():
+            for name, component in application.components.items():
+                if run.root in component.state_machine.transitions:
+                    for final in run.root.final:
+                        state = [_s for _s in box.application.components[name].states
+                                 if final.interface.providedBy(_s)][0]
+                        index = box.application.components[name].states.index(state)
+                        incoming = \
+                            component.validation_list.validated_items[
+                                component.validation_list.transitions.index(
+                                    run.root)]
+                        _arguments = \
+                            final.resolve(
+                                box.application.components[name].states,
+                                incoming)
+                        final.factory(instance=state, **_arguments)
+                        if state == component.states[index]:
+                            _found = True
+                        else:
+                            _found = False
+                            break
+                    else:
+                        _found = True
+                else:
+                    continue
+                if not _found:
+                    return False
         return True
 
     def add_node(self, tree):
