@@ -117,7 +117,7 @@ class ApplicationMeta(type):
 
 
 class Application(object):
-    component_classes = {}
+    component_classes = []
     communication_list = {}
     feature_definition_path = None
 
@@ -132,7 +132,7 @@ class Application(object):
         """
         self.name = self.__module__.split('.')[-2]
         self._started = False
-        self.components = {}
+        self.components = collections.OrderedDict()
         self.service_registry = checkmate.service_registry.ServiceRegistry()
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
