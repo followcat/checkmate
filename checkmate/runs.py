@@ -55,12 +55,43 @@ class Run(checkmate._tree.Tree):
                 self._final = self.itp_run.root.final
 
     def compare_initial(self, application):
-        return application.compare_states(self.initial)
+        if len(self.initial) == 0:
+            return True
+
+        local_copy = application.state_list()[:]
+
+        match_list = []
+        for _target in self.initial:
+            _length = len(local_copy)
+            match_item = _target.match(local_copy)
+            if match_item is not None:
+                match_list.append(match_item)
+                local_copy.remove(match_item)
+            if len(local_copy) == _length:
+                return False
+        return True
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_final(self, application, reference):
-        return application.compare_states(self.final, reference.state_list())
+        if len(self.final) == 0:
+            return True
+
+        local_copy = application.state_list()[:]
+        reference_state_list = reference.state_list()
+        incoming_list = application.validated_incoming_list()
+
+        match_list = []
+        for _target in self.final:
+            _length = len(local_copy)
+            match_item = _target.match(local_copy, reference_state_list,
+                            incoming_list)
+            if match_item is not None:
+                match_list.append(match_item)
+                local_copy.remove(match_item)
+            if len(local_copy) == _length:
+                return False
+        return True
 
     def add_node(self, tree):
         self._initial = None
