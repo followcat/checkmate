@@ -204,6 +204,7 @@ class Application(object):
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.report_issue('checkmate/issues/validated_compare_states.rst')
     def compare_states(self, target, reference_state_list=None):
         """Compare states of the application's components to target
 
@@ -215,10 +216,10 @@ class Application(object):
             >>> app.start()
             >>> c1 = app.components['C1']
             >>> c1.states[0].value
-            'True'
+            True
             >>> t = c1.state_machine.transitions[0]
             >>> t.initial[0].values
-            ('True',)
+            (True,)
             >>> app.compare_states(t.initial)
             True
             >>> target = t.initial + t.initial

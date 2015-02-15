@@ -18,7 +18,7 @@ We should be able to use python default types when defining exchanges:
     ...     'partition_type': 'exchanges',
     ...     'signature': 'BO(F:bool)',
     ...     'codes_list': ['B1'],
-    ...     'values_list': ['TRUE'],
+    ...     'values_list': [True],
     ...     }
     >>> par = de.new_partition(items)
 

@@ -18,7 +18,7 @@ without any reference to yaml file.
     ...     'partition_type': 'exchanges',
     ...     'signature': 'RC',
     ...     'codes_list': ['P1'],
-    ...     'values_list': ['TRUE'],
+    ...     'values_list': [True],
     ...     }
     >>> par = de.new_partition(items)
 
@@ -26,5 +26,5 @@ The partition should be returned by get_output()
 even if no transition is provided.
 
     >>> de.get_output()['exchanges'] # doctest: +ELLIPSIS
-    [(<InterfaceClass checkmate.exchanges.IRC>, ...
+    [(<InterfaceClass checkmate.exchanges.IRC>, <checkmate._storage.PartitionStorage object at ...
 
