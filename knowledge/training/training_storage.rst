@@ -28,7 +28,7 @@ By calling this factory method, we will create different object that will be eit
     >>> final = transition.final[0].factory()
     >>> type(final)
     <class 'sample_app.component.component_1_state.State'>
-    >>> incoming.action == 'AC' and final.value == 'False'
+    >>> incoming.action == 'AC' and final.value == False
     True
 
 Internally this factory is powered by the function attribute of the InternalStorage.

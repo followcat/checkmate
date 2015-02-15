@@ -109,7 +109,7 @@ class Declarator(object):
         ...     'partition_type': 'states',
         ...     'signature': "TestState",
         ...     'codes_list': ['TestStateTrue'],
-        ...     'values_list': ['True'],
+        ...     'values_list': [True],
         ...     }
         >>> de.new_partition(items)
         >>> dst = de.get_output()['states']
@@ -166,7 +166,7 @@ class Declarator(object):
         ...     'partition_type': 'states',
         ...     'signature': 'TestState',
         ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
-        ...     'values_list': ['True', 'False'],
+        ...     'values_list': [True, False],
         ...     }
         >>> de.new_partition(items)
         >>> items = {
@@ -213,7 +213,7 @@ class Declarator(object):
         ... ('states', [{
         ...    'signature': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
-        ...    'values_list': ['True'],
+        ...    'values_list': [True],
         ...    'full_description': None,
         ...    'attributes': {},
         ...    'define_attributes': {}}]),

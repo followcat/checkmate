@@ -59,7 +59,7 @@ initial state:
     >>> [_s.value for _s in state_list
     ...  if isinstance(_s,
     ...         sample_app.component.component_1_states.State)]
-    ['False']
+    [False]
     >>> [_s.R.C.value for _s in state_list
     ...  if isinstance(_s,
     ...         sample_app.component.component_1_states.AnotherState)]
@@ -67,7 +67,7 @@ initial state:
     >>> [_s.value for _s in state_list
     ...  if isinstance(_s,
     ...         sample_app.component.component_3_states.Acknowledge)]
-    ['False']
+    [False]
 
 Can not run sandbox:
 
@@ -78,4 +78,3 @@ Recover transition:
 
     >>> r.application.components['C1'].state_machine.transitions[1] = \
     ...     save_transition
-
