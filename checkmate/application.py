@@ -202,8 +202,6 @@ class Application(object):
             incoming_list += _component.get_all_validated_incoming()
         return incoming_list
 
-    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
-    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_states(self, target, reference_state_list=None):
         """Compare states of the application's components to target
 

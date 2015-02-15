@@ -57,6 +57,8 @@ class Run(checkmate._tree.Tree):
     def compare_initial(self, application):
         return application.compare_states(self.initial)
 
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     def compare_final(self, application, reference):
         return application.compare_states(self.final, reference.state_list())
 
