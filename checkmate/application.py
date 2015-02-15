@@ -202,29 +202,6 @@ class Application(object):
             incoming_list += _component.get_all_validated_incoming()
         return incoming_list
 
-    def compare_states(self, target, reference_state_list=None):
-        """Compare states of the application's components to target"""
-        if len(target) == 0:
-            return True
-
-        local_copy = self.state_list()[:]
-
-        incoming_list = []
-        if reference_state_list is not None:
-            incoming_list = self.validated_incoming_list()
-
-        match_list = []
-        for _target in target:
-            _length = len(local_copy)
-            match_item = _target.match(local_copy, reference_state_list,
-                            incoming_list)
-            if match_item is not None:
-                match_list.append(match_item)
-                local_copy.remove(match_item)
-            if len(local_copy) == _length:
-                return False
-        return True
-
     def visual_dump_states(self):
         state_dict = {}
         for _c, _v in self.components.items():
