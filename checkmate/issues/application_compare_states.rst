@@ -2,6 +2,7 @@ This comparison is taking the length of the target into account.
 If a matching state is twice in the target, the comparison should
 still be ok.
 
+    >>> import checkmate.runs
     >>> import sample_app.application
     >>> app = sample_app.application.TestData()
     >>> app.start()
@@ -11,8 +12,9 @@ still be ok.
     >>> t = c1.state_machine.transitions[0]
     >>> t.initial[0].values
     (True,)
-    >>> app.compare_states(t.initial)
+    >>> run = checkmate.runs.Run(t)
+    >>> run.compare_initial(app)
     True
     >>> target = t.initial + t.initial
-    >>> app.compare_states(target)
+    >>> run.compare_initial(app)
     True
