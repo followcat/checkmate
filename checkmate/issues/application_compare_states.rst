@@ -1,6 +1,6 @@
 This comparison is taking the length of the target into account.
-If a matching state is twice in the target, the comparison will
-fail. This should probably be fixed.
+If a matching state is twice in the target, the comparison should
+still be ok.
 
     >>> import sample_app.application
     >>> app = sample_app.application.TestData()
@@ -15,4 +15,4 @@ fail. This should probably be fixed.
     True
     >>> target = t.initial + t.initial
     >>> app.compare_states(target)
-    False
+    True
