@@ -68,7 +68,7 @@ class Run(checkmate._tree.Tree):
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     @checkmate.fix_issue('checkmate/issues/validated_compare_states.rst')
-    @checkmate.report_issue("checkmate/issues/application_compare_states.rst")
+    @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
     def compare_final(self, application, reference):
         """"""
         box = checkmate.sandbox.Sandbox(reference)
