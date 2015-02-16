@@ -3,7 +3,9 @@ import checkmate.exception
 
 
 class Sandbox(object):
-    def __init__(self, application, initial_transitions=[]):
+    def __init__(self, application_class, application=None,
+            initial_transitions=[]):
+        self.application_class = application_class
         self.initial_application = application
         self.initial_transitions = initial_transitions
         self.start()
@@ -15,7 +17,7 @@ class Sandbox(object):
             >>> import sample_app.exchanges
             >>> import sample_app.application
             >>> _cls = sample_app.application.TestData
-            >>> box = checkmate.sandbox.Sandbox(_cls(),
+            >>> box = checkmate.sandbox.Sandbox(_cls, _cls(),
             ... [_cls().components['C3'].state_machine.transitions[1]])
             >>> box.application.components['C1'].states[0].value
             'True'
@@ -28,41 +30,57 @@ class Sandbox(object):
             ...         [sample_app.exchanges.Action('AC')])
             >>> app.components['C1'].states[0].value
             'False'
-            >>> box = checkmate.sandbox.Sandbox(app)
+            >>> box = checkmate.sandbox.Sandbox(_cls, app)
             >>> box.application.components['C1'].states[0].value
             'False'
         """
         self.final = []
         self.initial = []
         self.transitions = None
-        self.application = type(self.initial_application)()
-        self.application.start(self.initial_application.default_state_value)
-
-        for component in self.application.components.values():
-            for interface in [_d[0] for _d in component.state_machine.states]:
-                done = False
-                for state in component.states:
-                    if not interface.providedBy(state):
-                        continue
-                    init_components = self.initial_application.components
-                    for init_state in init_components[component.name].states:
-                        if not interface.providedBy(init_state):
+        self.application = self.application_class()
+        if self.initial_application is None:
+            self.application.start()
+            for outgoing in self.application.initializing_outgoing:
+                for _o in outgoing:
+                    for _d in _o.destination:
+                        component = self.application.components[_d]
+                        transitions = component.get_transitions_by_input([_o])
+                        _run = checkmate.runs.Run(transitions[0], [])
+                        if not self.__call__(_run):
+                            raise \
+                                RuntimeError("Applicaiton initializing Failed")
+        else:
+            self.application.start(
+                self.initial_application.default_state_value)
+            for component in self.application.components.values():
+                for interface in [_d[0] for _d in 
+                                  component.state_machine.states]:
+                    done = False
+                    for state in component.states:
+                        if not interface.providedBy(state):
                             continue
-                        state.carbon_copy(init_state)
-                        done = True
-                        break
-                    for transition in self.initial_transitions:
-                    # if state not match self.initial_transitions[0]'s
-                    # initial, the loop will break if done is True
-                        for initial in transition.initial:
-                            if not initial.interface.providedBy(state):
+                        init_components = self.initial_application.components
+                        for init_state in 
+                            init_components[component.name].states:
+                            if not interface.providedBy(init_state):
                                 continue
-                            state.carbon_copy(
-                                initial.factory(**initial.resolve()))
+                            state.carbon_copy(init_state)
                             done = True
                             break
                         if done:
                             break
+        
+        for transition in self.initial_transitions:
+            for initial in transition.initial:
+                done = False
+                for component in self.application.components.values():
+                    for state in component.states:
+                        if not initial.interface.providedBy(state):
+                            continue
+                        state.carbon_copy(
+                            initial.factory(**initial.resolve()))
+                        done = True
+                        break
                     if done:
                         break
 
@@ -75,8 +93,8 @@ class Sandbox(object):
             >>> import checkmate.sandbox
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> app = sample_app.application.TestData()
-            >>> box = checkmate.sandbox.Sandbox(app)
+            >>> _cls = sample_app.application.TestData
+            >>> box = checkmate.sandbox.Sandbox(_cls)
             >>> c1 = box.application.components['C1']
             >>> c1.states[0].value
             'True'
@@ -129,8 +147,8 @@ class Sandbox(object):
         """
             >>> import checkmate.sandbox
             >>> import sample_app.application
-            >>> app = sample_app.application.TestData()
-            >>> box = checkmate.sandbox.Sandbox(app)
+            >>> _cls = sample_app.application.TestData
+            >>> box = checkmate.sandbox.Sandbox(_cls)
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
             >>> runs = box.application.run_collection
@@ -193,7 +211,8 @@ class CollectionSandbox(Sandbox):
                 _c = sandbox.application.components[_d]
                 _transitions = _c.get_transitions_by_input([_exchange])
                 for _t in _transitions:
-                    new_sandbox = Sandbox(sandbox.application)
+                    _app = sandbox.application
+                    new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _t)
                     split_runs = \

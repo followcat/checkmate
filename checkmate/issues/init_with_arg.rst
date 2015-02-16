@@ -21,7 +21,9 @@ It is impossible to specify the final state by providing arguments
     ... 
     >>> r.application.compare_states(runs[1].initial)
     True
-    >>> saved_initial = checkmate.sandbox.Sandbox(r.application)
+    >>> saved_initial = \
+    ...     checkmate.sandbox.Sandbox(type(r.application),
+    ...         r.application)
     >>> r.execute(runs[1])
     >>> runs[1].final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...

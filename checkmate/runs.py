@@ -131,14 +131,16 @@ class Run(checkmate._tree.Tree):
 def get_runs_from_application(application):
     runs = []
     origin_transitions = []
-    application = type(application)()
+    _class = type(application)
+    application = _class()
     application.start(default_state_value=False)
     for _component in application.components.values():
         for _transition in _component.state_machine.transitions:
             if not len(_transition.incoming):
                 origin_transitions.append(_transition)
     for _o in origin_transitions:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        sandbox = \
+            checkmate.sandbox.CollectionSandbox(_class, application)
         run = checkmate.runs.Run(_o)
         for _run in sandbox(run):
             runs.append(_run)
@@ -148,13 +150,12 @@ def get_runs_from_application(application):
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = checkmate.runs.Run(transition)
+    _class = type(application)
     if itp_transition:
-        application = type(application)()
-        application.start()
         sandbox = checkmate.sandbox.CollectionSandbox(
-                    application, transition_run.walk())
+                    _class, application, transition_run.walk())
     else:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
     for _run in sandbox(transition_run, itp_run=itp_transition):
         runs.append(_run)
     return runs

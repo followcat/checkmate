@@ -12,7 +12,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> components = list(_application.components.keys())
     >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(_application)
     >>> _run = run_list[0]
-    >>> box = checkmate.sandbox.Sandbox(_application, [_run.root])
+    >>> box = checkmate.sandbox.Sandbox(type(_application), initial_transitions=[_run.root])
     >>> box(_run, itp_run=True)
     True
     >>> run = box.transitions

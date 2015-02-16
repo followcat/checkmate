@@ -19,7 +19,7 @@ def _next_run(application, target, runs, used_runs):
     for _run in runs:
         if _run in used_runs:
             continue
-        box = checkmate.sandbox.Sandbox(application)
+        box = checkmate.sandbox.Sandbox(type(application), application)
         box(_run)
         if box.is_run:
             if box.application.compare_states(target):
@@ -31,7 +31,8 @@ def _next_run(application, target, runs, used_runs):
                                     used_runs)
                 if len(returned_runs) == 0:
                     del used_runs[_run]
-                    box = checkmate.sandbox.Sandbox(application)
+                    box = checkmate.sandbox.Sandbox(\
+                            type(application), application)
                     continue
                 else:
                     return returned_runs

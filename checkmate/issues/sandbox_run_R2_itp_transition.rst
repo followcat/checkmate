@@ -53,8 +53,8 @@ Make an itp transition which initial state is AnotherState1(R2):
 All state in sandbox.application will be set as the run_transition
 initial state:
 
-    >>> box = checkmate.sandbox.Sandbox(r.application,
-    ...         [per_transition, run_transition])
+    >>> box = checkmate.sandbox.Sandbox(type(r.application),
+    ...         r.application, [per_transition, run_transition])
     >>> state_list = box.application.state_list()
     >>> [_s.value for _s in state_list
     ...  if isinstance(_s,
