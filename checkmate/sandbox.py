@@ -60,7 +60,7 @@ class Sandbox(object):
                         if not interface.providedBy(state):
                             continue
                         init_components = self.initial_application.components
-                        for init_state in 
+                        for init_state in \
                             init_components[component.name].states:
                             if not interface.providedBy(init_state):
                                 continue
