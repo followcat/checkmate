@@ -17,8 +17,10 @@ class Sandbox(object):
             >>> import sample_app.exchanges
             >>> import sample_app.application
             >>> _cls = sample_app.application.TestData
-            >>> box = checkmate.sandbox.Sandbox(_cls, _cls(),
-            ... [_cls().components['C3'].state_machine.transitions[1]])
+            >>> c3 = _cls().components['C3']
+            >>> transitions = [c3.state_machine.transitions[1]]
+            >>> box = checkmate.sandbox.Sandbox(_cls,
+            ...         initial_transitions=transitions)
             >>> box.application.components['C1'].states[0].value
             'True'
             >>> box.application.components['C3'].states[0].value
