@@ -42,8 +42,8 @@ def make_partition(module,
     if defined_class.__name__ in data_value:
         code_arguments.update(data_value[defined_class.__name__])
     partition_storage = checkmate._storage.PartitionStorage(
-                            partition_type, defined_interface,
-                            code_arguments, full_description)
+                            defined_interface, code_arguments,
+                            full_description)
     setattr(defined_class, 'define_attributes', define_attributes)
     setattr(defined_class, 'partition_storage', partition_storage)
     return (defined_interface, partition_storage)
