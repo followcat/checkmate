@@ -92,51 +92,59 @@ def get_exec_signature(signature, exec_module=None,
     failed=2)
 def get_define_str(element):
     run_code = """
-            \nimport inspect
-            \nimport zope.interface
-            \n
-            \nimport {i}
-            \n
-            \nclass {e.interface_class}({e.interface_ancestor_class}):
-            \n    \"\"\"\"\"\"
-            \n
-            \n
-            \n@zope.interface.implementer({e.interface_class})
-            \nclass {e.classname}({e.ancestor_class}):
-            \n    import inspect
-            \n    _valid_values = {e.values}
-            \n    def __init__(self, value=None, *args,
-                               default=True, **kwargs):
-            \n        for _k,_v in self.__class__._annotated_values.items():
-            \n            if _k not in kwargs or kwargs[_k] is None:
-            \n                try:
-            \n                    kwargs[_k] = _v(default=default)
-            \n                except TypeError:
-            \n                    kwargs[_k] = _v()
-            \n            else:
-            \n                _v = self.__class__._construct_values[_k]
-            \n                if not isinstance(kwargs[_k], _v):
-            \n                    if isinstance(kwargs[_k], dict):
-            \n                        kwargs[_k] = _v(default=default,
-                                                        **kwargs[_k])
-            \n                    else:
-            \n                        kwargs[_k] = _v(kwargs[_k],
-                                                        default=default)
-            \n        super().__init__(value, *args, default=default, **kwargs)
-            \n
+\nimport inspect
+\nimport zope.interface
+\n
+\nimport {i}
+\n
+\nclass {e.interface_class}({e.interface_ancestor_class}):
+\n    \"\"\"\"\"\"
+\n
+\n
+\n@zope.interface.implementer({e.interface_class})
+\nclass {e.classname}({e.ancestor_class}):
+\n    import inspect
+\n    _valid_values = {e.values}
+\n    def __init__(self, value=None, *args,
+                   default=True, **kwargs):
+\n        for _k,_v in self.__class__._annotated_values.items():
+\n            if _k not in kwargs or kwargs[_k] is None:
+\n                try:
+\n                    if self.__class__._sig.parameters[_k].kind == \
+                         inspect.Parameter.VAR_POSITIONAL:
+\n                        kwargs[_k] = []
+\n                    else:
+\n                        kwargs[_k] = _v(default=default)
+\n                except TypeError:
+\n                    kwargs[_k] = _v()
+\n            else:
+\n                _v = self.__class__._construct_values[_k]
+\n                if not isinstance(kwargs[_k], _v):
+\n                    if isinstance(kwargs[_k], dict):
+\n                        kwargs[_k] = _v(default=default,
+                                            **kwargs[_k])
+\n                    elif isinstance(kwargs[_k], tuple) and \
+                            self.__class__._sig.parameters[_k].kind == \
+                            inspect.Parameter.VAR_POSITIONAL:
+\n                        kwargs[_k] = [_v(item) for item in kwargs[_k][0]]
+\n                    else:
+\n                        kwargs[_k] = _v(kwargs[_k],
+                                            default=default)
+\n        super().__init__(value, *args, default=default, **kwargs)
+\n
             """.format(i=os.path.splitext(element.ancestor_class)[0],
                        e=element)
 
     run_code += """
-            \n    @property
-            \n    def return_type(self):
-            \n        return self._sig.return_annotation
+\n    @property
+\n    def return_type(self):
+\n        return self._sig.return_annotation
         """
     for _k, _v in element.attributes.items():
         if type(_v) == str:
             _v = _v.join('""')
         run_code += """
-                \n    {key} = {value}
+\n    {key} = {value}
             """.format(key=_k, value=_v)
     return run_code
 
