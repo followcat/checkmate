@@ -74,6 +74,7 @@ class Run(checkmate._tree.Tree):
         box = checkmate.sandbox.Sandbox(reference)
         for run in self.breadthWalk():
             for name, component in application.components.items():
+                _found = False
                 if run.root in component.state_machine.transitions:
                     for final in run.root.final:
                         state = [_s for _s in
@@ -97,11 +98,14 @@ class Run(checkmate._tree.Tree):
                             _found = False
                             break
                     else:
+                        assert(_found or len(run.root.final) == 0)
                         _found = True
                 else:
                     continue
-                if not _found:
-                    return False
+                if _found:
+                    break
+            else:
+                return False
         return True
 
     def add_node(self, tree):
