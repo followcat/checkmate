@@ -37,7 +37,7 @@ As we know the application is only containing static components. They will be st
 
     >>> r.start_test()
     >>> r.application.components['C1'].states[0].value
-    'True'
+    True
 
 The runtime is also keeping reference to the dynamic component using a global registry:
 
@@ -67,7 +67,7 @@ The component states have been updated dynamically
 
     >>> c1 = r.runtime_components['C1']
     >>> c1.context.states[0].value
-    'False'
+    False
 
 We should stress that there is usually no way to access the system under test state.
 It can be done because c1 is not the system under test but only the sut:

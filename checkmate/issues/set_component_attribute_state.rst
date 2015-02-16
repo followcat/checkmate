@@ -19,17 +19,17 @@ Should be able to set component state with component instance's attribute
     to set state 'InitState' from attribute ID
         >>> data_source = collections.OrderedDict([
         ... ('data_structure', [{
-        ...     'clsname': 'Identify',
+        ...     'signature': 'Identify',
         ...     'codes_list': [],
         ...     'values_list': [],
-        ...     'full_desc': None,
+        ...     'full_description': None,
         ...     'attributes': {},
         ...     'define_attributes': {}}]),
         ... ('exchanges', [{
-        ...    'clsname': 'IDAction(I:Identify)',
+        ...    'signature': 'IDAction(I:Identify)',
         ...    'codes_list': ['IDA()'],
         ...    'values_list': ['IDA'],
-        ...    'full_desc': None,
+        ...    'full_description': None,
         ...    'attributes': {},
         ...    'define_attributes': {}}])
         ... ])

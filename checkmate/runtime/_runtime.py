@@ -28,15 +28,23 @@ class Runtime(object):
             self.communication_list[_k] = _c()
 
         if self.threaded:
-            self._registry.registerAdapter(checkmate.runtime.component.ThreadedStub,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.IStub)
-            self._registry.registerAdapter(checkmate.runtime.component.ThreadedSut,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.ISut)
+            self._registry.registerAdapter(
+                checkmate.runtime.component.ThreadedStub,
+                (checkmate.interfaces.IComponent,),
+                checkmate.runtime.interfaces.IStub)
+            self._registry.registerAdapter(
+                checkmate.runtime.component.ThreadedSut,
+                (checkmate.interfaces.IComponent,),
+                checkmate.runtime.interfaces.ISut)
         else:
-            self._registry.registerAdapter(checkmate.runtime.component.Stub,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.IStub)
-            self._registry.registerAdapter(checkmate.runtime.component.Sut,
-                                                                       (checkmate.interfaces.IComponent,), checkmate.runtime.interfaces.ISut)
+            self._registry.registerAdapter(
+                checkmate.runtime.component.Stub,
+                (checkmate.interfaces.IComponent,),
+                checkmate.runtime.interfaces.IStub)
+            self._registry.registerAdapter(
+                checkmate.runtime.component.Sut,
+                (checkmate.interfaces.IComponent,),
+                checkmate.runtime.interfaces.ISut)
 
     def setup_environment(self, sut):
         args_to_log = sys.argv[:]
@@ -47,16 +55,21 @@ class Runtime(object):
         else:
             args_to_log.append('--sut=' + ','.join(sut))
 
-        logging.getLogger('checkmate.runtime._runtime.Runtime').info("%s" % args_to_log)
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info(
+            "%s" % args_to_log)
         self.application.sut(sut)
 
         for component in self.application.stubs:
-            stub = self._registry.getAdapter(self.application.components[component], checkmate.runtime.interfaces.IStub)
+            stub = self._registry.getAdapter(
+                self.application.components[component],
+                checkmate.runtime.interfaces.IStub)
             self.runtime_components[component] = stub
             stub.setup(self)
 
         for component in self.application.system_under_test:
-            sut = self._registry.getAdapter(self.application.components[component], checkmate.runtime.interfaces.ISut)
+            sut = self._registry.getAdapter(
+                self.application.components[component],
+                checkmate.runtime.interfaces.ISut)
             self.runtime_components[component] = sut
             sut.setup(self)
 
@@ -83,7 +96,8 @@ class Runtime(object):
             >>> checkmate.runtime.interfaces.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
-            >>> simulated_transition = a.components['C2'].state_machine.transitions[0]
+            >>> simulated_transition = a.components['C2'].state_machine.\
+                                        transitions[0]
             >>> o = c2_stub.simulate(simulated_transition) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c1)
@@ -95,7 +109,8 @@ class Runtime(object):
         for communication in self.communication_list.values():
             communication.start()
         # Start stubs first
-        component_list = self.application.stubs + self.application.system_under_test
+        component_list = self.application.stubs +\
+                            self.application.system_under_test
         for name in component_list:
             _component = self.runtime_components[name]
             _component.start()
@@ -103,10 +118,11 @@ class Runtime(object):
 
     def stop_test(self):
         # Stop stubs last
-        for name in self.application.system_under_test + self.application.stubs:
+        for name in self.application.system_under_test +\
+                        self.application.stubs:
             _component = self.runtime_components[name]
             _component.stop()
-            #if self.threaded:
+            # if self.threaded:
             #    _component.join()
         for communication in self.communication_list.values():
             communication.close()
@@ -115,35 +131,34 @@ class Runtime(object):
             return len(threading.enumerate()) == 1
         condition = threading.Condition()
         with condition:
-            condition.wait_for(check_threads, checkmate.timeout_manager.THREAD_STOP_SEC)
-
-    def build_procedure(self, run):
-        proc = checkmate.runtime.procedure.Procedure()
-        run.fill_procedure(proc)
-        return proc
+            condition.wait_for(check_threads,
+                                checkmate.timeout_manager.THREAD_STOP_SEC)
 
     def execute(self, run, result=None, transform=True):
-        procedure = self.build_procedure(run)
-        if procedure.transitions.root.owner in self.application.system_under_test:
-            return checkmate.runtime.procedure._compatible_skip_test(procedure, "SUT do NOT simulate")
-        if transform is True and not self.transform_to_procedure_initial(procedure):
-            return checkmate.runtime.procedure._compatible_skip_test(procedure, "Procedure components states do not match Initial")
+        if run.root.owner in self.application.system_under_test:
+            return checkmate.runtime.procedure._compatible_skip_test(
+                        "SUT do not simulate")
+        if transform is True and not self.transform_to_initial(run):
+            return checkmate.runtime.procedure._compatible_skip_test(
+                        "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
         try:
-            procedure(self, result)
+            checkmate.runtime.procedure.Procedure(run)(self, result)
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
-        logging.getLogger('checkmate.runtime._runtime.Runtime').info('Procedure Done')
+        logging.getLogger('checkmate.runtime._runtime.Runtime').info(
+            'Procedure done')
 
-    def transform_to_procedure_initial(self, procedure):
-        if not self.application.compare_states(procedure.initial):
-            run_list = list(checkmate.pathfinder._find_runs(self.application, procedure.initial).keys())
+    def transform_to_initial(self, run):
+        if not self.application.compare_states(run.initial):
+            run_list = list(checkmate.pathfinder._find_runs(
+                            self.application, run.initial).keys())
             if len(run_list) == 0:
-                checkmate.runtime.procedure._compatible_skip_test(procedure, "Can't find a path to inital state")
+                checkmate.runtime.procedure._compatible_skip_test(
+                    "Can't find a path to initial state")
                 return False
             for run in run_list:
-                proc = self.build_procedure(run)
-                proc(self)
+                checkmate.runtime.procedure.Procedure(run)(self)
         return True

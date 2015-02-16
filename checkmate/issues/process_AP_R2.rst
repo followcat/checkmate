@@ -29,8 +29,14 @@ define a transition to to process AP(R2)
     ('AT1', 'NORM')
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-    >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
+    >>> c1_states = sample_app.component.component_1_states
+    >>> module_dict = {'states': [c1_states],
+    ...                'exchanges':[sample_app.exchanges]}
+    >>> item = {'name': 'Toggle TestState tran01',
+    ...         'initial': [{'AnotherState': 'AnotherState1()'}],
+    ...         'outgoing': [{'ThirdAction': 'DA()'}],
+    ...         'incoming': [{'Action': 'AP(R2)'}],
+    ...         'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> t.is_matching_incoming([ap_r1])
@@ -57,8 +63,14 @@ Setup:
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
-    >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-    >>> item = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'outgoing': [{'ThirdAction': 'DA()'}], 'incoming': [{'Action': 'AP(R2)'}], 'final': [{'AnotherState': 'append(R2)'}]}
+    >>> c1_states = sample_app.component.component_1_states
+    >>> module_dict = {'states': [c1_states],
+    ...                'exchanges':[sample_app.exchanges]}
+    >>> item = {'name': 'Toggle TestState tran01',
+    ...         'initial': [{'AnotherState': 'AnotherState1()'}],
+    ...         'outgoing': [{'ThirdAction': 'DA()'}],
+    ...         'incoming': [{'Action': 'AP(R2)'}],
+    ...         'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> saved_transition = c1.state_machine.transitions[1]

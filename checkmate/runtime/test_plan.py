@@ -2,7 +2,6 @@ import os.path
 
 import checkmate.runs
 import checkmate.sandbox
-import checkmate.runtime.procedure
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
@@ -61,15 +60,14 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> o = c2.simulate(simulated_transition) # doctest: +ELLIPSIS
         >>> time.sleep(1)
         >>> c1.context.states[0].value
-        'False'
-        >>> c3.context.states[0].value
-        'True'
-        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> runs = [run[0] for run in gen]
-        >>> proc = r.build_procedure(runs[0])
-        >>> r.application.compare_states(proc.initial)
         False
-        >>> r.execute(runs[0], transform=True)
+        >>> c3.context.states[0].value
+        True
+        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
+        >>> run = [run[0] for run in gen][0]
+        >>> r.application.compare_states(run.initial)
+        False
+        >>> r.execute(run, transform=True)
         >>> r.stop_test()
 
     """
@@ -81,7 +79,6 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 def TestProcedureFeaturesGenerator(application_class):
     """
         >>> import checkmate.sandbox
-        >>> import checkmate.runtime.procedure
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
         >>> _application = sample_app.application.TestData()
@@ -96,9 +93,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> box(run_list[0])
         True
-        >>> proc = checkmate.runtime.procedure.Procedure()
-        >>> run_list[0].fill_procedure(proc)
-        >>> len(proc.initial)
+        >>> len(run_list[0].initial)
         4
 
         >>> import checkmate.runtime._pyzmq

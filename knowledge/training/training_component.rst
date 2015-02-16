@@ -40,7 +40,7 @@ That will be the component state after startup:
     >>> type(c1.states[0]) is sample_app.component_1.states.State
     True
     >>> c1.states[0].value
-    'True'
+    True
 
 State transition
 ----------------
@@ -75,9 +75,9 @@ This mapping between the table and the transition can be found in the transition
 
 The initial and final states for this transition are:
     >>> transition.initial[0].arguments
-    (('True',), {})
+    ((True,), {})
     >>> transition.final[0].arguments
-    (('False',), {})
+    ((False,), {})
 
 The incoming and the two outgoing exchanges for this transition are:
     >>> transition.incoming[0].code
@@ -99,7 +99,7 @@ The component can process the process the incoming of the transition:
 
 It will have its state changed according to the transition definition:
     >>> c1.states[0].value
-    'False'
+    False
 
 It will output the outgoing defined by the transition:
     >>> output[0].action
@@ -109,7 +109,7 @@ It will output the outgoing defined by the transition:
 
 On the other hand, if its state does not match the initial, it will be unable to process the incoming:
     >>> c1.states[0].value
-    'False'
+    False
     >>> transition.is_matching_initial(c1.states)
     False
     >>> transition.process(c1.states, [sample_app.exchanges.AC()])

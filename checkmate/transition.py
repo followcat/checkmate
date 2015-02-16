@@ -34,9 +34,11 @@ class Transition(object):
 
 
     def is_matching_incoming(self, exchange_list):
-        """Check if the transition incoming list is matching a list of exchange.
+        """Check if the transition incoming list is matching a list of
+        exchange.
 
-        The exchange_list must contain all incoming from the transition to match.
+        The exchange_list must contain all incoming from the transition
+        to match.
 
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
@@ -57,10 +59,12 @@ class Transition(object):
         return len(match_list) == len(exchange_list)
 
     def is_matching_outgoing(self, exchange_list):
-        """Check if the transition outgoing list is matching a list of exchange.
+        """Check if the transition outgoing list is matching a list of
+        exchange. 
 
-        The exchange_list can contain only a subset of the transition outgoing
-        to match. All item in exchange_list must be matched though.
+        The exchange_list can contain only a subset of the transition
+        outgoing to match. All item in exchange_list must be matched
+        though.
 
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
@@ -82,13 +86,14 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> a.start()
-            >>> c.state_machine.transitions[0].is_matching_initial(c.states)
+            >>> sm = c.state_machine
+            >>> sm.transitions[0].is_matching_initial(c.states)
             True
-            >>> c.state_machine.transitions[2].is_matching_initial(c.states)
+            >>> sm.transitions[2].is_matching_initial(c.states)
             False
 
             >>> c3 = a.components['C3']
-            >>> c3.states[0].value = 'True'
+            >>> c3.states[0].value = True
             >>> t3 = c3.state_machine.transitions[2]
             >>> t3.is_matching_initial(c3.states)
             False
@@ -101,12 +106,14 @@ class Transition(object):
     def generic_incoming(self, states, *args, default=True):
         """ Generate a generic incoming for the provided state
 
-        In case the transition has no incoming, raise AttributeError exception.
+        In case the transition has no incoming, raise AttributeError
+        exception.
         """
         incoming_exchanges = []
         for incoming in self.incoming:
             arguments = incoming.resolve(states)
-            incoming_exchanges.append(incoming.factory(*incoming.values, default=False, **arguments))
+            incoming_exchanges.append(
+                incoming.factory(*incoming.values, default=False, **arguments))
         return incoming_exchanges
             
 
@@ -118,16 +125,18 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.start()
-            >>> i = c.state_machine.transitions[0].incoming[0].factory()
-            >>> c.state_machine.transitions[0].process(c.states, [i]) # doctest: +ELLIPSIS
+            >>> ts = c.state_machine.transitions
+            >>> i = ts[0].incoming[0].factory()
+            >>> ts[0].process(c.states, [i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
-            >>> i = c.state_machine.transitions[1].incoming[0].factory()
-            >>> o = c.state_machine.transitions[1].process(c.states, [i])
+            >>> i = ts[1].incoming[0].factory()
+            >>> o = ts[1].process(c.states, [i])
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': <sample_app.data_structure.ActionRequest object ...
         """
         _outgoing_list = []
-        if not self.is_matching_initial(states) or not self.is_matching_incoming(_incoming):
+        if not self.is_matching_initial(states) or \
+           not self.is_matching_incoming(_incoming):
             return _outgoing_list
         for _state in states:
             if not default:
@@ -142,8 +151,11 @@ class Transition(object):
                     _final_interface = _final.interface
                     if _final_interface == _interface:
                         resolved_arguments = _final.resolve(states, _incoming)
-                        _final.factory(instance=_state, default=default, **resolved_arguments)
+                        _final.factory(instance=_state, default=default,
+                            **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = outgoing_exchange.resolve(states, _incoming)
-            _outgoing_list.append(outgoing_exchange.factory(*outgoing_exchange.values, default=default, **resolved_arguments))
+            _outgoing_list.append(
+                outgoing_exchange.factory(*outgoing_exchange.values, 
+                    default=default, **resolved_arguments))
         return _outgoing_list

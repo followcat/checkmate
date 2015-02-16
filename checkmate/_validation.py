@@ -5,7 +5,8 @@ class List(list):
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
             >>> c1 = app.components['C1']
-            >>> l = checkmate._validation.List(c1.state_machine.transitions)
+            >>> l = checkmate._validation.List(
+            ...         c1.state_machine.transitions)
             >>> len(l)
             4
         """

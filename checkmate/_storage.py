@@ -15,12 +15,13 @@ def name_to_interface(name, modules):
             interface = getattr(_m, _to_interface(name))
             break
     else:
-        raise AttributeError(_m.__name__+' has no interface defined:'+_to_interface(name))
+        raise AttributeError(
+            _m.__name__ + ' has no interface defined:' + _to_interface(name))
     return interface
 
 
 class Data(object):
-    def __init__(self, type, interface, code_arguments, full_description=None):
+    def __init__(self, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -30,10 +31,15 @@ class Data(object):
             >>> acr = sample_app.data_structure.ActionRequest()
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
-            >>> data = checkmate._storage.Data('states', sample_app.component.component_1_states.IAnotherState, {'AnotherState1()': {'value': 'None'}})
+            >>> c1_module = sample_app.component.component_1_states
+            >>> data = checkmate._storage.Data(
+            ...             c1_module.IAnotherState,
+            ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data('exchanges', sample_app.exchanges.IAction, {'AP(R)': {'value': 'AP'}})
+            >>> data = checkmate._storage.Data(
+            ...         sample_app.exchanges.IAction, 
+            ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
@@ -53,7 +59,8 @@ class Data(object):
                 value = arguments.pop('value')
             except KeyError:
                 value = None
-            _storage = InternalStorage(self.interface, code, code_description, value=value, arguments=arguments)
+            _storage = InternalStorage(self.interface, code, code_description,
+                        value=value, arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -89,11 +96,15 @@ class TransitionStorage(object):
                 continue
             for each_item in _v:
                 for _name, _data in each_item.items():
-                    interface = name_to_interface(_name, module_dict[module_type])
+                    interface = \
+                        name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
-                    define_class = checkmate._module.get_class_implementing(interface)
-                    arguments = checkmate._exec_tools.get_signature_arguments(_data, define_class)
-                    generate_storage = InternalStorage(interface, _data, None, arguments=arguments)
+                    define_class = \
+                        checkmate._module.get_class_implementing(interface)
+                    arguments = checkmate._exec_tools.get_signature_arguments(
+                                    _data, define_class)
+                    generate_storage = InternalStorage(interface, _data, None,
+                                        arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
@@ -102,22 +113,32 @@ class TransitionStorage(object):
                             break
                     else:
                         if hasattr(define_class, code):
-                            generate_storage.function = getattr(define_class, code)
+                            generate_storage.function = \
+                                getattr(define_class, code)
                     getattr(self, _k).append(generate_storage)
 
     def factory(self):
-        return checkmate.transition.Transition(tran_name=self.name, initial=self.initial, incoming=self.incoming, final=self.final, outgoing=self.outgoing, returned=self.returned)
+        return checkmate.transition.Transition(tran_name=self.name,
+                                               initial=self.initial,
+                                               incoming=self.incoming,
+                                               final=self.final,
+                                               outgoing=self.outgoing,
+                                               returned=self.returned)
 
 
 @zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
-    """Support local storage of data (status or data_structure) information in transition"""
+    """Support local storage of data (status or data_structure)
+    information in transition"""
     def __init__(self, interface, code, description, value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, value="AP(R)")
+            >>> st = checkmate._storage.InternalStorage(
+            ...         sample_app.exchanges.IAction, "AP(R)",
+            ...         None,
+            ...         value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
@@ -132,14 +153,18 @@ class InternalStorage(object):
         self.values = (value, )
 
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
-    @checkmate.fix_issue('checkmate/issues/call_factory_without_resovle_arguments.rst')
-    @checkmate.fix_issue('checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
+    @checkmate.fix_issue(
+        'checkmate/issues/call_factory_without_resovle_arguments.rst')
+    @checkmate.fix_issue(
+        'checkmate/issues/factory_with_self_resolve_kw_arguments.rst')
     def factory(self, *args, instance=None, **kwargs):
         """
             >>> import sample_app.application
             >>> import sample_app.data_structure
             >>> import checkmate._storage
-            >>> st = checkmate._storage.InternalStorage(sample_app.exchanges.IAction, "AP(R)", None, value="AP(R)")
+            >>> st = checkmate._storage.InternalStorage(
+            ...         sample_app.exchanges.IAction,
+            ...         "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
             >>> st.factory(R=['AT2', 'HIGH']).R.value
@@ -156,15 +181,16 @@ class InternalStorage(object):
             >>> c.process([i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
-            [{'R': <sample_app.data_structure.ActionRequest object at ...
+            [{'R': <sample_app.data_structure.ActionRequest object ...
             >>> t = c.state_machine.transitions[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
             >>> arguments = t.final[1].resolve(exchanges=[i])
-            >>> t.final[1].factory(instance=c.states[1], **arguments) # doctest: +ELLIPSIS
-            <sample_app.component.component_1_states.AnotherState object at ...
+            >>> t.final[1].factory(instance=c.states[1],
+            ...     **arguments) # doctest: +ELLIPSIS
+            <sample_app.component.component_1_states.AnotherState ...
             >>> c.states[1].value
             []
         """
@@ -207,17 +233,28 @@ class InternalStorage(object):
             ('AP', 1)
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
-            >>> item = {'name': 'Toggle TestState tran01', 'outgoing': [{'Action': 'AP(R2)'}], 'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+            >>> module_dict = {
+            ...     'states': [sample_app.component.component_1_states],
+            ...     'exchanges':[sample_app.exchanges]}
+            >>> item = {'name': 'Toggle TestState tran01',
+            ...         'outgoing': [{'Action': 'AP(R2)'}],
+            ...         'incoming': [{'AnotherReaction': 'ARE()'}]}
+            >>> ts = checkmate._storage.TransitionStorage(
+            ...         item, module_dict)
             >>> t = ts.factory()
-            >>> t.outgoing[0].resolved_arguments['R'].C.value, t.outgoing[0].resolved_arguments['R'].P.value, t.outgoing[0].values
-            ('AT2', 'HIGH', ('AP',))
+            >>> t.outgoing[0].resolved_arguments['R'].C.value
+            'AT2'
+            >>> t.outgoing[0].resolved_arguments['R'].P.value
+            'HIGH'
+            >>> t.outgoing[0].values
+            ('AP',)
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
-            >>> resolved_arguments['R'].C.value, resolved_arguments['R'].P.value
-            ('AT2', 'HIGH')
+            >>> resolved_arguments['R'].C.value 
+            'AT2'
+            >>> resolved_arguments['R'].P.value
+            'HIGH'
         """
         _attributes = {}
         if states is not None:
@@ -238,34 +275,45 @@ class InternalStorage(object):
             >>> import sample_app.application
             >>> import sample_app.component.component_1_states
             >>> import sample_app.component.component_3_states
-            >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-            >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
-            >>> proc = r.build_procedure([run[0] for run in gen][0])
+            >>> t_module = checkmate.runtime.test_plan
+            >>> gen = t_module.TestProcedureInitialGenerator(
+            ...         sample_app.application.TestData)
+            >>> r = checkmate.runtime._runtime.Runtime(
+            ...         sample_app.application.TestData,
+            ...         checkmate.runtime.communication.Communication)
+            >>> run = [run[0] for run in gen][0]
             >>> app = sample_app.application.TestData()
             >>> app.start()
             >>> saved = app.state_list()
             >>> c1 = app.components['C1']
             >>> c3 = app.components['C3']
 
-            >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_1_states.IState][0]
+            >>> c1_states = sample_app.component.component_1_states
+            >>> final = [_f for _f in run.final
+            ...          if _f.interface == c1_states.IState][0]
             >>> t1 = c1.state_machine.transitions[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
             <sample_app.component.component_1_states.State object at ...
 
-            >>> final = [_f for _f in proc.final if _f.interface == sample_app.component.component_3_states.IAcknowledge][0]
+            >>> c3_states = sample_app.component.component_3_states
+            >>> final = [_f for _f in run.final
+            ...          if _f.interface == c3_states.IAcknowledge][0]
             >>> t3 = c3.state_machine.transitions[0]
             >>> c3.simulate(t3)
             []
-            >>> proc.final[1].match(app.state_list(), saved) #doctest: +ELLIPSIS
-            <sample_app.component.component_1_states.AnotherState object at ...
+            >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
+            <sample_app.component.component_3_states.Acknowledge ...
         """
-        for _target in [_t for _t in target_copy if self.interface.providedBy(_t)]:
+        for _target in [_t for _t in target_copy
+                        if self.interface.providedBy(_t)]:
             _initial = [None]
             if reference is not None:
-                _initial = [_i for _i in reference if self.interface.providedBy(_i)]
-                resolved_arguments = self.resolve(states=_initial, exchanges=incoming_list)
+                _initial = [_i for _i in reference 
+                            if self.interface.providedBy(_i)]
+                resolved_arguments = self.resolve(states=_initial,
+                                        exchanges=incoming_list)
             else:
                 resolved_arguments = self.resolve()
 

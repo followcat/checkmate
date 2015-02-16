@@ -117,10 +117,10 @@ class Visitor():
                 self._transitions.extend(self.tran_items)
             else:
                 self.partition_identification(_d)
-                _partitions = {'clsname': self._classname,
+                _partitions = {'signature': self._classname,
                                'codes_list': self.codes_list,
                                'values_list': self.values_list,
-                               'full_desc': self.full_description,
+                               'full_description': self.full_description,
                                'attributes': self.attributes,
                                'define_attributes': self.define_attributes}
                 if title == "State identification":

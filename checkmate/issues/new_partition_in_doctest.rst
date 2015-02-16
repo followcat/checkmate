@@ -1,16 +1,26 @@
 We should be able to define partitions from doctest
 without any reference to yaml file.
 
-    >>> import collections
     >>> import checkmate._module
     >>> import checkmate.application
     >>> import checkmate.data_structure
     >>> import checkmate.partition_declarator
-    >>> state_module = checkmate._module.get_module('checkmate.application', 'states')
-    >>> exchange_module = checkmate._module.get_module('checkmate.application', 'exchanges')
-    >>> data_structure_module = checkmate._module.get_module('checkmate.application', 'data')
-    >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
-    >>> par = de.new_partition('exchanges', "RC", codes_list=['P1'], values_list=['TRUE'])
+    >>> state_module = checkmate._module.get_module(
+    ...                     'checkmate.application', 'states')
+    >>> exchange_module = checkmate._module.get_module(
+    ...                     'checkmate.application', 'exchanges')
+    >>> data_structure_module = checkmate._module.get_module(
+    ...                             'checkmate.application', 'data')
+    >>> de = checkmate.partition_declarator.Declarator(
+    ...         data_structure_module, exchange_module,
+    ...         state_module=state_module)
+    >>> items = {
+    ...     'partition_type': 'exchanges',
+    ...     'signature': 'RC',
+    ...     'codes_list': ['P1'],
+    ...     'values_list': [True],
+    ...     }
+    >>> par = de.new_partition(items)
 
 The partition should be returned by get_output()
 even if no transition is provided.

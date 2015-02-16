@@ -1,25 +1,24 @@
-import checkmate.sandbox
 import checkmate.runs
+import checkmate.sandbox
 
 
 class TestProcedureRun1Threaded(checkmate.runs.Run):
     """"""
     def __init__(self, application_class):
         """
+            >>> import sample_app.application
             >>> import checkmate.runtime._pyzmq
             >>> import checkmate.runtime._runtime
-            >>> import sample_app.application
+            >>> import sample_app.runtime.test_procedure
             >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
-            >>> import sample_app.runtime.test_procedure
             >>> run = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(sample_app.application.TestData)
-            >>> proc = r.build_procedure(run)
-            >>> proc.transitions.nodes[0].nodes[0].nodes[2].root.incoming[0].code
+            >>> run.nodes[0].nodes[0].nodes[2].root.incoming[0].code
             'ARE'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code
+            >>> run.nodes[0].nodes[0].nodes[2].nodes[0].root.incoming[0].code
             'AP'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].root.incoming[0].code
+            >>> run.nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].root.incoming[0].code
             'DA'
             >>> r.execute(run)
             >>> r.stop_test()
@@ -45,12 +44,11 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> run = sample_app.runtime.test_procedure.TestProcedureRun2Threaded(sample_app.application.TestData)
-            >>> proc = r.build_procedure(run)
-            >>> proc.transitions.root.outgoing[0].code
+            >>> run.root.outgoing[0].code
             'PBRL'
-            >>> proc.transitions.nodes[0].root.incoming[0].code
+            >>> run.nodes[0].root.incoming[0].code
             'PBRL'
-            >>> proc.transitions.nodes[0].nodes[0].nodes[0].root.incoming[0].code
+            >>> run.nodes[0].nodes[0].nodes[0].root.incoming[0].code
             'DR'
             >>> r.execute(run, transform=True)
             >>> r.stop_test()
