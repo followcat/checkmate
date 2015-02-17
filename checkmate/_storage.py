@@ -148,6 +148,7 @@ class InternalStorage(object):
         self.interface = interface
         self.function = checkmate._module.get_class_implementing(interface)
 
+        self.arguments = arguments
         self.resolved_arguments = self.function.method_arguments(arguments)
         self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
@@ -210,7 +211,7 @@ class InternalStorage(object):
             return self.function(*args, **kwargs)
 
     @checkmate.fix_issue("checkmate/issues/transition_resolve_arguments.rst")
-    def resolve(self, states=None, exchanges=None):
+    def resolve(self, states=None, exchanges=None, resolved_dict={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -256,14 +257,22 @@ class InternalStorage(object):
             >>> resolved_arguments['R'].P.value
             'HIGH'
         """
+        if states is None:
+            states = []
+        if exchanges is None:
+            exchanges = []
         _attributes = {}
-        if states is not None:
-            for input in states:
-                _attributes.update(input.attribute_list(self.key_to_resolve))
-        if exchanges is not None:
-            for input in exchanges:
-                _attributes.update(input.attribute_list(self.key_to_resolve))
         _attributes.update(self.resolved_arguments)
+        for key, value in self.arguments.items():
+            if value in resolved_dict:
+                for interface, attr in resolved_dict[value].items():
+                    for input in states + exchanges:
+                        if interface.providedBy(input):
+                            _attributes[attr] = getattr(input, attr)
+            else:
+                for input in states + exchanges:
+                    if hasattr(input, value):
+                        _attributes[value] = getattr(input, value)
         return _attributes
 
     @checkmate.fix_issue("checkmate/issues/internal_storage_match_R2.rst")

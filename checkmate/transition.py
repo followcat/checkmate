@@ -16,11 +16,17 @@ class Transition(object):
         finally:
             if self.name == '':
                 self.name = 'unknown'
+        self.resolve_dict = {}
         for item in ['initial', 'incoming', 'final', 'outgoing', 'returned']:
             try:
                 setattr(self, item, argc[item])
             except KeyError:
                 setattr(self, item, [])
+        for _s in argc['initial'] + argc['incoming']:
+            for key, value in _s.arguments.items():
+                if value not in self.resolve_dict:
+                    self.resolve_dict[value] = {}
+                self.resolve_dict[value][_s.interface] = key
 
     def matching_list(self, matched_list, partition_list):
         match_list = []
@@ -150,12 +156,14 @@ class Transition(object):
                         continue
                     _final_interface = _final.interface
                     if _final_interface == _interface:
-                        resolved_arguments = _final.resolve(states, _incoming)
+                        resolved_arguments = _final.resolve(states, _incoming,
+                                                            self.resolve_dict)
                         _final.factory(instance=_state, default=default,
                             **resolved_arguments)
         for outgoing_exchange in self.outgoing:
-            resolved_arguments = outgoing_exchange.resolve(states, _incoming)
+            resolved_arguments = outgoing_exchange.resolve(states, _incoming,
+                                                           self.resolve_dict)
             _outgoing_list.append(
-                outgoing_exchange.factory(*outgoing_exchange.values, 
+                outgoing_exchange.factory(*outgoing_exchange.values,
                     default=default, **resolved_arguments))
         return _outgoing_list
