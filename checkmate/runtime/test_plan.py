@@ -65,7 +65,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         True
         >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
         >>> run = [run[0] for run in gen][0]
-        >>> r.application.compare_states(run.initial)
+        >>> run.compare_initial(r.application)
         False
         >>> r.execute(run, transform=True)
         >>> r.stop_test()
@@ -89,7 +89,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> box = checkmate.sandbox.Sandbox(_application, run_list[0].walk())
         >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].values[0]
         True
-        >>> box.application.compare_states(run_list[0].root.initial)
+        >>> run_list[0].compare_initial(box.application)
         True
         >>> box(run_list[0])
         True

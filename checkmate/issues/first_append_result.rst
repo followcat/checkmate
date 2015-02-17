@@ -45,7 +45,7 @@ Check the resulting final state compared to transition's final:
 Result from compare_states():
     >>> final.match(r.application.state_list(), saved.application.state_list(), validated_incoming) #doctest: +ELLIPSIS
     <sample_app.component.component_1_states.AnotherState object at ...
-    >>> r.application.compare_states(run.final, saved.application.state_list())
+    >>> run.compare_final(r.application, saved.application)
     True
     >>> 
     >>> r.stop_test()

@@ -152,9 +152,9 @@ class Runtime(object):
             'Procedure done')
 
     def transform_to_initial(self, run):
-        if not self.application.compare_states(run.initial):
+        if not run.compare_initial(self.application):
             run_list = list(checkmate.pathfinder._find_runs(
-                            self.application, run.initial).keys())
+                            self.application, run).keys())
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")

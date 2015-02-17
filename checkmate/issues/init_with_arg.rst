@@ -19,7 +19,7 @@ It is impossible to specify the final state by providing arguments
     ...     run[0].application = r.application
     ...     runs.append(run[0])
     ... 
-    >>> r.application.compare_states(runs[1].initial)
+    >>> runs[1].compare_initial(r.application)
     True
     >>> saved_initial = checkmate.sandbox.Sandbox(r.application)
     >>> r.execute(runs[1])
@@ -32,8 +32,7 @@ It is impossible to specify the final state by providing arguments
     ...         **revolved_args)
     >>> (fs.R.C.value, fs.R.P.value)
     ('AT1', 'NORM')
-    >>> r.application.compare_states(runs[1].final,
-    ...     saved_initial.application.state_list())
+    >>> runs[1].compare_final(r.application, saved_initial.application)
     True
     >>> r.stop_test()
     >>>
