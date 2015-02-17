@@ -23,7 +23,7 @@ Setup:
 Send 'AC' for append default 'R':
     >>> run = [_r for _r in runs if len(_r.root.incoming) > 0 and _r.root.incoming[0].code == 'PBAC'][0]
     >>> import checkmate.sandbox
-    >>> saved = checkmate.sandbox.Sandbox(r.application)
+    >>> saved = checkmate.sandbox.Sandbox(type(r.application), r.application)
     >>> r.execute([_r for _r in runs if len(_r.root.incoming) > 0 and _r.root.incoming[0].code == 'PBAC'][0])
     >>> final = [_f for _f in run.final if _f.interface == sample_app.component.component_1_states.IAnotherState][0]
     >>> final.function #doctest: +ELLIPSIS

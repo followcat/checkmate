@@ -5,15 +5,16 @@ The application.compare_states should get True.
 
     >>> import checkmate.sandbox
     >>> import sample_app.application
-    >>> app = sample_app.application.TestData()
+    >>> cls = sample_app.application.TestData
+    >>> app = cls()
     >>> runs = app.run_collection
 
-    >>> compare_box1 = checkmate.sandbox.Sandbox(app)
-    >>> compare_box2 = checkmate.sandbox.Sandbox(app)
+    >>> compare_box1 = checkmate.sandbox.Sandbox(cls)
+    >>> compare_box2 = checkmate.sandbox.Sandbox(cls)
     >>> compare_app1 = compare_box1.application
     >>> compare_app2 = compare_box2.application
 
-    >>> box = checkmate.sandbox.Sandbox(app)
+    >>> box = checkmate.sandbox.Sandbox(cls)
     >>> box_app = box.application
     >>> box(runs[0])
     True
