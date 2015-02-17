@@ -134,6 +134,8 @@ class Runtime(object):
             condition.wait_for(check_threads,
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
+    @checkmate.report_issue(
+        "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True):
         if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
