@@ -54,6 +54,60 @@ class Run(checkmate._tree.Tree):
             if self.itp_run is not None:
                 self._final = self.itp_run.root.final
 
+    def compare_initial(self, application):
+        """"""
+        for run in self.breadthWalk():
+            for component in application.components.values():
+                if run.root in component.state_machine.transitions:
+                    if run.root.is_matching_initial(component.states):
+                        break
+            else:
+                return False
+        return True
+
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.fix_issue('checkmate/issues/validated_compare_states.rst')
+    @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
+    def compare_final(self, application, reference):
+        """"""
+        box = checkmate.sandbox.Sandbox(type(reference), reference)
+        for run in self.breadthWalk():
+            for name, component in application.components.items():
+                _found = False
+                if run.root in component.state_machine.transitions:
+                    for final in run.root.final:
+                        state = [_s for _s in
+                                 box.application.components[name].states
+                                 if final.interface.providedBy(_s)][0]
+                        index = \
+                            box.application.components[name].states.index(
+                                state)
+                        incoming = \
+                            component.validation_list.validated_items[
+                                component.validation_list.transitions.index(
+                                    run.root)]
+                        _arguments = \
+                            final.resolve(
+                                box.application.components[name].states,
+                                incoming)
+                        final.factory(instance=state, **_arguments)
+                        if state == component.states[index]:
+                            _found = True
+                        else:
+                            _found = False
+                            break
+                    else:
+                        assert(_found or len(run.root.final) == 0)
+                        _found = True
+                else:
+                    continue
+                if _found:
+                    break
+            else:
+                return False
+        return True
+
     def add_node(self, tree):
         self._initial = None
         self._final = None
@@ -67,9 +121,9 @@ class Run(checkmate._tree.Tree):
             ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
-            'True'
+            True
             >>> states['C3']['Acknowledge']['value']
-            'False'
+            False
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -90,9 +144,9 @@ class Run(checkmate._tree.Tree):
             ...         sample_app.application.TestData())
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
-            'False'
+            False
             >>> states['C3']['Acknowledge']['value']
-            'True'
+            True
         """
         state_dict = {}
         for run in self.breadthWalk():

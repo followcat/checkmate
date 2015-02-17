@@ -16,10 +16,10 @@
 
         >>> runs[0].root.outgoing[0].code
         'AC'
-        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[0].initial, a.run_collection, collections.OrderedDict())]
+        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[0], a.run_collection, collections.OrderedDict())]
         ['PBAC', 'PBRL', 'PBPP']
 
         >>> runs[3].root.outgoing[0].code
         'PP'
-        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[3].initial, a.run_collection, collections.OrderedDict())]
+        >>> [_t.root.outgoing[0].code for _t in checkmate.pathfinder._next_run(box.application, runs[3], a.run_collection, collections.OrderedDict())]
         ['PBAC', 'PBRL']

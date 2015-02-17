@@ -24,7 +24,7 @@ Setting the procedure.final from the sandbox does not work.
     <function State.toggle at ...
     >>> run.final[2].function #doctest: +ELLIPSIS
     <function State.append at ...
-    >>> r.application.compare_states(run.initial)
+    >>> run.compare_initial(r.application)
     True
     >>> r.execute(_run)
     >>> r.stop_test()

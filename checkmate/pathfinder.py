@@ -22,7 +22,7 @@ def _next_run(application, target, runs, used_runs):
         box = checkmate.sandbox.Sandbox(type(application), application)
         box(_run)
         if box.is_run:
-            if box.application.compare_states(target):
+            if target.compare_initial(box.application):
                 used_runs[_run] = box
                 return used_runs
             else:

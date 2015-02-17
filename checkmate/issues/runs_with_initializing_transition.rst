@@ -62,19 +62,19 @@ other runs
         >>> initializing_run # doctest: +ELLIPSIS
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
-        'False'
+        False
         >>> run1 = app.run_collection[-1]
         >>> run1.root.outgoing[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS
         >>> c1.context.states[0].value
-        'True'
+        True
         >>> c3.context.states[0].value
-        'False'
-        >>> app.compare_states(run1.initial)
+        False
+        >>> run1.compare_initial(app)
         False
         >>> run_list = list(checkmate.pathfinder._find_runs(
-        ...             app, run1.initial).keys())
+        ...             app, run1).keys())
 
     Initializing transition runs should not be used to do transform to
     initial during executing runs

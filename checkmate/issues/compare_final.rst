@@ -13,7 +13,7 @@ Using compare_state() with transition's final InternalStorage as target does not
     >>> _run = run_list[1]
     >>> _run.final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
-    >>> r.application.compare_states(_run.nodes[0].initial)
+    >>> _run.nodes[0].compare_initial(r.application)
     True
 
 This is a class method not an instance method.

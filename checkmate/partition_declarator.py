@@ -42,8 +42,8 @@ def make_partition(module,
     if defined_class.__name__ in data_value:
         code_arguments.update(data_value[defined_class.__name__])
     partition_storage = checkmate._storage.PartitionStorage(
-                            partition_type, defined_interface,
-                            code_arguments, full_description)
+                            defined_interface, code_arguments,
+                            full_description)
     setattr(defined_class, 'define_attributes', define_attributes)
     setattr(defined_class, 'partition_storage', partition_storage)
     return (defined_interface, partition_storage)
@@ -109,7 +109,7 @@ class Declarator(object):
         ...     'partition_type': 'states',
         ...     'signature': "TestState",
         ...     'codes_list': ['TestStateTrue'],
-        ...     'values_list': ['True'],
+        ...     'values_list': [True],
         ...     }
         >>> de.new_partition(items)
         >>> dst = de.get_output()['states']
@@ -166,7 +166,7 @@ class Declarator(object):
         ...     'partition_type': 'states',
         ...     'signature': 'TestState',
         ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
-        ...     'values_list': ['True', 'False'],
+        ...     'values_list': [True, False],
         ...     }
         >>> de.new_partition(items)
         >>> items = {
@@ -213,7 +213,7 @@ class Declarator(object):
         ... ('states', [{
         ...    'signature': 'TestState',
         ...    'codes_list': ['TestStateTrue'],
-        ...    'values_list': ['True'],
+        ...    'values_list': [True],
         ...    'full_description': None,
         ...    'attributes': {},
         ...    'define_attributes': {}}]),

@@ -8,6 +8,7 @@ class Partition(object):
 
     @classmethod
     @checkmate.fix_issue("checkmate/issues/default_type_in_exchange.rst")
+    @checkmate.fix_issue("checkmate/issues/builtin_in_method_arguments.rst")
     def method_arguments(cls, arguments):
         """
             >>> import sample_app.application
@@ -35,6 +36,7 @@ class Partition(object):
                         kwargs.pop(attr)
         return kwargs
 
+    @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are stored in
@@ -107,10 +109,10 @@ class Partition(object):
             >>> s1 = sample_app.component.component_1_states.State()
             >>> s2 = sample_app.component.component_1_states.State()
             >>> s1.value, s2.value
-            ('True', 'True')
+            (True, True)
             >>> s1 == s2
             True
-            >>> s1.value = 'False'
+            >>> s1.value = False
             >>> s1 == s2
             False
         """

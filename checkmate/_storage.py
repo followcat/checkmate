@@ -21,7 +21,7 @@ def name_to_interface(name, modules):
 
 
 class Data(object):
-    def __init__(self, type, interface, code_arguments, full_description=None):
+    def __init__(self, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -32,13 +32,12 @@ class Data(object):
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
             >>> c1_module = sample_app.component.component_1_states
-            >>> data = checkmate._storage.Data('states',
+            >>> data = checkmate._storage.Data(
             ...             c1_module.IAnotherState,
             ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
             >>> data = checkmate._storage.Data(
-            ...         'exchanges',
             ...         sample_app.exchanges.IAction, 
             ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')

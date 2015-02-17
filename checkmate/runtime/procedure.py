@@ -52,7 +52,7 @@ class Procedure(object):
             >>> r1_c1 = r1.runtime_components['C1'].context.states[0]
             >>> r1_c3 = r1.runtime_components['C3'].context.states[0]
             >>> (r1_c1.value, r1_c3.value)
-            ('True', 'False')
+            (True, False)
 
             >>> r2 = checkmate.runtime._runtime.Runtime(
             ...         sample_app.application.TestData,
@@ -69,7 +69,7 @@ class Procedure(object):
         other instances' components are unaffected when not called.
             >>> r1.execute(runs[0])
             >>> (r1_c1.value, r1_c3.value)
-            ('False', 'True')
+            (False, True)
             >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
             False
             >>> r2.execute(runs[0])
@@ -93,12 +93,13 @@ class Procedure(object):
         stub.simulate(self.transitions.root)
         self._follow_up(self.transitions)
 
-        if hasattr(self, 'final'):
+        if hasattr(self.transitions, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(
                 checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return _application.compare_states(self.final,
-                            saved_initial.application.state_list())
+                return self.transitions.compare_final(
+                            self.runtime.application,
+                            saved_initial.application)
             if not check_compare_states():
                 self.logger.error(
                     'Procedure Failed: Final states are not as expected')

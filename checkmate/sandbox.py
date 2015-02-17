@@ -22,19 +22,19 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(_cls,
             ...         initial_transitions=transitions)
             >>> box.application.components['C1'].states[0].value
-            'True'
+            True
             >>> box.application.components['C3'].states[0].value
-            'True'
+            True
 
             >>> app = _cls()
             >>> app.start()
             >>> out = app.components['C1'].process(
             ...         [sample_app.exchanges.Action('AC')])
             >>> app.components['C1'].states[0].value
-            'False'
+            False
             >>> box = checkmate.sandbox.Sandbox(_cls, app)
             >>> box.application.components['C1'].states[0].value
-            'False'
+            False
         """
         self.final = []
         self.initial = []
@@ -99,7 +99,7 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(_cls)
             >>> c1 = box.application.components['C1']
             >>> c1.states[0].value
-            'True'
+            True
             >>> runs = box.application.run_collection
             >>> box(runs[0])
             True
@@ -108,7 +108,7 @@ class Sandbox(object):
             >>> c1.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
             >>> box.application.components['C3'].states[0].value
-            'False'
+            False
         """
         _outgoing = []
         self.run = run
@@ -160,7 +160,7 @@ class Sandbox(object):
             >>> _run = checkmate.runs.Run(_t, [])
             >>> transitions = box.process([ex], _run)
             >>> box.application.components['C3'].states[0].value
-            'True'
+            True
         """
         for _exchange in exchanges:
             for _d in _exchange.destination:
