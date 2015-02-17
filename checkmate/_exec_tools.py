@@ -88,8 +88,7 @@ def get_exec_signature(signature, exec_module=None,
     return inspect.Signature.from_function(locals()['fn'])
 
 
-@checkmate.report_issue("checkmate/issues/builtin_type_no_default.rst",
-    failed=2)
+@checkmate.fix_issue("checkmate/issues/builtin_type_no_default.rst")
 @checkmate.report_issue('checkmate/issues/exchange_different_data.rst',
     failed=2)
 def get_define_str(element):
@@ -121,7 +120,10 @@ def get_define_str(element):
 \n                try:
 \n                    kwargs[_k] = _v(default=default)
 \n                except TypeError:
-\n                    kwargs[_k] = _v()
+\n                    if default:
+\n                        kwargs[_k] = _v()
+\n                    else:
+\n                        kwargs[_k] = None
 \n            elif isinstance(kwargs[_k], dict):
 \n                kwargs[_k] = _v(default=default,
                                     **kwargs[_k])
