@@ -222,7 +222,7 @@ class InternalStorage(object):
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve(states)
-            {'R': None}
+            {}
             >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
@@ -263,18 +263,16 @@ class InternalStorage(object):
         if exchanges is None:
             exchanges = []
         _attributes = {}
-        for attr in self.cls._construct_values.keys():
+        for attr, data_cls in self.cls._construct_values.items():
             if (attr in self.arguments and
                     type(self.arguments[attr]) != tuple and
                     self.arguments[attr] in resolved_dict):
-                for interface in resolved_dict[self.arguments[attr]].keys():
-                    for input in states + exchanges:
-                        if interface.providedBy(input):
-                            _attributes[attr] = getattr(input, attr)
-            else:
-                for input in states + exchanges:
-                    if hasattr(input, attr):
-                        _attributes[attr] = getattr(input, attr)
+                attr = resolved_dict[self.arguments[attr]]
+            for input in states + exchanges:
+                if hasattr(input, attr):
+                    data = getattr(input, attr)
+                    if isinstance(data, data_cls):
+                        _attributes[attr] = data
         _attributes.update(self.resolved_arguments)
         return _attributes
 
