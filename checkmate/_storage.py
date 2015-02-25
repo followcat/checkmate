@@ -146,7 +146,8 @@ class InternalStorage(object):
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
-        self.function = checkmate._module.get_class_implementing(interface)
+        self.cls = checkmate._module.get_class_implementing(interface)
+        self.function = self.cls
 
         self.arguments = arguments
         self.resolved_arguments = self.function.method_arguments(arguments)
@@ -262,17 +263,19 @@ class InternalStorage(object):
         if exchanges is None:
             exchanges = []
         _attributes = {}
-        _attributes.update(self.resolved_arguments)
-        for key, value in self.arguments.items():
-            if value in resolved_dict:
-                for interface, attr in resolved_dict[value].items():
+        for attr in self.cls._construct_values.keys():
+            if (attr in self.arguments and
+                    type(self.arguments[attr]) != tuple and
+                    self.arguments[attr] in resolved_dict):
+                for interface in resolved_dict[self.arguments[attr]].keys():
                     for input in states + exchanges:
                         if interface.providedBy(input):
                             _attributes[attr] = getattr(input, attr)
             else:
                 for input in states + exchanges:
-                    if hasattr(input, value):
-                        _attributes[value] = getattr(input, value)
+                    if hasattr(input, attr):
+                        _attributes[attr] = getattr(input, attr)
+        _attributes.update(self.resolved_arguments)
         return _attributes
 
     @checkmate.fix_issue("checkmate/issues/internal_storage_match_R2.rst")

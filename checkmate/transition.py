@@ -24,6 +24,8 @@ class Transition(object):
                 setattr(self, item, [])
         for _s in argc['initial'] + argc['incoming']:
             for key, value in _s.arguments.items():
+                if type(value) == tuple:
+                    continue
                 if value not in self.resolve_dict:
                     self.resolve_dict[value] = {}
                 self.resolve_dict[value][_s.interface] = key
