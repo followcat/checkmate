@@ -40,7 +40,7 @@ class Partition(object):
             if storage.code == code:
                 return storage
 
-    @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst")
+    @checkmate.fix_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are stored in
