@@ -166,14 +166,6 @@ class Partition(object):
         except AttributeError:
             return (None, None)
 
-    def attribute_list(self, keyset=None):
-        if keyset is None:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            self.partition_attribute))
-        else:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            keyset.intersection(self.partition_attribute)))
-
     def carbon_copy(self, other):
         assert(type(self) == type(other))
         self.value = other.value

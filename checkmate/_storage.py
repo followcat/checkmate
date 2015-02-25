@@ -151,7 +151,6 @@ class InternalStorage(object):
 
         self.arguments = arguments
         self.resolved_arguments = self.function.method_arguments(arguments)
-        self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
         self.values = (value, )
 
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
