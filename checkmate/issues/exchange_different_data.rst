@@ -6,5 +6,9 @@ Init a new Action AP from transition incoming storage and modify it's arguments 
 >>> incoming.code
 'AP'
 >>> incoming.arguments.update({'attribute_values':{}, 'values':('R2', )})
->>> incoming.factory().R
-['AT2', 'HIGH']
+>>> incoming.factory().R.C.value, incoming.factory().R.P.value 
+('AT2', 'HIGH')
+
+Restore incoming.arguments
+>>> del incoming.arguments['attribute_values']
+>>> del incoming.arguments['values']

@@ -89,7 +89,7 @@ def get_exec_signature(signature, exec_module=None,
 
 
 @checkmate.report_issue('checkmate/issues/exchange_different_data.rst',
-    failed=2)
+    failed=1)
 def get_define_str(element):
     run_code = """
 \nimport inspect
