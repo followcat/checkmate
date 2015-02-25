@@ -27,11 +27,9 @@ class Partition(object):
             if hasattr(builtins, data_cls.__name__):
                 kwargs[attr] = data_cls(value)
             else:
-                for _s in data_cls.partition_storage.storage:
-                    if _s.code == value:
-                        kwargs[attr] = _s.factory()
-                        break
-                else:
+                try:
+                    kwargs[attr] = data_cls.storage_by_code(value).factory()
+                except AttributeError:
                     if attr == value:
                         kwargs.pop(attr)
         return kwargs
