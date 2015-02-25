@@ -15,7 +15,7 @@ class Partition(object):
             >>> import sample_app.exchanges
             >>> action = sample_app.exchanges.Action
             >>> action.method_arguments({'R': 'AT1'})
-            {'R': 'AT1'}
+            {}
             >>> action.method_arguments({'R': 'R2'})['R'].C.value
             'AT2'
             >>> action.method_arguments({'R': 'R2'})['R'].P.value
@@ -30,7 +30,7 @@ class Partition(object):
                 try:
                     kwargs[attr] = data_cls.storage_by_code(value).factory()
                 except AttributeError:
-                    if attr == value:
+                    if type(value) != tuple:
                         kwargs.pop(attr)
         return kwargs
 
@@ -173,14 +173,6 @@ class Partition(object):
             return (self.partition_storage.get_description(self))
         except AttributeError:
             return (None, None)
-
-    def attribute_list(self, keyset=None):
-        if keyset is None:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            self.partition_attribute))
-        else:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            keyset.intersection(self.partition_attribute)))
 
     def carbon_copy(self, other):
         assert(type(self) == type(other))
