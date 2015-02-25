@@ -5,7 +5,8 @@ the component should be able to execute the transition:
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
-    >>> r2 = app.data_value['ActionRequest']['R2']
+    >>> action_request = sample_app.data_structure.ActionRequest
+    >>> r2 = action_request.storage_by_code('R2').factory()
     >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
@@ -21,8 +22,8 @@ define a transition to to process AP(R2)
     >>> import checkmate._storage
     >>> a = sample_app.application.TestData()
     >>> a.start()
-    >>> r1 = a.data_value['ActionRequest']['R1']
-    >>> r2 = a.data_value['ActionRequest']['R2']
+    >>> r1 = action_request.storage_by_code('R1').factory()
+    >>> r2 = action_request.storage_by_code('R2').factory()
     >>> ap_r1 = sample_app.exchanges.Action('AP', R=r1)
     >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r1.R.C.value, ap_r1.R.P.value

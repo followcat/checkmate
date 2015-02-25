@@ -36,6 +36,12 @@ class Partition(object):
                         kwargs.pop(attr)
         return kwargs
 
+    @classmethod
+    def storage_by_code(cls, code):
+        for storage in cls.partition_storage.storage:
+            if storage.code == code:
+                return storage
+
     @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
