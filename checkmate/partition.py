@@ -15,7 +15,7 @@ class Partition(object):
             >>> import sample_app.exchanges
             >>> action = sample_app.exchanges.Action
             >>> action.method_arguments({'R': 'AT1'})
-            {'R': 'AT1'}
+            {}
             >>> action.method_arguments({'R': 'R2'})['R'].C.value
             'AT2'
             >>> action.method_arguments({'R': 'R2'})['R'].P.value
@@ -32,7 +32,7 @@ class Partition(object):
                         kwargs[attr] = _s.factory()
                         break
                 else:
-                    if attr == value:
+                    if type(value) != tuple:
                         kwargs.pop(attr)
         return kwargs
 
