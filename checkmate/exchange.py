@@ -10,7 +10,7 @@ class Exchange(checkmate.partition.Partition):
     broadcast = False
     communication = ''
 
-    @checkmate.report_issue("checkmate/issues/partition_code_as_value.rst")
+    @checkmate.fix_issue("checkmate/issues/partition_code_as_value.rst")
     def __init__(self, value=None, *args, default=True, origin='',
                  destination='', **kwargs):
         """
