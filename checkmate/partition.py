@@ -84,8 +84,12 @@ class Partition(object):
         elif value == 'None':
             self.value = None
         else:
-            self.value = value
-            if value is None and default and hasattr(self, '_valid_values'):
+            try:
+                self.value = self.__class__.storage_by_code(value).value
+            except AttributeError:
+                self.value = value
+            if (self.value is None and
+                    default and hasattr(self, '_valid_values')):
                 try:
                     self.value = self._valid_values[0]
                     if self.value == 'None':
