@@ -109,7 +109,7 @@ class TransitionStorage(object):
                         generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
-                            generate_storage.values = _s.values
+                            generate_storage.value = _s.value
                             break
                     else:
                         if hasattr(define_class, code):
@@ -151,7 +151,7 @@ class InternalStorage(object):
 
         self.arguments = arguments
         self.resolved_arguments = self.function.method_arguments(arguments)
-        self.values = (value, )
+        self.value = value
 
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue(
@@ -197,12 +197,12 @@ class InternalStorage(object):
         """
         if 'default' not in kwargs or kwargs['default']:
             if len(args) == 0:
-                args = self.values
+                args = (self.value, )
             if len(kwargs) == 0:
                 kwargs.update(self.resolved_arguments)
         if instance is not None and self.interface.providedBy(instance):
             try:
-                value = self.values[0]
+                value = self.value
             except IndexError:
                 value = None
             self.function(instance, value, **kwargs)
@@ -247,8 +247,8 @@ class InternalStorage(object):
             'AT2'
             >>> t.outgoing[0].resolved_arguments['R'].P.value
             'HIGH'
-            >>> t.outgoing[0].values
-            ('AP',)
+            >>> t.outgoing[0].value
+            'AP'
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
@@ -326,7 +326,7 @@ class InternalStorage(object):
             else:
                 resolved_arguments = self.resolve()
 
-            if _target == self.factory(instance=_initial[0], *self.values,
+            if _target == self.factory(self.value, instance=_initial[0],
                               default=False, **resolved_arguments):
                 return _target
         return None

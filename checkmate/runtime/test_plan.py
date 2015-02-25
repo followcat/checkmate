@@ -87,7 +87,7 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> run_list[0].root.incoming[0].code
         'PBAC'
         >>> box = checkmate.sandbox.Sandbox(_application, run_list[0].walk())
-        >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].values[0]
+        >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].value
         True
         >>> box.application.compare_states(run_list[0].root.initial)
         True

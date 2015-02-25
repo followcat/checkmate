@@ -27,11 +27,9 @@ class Partition(object):
             if hasattr(builtins, data_cls.__name__):
                 kwargs[attr] = data_cls(value)
             else:
-                for _s in data_cls.partition_storage.storage:
-                    if _s.code == value:
-                        kwargs[attr] = _s.factory()
-                        break
-                else:
+                try:
+                    kwargs[attr] = data_cls.storage_by_code(value).factory()
+                except AttributeError:
                     if type(value) != tuple:
                         kwargs.pop(attr)
         return kwargs
@@ -42,7 +40,7 @@ class Partition(object):
             if storage.code == code:
                 return storage
 
-    @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst")
+    @checkmate.fix_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are stored in
@@ -86,8 +84,12 @@ class Partition(object):
         elif value == 'None':
             self.value = None
         else:
-            self.value = value
-            if value is None and default and hasattr(self, '_valid_values'):
+            try:
+                self.value = self.__class__.storage_by_code(value).value
+            except AttributeError:
+                self.value = value
+            if (self.value is None and
+                    default and hasattr(self, '_valid_values')):
                 try:
                     self.value = self._valid_values[0]
                     if self.value == 'None':
