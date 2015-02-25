@@ -121,7 +121,7 @@ class Transition(object):
         for incoming in self.incoming:
             arguments = incoming.resolve(states)
             incoming_exchanges.append(
-                incoming.factory(*incoming.values, default=False, **arguments))
+                incoming.factory(incoming.value, default=False, **arguments))
         return incoming_exchanges
             
 
@@ -166,6 +166,6 @@ class Transition(object):
             resolved_arguments = outgoing_exchange.resolve(states, _incoming,
                                                            self.resolve_dict)
             _outgoing_list.append(
-                outgoing_exchange.factory(*outgoing_exchange.values,
+                outgoing_exchange.factory(outgoing_exchange.value,
                     default=default, **resolved_arguments))
         return _outgoing_list

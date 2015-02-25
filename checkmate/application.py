@@ -218,8 +218,8 @@ class Application(object):
             >>> c1.states[0].value
             True
             >>> t = c1.state_machine.transitions[0]
-            >>> t.initial[0].values
-            (True,)
+            >>> t.initial[0].value
+            True
             >>> app.compare_states(t.initial)
             True
             >>> target = t.initial + t.initial
