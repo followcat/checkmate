@@ -14,6 +14,10 @@ class TestData(checkmate.application.Application,
 
     component_classes = yaml.load(
         """
+        - class: sample_app/component/component_3.yaml
+          attributes: {}
+          instances:
+            - name: C3
         - class: sample_app/component/component_1.yaml
           attributes: {}
           instances:
@@ -26,10 +30,6 @@ class TestData(checkmate.application.Application,
                 request:
                   C: AT1
                   P: NORM
-        - class: sample_app/component/component_3.yaml
-          attributes: {}
-          instances:
-            - name: C3
         - class: sample_app/component/user.yaml
           attributes: {}
           instances:

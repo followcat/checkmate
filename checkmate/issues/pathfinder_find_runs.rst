@@ -12,7 +12,7 @@
         >>> ac_run = [r for r in runs if r.root.outgoing[0].code == 'PBAC'][0]
         >>> rl_run = [r for r in runs if r.root.outgoing[0].code == 'PBRL'][0]
 
-        >>> box = checkmate.sandbox.Sandbox(a)
+        >>> box = checkmate.sandbox.Sandbox(type(a))
         >>> box(ac_run)
         True
         >>> box(rl_run)
@@ -25,5 +25,5 @@
 
         >>> runs[0].root.outgoing[0].code
         'AC'
-        >>> len(checkmate.pathfinder._find_runs(box.application, runs[0].initial))
+        >>> len(checkmate.pathfinder._find_runs(box.application, runs[0]))
         3

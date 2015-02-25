@@ -141,6 +141,7 @@ class Application(object):
                 self.components[_name] = \
                     _class(_name, self.service_registry)
         self.default_state_value = True
+        self.initializing_outgoing = []
 
     def __getattr__(self, name):
         """
@@ -168,7 +169,9 @@ class Application(object):
         """
         if not self._started:
             for component in list(self.components.values()):
-                component.start(default_state_value=default_state_value)
+                _out = component.start(default_state_value=default_state_value)
+                if _out is not None:
+                    self.initializing_outgoing.append(_out)
             self._started = True
         self.default_state_value = default_state_value
 
@@ -201,51 +204,6 @@ class Application(object):
         for _component in list(self.components.values()):
             incoming_list += _component.get_all_validated_incoming()
         return incoming_list
-
-    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
-    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
-    @checkmate.report_issue('checkmate/issues/validated_compare_states.rst')
-    def compare_states(self, target, reference_state_list=None):
-        """Compare states of the application's components to target
-
-        This comparison is taking the length of the target into account.
-        If a matching state is twice in the target, the comparison will
-        fail. This should probably be fixed.
-            >>> import sample_app.application
-            >>> app = sample_app.application.TestData()
-            >>> app.start()
-            >>> c1 = app.components['C1']
-            >>> c1.states[0].value
-            True
-            >>> t = c1.state_machine.transitions[0]
-            >>> t.initial[0].value
-            True
-            >>> app.compare_states(t.initial)
-            True
-            >>> target = t.initial + t.initial
-            >>> app.compare_states(target)
-            False
-        """
-        if len(target) == 0:
-            return True
-
-        local_copy = self.state_list()[:]
-
-        incoming_list = []
-        if reference_state_list is not None:
-            incoming_list = self.validated_incoming_list()
-
-        match_list = []
-        for _target in target:
-            _length = len(local_copy)
-            match_item = _target.match(local_copy, reference_state_list,
-                            incoming_list)
-            if match_item is not None:
-                match_list.append(match_item)
-                local_copy.remove(match_item)
-            if len(local_copy) == _length:
-                return False
-        return True
 
     def visual_dump_states(self):
         state_dict = {}

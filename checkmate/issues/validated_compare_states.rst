@@ -5,15 +5,16 @@ The application.compare_states should get True.
 
     >>> import checkmate.sandbox
     >>> import sample_app.application
-    >>> app = sample_app.application.TestData()
+    >>> cls = sample_app.application.TestData
+    >>> app = cls()
     >>> runs = app.run_collection
 
-    >>> compare_box1 = checkmate.sandbox.Sandbox(app)
-    >>> compare_box2 = checkmate.sandbox.Sandbox(app)
+    >>> compare_box1 = checkmate.sandbox.Sandbox(cls)
+    >>> compare_box2 = checkmate.sandbox.Sandbox(cls)
     >>> compare_app1 = compare_box1.application
     >>> compare_app2 = compare_box2.application
 
-    >>> box = checkmate.sandbox.Sandbox(app)
+    >>> box = checkmate.sandbox.Sandbox(cls)
     >>> box_app = box.application
     >>> box(runs[0])
     True
@@ -25,10 +26,10 @@ The application.compare_states should get True.
     >>> ac.carbon_copy(add_ac)
     >>> add_ac.R.C = 'AT2'
 
-    >>> box_app.compare_states(runs[0].final, compare_app1.state_list())
+    >>> runs[0].compare_final(box_app, compare_app1)
     True
     >>> c2.validation_list[-1].append(add_ac)
     >>> c2.validation_list.validated_items[-1].append(add_ac)
-    >>> box_app.compare_states(runs[0].final, compare_app2.state_list())
+    >>> runs[0].compare_final(box_app, compare_app2)
     True
 

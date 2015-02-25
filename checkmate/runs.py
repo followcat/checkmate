@@ -54,6 +54,60 @@ class Run(checkmate._tree.Tree):
             if self.itp_run is not None:
                 self._final = self.itp_run.root.final
 
+    def compare_initial(self, application):
+        """"""
+        for run in self.breadthWalk():
+            for component in application.components.values():
+                if run.root in component.state_machine.transitions:
+                    if run.root.is_matching_initial(component.states):
+                        break
+            else:
+                return False
+        return True
+
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.fix_issue('checkmate/issues/validated_compare_states.rst')
+    @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
+    def compare_final(self, application, reference):
+        """"""
+        box = checkmate.sandbox.Sandbox(type(reference), reference)
+        for run in self.breadthWalk():
+            for name, component in application.components.items():
+                _found = False
+                if run.root in component.state_machine.transitions:
+                    for final in run.root.final:
+                        state = [_s for _s in
+                                 box.application.components[name].states
+                                 if final.interface.providedBy(_s)][0]
+                        index = \
+                            box.application.components[name].states.index(
+                                state)
+                        incoming = \
+                            component.validation_list.validated_items[
+                                component.validation_list.transitions.index(
+                                    run.root)]
+                        _arguments = \
+                            final.resolve(
+                                box.application.components[name].states,
+                                incoming)
+                        final.factory(instance=state, **_arguments)
+                        if state == component.states[index]:
+                            _found = True
+                        else:
+                            _found = False
+                            break
+                    else:
+                        assert(_found or len(run.root.final) == 0)
+                        _found = True
+                else:
+                    continue
+                if _found:
+                    break
+            else:
+                return False
+        return True
+
     def add_node(self, tree):
         self._initial = None
         self._final = None
@@ -132,14 +186,16 @@ class Run(checkmate._tree.Tree):
 def get_runs_from_application(application):
     runs = []
     origin_transitions = []
-    application = type(application)()
+    _class = type(application)
+    application = _class()
     application.start(default_state_value=False)
     for _component in application.components.values():
         for _transition in _component.state_machine.transitions:
             if not len(_transition.incoming):
                 origin_transitions.append(_transition)
     for _o in origin_transitions:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        sandbox = \
+            checkmate.sandbox.CollectionSandbox(_class, application)
         run = checkmate.runs.Run(_o)
         for _run in sandbox(run):
             runs.append(_run)
@@ -149,13 +205,12 @@ def get_runs_from_application(application):
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = checkmate.runs.Run(transition)
+    _class = type(application)
     if itp_transition:
-        application = type(application)()
-        application.start()
         sandbox = checkmate.sandbox.CollectionSandbox(
-                    application, transition_run.walk())
+                    _class, application, transition_run.walk())
     else:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
     for _run in sandbox(transition_run, itp_run=itp_transition):
         runs.append(_run)
     return runs

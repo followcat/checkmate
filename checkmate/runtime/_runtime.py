@@ -134,6 +134,8 @@ class Runtime(object):
             condition.wait_for(check_threads,
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
+    @checkmate.report_issue(
+        "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True):
         if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
@@ -152,9 +154,9 @@ class Runtime(object):
             'Procedure done')
 
     def transform_to_initial(self, run):
-        if not self.application.compare_states(run.initial):
+        if not run.compare_initial(self.application):
             run_list = list(checkmate.pathfinder._find_runs(
-                            self.application, run.initial).keys())
+                            self.application, run).keys())
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")

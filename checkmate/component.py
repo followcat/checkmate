@@ -143,6 +143,8 @@ class Component(object):
         return None
 
     @checkmate.fix_issue("checkmate/issues/set_component_attribute_state.rst")
+    @checkmate.report_issue(
+        "checkmate/issues/validate_initializing_transition.rst", failed=1)
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application
@@ -168,6 +170,12 @@ class Component(object):
             self.states.append(cls.start(default=default_state_value, kws=_kws))
         self.service_registry.register(self, self.service_interfaces)
         self.default_state_value = default_state_value
+        outgoing = []
+        for transition in self.state_machine.transitions:
+            if transition.initializing:
+                outgoing.extend(self.simulate(transition))
+        if len(outgoing) > 0:
+            return outgoing
 
     def reset(self):
         self.pending_incoming = []

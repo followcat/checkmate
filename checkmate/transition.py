@@ -9,6 +9,7 @@ class Transition(object):
     def __init__(self, **argc):
         """"""
         self.owner = ''
+        self.initializing = argc['initializing']
         try:
             self.name = argc['tran_name']
         except KeyError:
@@ -51,6 +52,8 @@ class Transition(object):
             >>> c = a.components['C1']
             >>> c.state_machine.transitions[0].name
             'Toggle state tran01'
+            >>> c.state_machine.transitions[0].initializing
+            False
             >>> i = c.state_machine.transitions[0].incoming[0].factory()
             >>> i.value
             'AC'

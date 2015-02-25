@@ -84,19 +84,22 @@ class Procedure(object):
         self._run_from_startpoint()
 
     def _run_from_startpoint(self):
+        _application = self.runtime.application
         if self.result is not None:
             self.result.startTest(self)
-        saved_initial = checkmate.sandbox.Sandbox(self.runtime.application)
+        saved_initial = \
+            checkmate.sandbox.Sandbox(type(_application), _application)
         stub = self.runtime.runtime_components[self.transitions.root.owner]
         stub.simulate(self.transitions.root)
         self._follow_up(self.transitions)
 
-        if hasattr(self, 'final'):
+        if hasattr(self.transitions, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(
                 checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.runtime.application.compare_states(self.final,
-                            saved_initial.application.state_list())
+                return self.transitions.compare_final(
+                            self.runtime.application,
+                            saved_initial.application)
             if not check_compare_states():
                 self.logger.error(
                     'Procedure Failed: Final states are not as expected')
