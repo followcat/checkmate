@@ -10,8 +10,8 @@ still be ok.
     >>> c1.states[0].value
     True
     >>> t = c1.state_machine.transitions[0]
-    >>> t.initial[0].values
-    (True,)
+    >>> t.initial[0].value
+    True
     >>> run = checkmate.runs.Run(t)
     >>> run.compare_initial(app)
     True
