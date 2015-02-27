@@ -38,19 +38,20 @@ def get_method_basename(signature):
     return basename
 
 
+@checkmate.fix_issue("checkmate/issues/list_signature_arguments.rst")
 def get_signature_arguments(signature, cls):
     """
         >>> import sample_app.application
         >>> import sample_app.exchanges
         >>> import checkmate._exec_tools
-        >>> action = sample_app.exchanges.Action
+        >>> action_class = sample_app.exchanges.Action
         >>> arguments = checkmate._exec_tools.get_signature_arguments
-        >>> arguments("Action('R')", action)
+        >>> arguments("Action('R')", action_class)
         {'R': 'R'}
-        >>> arguments("AP('R2')", action)
+        >>> arguments("AP('R2')", action_class)
         {'R': 'R2'}
         >>> checkmate._exec_tools.get_signature_arguments(
-        ...     'AP([2, [3, "", null], True, AUTO])', action)
+        ...     'AP([2, [3, "", null], True, AUTO])', action_class)
         {'R': [2, [3, '', None], True, 'AUTO']}
     """
     found_label = signature.find('(')
