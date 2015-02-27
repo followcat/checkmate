@@ -150,8 +150,8 @@ class InternalStorage(object):
         self.cls = checkmate._module.get_class_implementing(interface)
         self.function = self.cls
 
-        self.arguments = arguments
-        self.resolved_arguments = self.function.method_arguments(arguments)
+        self.arguments = dict(arguments)
+        self.resolved_arguments = self.function.method_arguments(self.arguments)
         self.value = value
 
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')

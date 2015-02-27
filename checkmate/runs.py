@@ -30,7 +30,7 @@ class Run(checkmate._tree.Tree):
     def get_transition_by_input_states(self, exchanges, states):
         for _t in self.walk():
             if (_t.is_matching_initial(states) and
-                    _t.is_matching_incoming(exchanges)):
+                    _t.is_matching_incoming(exchanges, states)):
                 return _t
         else:
             raise checkmate.exception.NoTransitionFound
