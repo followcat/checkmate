@@ -20,7 +20,7 @@ def name_to_interface(name, modules):
     return interface
 
 
-class Data(object):
+class PartitionStorage(object):
     def __init__(self, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
@@ -32,12 +32,12 @@ class Data(object):
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
             >>> c1_module = sample_app.component.component_1_states
-            >>> data = checkmate._storage.Data(
+            >>> data = checkmate._storage.PartitionStorage(
             ...             c1_module.IAnotherState,
             ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data(
+            >>> data = checkmate._storage.PartitionStorage(
             ...         sample_app.exchanges.IAction, 
             ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
@@ -69,10 +69,6 @@ class Data(object):
             if item == stored_item.factory():
                 return stored_item.description
         return (None, None)
-
-
-class PartitionStorage(Data):
-    """"""
 
 
 class TransitionStorage(object):
