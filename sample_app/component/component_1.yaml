@@ -41,12 +41,12 @@ data:
       - name: 'Append element ok tran02'
         initial: 
           - State:            State2
-          - AnotherState:     AnotherState1()
+          - AnotherState:     AnotherState1(R)
         incoming:
           - Action:           PP()
         final:
           - State:            State1
-          - AnotherState:     pop()
+          - AnotherState:     pop(R)
         outgoing:
           - Pause:            PA()
 
