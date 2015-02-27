@@ -90,7 +90,7 @@ class Run(checkmate._tree.Tree):
                         _arguments = \
                             final.resolve(
                                 box.application.components[name].states,
-                                incoming)
+                                incoming, run.root.resolve_dict)
                         final.factory(instance=state, **_arguments)
                         if state == component.states[index]:
                             _found = True

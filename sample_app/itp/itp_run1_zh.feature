@@ -8,6 +8,6 @@
         而且组件的状态C3.Acknowledge的值是Acknowledge1
         当组件C2发出信号Action AC()
         那么组件的状态C1.State的值变成State2
-        而且组件的状态C1.AnotherState的值变成AnotherState1()
+        而且组件的状态C1.AnotherState的值变成AnotherState1(R)
         而且组件的状态C3.Acknowledge的值变成Acknowledge2
 

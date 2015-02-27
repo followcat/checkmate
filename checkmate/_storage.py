@@ -193,7 +193,8 @@ class InternalStorage(object):
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
-            >>> arguments = t.final[1].resolve(exchanges=[i])
+            >>> arguments = t.final[1].resolve(exchanges=[i],
+            ...                 resolved_dict=t.resolve_dict)
             >>> t.final[1].factory(instance=c.states[1],
             ...     **arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState ...
@@ -216,7 +217,7 @@ class InternalStorage(object):
             return self.function(*args, **kwargs)
 
     @checkmate.fix_issue("checkmate/issues/transition_resolve_arguments.rst")
-    def resolve(self, states=None, exchanges=None, resolved_dict={}):
+    def resolve(self, states=None, exchanges=None, resolved_dict=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -225,19 +226,22 @@ class InternalStorage(object):
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
-            >>> t.final[0].resolve(states)
+            >>> t.final[0].resolve(states, resolved_dict=t.resolve_dict)
             {}
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
             >>> inc.R.value
             ['AT2', 'HIGH']
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=1)
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {
             ...     'states': [sample_app.component.component_1_states],
@@ -266,6 +270,8 @@ class InternalStorage(object):
             states = []
         if exchanges is None:
             exchanges = []
+        if resolved_dict is None:
+            resolved_dict = {}
         _attributes = {}
         for attr, data_cls in self.cls._construct_values.items():
             if (attr in self.arguments and
@@ -274,12 +280,6 @@ class InternalStorage(object):
                 interface, attr = resolved_dict[self.arguments[attr]]
                 for input in states + exchanges:
                     if hasattr(input, attr) and interface.providedBy(input):
-                        data = getattr(input, attr)
-                        if isinstance(data, data_cls):
-                            _attributes[attr] = data
-            else:
-                for input in states + exchanges:
-                    if hasattr(input, attr):
                         data = getattr(input, attr)
                         if isinstance(data, data_cls):
                             _attributes[attr] = data

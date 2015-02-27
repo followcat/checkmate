@@ -8,6 +8,6 @@ Feature: First run AC
         And Component state C3.Acknowledge at value Acknowledge1
         When Component C2 sends exchange Action AC()
         Then Component state C1.State should change to value State2
-        And Component state C1.AnotherState should change to value AnotherState1()
+        And Component state C1.AnotherState should change to value AnotherState1(R)
         And Component state C3.Acknowledge should change to value Acknowledge2
 

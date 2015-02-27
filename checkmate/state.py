@@ -192,7 +192,10 @@ class State(checkmate.partition.Partition):
                         return self.value.pop(
                                 self.value.index({value[0]: value[1]}))
                     except ValueError:
+                        if self.value == [None]:
+                            self.value = []
                         pass
                     setattr(self, value[0], None)
         except:
-            return None
+            if self.value == [None]:
+                self.value = []
