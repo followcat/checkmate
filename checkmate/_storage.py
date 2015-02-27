@@ -271,12 +271,18 @@ class InternalStorage(object):
             if (attr in self.arguments and
                     type(self.arguments[attr]) != tuple and
                     self.arguments[attr] in resolved_dict):
-                attr = resolved_dict[self.arguments[attr]]
-            for input in states + exchanges:
-                if hasattr(input, attr):
-                    data = getattr(input, attr)
-                    if isinstance(data, data_cls):
-                        _attributes[attr] = data
+                interface, attr = resolved_dict[self.arguments[attr]]
+                for input in states + exchanges:
+                    if hasattr(input, attr) and interface.providedBy(input):
+                        data = getattr(input, attr)
+                        if isinstance(data, data_cls):
+                            _attributes[attr] = data
+            else:
+                for input in states + exchanges:
+                    if hasattr(input, attr):
+                        data = getattr(input, attr)
+                        if isinstance(data, data_cls):
+                            _attributes[attr] = data
         _attributes.update(self.resolved_arguments)
         return _attributes
 

@@ -27,7 +27,7 @@ class Transition(object):
             for key, value in _s.arguments.items():
                 if type(value) == tuple:
                     continue
-                self.resolve_dict[value] = key
+                self.resolve_dict[value] = (_s.interface, key)
 
     def matching_list(self, matched_list, partition_list):
         match_list = []
