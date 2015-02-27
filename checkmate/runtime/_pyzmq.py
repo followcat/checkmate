@@ -203,7 +203,7 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> simulated_transition = c2.state_machine.transitions[0]
         >>> o = c2_stub.simulate(simulated_transition)
         >>> t = c1_stub.context.state_machine.transitions[0]
-        >>> t.is_matching_incoming(o)
+        >>> t.is_matching_incoming(o, c1_stub.context.states)
         True
         >>> c1_stub.validate(t)
         True

@@ -24,7 +24,7 @@ first is resolve
     >>> ex = exchanges[0]
     >>> ex.R.C.value, ex.R.P.value
     ('AT2', 'HIGH')
-    >>> t.is_matching_incoming(exchanges)
+    >>> t.is_matching_incoming(exchanges, a.components['C1'].states)
     True
 
 When filling the generic incmoing for a component with

@@ -118,7 +118,7 @@ class Component(object):
         transition_list = []
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange)):
+                _t.is_matching_incoming(exchange, self.states)):
                 transition_list.append(_t)
         return transition_list
 

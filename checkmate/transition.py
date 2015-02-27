@@ -40,7 +40,7 @@ class Transition(object):
         return match_list
 
 
-    def is_matching_incoming(self, exchange_list):
+    def is_matching_incoming(self, exchange_list, state_list):
         """Check if the transition incoming list is matching a list of
         exchange.
 
@@ -57,13 +57,31 @@ class Transition(object):
             >>> i = c.state_machine.transitions[0].incoming[0].factory()
             >>> i.value
             'AC'
-            >>> c.state_machine.transitions[0].is_matching_incoming([i])
+            >>> s = c.states
+            >>> c.state_machine.transitions[0].is_matching_incoming([i], s)
             True
-            >>> c.state_machine.transitions[2].is_matching_incoming([i])
+            >>> c.state_machine.transitions[2].is_matching_incoming([i], s)
             False
 
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
         """
+        keys = {}
+        for key, value in self.resolve_dict.items():
+            interface, attr = value
+            if hasattr(exchange_list[0], attr):
+                if attr not in keys:
+                    keys[attr] = []
+                keys[attr].append(key)
+        for key, attr_list in keys.items():
+            if key not in attr_list and len(set(attr_list)) > 1:
+                compare_list = []
+                for attr in attr_list:
+                    interface = self.resolve_dict[attr][0]
+                    for input in state_list + exchange_list:
+                        if interface.providedBy(input):
+                            compare_list.append(getattr(input, key))
+                if len(compare_list) > 1 and compare_list[0] == compare_list[1]:
+                    return False
         match_list = self.matching_list(self.incoming, exchange_list)
         return len(match_list) == len(exchange_list)
 
@@ -145,7 +163,7 @@ class Transition(object):
         """
         _outgoing_list = []
         if not self.is_matching_initial(states) or \
-           not self.is_matching_incoming(_incoming):
+           not self.is_matching_incoming(_incoming, states):
             return _outgoing_list
         for _state in states:
             if not default:

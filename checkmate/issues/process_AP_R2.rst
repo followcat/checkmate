@@ -31,6 +31,7 @@ define a transition to to process AP(R2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
     >>> c1_states = sample_app.component.component_1_states
+    >>> c1 = a.components['C1']
     >>> module_dict = {'states': [c1_states],
     ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
@@ -40,9 +41,9 @@ define a transition to to process AP(R2)
     ...         'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
-    >>> t.is_matching_incoming([ap_r1])
+    >>> t.is_matching_incoming([ap_r1], c1.states)
     False
-    >>> t.is_matching_incoming([ap_r2])
+    >>> t.is_matching_incoming([ap_r2], c1.states)
     True
     >>> states = a.components['C1'].states
     >>> states[1].value
@@ -81,7 +82,7 @@ Default behavior. The exchange AP(R2) can't be processed.
     >>> ap = sample_app.exchanges.Action('AP')
     >>> ap.R.C.value, ap.R.P.value
     ('AT1', 'NORM')
-    >>> t.is_matching_incoming([ap])
+    >>> t.is_matching_incoming([ap], c1.states)
     False
     >>> res = []
     >>> res = c1.process([ap]) #doctest: +IGNORE_EXCEPTION_DETAIL
@@ -96,7 +97,7 @@ the expected final state is reached.
     >>> ap = sample_app.exchanges.Action('AP', default=False)
     >>> ap.R.C.value, ap.R.P.value
     (None, None)
-    >>> t.is_matching_incoming([ap])
+    >>> t.is_matching_incoming([ap], c1.states)
     True
     >>> sample_app.exchanges.ActionCode(True) in c1.process([ap])
     True
