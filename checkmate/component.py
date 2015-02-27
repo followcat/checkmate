@@ -102,6 +102,11 @@ class Component(object):
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
 
+    def transition_by_name(self, name):
+        for _t in self.state_machine.transitions:
+            if _t.name == name:
+                return _t
+
     def get_transitions_by_input(self, exchange):
         """
         >>> import sample_app.application
