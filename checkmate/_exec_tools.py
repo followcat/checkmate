@@ -113,7 +113,7 @@ def get_define_str(element):
 \n            if self.__class__._sig.parameters[_k].kind == \
                     inspect.Parameter.VAR_POSITIONAL:
 \n                if isinstance(kwargs[_k], tuple):
-\n                    kwargs[_k] = [_v(item) for item in kwargs[_k][0]]
+\n                    kwargs[_k] = [_v(item) for item in kwargs[_k]]
 \n                else:
 \n                    kwargs[_k] = []
 \n            elif _k not in kwargs or kwargs[_k] is None:

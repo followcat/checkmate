@@ -46,7 +46,7 @@ Creation of the transition.
 
     >>> item_in = {'name': 'Receive exchange list partition',
     ...     'initial': [],
-    ...     'incoming': [{'Exchange': 'EX(IT, [IT, IT])'}],
+    ...     'incoming': [{'Exchange': 'EX(IT, IT, IT)'}],
     ...     }
 
     >>> module = {
@@ -69,8 +69,8 @@ the annotated type:
     <_ParameterKind: 'POSITIONAL_OR_KEYWORD'>
     >>> type(ex.I)
     <class 'sample_app.data.Item'>
-    >>> ex.I.value == 'item'
-    True
+    >>> ex.I.value
+    'item'
 
 A VAR_POSITIONAL parameter is turned into a list:
 
@@ -78,8 +78,8 @@ A VAR_POSITIONAL parameter is turned into a list:
     <_ParameterKind: 'VAR_POSITIONAL'>
     >>> type(ex.L)
     <class 'list'>
-    >>> len(ex.L) == len(['IT', 'IT'])
-    True
+    >>> len(ex.L)
+    2
 
 The items in the list will be instantiated using the type
 from annotation.
@@ -88,8 +88,8 @@ from annotation.
     <class 'sample_app.data.Item'>
     >>> ex.L[0] #doctest: +ELLIPSIS
     <sample_app.data.Item object at ...
-    >>> ex.L[0].value == 'item'
-    True
+    >>> ex.L[0].value
+    'item'
 
 Rollback all changes in the common modules.
 
