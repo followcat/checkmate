@@ -39,8 +39,7 @@ Send 'AC' for append default 'R':
     >>> final = [_f for _f in run.final if _f.interface == interface][0]
     >>> final.function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
-    >>> t = c1.context.state_machine.transition_by_name(
-    ...         "Append element ok tran01")
+    >>> t = c1.context.transition_by_name("Append element ok tran01")
 
     >>> validated_incoming = r.application.validated_incoming_list()
     >>> saved_final = [_f for _f in saved.application.state_list()

@@ -25,8 +25,7 @@ It is impossible to specify the final state by providing arguments
     ...     checkmate.sandbox.Sandbox(type(r.application),
     ...         r.application)
     >>> r.execute(runs[1])
-    >>> t = c1.context.state_machine.transition_by_name(
-    ...         "Append element ok tran01")
+    >>> t = c1.context.transition_by_name("Append element ok tran01")
     >>> runs[1].final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
     >>> ap = sample_app.exchanges.Action('AP')
