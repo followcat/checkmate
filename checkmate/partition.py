@@ -21,14 +21,17 @@ class Partition(object):
             >>> action.method_arguments({'R': 'R2'})['R'].P.value
             'HIGH'
         """
+        copy_arguments = dict(arguments)
         kwargs = dict(arguments)
-        for attr, value in arguments.items():
+        for attr, value in copy_arguments.items():
             data_cls = cls._construct_values[attr]
             if hasattr(builtins, data_cls.__name__):
                 kwargs[attr] = data_cls(value)
+                arguments.pop(attr)
             else:
                 try:
                     kwargs[attr] = data_cls.storage_by_code(value).factory()
+                    arguments.pop(attr)
                 except AttributeError:
                     if type(value) != tuple:
                         kwargs.pop(attr)
