@@ -66,12 +66,13 @@ class Transition(object):
             >>> i = c.state_machine.transitions[1].incoming[0].factory()
         """
         keys = {}
-        for key, value in self.resolve_dict.items():
-            interface, attr = value
-            if hasattr(exchange_list[0], attr):
-                if attr not in keys:
-                    keys[attr] = []
-                keys[attr].append(key)
+        if len(exchange_list) > 0:
+            for key, value in self.resolve_dict.items():
+                interface, attr = value
+                if hasattr(exchange_list[0], attr):
+                    if attr not in keys:
+                        keys[attr] = []
+                    keys[attr].append(key)
         for key, attr_list in keys.items():
             if key not in attr_list and len(set(attr_list)) > 1:
                 compare_list = []
