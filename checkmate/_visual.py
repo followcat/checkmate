@@ -1,3 +1,6 @@
+__all__ = ['run_steps', 'run']
+
+
 def visual_states(dump_states, level=0):
     return_str = ""
     tab_space = ' ' * 6 * level
@@ -12,21 +15,33 @@ def visual_states(dump_states, level=0):
     return return_str
 
 
-def visual_run_steps(run, level=0):
+def run_steps(run, level=0, with_state=False):
     visual_dump = run.visual_dump_steps()
     tab_space = ' ' * 6 * level
-    final_states = visual_states(visual_dump['states'], level + 1)
     string = "\n\
 {space}|\n\
-{space}|_____|-{incoming}\n\
-{space}      |-{outgoing}\n{final}".format(space=tab_space, incoming=visual_dump['incoming'], outgoing=visual_dump['outgoing'], final=final_states)
+{space}|_____|-{incoming}".format(space=tab_space, incoming=visual_dump['incoming'])
+    if len(visual_dump['outgoing']) < 2:
+        string += "\n\
+{space}      |-{outgoing}".format(space=tab_space, outgoing=visual_dump['outgoing'])
+    else:
+        prefix = "\n{space}      |-['".format(space=tab_space)
+        for _o in visual_dump['outgoing']:
+            string += prefix + "{outgoing}".format(space=tab_space, outgoing=_o)
+            prefix = "',\n{space}      |  '".format(space=tab_space)
+        else:
+            string += "']"
+            
+    if with_state:
+        final_states = visual_states(visual_dump['states'], level + 1)
+        string += "\n{final}".format(final=final_states)
     for element in run.nodes:
-        string += visual_run_steps(element, level + 1)
+        string += run_steps(element, level + 1, with_state)
     return string
 
 
-def visual_run(run, level=0):
+def run(run, level=0):
     return_str = visual_states(run.visual_dump_initial(), level)
-    return_str += visual_run_steps(run, level)
+    return_str += run_steps(run, level, with_state=True)
     return_str += visual_states(run.visual_dump_final(), level)
     return return_str
