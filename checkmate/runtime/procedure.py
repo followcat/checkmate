@@ -22,7 +22,6 @@ class Procedure(object):
         self.initial = run.initial
         self.final = run.final
 
-
     def __call__(self, runtime, result=None, *args):
         """Run procedure in Runtime instance.
 
@@ -85,9 +84,11 @@ class Procedure(object):
         self._run_from_startpoint()
 
     def _run_from_startpoint(self):
+        _application = self.runtime.application
         if self.result is not None:
             self.result.startTest(self)
-        saved_initial = checkmate.sandbox.Sandbox(self.runtime.application)
+        saved_initial = \
+            checkmate.sandbox.Sandbox(type(_application), _application)
         stub = self.runtime.runtime_components[self.transitions.root.owner]
         stub.simulate(self.transitions.root)
         self._follow_up(self.transitions)

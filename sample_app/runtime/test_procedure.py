@@ -56,7 +56,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         application = application_class()
         c2 = application.components['C2']
         run_pbac = checkmate.runs.get_runs_from_transition(application, c2.state_machine.transitions[0])[0]
-        box = checkmate.sandbox.Sandbox(application)
+        box = checkmate.sandbox.Sandbox(application_class)
         box(run_pbac)
         transition_rl_index = [_t for _t in c2.state_machine.transitions
                                if _t.outgoing and _t.outgoing[0].code == 'RL']

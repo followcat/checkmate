@@ -141,6 +141,7 @@ class Application(object):
                 self.components[_name] = \
                     _class(_name, self.service_registry)
         self.default_state_value = True
+        self.initializing_outgoing = []
 
     def __getattr__(self, name):
         """
@@ -168,7 +169,9 @@ class Application(object):
         """
         if not self._started:
             for component in list(self.components.values()):
-                component.start(default_state_value=default_state_value)
+                _out = component.start(default_state_value=default_state_value)
+                if _out is not None:
+                    self.initializing_outgoing.append(_out)
             self._started = True
         self.default_state_value = default_state_value
 

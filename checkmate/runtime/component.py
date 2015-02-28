@@ -35,8 +35,13 @@ class Component(object):
         self.client.initialize()
 
     def start(self):
-        self.context.start()
+        output = self.context.start()
         self.client.start()
+        if output is not None:
+            for _o in output:
+                self.client.send(_o)
+                self.logger.info("Initializing: %s send exchange %s to %s" %
+                    (self.context.name, _o.value, _o.destination))
 
     def reset(self):
         self.context.reset()
