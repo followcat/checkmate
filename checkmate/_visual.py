@@ -3,7 +3,7 @@ __all__ = ['run_steps', 'run']
 
 def visual_states(dump_states, level=0):
     return_str = ""
-    tab_space = ' ' * 6 * level
+    tab_space = ' ' * 4 * level
     for _c, states in dump_states.items():
         if len(states) == 0:
             continue
@@ -17,18 +17,18 @@ def visual_states(dump_states, level=0):
 
 def run_steps(run, level=0, with_state=False):
     visual_dump = run.visual_dump_steps()
-    tab_space = ' ' * 6 * level
+    tab_space = ' ' * 4 * level
     string = "\n\
 {space}|\n\
-{space}|_____|-{incoming}".format(space=tab_space, incoming=visual_dump['incoming'])
+{space}|_____{incoming}".format(space=tab_space, incoming=visual_dump['incoming'])
     if len(visual_dump['outgoing']) < 2:
         string += "\n\
-{space}      |-{outgoing}".format(space=tab_space, outgoing=visual_dump['outgoing'])
+{space}    | {outgoing}".format(space=tab_space, outgoing=visual_dump['outgoing'])
     else:
-        prefix = "\n{space}      |-['".format(space=tab_space)
+        prefix = "\n{space}    | ['".format(space=tab_space)
         for _o in visual_dump['outgoing']:
             string += prefix + "{outgoing}".format(space=tab_space, outgoing=_o)
-            prefix = "',\n{space}      |  '".format(space=tab_space)
+            prefix = "',\n{space}    |  '".format(space=tab_space)
         else:
             string += "']"
             
