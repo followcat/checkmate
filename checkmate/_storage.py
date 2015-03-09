@@ -51,7 +51,8 @@ class PartitionStorage(object):
         self.type = type
         self.interface = interface
         self.full_description = full_description
-
+        self.partition_class = checkmate._module.get_class_implementing(
+                                interface)
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
@@ -64,7 +65,8 @@ class PartitionStorage(object):
             except KeyError:
                 value = None
             _storage = InternalStorage(self.interface, code, code_description,
-                        value=value, arguments=arguments)
+                        partition_class=self.partition_class, value=value,
+                        arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -108,6 +110,7 @@ class TransitionStorage(object):
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)
                     generate_storage = InternalStorage(interface, _data, None,
+                                        partition_class=define_class,
                                         arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
@@ -135,7 +138,8 @@ class TransitionStorage(object):
 class InternalStorage(object):
     """Support local storage of data (status or data_structure)
     information in transition"""
-    def __init__(self, interface, code, description, value=None, arguments={}):
+    def __init__(self, interface, code, description, partition_class=None,
+                 value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -151,7 +155,9 @@ class InternalStorage(object):
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
-        self.cls = checkmate._module.get_class_implementing(interface)
+        self.cls = partition_class
+        if partition_class is None:
+            self.cls = checkmate._module.get_class_implementing(interface)
         self.function = self.cls
 
         self.arguments = dict(arguments)
