@@ -9,16 +9,20 @@ import checkmate._exec_tools
 def _to_interface(_classname):
     return 'I' + _classname
 
+
 def name_to_interface(name, modules):
+    return name_to_class(_to_interface(name), modules)
+
+
+def name_to_class(name, modules):
     for _m in modules:
-        if hasattr(_m, _to_interface(name)):
-            interface = getattr(_m, _to_interface(name))
+        if hasattr(_m, name):
+            partition_class = getattr(_m, name)
             break
     else:
         raise AttributeError(
-            _m.__name__ + ' has no interface defined:' + _to_interface(name))
-    return interface
-
+            _m.__name__ + ' has no class defined:' + name)
+    return partition_class
 
 class PartitionStorage(object):
     def __init__(self, interface, code_arguments, full_description=None):
@@ -100,7 +104,7 @@ class TransitionStorage(object):
                         name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = \
-                        checkmate._module.get_class_implementing(interface)
+                        name_to_class(_name, module_dict[module_type])
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)
                     generate_storage = InternalStorage(interface, _data, None,
