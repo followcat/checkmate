@@ -1,6 +1,7 @@
 import yaml
 import collections
 
+import checkmate._yaml
 
 class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
@@ -59,7 +60,8 @@ class Visitor():
             
 
     def read_document(self, define_content):
-        for each in yaml.load_all(define_content):
+        for each in yaml.load_all(define_content,
+                                    Loader=checkmate._yaml.Loader):
             self.parser_chunk(each)
 
     def parser_chunk(self, chunk):
@@ -224,7 +226,7 @@ class DataVisitor(collections.OrderedDict):
         self.read_document(value_content)
 
     def read_document(self, value_content):
-        value_content = yaml.load(value_content)
+        value_content = yaml.load(value_content, Loader=checkmate._yaml.Loader)
         self.parser_chunk(value_content)
 
     def parser_chunk(self, chunk):
