@@ -56,7 +56,10 @@ def get_signature_arguments(signature, cls):
         {'R': [2, [3, '', None], True, 'AUTO']}
     """
     found_label = signature.find('(')
-    args = tuple(yaml.load('[' + signature[found_label:][1:-1] + ']',
+    str_args = signature[found_label:][1:-1]
+    if len(str_args) == 0:
+        return dict()
+    args = tuple(yaml.load('[' + str_args + ']',
                             Loader=checkmate._yaml.Loader))
     arguments = cls._sig.bind_partial(*args).arguments
     return dict(arguments)
