@@ -25,10 +25,12 @@ It is impossible to specify the final state by providing arguments
     ...     checkmate.sandbox.Sandbox(type(r.application),
     ...         r.application)
     >>> r.execute(runs[1])
+    >>> t = c1.context.transition_by_name("Append element ok tran01")
     >>> runs[1].final[0].function #doctest: +ELLIPSIS
     <function AnotherState.__init__ at ...
     >>> ap = sample_app.exchanges.Action('AP')
-    >>> revolved_args = runs[1].final[0].resolve(exchanges=[ap])
+    >>> revolved_args = runs[1].final[0].resolve(exchanges=[ap],
+    ...                     resolved_dict=t.resolve_dict)
     >>> fs = runs[1].final[0].factory(
     ...         instance=r.application.components['C1'].states[1],
     ...         **revolved_args)

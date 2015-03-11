@@ -17,8 +17,27 @@ Should be able to set component state with component instance's attribute
 
     use yaml tab self define declarator @from_attribute
     to set state 'InitState' from attribute ID
+        >>> data_source = collections.OrderedDict([
+        ... ('data_structure', [{
+        ...     'signature': 'Identify',
+        ...     'codes_list': [],
+        ...     'values_list': [],
+        ...     'full_description': None,
+        ...     'attributes': {},
+        ...     'define_attributes': {}}]),
+        ... ('exchanges', [{
+        ...    'signature': 'IDAction(I:Identify)',
+        ...    'codes_list': ['IDA()'],
+        ...    'values_list': ['IDA'],
+        ...    'full_description': None,
+        ...    'attributes': {},
+        ...    'define_attributes': {}}])
+        ... ])
+        >>> de = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module, state_module=state_module)
+        >>> de.new_definitions(data_source)
+
         >>> class_content = "---\ntitle: 'State identification'\ndata:"
-        >>> class_content += "\n  - @from_attribute(ID) 'InitState()'"
+        >>> class_content += "\n  - @from_attribute(I=ID, C=Channel) 'InitState(I:Identify, C:Channel)'"
         >>> _file = open(class_file, 'w')
         >>> _num = _file.write(class_content)
         >>> _file.close()
@@ -26,14 +45,14 @@ Should be able to set component state with component instance's attribute
         >>> communication_list = _dict.keys()
         >>> instance_attributes = collections.defaultdict(dict)
 
-    set component instance attribute "ID" to '001'
-        >>> instance_attributes['D1'] = {'ID': '001'}
+    set component instance attribute "ID" to 1
+        >>> instance_attributes['D1'] = {'ID': 1}
         >>> d = {'exchange_module': exchange_module,
-        ...      'data_structure_module': data_structure_module,
-        ...      '__module__': component_module.__name__,
-        ...      'component_definition': class_file,
-        ...      'instance_attributes': instance_attributes,
-        ...      'communication_list': communication_list}
+        ...  'data_structure_module': data_structure_module,
+        ...  '__module__': component_module.__name__,
+        ...  'component_definition': class_file,
+        ...  'instance_attributes': instance_attributes,
+        ...  'communication_list': communication_list}
 
         >>> _class = checkmate.component.ComponentMeta(class_name,
         ...             (checkmate.component.Component,), d)
@@ -45,10 +64,14 @@ Should be able to set component state with component instance's attribute
         >>> d1.start()
         >>> len(d1.states)
         1
-        >>> d1.states[0].value
-        '001'
+        >>> d1.ID
+        1
+        >>> d1.states[0].I.value
+        1
 
     Revert changes for further use in doctest:
+        >>> del sample_app.data_structure.Identify
+        >>> del sample_app.exchanges.IDAction
         >>> os.remove(class_file)
 
 

@@ -32,7 +32,7 @@ class Run(checkmate._tree.Tree):
     def get_transition_by_input_states(self, exchanges, states):
         for _t in self.walk():
             if (_t.is_matching_initial(states) and
-                    _t.is_matching_incoming(exchanges)):
+                    _t.is_matching_incoming(exchanges, states)):
                 return _t
         else:
             raise checkmate.exception.NoTransitionFound
@@ -92,7 +92,7 @@ class Run(checkmate._tree.Tree):
                         _arguments = \
                             final.resolve(
                                 box.application.components[name].states,
-                                incoming)
+                                incoming, run.root.resolve_dict)
                         final.factory(instance=state, **_arguments)
                         if state == component.states[index]:
                             _found = True
@@ -180,6 +180,7 @@ class Run(checkmate._tree.Tree):
         return self._final
 
 
+@checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')

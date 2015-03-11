@@ -4,6 +4,7 @@ import collections
 
 import yaml
 
+import checkmate._yaml
 import checkmate._module
 
 
@@ -38,23 +39,28 @@ def get_method_basename(signature):
     return basename
 
 
+@checkmate.fix_issue("checkmate/issues/list_signature_arguments.rst")
 def get_signature_arguments(signature, cls):
     """
         >>> import sample_app.application
         >>> import sample_app.exchanges
         >>> import checkmate._exec_tools
-        >>> action = sample_app.exchanges.Action
+        >>> action_class = sample_app.exchanges.Action
         >>> arguments = checkmate._exec_tools.get_signature_arguments
-        >>> arguments("Action('R')", action)
+        >>> arguments("Action('R')", action_class)
         {'R': 'R'}
-        >>> arguments("AP('R2')", action)
+        >>> arguments("AP('R2')", action_class)
         {'R': 'R2'}
         >>> checkmate._exec_tools.get_signature_arguments(
-        ...     'AP([2, [3, "", null], True, AUTO])', action)
+        ...     'AP([2, [3, "", null], True, AUTO])', action_class)
         {'R': [2, [3, '', None], True, 'AUTO']}
     """
     found_label = signature.find('(')
-    args = tuple(yaml.load('[' + signature[found_label:][1:-1] + ']'))
+    str_args = signature[found_label:][1:-1]
+    if len(str_args) == 0:
+        return dict()
+    args = tuple(yaml.load('[' + str_args + ']',
+                            Loader=checkmate._yaml.Loader))
     arguments = cls._sig.bind_partial(*args).arguments
     return dict(arguments)
 
@@ -90,7 +96,7 @@ def get_exec_signature(signature, exec_module=None,
 
 @checkmate.fix_issue("checkmate/issues/builtin_type_no_default.rst")
 @checkmate.report_issue('checkmate/issues/exchange_different_data.rst',
-    failed=2)
+    failed=1)
 def get_define_str(element):
     run_code = """
 \nimport inspect
@@ -112,7 +118,7 @@ def get_define_str(element):
 \n            if self.__class__._sig.parameters[_k].kind == \
                     inspect.Parameter.VAR_POSITIONAL:
 \n                if isinstance(kwargs[_k], tuple):
-\n                    kwargs[_k] = [_v(item) for item in kwargs[_k][0]]
+\n                    kwargs[_k] = [_v(item) for item in kwargs[_k]]
 \n                else:
 \n                    kwargs[_k] = []
 \n            elif _k not in kwargs or kwargs[_k] is None:

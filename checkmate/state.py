@@ -37,11 +37,11 @@ class State(checkmate.partition.Partition):
         return super(State, self).__eq__(other)
 
     @classmethod
-    def start(cls, default, value=None):
+    def start(cls, default, kws={}):
         try:
             state = cls.partition_storage.storage[0].factory(default=default)
         except IndexError:
-            state = cls(value, default=default)
+            state = cls(default=default, **kws)
         return state
 
     @checkmate.fix_issue('checkmate/issues/first_append_result.rst')
@@ -192,7 +192,10 @@ class State(checkmate.partition.Partition):
                         return self.value.pop(
                                 self.value.index({value[0]: value[1]}))
                     except ValueError:
+                        if self.value == [None]:
+                            self.value = []
                         pass
                     setattr(self, value[0], None)
         except:
-            return None
+            if self.value == [None]:
+                self.value = []

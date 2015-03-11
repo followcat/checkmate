@@ -102,6 +102,11 @@ class Component(object):
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
 
+    def transition_by_name(self, name):
+        for _t in self.state_machine.transitions:
+            if _t.name == name:
+                return _t
+
     def get_transitions_by_input(self, exchange):
         """
         >>> import sample_app.application
@@ -118,7 +123,7 @@ class Component(object):
         transition_list = []
         for _t in self.state_machine.transitions:
             if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange)):
+                _t.is_matching_incoming(exchange, self.states)):
                 transition_list.append(_t)
         return transition_list
 
@@ -158,14 +163,16 @@ class Component(object):
         """
         for interface, state in self.state_machine.states:
             cls = checkmate._module.get_class_implementing(interface)
-            _value = None
+            _kws = {}
             try:
                 if cls.define_attributes['Definition from'] == 'attribute':
-                    attribute = cls.define_attributes['Definition name']
-                    _value = getattr(self, attribute)
+                    kw_attributes = cls.define_attributes['Definition name']
+                    for _k, _v in kw_attributes.items():
+                        if _k in cls.partition_attribute and hasattr(self, _v):
+                            _kws[_k] = getattr(self, _v)
             except KeyError:
                 pass
-            self.states.append(cls.start(default=default_state_value, value=_value))
+            self.states.append(cls.start(default=default_state_value, kws=_kws))
         self.service_registry.register(self, self.service_interfaces)
         self.default_state_value = default_state_value
         outgoing = []

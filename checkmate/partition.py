@@ -15,28 +15,35 @@ class Partition(object):
             >>> import sample_app.exchanges
             >>> action = sample_app.exchanges.Action
             >>> action.method_arguments({'R': 'AT1'})
-            {'R': 'AT1'}
+            {}
             >>> action.method_arguments({'R': 'R2'})['R'].C.value
             'AT2'
             >>> action.method_arguments({'R': 'R2'})['R'].P.value
             'HIGH'
         """
+        copy_arguments = dict(arguments)
         kwargs = dict(arguments)
-        for attr, value in arguments.items():
+        for attr, value in copy_arguments.items():
             data_cls = cls._construct_values[attr]
             if hasattr(builtins, data_cls.__name__):
                 kwargs[attr] = data_cls(value)
+                arguments.pop(attr)
             else:
-                for _s in data_cls.partition_storage.storage:
-                    if _s.code == value:
-                        kwargs[attr] = _s.factory()
-                        break
-                else:
-                    if attr == value:
+                try:
+                    kwargs[attr] = data_cls.storage_by_code(value).factory()
+                    arguments.pop(attr)
+                except AttributeError:
+                    if type(value) != tuple:
                         kwargs.pop(attr)
         return kwargs
 
-    @checkmate.report_issue("checkmate/issues/list_attribute_definition.rst")
+    @classmethod
+    def storage_by_code(cls, code):
+        for storage in cls.partition_storage.storage:
+            if storage.code == code:
+                return storage
+
+    @checkmate.fix_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
         The arguments are of str type, the values are stored in
@@ -80,8 +87,12 @@ class Partition(object):
         elif value == 'None':
             self.value = None
         else:
-            self.value = value
-            if value is None and default and hasattr(self, '_valid_values'):
+            try:
+                self.value = self.__class__.storage_by_code(value).value
+            except AttributeError:
+                self.value = value
+            if (self.value is None and
+                    default and hasattr(self, '_valid_values')):
                 try:
                     self.value = self._valid_values[0]
                     if self.value == 'None':
@@ -165,14 +176,6 @@ class Partition(object):
             return (self.partition_storage.get_description(self))
         except AttributeError:
             return (None, None)
-
-    def attribute_list(self, keyset=None):
-        if keyset is None:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            self.partition_attribute))
-        else:
-            return dict(map(lambda x:(x, getattr(self, x)),
-                            keyset.intersection(self.partition_attribute)))
 
     def carbon_copy(self, other):
         assert(type(self) == type(other))

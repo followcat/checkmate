@@ -9,18 +9,22 @@ import checkmate._exec_tools
 def _to_interface(_classname):
     return 'I' + _classname
 
+
 def name_to_interface(name, modules):
+    return name_to_class(_to_interface(name), modules)
+
+
+def name_to_class(name, modules):
     for _m in modules:
-        if hasattr(_m, _to_interface(name)):
-            interface = getattr(_m, _to_interface(name))
+        if hasattr(_m, name):
+            partition_class = getattr(_m, name)
             break
     else:
         raise AttributeError(
-            _m.__name__ + ' has no interface defined:' + _to_interface(name))
-    return interface
+            _m.__name__ + ' has no class defined:' + name)
+    return partition_class
 
-
-class Data(object):
+class PartitionStorage(object):
     def __init__(self, interface, code_arguments, full_description=None):
         """
             >>> import checkmate._storage
@@ -32,12 +36,12 @@ class Data(object):
             >>> acr #doctest: +ELLIPSIS
             <sample_app.data_structure.ActionRequest object at ...
             >>> c1_module = sample_app.component.component_1_states
-            >>> data = checkmate._storage.Data(
+            >>> data = checkmate._storage.PartitionStorage(
             ...             c1_module.IAnotherState,
             ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
-            >>> data = checkmate._storage.Data(
+            >>> data = checkmate._storage.PartitionStorage(
             ...         sample_app.exchanges.IAction, 
             ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
@@ -47,7 +51,8 @@ class Data(object):
         self.type = type
         self.interface = interface
         self.full_description = full_description
-
+        self.partition_class = checkmate._module.get_class_implementing(
+                                interface)
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
@@ -60,7 +65,8 @@ class Data(object):
             except KeyError:
                 value = None
             _storage = InternalStorage(self.interface, code, code_description,
-                        value=value, arguments=arguments)
+                        partition_class=self.partition_class, value=value,
+                        arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -69,10 +75,6 @@ class Data(object):
             if item == stored_item.factory():
                 return stored_item.description
         return (None, None)
-
-
-class PartitionStorage(Data):
-    """"""
 
 
 class TransitionStorage(object):
@@ -104,16 +106,17 @@ class TransitionStorage(object):
                         name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = \
-                        checkmate._module.get_class_implementing(interface)
+                        name_to_class(_name, module_dict[module_type])
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)
                     generate_storage = InternalStorage(interface, _data, None,
+                                        partition_class=define_class,
                                         arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
                         if _s.code == code:
-                            generate_storage.values = _s.values
+                            generate_storage.value = _s.value
                             break
                     else:
                         if hasattr(define_class, code):
@@ -135,7 +138,8 @@ class TransitionStorage(object):
 class InternalStorage(object):
     """Support local storage of data (status or data_structure)
     information in transition"""
-    def __init__(self, interface, code, description, value=None, arguments={}):
+    def __init__(self, interface, code, description, partition_class=None,
+                 value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -151,11 +155,14 @@ class InternalStorage(object):
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
-        self.function = checkmate._module.get_class_implementing(interface)
+        self.cls = partition_class
+        if partition_class is None:
+            self.cls = checkmate._module.get_class_implementing(interface)
+        self.function = self.cls
 
-        self.resolved_arguments = self.function.method_arguments(arguments)
-        self.key_to_resolve = frozenset(self.function._sig.parameters.keys())
-        self.values = (value, )
+        self.arguments = dict(arguments)
+        self.resolved_arguments = self.function.method_arguments(self.arguments)
+        self.value = value
 
     @checkmate.fix_issue('checkmate/issues/init_with_arg.rst')
     @checkmate.fix_issue(
@@ -192,7 +199,8 @@ class InternalStorage(object):
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
             <function State.pop at ...
-            >>> arguments = t.final[1].resolve(exchanges=[i])
+            >>> arguments = t.final[1].resolve(exchanges=[i],
+            ...                 resolved_dict=t.resolve_dict)
             >>> t.final[1].factory(instance=c.states[1],
             ...     **arguments) # doctest: +ELLIPSIS
             <sample_app.component.component_1_states.AnotherState ...
@@ -201,12 +209,12 @@ class InternalStorage(object):
         """
         if 'default' not in kwargs or kwargs['default']:
             if len(args) == 0:
-                args = self.values
+                args = (self.value, )
             if len(kwargs) == 0:
                 kwargs.update(self.resolved_arguments)
         if instance is not None and self.interface.providedBy(instance):
             try:
-                value = self.values[0]
+                value = self.value
             except IndexError:
                 value = None
             self.function(instance, value, **kwargs)
@@ -215,7 +223,7 @@ class InternalStorage(object):
             return self.function(*args, **kwargs)
 
     @checkmate.fix_issue("checkmate/issues/transition_resolve_arguments.rst")
-    def resolve(self, states=None, exchanges=None):
+    def resolve(self, states=None, exchanges=None, resolved_dict=None):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
@@ -224,19 +232,22 @@ class InternalStorage(object):
             >>> t = a.components['C1'].state_machine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
-            >>> t.final[0].resolve(states)
-            {'R': None}
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(states, resolved_dict=t.resolve_dict)
+            {}
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=['AT2', 'HIGH'])
             >>> inc.R.value
             ['AT2', 'HIGH']
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> inc = t.incoming[0].factory(R=1)
             >>> (inc.value, inc.R.value)  # doctest: +ELLIPSIS
             ('AP', 1)
-            >>> t.final[0].resolve(exchanges=[inc]) # doctest: +ELLIPSIS
+            >>> t.final[0].resolve(exchanges=[inc],
+            ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
             >>> module_dict = {
             ...     'states': [sample_app.component.component_1_states],
@@ -251,8 +262,8 @@ class InternalStorage(object):
             'AT2'
             >>> t.outgoing[0].resolved_arguments['R'].P.value
             'HIGH'
-            >>> t.outgoing[0].values
-            ('AP',)
+            >>> t.outgoing[0].value
+            'AP'
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
@@ -261,13 +272,23 @@ class InternalStorage(object):
             >>> resolved_arguments['R'].P.value
             'HIGH'
         """
+        if states is None:
+            states = []
+        if exchanges is None:
+            exchanges = []
+        if resolved_dict is None:
+            resolved_dict = {}
         _attributes = {}
-        if states is not None:
-            for input in states:
-                _attributes.update(input.attribute_list(self.key_to_resolve))
-        if exchanges is not None:
-            for input in exchanges:
-                _attributes.update(input.attribute_list(self.key_to_resolve))
+        for attr, data_cls in self.cls._construct_values.items():
+            if (attr in self.arguments and
+                    type(self.arguments[attr]) != tuple and
+                    self.arguments[attr] in resolved_dict):
+                interface, attr = resolved_dict[self.arguments[attr]]
+                for input in states + exchanges:
+                    if hasattr(input, attr) and interface.providedBy(input):
+                        data = getattr(input, attr)
+                        if isinstance(data, data_cls):
+                            _attributes[attr] = data
         _attributes.update(self.resolved_arguments)
         return _attributes
 
@@ -322,7 +343,7 @@ class InternalStorage(object):
             else:
                 resolved_arguments = self.resolve()
 
-            if _target == self.factory(instance=_initial[0], *self.values,
+            if _target == self.factory(self.value, instance=_initial[0],
                               default=False, **resolved_arguments):
                 return _target
         return None

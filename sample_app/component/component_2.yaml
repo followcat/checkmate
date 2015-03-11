@@ -1,4 +1,9 @@
 ---
+title: "State identification"
+data:
+  - @from_attribute(R=request) 'RequestState(R:ActionRequest)'
+
+---
 title: "State machine"
 data:
   - Transitions:
@@ -17,6 +22,8 @@ data:
           - ValidateOutput:     VOER()
 
       - name: '[Input/Final state/Output]'
+        initial:
+          - RequestState:       R
         incoming:
           - AnotherReaction:    ARE()
         outgoing:
