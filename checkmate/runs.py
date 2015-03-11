@@ -186,14 +186,10 @@ class Run(checkmate._tree.Tree):
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
 def get_runs_from_application(application):
     runs = []
-    origin_transitions = []
     _class = type(application)
     application = _class()
     application.start(default_state_value=False)
-    for _component in application.components.values():
-        for _transition in _component.state_machine.transitions:
-            if not len(_transition.incoming):
-                origin_transitions.append(_transition)
+    origin_transitions = get_origin_transitions(application)
     for _o in origin_transitions:
         sandbox = \
             checkmate.sandbox.CollectionSandbox(_class, application)
@@ -215,3 +211,13 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     for _run in sandbox(transition_run, itp_run=itp_transition):
         runs.append(_run)
     return runs
+
+
+def get_origin_transitions(application):
+    origin_transitions = []
+    for _component in application.components.values():
+        for _transition in _component.state_machine.transitions:
+            if not len(_transition.incoming):
+                origin_transitions.append(_transition)
+    return origin_transitions
+
