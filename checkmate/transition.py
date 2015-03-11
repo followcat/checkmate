@@ -167,11 +167,6 @@ class Transition(object):
            not self.is_matching_incoming(_incoming, states):
             return _outgoing_list
         for _state in states:
-            if not default:
-                for _initial in self.initial:
-                    _interface = _initial.interface
-                    if _initial == _interface:
-                        _state = _initial.factory()
             for _interface in zope.interface.providedBy(_state):
                 for _final in self.final:
                     if _final == None:
