@@ -213,6 +213,8 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     return runs
 
 
+@checkmate.report_issue(\
+    'checkmate/issues/get_origin_transitions.rst', failed=2)
 def get_origin_transitions(application):
     origin_transitions = []
     for _component in application.components.values():
