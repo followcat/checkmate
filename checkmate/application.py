@@ -134,6 +134,7 @@ class Application(object):
         self._started = False
         self.components = collections.OrderedDict()
         self.service_registry = checkmate.service_registry.ServiceRegistry()
+        self.matrix = None
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
             for component in _class_definition['instances']:

@@ -20,6 +20,8 @@ class Run(checkmate._tree.Tree):
         self._initial = None
         self._final = None
         self.itp_run = None
+        self.followed_runs = None
+        self.found_followed_runs = False
         self.change_states = []
         for f in transition.final:
             for s in states:
