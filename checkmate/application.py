@@ -117,7 +117,7 @@ class ApplicationMeta(type):
 
 
 class Application(object):
-    component_classes = {}
+    component_classes = []
     communication_list = {}
     feature_definition_path = None
 

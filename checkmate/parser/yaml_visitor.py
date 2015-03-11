@@ -1,6 +1,7 @@
 import yaml
 import collections
 
+import checkmate._yaml
 
 class Visitor():
     exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
@@ -47,7 +48,7 @@ class Visitor():
         for index, line in enumerate(lines):
             if '@from_' not in line:
                 continue
-            _s = line.rsplit(maxsplit=1)
+            _s = [line[:line.index(') ')+1], line[line.index(') ')+1:]]
             line = ''.join((_s[0][:_s[0].index('(')+1], 
                 _s[1], ', ', _s[0][_s[0].index('(')+1:]))
             line = line.replace('(', ' [', 1)
@@ -59,7 +60,8 @@ class Visitor():
             
 
     def read_document(self, define_content):
-        for each in yaml.load_all(define_content):
+        for each in yaml.load_all(define_content,
+                                    Loader=checkmate._yaml.Loader):
             self.parser_chunk(each)
 
     def parser_chunk(self, chunk):
@@ -207,9 +209,14 @@ def call_visitor(define_content):
         ('transitions', visitor._transitions)])
 
 
-def from_attribute(classname, attribute_name):
+def from_attribute(classname, *attributes):
+    kw_attributes = {}
+    for item in attributes:
+        kwargs = item.split('=')
+        if len(kwargs) == 2:
+            kw_attributes[kwargs[0].strip()] = kwargs[1].strip()
     return {'Definition and accessibility':classname,
-            'Definition name': attribute_name,
+            'Definition name': kw_attributes,
             'Definition from': 'attribute'}
 
 
@@ -219,7 +226,7 @@ class DataVisitor(collections.OrderedDict):
         self.read_document(value_content)
 
     def read_document(self, value_content):
-        value_content = yaml.load(value_content)
+        value_content = yaml.load(value_content, Loader=checkmate._yaml.Loader)
         self.parser_chunk(value_content)
 
     def parser_chunk(self, chunk):

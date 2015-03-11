@@ -1,4 +1,4 @@
-can't generic incoming "AP(R2)" as alway consider states'attribute_list
+can't generic incoming "AP(R2)" as alway consider states'attribute
 first is resolve
     >>> import collections
     >>> import sample_app.application
@@ -18,15 +18,13 @@ first is resolve
     >>> _R = t.incoming[0].resolved_arguments['R']
     >>> t.incoming[0].code, _R.C.value, _R.P.value
     ('AP', 'AT2', 'HIGH')
-    >>> a.components['C1'].states[1].attribute_list()
-    {'R': None}
     >>> t.is_matching_initial(a.components['C1'].states)
     True
     >>> exchanges = t.generic_incoming(a.components['C1'].states)
     >>> ex = exchanges[0]
     >>> ex.R.C.value, ex.R.P.value
     ('AT2', 'HIGH')
-    >>> t.is_matching_incoming(exchanges)
+    >>> t.is_matching_incoming(exchanges, a.components['C1'].states)
     True
 
 When filling the generic incmoing for a component with
