@@ -213,7 +213,7 @@ class InternalStorage(object):
                 args = (self.value, )
             if len(kwargs) == 0:
                 kwargs.update(self.resolved_arguments)
-        if instance is not None and self.interface.providedBy(instance):
+        if instance is not None and isinstance(instance, self.partition_class):
             try:
                 value = self.value
             except IndexError:
@@ -317,7 +317,7 @@ class InternalStorage(object):
 
             >>> c1_states = sample_app.component.component_1_states
             >>> final = [_f for _f in run.final
-            ...          if _f.interface == c1_states.IState][0]
+            ...          if _f.partition_class == c1_states.State][0]
             >>> t1 = c1.state_machine.transitions[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
@@ -326,7 +326,7 @@ class InternalStorage(object):
 
             >>> c3_states = sample_app.component.component_3_states
             >>> final = [_f for _f in run.final
-            ...          if _f.interface == c3_states.IAcknowledge][0]
+            ...          if _f.partition_class == c3_states.Acknowledge][0]
             >>> t3 = c3.state_machine.transitions[0]
             >>> c3.simulate(t3)
             []
@@ -334,11 +334,11 @@ class InternalStorage(object):
             <sample_app.component.component_3_states.Acknowledge ...
         """
         for _target in [_t for _t in target_copy
-                        if self.interface.providedBy(_t)]:
+                        if isinstance(_t, self.partition_class)]:
             _initial = [None]
             if reference is not None:
                 _initial = [_i for _i in reference 
-                            if self.interface.providedBy(_i)]
+                            if isinstance(_i, self.partition_class)]
                 resolved_arguments = self.resolve(states=_initial,
                                         exchanges=incoming_list)
             else:
