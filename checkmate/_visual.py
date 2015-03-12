@@ -1,3 +1,9 @@
+# This code is part of the checkmate project.
+# Copyright (C) 2015 The checkmate project contributors
+# 
+# This program is free software under the terms of the GNU GPL, either
+# version 3 of the License, or (at your option) any later version.
+
 def visual_states(dump_states, level=0):
     return_str = ""
     tab_space = ' ' * 6 * level
