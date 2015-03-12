@@ -150,11 +150,16 @@ class Application(object):
         >>> a = sample_app.application.TestData()
         >>> a.run_collection #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
+        >>> a.origin_runs #doctest: +ELLIPSIS
+        [<checkmate.runs.Run object at ...
         """
         if name == 'run_collection':
             setattr(self, 'run_collection',
                 checkmate.runs.get_runs_from_application(self))
             return self.run_collection
+        if name == 'origin_runs':
+            setattr(self, 'origin_runs', checkmate.runs.get_origin_runs(self))
+            return self.origin_runs
         super().__getattr__(self, name)
 
     def start(self, default_state_value=True):
