@@ -25,7 +25,8 @@ def name_to_class(name, modules):
     return partition_class
 
 class PartitionStorage(object):
-    def __init__(self, interface, code_arguments, full_description=None):
+    def __init__(self, partition_class, interface, code_arguments,
+                 full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -37,11 +38,12 @@ class PartitionStorage(object):
             <sample_app.data_structure.ActionRequest object at ...
             >>> c1_module = sample_app.component.component_1_states
             >>> data = checkmate._storage.PartitionStorage(
-            ...             c1_module.IAnotherState,
+            ...             c1_module.AnotherState, c1_module.IAnotherState,
             ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
             >>> data = checkmate._storage.PartitionStorage(
+            ...         sample_app.exchanges.Action,
             ...         sample_app.exchanges.IAction, 
             ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
