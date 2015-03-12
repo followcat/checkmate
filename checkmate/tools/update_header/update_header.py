@@ -46,10 +46,8 @@ def update_header(input_file, header):
     >>> head = update_header.notice_head.replace('2015','2012')
     >>> print(head)
     # This code is part of the checkmate project.
-    # Copyright (C) 2012 The checkmate project
-    contributors
+    # Copyright (C) 2012 The checkmate project contributors
     # 
-
     >>> m = re.search(r".*Copyright\D+(\d[0-9-, ]+\d)",head)
     >>> m.group(1)
     '2012'
@@ -65,10 +63,8 @@ def update_header(input_file, header):
     '2012-2015'
     >>> print(head.replace(years, new_years))
     # This code is part of the checkmate project.
-    # Copyright (C) 2012-2015 The checkmate project
-    contributors
+    # Copyright (C) 2012-2015 The checkmate project contributors
     # 
-
     """
     with open(input_file, 'r') as f:
         content = f.read()
