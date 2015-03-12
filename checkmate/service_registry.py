@@ -1,33 +1,6 @@
 import copy
 
-import zope.interface
-import zope.interface.interface
-import zope.component.interfaces
 import zope.component.globalregistry
-
-import checkmate.interfaces
-
-
-@zope.component.adapter(checkmate.interfaces.IExchange)
-@zope.interface.implementer(zope.component.interfaces.IFactory)
-class ServiceFactory(object):
-    """"""
-    def __init__(self, exchange):
-        """"""
-        self.context = exchange
-
-    def __call__(self, origin, destinations):
-        """"""
-        if self.context.broadcast:
-            exchange = copy.deepcopy(self.context)
-            exchange.origin_destination(origin, destinations)
-            yield exchange
-        else:
-            for _d in destinations:
-                exchange = copy.deepcopy(self.context)
-                exchange.origin_destination(origin, _d)
-                yield exchange
-        yield from ()
 
 
 class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
