@@ -232,3 +232,13 @@ def get_origin_transitions(application):
                     origin_transitions.append(_transition)
     return origin_transitions
 
+
+def get_origin_runs(application):
+    application = type(application)()
+    application.start(default_state_value=False)
+    origin_transitions = get_origin_transitions(application)
+    origin_runs = []
+    for _transition in origin_transitions:
+        origin_runs.extend(get_runs_from_transition(application, _transition))
+    return origin_runs
+
