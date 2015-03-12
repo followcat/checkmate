@@ -1,7 +1,6 @@
 import os
 import imp
 import sys
-import inspect
 import importlib
 
 
@@ -86,18 +85,3 @@ def get_module_defining(interface):
         module = imp.load_module(module_name, fp, pathname, description)
         pass
     return module
-
-
-def get_class_implementing(interface):
-    """
-    >>> import sample_app.application
-    >>> import checkmate._module
-    >>> interface = sample_app.data_structure.IActionRequest
-    >>> checkmate._module.get_class_implementing(interface)
-    <class 'sample_app.data_structure.ActionRequest'>
-    """
-    module = get_module_defining(interface)
-    for _o in list(module.__dict__.values()):
-        if inspect.isclass(_o):
-            if interface.implementedBy(_o):
-                return _o

@@ -53,8 +53,7 @@ class PartitionStorage(object):
         self.type = type
         self.interface = interface
         self.full_description = full_description
-        self.partition_class = checkmate._module.get_class_implementing(
-                                interface)
+        self.partition_class = partition_class
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
