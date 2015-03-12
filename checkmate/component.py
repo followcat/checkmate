@@ -162,7 +162,7 @@ class Component(object):
         [<sample_app.component.component_1_states.State object at ...
         """
         for interface, state in self.state_machine.states:
-            cls = checkmate._module.get_class_implementing(interface)
+            cls = state.partition_class
             _kws = {}
             try:
                 if cls.define_attributes['Definition from'] == 'attribute':
