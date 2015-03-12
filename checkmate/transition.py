@@ -167,16 +167,12 @@ class Transition(object):
            not self.is_matching_incoming(_incoming, states):
             return _outgoing_list
         for _state in states:
-            for _interface in zope.interface.providedBy(_state):
-                for _final in self.final:
-                    if _final == None:
-                        continue
-                    _final_interface = _final.interface
-                    if _final_interface == _interface:
-                        resolved_arguments = _final.resolve(states, _incoming,
-                                                            self.resolve_dict)
-                        _final.factory(instance=_state, default=default,
-                            **resolved_arguments)
+            for _final in self.final:
+                if isinstance(_state, _final.partition_class):
+                    resolved_arguments = _final.resolve(states, _incoming,
+                                                        self.resolve_dict)
+                    _final.factory(instance=_state, default=default,
+                        **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = outgoing_exchange.resolve(states, _incoming,
                                                            self.resolve_dict)
