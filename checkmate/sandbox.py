@@ -120,18 +120,18 @@ class Sandbox(object):
             if len(run.root.incoming) > 0:
                 _incoming = run.root.generic_incoming(component.states)
                 for _c in self.application.components.values():
+                    if _c == component:
+                        continue
                     _t = _c.get_transition_by_output(_incoming)
                     if _t is not None:
                         _outgoing = _c.simulate(_t)
                         self.transitions = _t
                         break
-                break
-            elif len(run.root.outgoing) > 0:
-                _outgoing = component.simulate(run.root)
-                if len(_outgoing) == 0:
-                    continue
-                self.transitions = run.root
-                break
+                if self.transitions is not None:
+                    break
+            _outgoing = component.simulate(run.root)
+            self.transitions = run.root
+            break
         return self.run_process(_outgoing)
 
     def run_process(self, outgoing):
@@ -213,6 +213,8 @@ class CollectionSandbox(Sandbox):
                 _c = sandbox.application.components[_d]
                 _transitions = _c.get_transitions_by_input([_exchange])
                 for _t in _transitions:
+                    if _t == tree.root:
+                        continue
                     _app = sandbox.application
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]

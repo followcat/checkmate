@@ -38,6 +38,9 @@
     'AF'
     >>> 'PBAC' in [t.outgoing[0].code for t in transitions]
     True
+    >>> runs = app.run_collection
+    >>> 'PBAC' in [r.root.outgoing[0].code for r in runs]
+    True
 
     Revert changes for further use in doctest:
     >>> user.state_machine.transitions[0] = t_copy

@@ -183,7 +183,7 @@ class Run(checkmate._tree.Tree):
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
-@checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
+@checkmate.report_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
 def get_runs_from_application(application):
     runs = []
@@ -214,7 +214,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     return runs
 
 
-@checkmate.report_issue('checkmate/issues/get_origin_transitions.rst')
+@checkmate.fix_issue('checkmate/issues/get_origin_transitions.rst')
 def get_origin_transitions(application):
     origin_transitions = []
     for _component in application.components.values():
