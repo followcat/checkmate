@@ -1,3 +1,5 @@
+import numpy
+
 import zope.interface
 
 import checkmate._tree
@@ -198,6 +200,29 @@ def get_runs_from_application(application):
         for _run in sandbox(run):
             runs.append(_run)
     return runs
+
+
+def get_followed_runs_from_application(application, run):
+    runs = application.origin_runs
+    length = len(runs)
+    run_index = runs.index(run)
+    followed_runs = []
+    if application.matrix is None:
+        application.matrix = numpy.matrix([[0]*length]*length)
+        application.runs_found = [False]*length
+    elif application.runs_found[run_index]:
+        for _index, found in enumerate(application.matrix.tolist()[run_index]):
+            if found == 1:
+                followed_runs.append(runs[_index]) 
+        return followed_runs
+    row = [0]*length
+    for index, _run in enumerate(runs):
+        if _run.compare_initial(application):
+            followed_runs.append(_run)
+            row[index] = 1
+    application.matrix[run_index] = row
+    application.runs_found[run_index] = True
+    return followed_runs
 
 
 def get_runs_from_transition(application, transition, itp_transition=False):
