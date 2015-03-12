@@ -44,21 +44,21 @@ class ComponentMeta(type):
                                             declarator_output['states'],
                                             declarator_output['transitions'])
             services = {}
-            service_interfaces = []
+            service_classes = []
             communication_list = set()
             for _t in declarator_output['transitions']:
                 for _i in _t.incoming:
                     _ex = _i.factory()
                     if _i.code not in services:
                         services[_i.code] = _ex
-                    if _i.interface not in service_interfaces:
-                        service_interfaces.append(_i.interface)
+                    if _i.partition_class not in service_classes:
+                        service_classes.append(_i.partition_class)
                     communication_list.add(_ex.communication)
                 for _o in _t.outgoing:
                     _ex = _o.factory()
                     communication_list.add(_ex.communication)
             namespace['services'] = services
-            namespace['service_interfaces'] = service_interfaces
+            namespace['service_classes'] = service_classes
             for _communication in communication_list:
                 if (_communication not in namespace['communication_list'] and
                         'launch_command' in namespace):
@@ -133,7 +133,7 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> for service in c.service_interfaces:
+        >>> for service in c.service_classes:
         ...    print(c.service_registry._registry[service])
         ['C1']
         >>> _t = c.state_machine.transitions[0]
@@ -173,7 +173,7 @@ class Component(object):
             except KeyError:
                 pass
             self.states.append(cls.start(default=default_state_value, kws=_kws))
-        self.service_registry.register(self, self.service_interfaces)
+        self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
         outgoing = []
         for transition in self.state_machine.transitions:

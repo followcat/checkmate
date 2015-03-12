@@ -31,33 +31,28 @@ class ServiceFactory(object):
 
 
 class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
-    """
-    """
+    """"""
     def __init__(self):
         super(ServiceRegistry, self).__init__()
-        self.registerAdapter(ServiceFactory, (checkmate.interfaces.IExchange,),
-            zope.component.interfaces.IFactory)
         self._registry = {}
 
-    def register(self, component, services):
+    def register(self, component, classes):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> _t = c1.state_machine.transitions[0]
-            >>> _service = _t.incoming[0].interface
-            >>> c1.service_registry._registry[_service]
+            >>> _class = _t.incoming[0].partition_class
+            >>> c1.service_registry._registry[_class]
             ['C1']
         """
-        for _service in services:
-            assert isinstance(_service,
-                        zope.interface.interface.InterfaceClass)
-            if _service in self._registry.keys():
-                if component.name not in self._registry[_service]:
-                    self._registry[_service].append(component.name)
+        for _class in classes:
+            if _class in self._registry.keys():
+                if component.name not in self._registry[_class]:
+                    self._registry[_class].append(component.name)
             else:
-                self._registry[_service] = [component.name]
+                self._registry[_class] = [component.name]
 
     def server_exchanges(self, exchange, component_name=''):
         """
@@ -72,9 +67,20 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             ...     print(_e.destination)
             ['C3']
         """
-        _factory = self.getAdapter(exchange,
-                        zope.component.interfaces.IFactory)
-        for _service, _servers in self._registry.items():
-            if _service.providedBy(exchange):
-                return _factory(component_name, _servers)
-        return _factory(component_name, [])
+        for _class, _servers in self._registry.items():
+            if isinstance(exchange, _class):
+                return self._factory(exchange, component_name, _servers)
+        return self._factory(exchange, component_name, [])
+
+    def _factory(self, exchange, origin, destinations):
+        """"""
+        if exchange.broadcast:
+            new_exchange = copy.deepcopy(exchange)
+            new_exchange.origin_destination(origin, destinations)
+            yield new_exchange
+        else:
+            for _d in destinations:
+                new_exchange = copy.deepcopy(exchange)
+                new_exchange.origin_destination(origin, _d)
+                yield new_exchange
+        yield from ()
