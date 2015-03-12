@@ -8,41 +8,44 @@
     True
     >>> box(runs[0])
     True
-    >>> fun = checkmate.runs.get_followed_runs_from_application
-    >>> fun(app, runs[0]) #doctest: +ELLIPSIS
-    [<checkmate.runs.Run object at ...
+    >>> r0_fr = checkmate.runs.followed_runs(app, runs[0])
     >>> app.matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0]])
+    >>> runs[2] in r0_fr
+    True
     >>> box(runs[2])
     True
-    >>> fun(app, runs[2]) #doctest: +ELLIPSIS
-    [<checkmate.runs.Run object at ...
+    >>> r2_fr = checkmate.runs.followed_runs(app, runs[2])
     >>> app.matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 1, 0, 1],
             [0, 0, 0, 0]])
+    >>> runs[1] in r2_fr, runs[3] in r2_fr
+    (True, True)
     >>> box(runs[1])
     True
-    >>> fun(app, runs[1]) #doctest: +ELLIPSIS
-    [<checkmate.runs.Run object at ...
+    >>> r1_fr = checkmate.runs.followed_runs(app, runs[1])
     >>> app.matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 1, 0],
             [0, 1, 0, 1],
             [0, 0, 0, 0]])
+    >>> runs[2] in r1_fr
+    True
     >>> box(runs[2])
     True
     >>> box(runs[3])
     True
-    >>> fun(app, runs[3]) #doctest: +ELLIPSIS
-    [<checkmate.runs.Run object at ...
+    >>> r3_fr = checkmate.runs.followed_runs(app, runs[3])
     >>> app.matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 1, 0],
             [0, 1, 0, 1],
             [1, 0, 0, 0]])
+    >>> runs[0] in r3_fr
+    True
 
