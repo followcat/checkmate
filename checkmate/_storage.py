@@ -157,8 +157,8 @@ class InternalStorage(object):
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
         self.interface = interface
-        self.cls = partition_class
-        self.function = self.cls
+        self.partition_class = partition_class
+        self.function = self.partition_class
 
         self.arguments = dict(arguments)
         self.resolved_arguments = self.function.method_arguments(self.arguments)
@@ -280,7 +280,7 @@ class InternalStorage(object):
         if resolved_dict is None:
             resolved_dict = {}
         _attributes = {}
-        for attr, data_cls in self.cls._construct_values.items():
+        for attr, data_cls in self.partition_class._construct_values.items():
             if (attr in self.arguments and
                     type(self.arguments[attr]) != tuple and
                     self.arguments[attr] in resolved_dict):
