@@ -68,9 +68,9 @@ def update_header(input_file, header):
     """
     with open(input_file, 'r') as f:
         content = f.read()
-        if not content.startswith('"""'):
+        if not content.startswith('#'):
             f.seek(0, 0)
-            content = '"""\n' + header + '"""\n' + content
+            content = header + '\n' + content
             write_content(input_file, content)
         else:
             d = datetime.date.today()
