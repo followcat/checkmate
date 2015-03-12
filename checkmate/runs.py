@@ -210,9 +210,11 @@ def followed_runs(application, run):
         application.matrix = numpy.matrix([[0]*length]*length)
         application.runs_found = [False]*length
     elif application.runs_found[run_index]:
-        for _index, found in enumerate(application.matrix.tolist()[run_index]):
-            if found == 1:
-                followed_runs.append(runs[_index]) 
+        current_row = [0]*length
+        current_row[run_index] = 1
+        _followed = numpy.matrix(current_row) * application.matrix
+        _followed = _followed.tolist()[0]
+        followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] == 1]
         return followed_runs
     row = [0]*length
     for index, _run in enumerate(runs):
