@@ -66,9 +66,9 @@ class PartitionStorage(object):
                 value = arguments.pop('value')
             except KeyError:
                 value = None
-            _storage = InternalStorage(self.interface, code, code_description,
-                        partition_class=self.partition_class, value=value,
-                        arguments=arguments)
+            _storage = InternalStorage(self.partition_class, self.interface,
+                                       code, code_description,
+                                       value=value, arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -111,8 +111,8 @@ class TransitionStorage(object):
                         name_to_class(_name, module_dict[module_type])
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)
-                    generate_storage = InternalStorage(interface, _data, None,
-                                        partition_class=define_class,
+                    generate_storage = InternalStorage(define_class, interface,
+                                        _data, None,
                                         arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
@@ -140,16 +140,16 @@ class TransitionStorage(object):
 class InternalStorage(object):
     """Support local storage of data (status or data_structure)
     information in transition"""
-    def __init__(self, interface, code, description, partition_class=None,
+    def __init__(self, partition_class, interface, code, description,
                  value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(
-            ...         sample_app.exchanges.IAction, "AP(R)",
-            ...         None,
-            ...         value="AP(R)")
+            ...         sample_app.exchanges.Action,
+            ...         sample_app.exchanges.IAction,
+            ...         "AP(R)",  None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
@@ -158,8 +158,6 @@ class InternalStorage(object):
         self.description = description
         self.interface = interface
         self.cls = partition_class
-        if partition_class is None:
-            self.cls = checkmate._module.get_class_implementing(interface)
         self.function = self.cls
 
         self.arguments = dict(arguments)
@@ -177,6 +175,7 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(
+            ...         sample_app.exchanges.Action,
             ...         sample_app.exchanges.IAction,
             ...         "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
