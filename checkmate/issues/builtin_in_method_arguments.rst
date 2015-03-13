@@ -32,4 +32,3 @@ Add TestExchange type of exchange in checkmate.
 
 Remove TestExchange and it's InterfaceClass in checkmate.
     >>> delattr(checkmate.exchanges, 'TestExchange')
-    >>> delattr(checkmate.exchanges, 'ITestExchange')

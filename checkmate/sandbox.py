@@ -55,7 +55,7 @@ class Sandbox(object):
             self.application.start(
                 self.initial_application.default_state_value)
             for component in self.application.components.values():
-                for partition_class in [_d[1].partition_class for _d in
+                for partition_class in [_d.partition_class for _d in
                                         component.state_machine.states]:
                     done = False
                     for state in component.states:

@@ -161,7 +161,7 @@ class Component(object):
         >>> c.states #doctest: +ELLIPSIS
         [<sample_app.component.component_1_states.State object at ...
         """
-        for interface, state in self.state_machine.states:
+        for state in self.state_machine.states:
             cls = state.partition_class
             _kws = {}
             try:

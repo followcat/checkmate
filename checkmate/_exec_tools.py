@@ -100,15 +100,10 @@ def get_exec_signature(signature, exec_module=None,
 def get_define_str(element):
     run_code = """
 \nimport inspect
-\nimport zope.interface
 \n
 \nimport {i}
 \n
-\nclass {e.interface_class}({e.interface_ancestor_class}):
-\n    \"\"\"\"\"\"
 \n
-\n
-\n@zope.interface.implementer({e.interface_class})
 \nclass {e.classname}({e.ancestor_class}):
 \n    import inspect
 \n    _valid_values = {e.values}
@@ -159,15 +154,10 @@ def exec_class_definition(data_structure_module, partition_type, exec_module,
                           signature, values, attributes):
     """"""
     classname = get_method_basename(signature)
-    interface_class = 'I' + classname
-
     class_element = collections.namedtuple('class_element',
-                    ['interface_ancestor_class', 'interface_class',
-                     'ancestor_class', 'classname', 'values', 'attributes'])
+                    ['ancestor_class', 'classname', 'values', 'attributes'])
     if partition_type == 'exchanges':
         element = class_element(
-                    'checkmate.interfaces.IExchange',
-                    interface_class,
                     'checkmate.exchange.Exchange',
                     classname,
                     values,
@@ -175,8 +165,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module,
         run_code = get_define_str(element)
     elif partition_type == 'data_structure':
         element = class_element(
-                    'zope.interface.Interface',
-                    interface_class,
                     'checkmate.data_structure.DataStructure',
                     classname,
                     values,
@@ -188,8 +176,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module,
             if not is_method(_v):
                 valid_values_list.append(_v)
         element = class_element(
-                    'checkmate.interfaces.IState',
-                    interface_class,
                     'checkmate.state.State',
                     classname,
                     valid_values_list,
@@ -198,7 +184,6 @@ def exec_class_definition(data_structure_module, partition_type, exec_module,
 
     exec(run_code, exec_module.__dict__)
     define_class = getattr(exec_module, classname)
-    define_interface = getattr(exec_module, interface_class)
     setattr(define_class, '_sig',
         get_exec_signature(signature, exec_module=exec_module,
             data_structure_module=data_structure_module))
@@ -221,4 +206,4 @@ def exec_class_definition(data_structure_module, partition_type, exec_module,
         globals()['_construct_values'])
     setattr(define_class, 'partition_attribute',
         globals()['partition_attribute'])
-    return define_class, define_interface
+    return define_class
