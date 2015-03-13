@@ -1,5 +1,3 @@
-import copy
-
 import zope.component.globalregistry
 
 
@@ -21,12 +19,11 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             ['C1']
         """
         for _class in classes:
-            if _class in self._registry.keys():
-                if component.name not in self._registry[_class]:
-                    self._registry[_class].append(component.name)
-            else:
-                self._registry[_class] = [component.name]
-
+            if _class not in self._registry.keys():
+                self._registry[_class] = []
+            if component.name not in self._registry[_class]:
+                self._registry[_class].append(component.name)
+                
     def server_exchanges(self, exchange, component_name=''):
         """
             >>> import sample_app.application
@@ -40,20 +37,15 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             ...     print(_e.destination)
             ['C3']
         """
+        destinations = []
         for _class, _servers in self._registry.items():
             if isinstance(exchange, _class):
-                return self._factory(exchange, component_name, _servers)
-        return self._factory(exchange, component_name, [])
-
-    def _factory(self, exchange, origin, destinations):
-        """"""
+                destinations = _servers
+                break
         if exchange.broadcast:
-            new_exchange = copy.deepcopy(exchange)
-            new_exchange.origin_destination(origin, destinations)
+            destinations = [destinations]
+        for _d in destinations:
+            new_exchange = exchange.partition_storage.partition_class(exchange)
+            new_exchange.carbon_copy(exchange)
+            new_exchange.origin_destination(component_name, _d)
             yield new_exchange
-        else:
-            for _d in destinations:
-                new_exchange = copy.deepcopy(exchange)
-                new_exchange.origin_destination(origin, _d)
-                yield new_exchange
-        yield from ()
