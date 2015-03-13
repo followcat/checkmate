@@ -9,27 +9,6 @@ class IRun(zope.interface.Interface):
     """"""
 
 
-class IState(zope.interface.Interface):
-    """"""
-    def append(self, *args, **kwargs):
-        """"""
-
-    def toggle(self, *args, **kwargs):
-        """"""
-
-    def flush(self, *args, **kwargs):
-        """"""
-
-    def up(self, *args, **kwargs):
-        """"""
-
-    def down(self, *args, **kwargs):
-        """"""
-
-    def pop(self, *args, **kwargs):
-        """"""
-
-
 class ITree(zope.interface.Interface):
     """"""
 

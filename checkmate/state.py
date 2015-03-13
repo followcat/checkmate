@@ -1,10 +1,6 @@
-import zope.interface.interface
-
 import checkmate.partition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IState)
 class State(checkmate.partition.Partition):
     """"""
 
