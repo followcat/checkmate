@@ -1,14 +1,10 @@
-import zope.interface
-
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
 import checkmate.transition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IRun)
 class Run(checkmate._tree.Tree):
     def __init__(self, transition, nodes=None, states=None):
         assert type(transition) == checkmate.transition.Transition

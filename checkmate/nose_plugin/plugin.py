@@ -16,7 +16,6 @@ import checkmate.runs
 import checkmate.nose_plugin
 import checkmate.runtime._runtime
 import checkmate.nose_plugin.suite
-import checkmate.interfaces
 
 
 class Checkmate(nose.plugins.Plugin):
@@ -127,8 +126,8 @@ class Checkmate(nose.plugins.Plugin):
         TestRunner.plugin_config = dict(self.__dict__)
 
     def wantClass(self, cls):
-        """Select only classes implementing checkmate.interfaces.IRun"""
-        return not(self.runlog) and checkmate.interfaces.IRun.implementedBy(cls)
+        """Select only subclass is checkmate.runs.Run"""
+        return not(self.runlog) and issubclass(cls, checkmate.runs.Run)
         
     def wantFunction(self, function):
         """Do not select TestLogProcedureGenerator"""
@@ -139,7 +138,7 @@ class Checkmate(nose.plugins.Plugin):
     def makeTest(self, obj, parent=None):
         """"""
         if nose.util.isclass(obj):
-            if checkmate.interfaces.IRun.implementedBy(obj):
+            if issubclass(obj, checkmate.runs.Run):
                 return self.loadTestsFromTestCase(obj)
         elif inspect.isfunction(obj):
             if parent and obj.__module__ != parent.__name__:

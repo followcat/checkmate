@@ -6,7 +6,7 @@ import nose.case
 import nose.suite
 import nose.proxy
 
-import checkmate.interfaces
+import checkmate.runs
 
 
 class TestCase(nose.case.Test):
@@ -20,7 +20,7 @@ class TestCase(nose.case.Test):
         plug_test = self.config.plugins.prepareTestCase(self)
         if plug_test is not None:
             test = plug_test
-        if checkmate.interfaces.IRun.providedBy(test):
+        if isinstance(test, checkmate.runs.Run):
             config_as_dict = self.config.todict()
             config_as_dict['runtime'].execute(test, result)
         else:
