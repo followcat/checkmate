@@ -30,12 +30,6 @@ class IState(zope.interface.Interface):
         """"""
 
 
-class IStorage(zope.interface.Interface):
-    """"""
-    def factory(self, args=[], kwargs={}):
-        """"""
-
-
 class ITree(zope.interface.Interface):
     """"""
 
