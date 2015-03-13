@@ -1,5 +1,3 @@
-import zope.interface
-
 import checkmate
 
 
@@ -68,7 +66,7 @@ class Transition(object):
         keys = {}
         if len(exchange_list) > 0:
             for key, value in self.resolve_dict.items():
-                interface, attr = value
+                partition_class, attr = value
                 if hasattr(exchange_list[0], attr):
                     if attr not in keys:
                         keys[attr] = []
@@ -77,9 +75,9 @@ class Transition(object):
             if key not in attr_list and len(set(attr_list)) > 1:
                 compare_list = []
                 for attr in attr_list:
-                    interface = self.resolve_dict[attr][0]
+                    partition_class = self.resolve_dict[attr][0]
                     for input in state_list + exchange_list:
-                        if interface.providedBy(input):
+                        if isinstance(input, partition_class):
                             compare_list.append(getattr(input, key))
                 if len(compare_list) > 1 and compare_list[0] == compare_list[1]:
                     return False
