@@ -4,13 +4,11 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface.interface
+import inspect
 
 import checkmate.partition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
@@ -124,8 +122,7 @@ class Exchange(checkmate.partition.Partition):
             False
         """
         try:
-            return checkmate.interfaces.IExchange.implementedBy(
-                        self.return_type)
+            return self.return_type != inspect._empty
         except AttributeError:
             return False
 

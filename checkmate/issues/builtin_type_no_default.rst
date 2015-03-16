@@ -13,7 +13,7 @@
     >>> module['data_structure'] = data_structure_module
     >>> checkmate.partition_declarator.make_partition(module,
     ...     ds_items) #doctest: +ELLIPSIS
-    (<InterfaceClass checkmate.data.IItem>, ...
+    <checkmate._storage.PartitionStorage object at ...
     >>> it_1 = data_structure_module.Item()
     >>> it_1.IA
     False

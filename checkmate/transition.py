@@ -4,8 +4,6 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface
-
 import checkmate
 
 
@@ -33,7 +31,7 @@ class Transition(object):
             for key, value in _s.arguments.items():
                 if type(value) == tuple:
                     continue
-                self.resolve_dict[value] = (_s.interface, key)
+                self.resolve_dict[value] = (_s.partition_class, key)
 
     def matching_list(self, matched_list, partition_list):
         match_list = []
@@ -74,7 +72,7 @@ class Transition(object):
         keys = {}
         if len(exchange_list) > 0:
             for key, value in self.resolve_dict.items():
-                interface, attr = value
+                partition_class, attr = value
                 if hasattr(exchange_list[0], attr):
                     if attr not in keys:
                         keys[attr] = []
@@ -83,9 +81,9 @@ class Transition(object):
             if key not in attr_list and len(set(attr_list)) > 1:
                 compare_list = []
                 for attr in attr_list:
-                    interface = self.resolve_dict[attr][0]
+                    partition_class = self.resolve_dict[attr][0]
                     for input in state_list + exchange_list:
-                        if interface.providedBy(input):
+                        if isinstance(input, partition_class):
                             compare_list.append(getattr(input, key))
                 if len(compare_list) > 1 and compare_list[0] == compare_list[1]:
                     return False
@@ -173,16 +171,12 @@ class Transition(object):
            not self.is_matching_incoming(_incoming, states):
             return _outgoing_list
         for _state in states:
-            for _interface in zope.interface.providedBy(_state):
-                for _final in self.final:
-                    if _final == None:
-                        continue
-                    _final_interface = _final.interface
-                    if _final_interface == _interface:
-                        resolved_arguments = _final.resolve(states, _incoming,
-                                                            self.resolve_dict)
-                        _final.factory(instance=_state, default=default,
-                            **resolved_arguments)
+            for _final in self.final:
+                if isinstance(_state, _final.partition_class):
+                    resolved_arguments = _final.resolve(states, _incoming,
+                                                        self.resolve_dict)
+                    _final.factory(instance=_state, default=default,
+                        **resolved_arguments)
         for outgoing_exchange in self.outgoing:
             resolved_arguments = outgoing_exchange.resolve(states, _incoming,
                                                            self.resolve_dict)

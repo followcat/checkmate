@@ -36,11 +36,11 @@ Creation of the partitions.
     >>> module['data_structure'] = data_structure_module
     >>> checkmate.partition_declarator.make_partition(module,
     ...     ds_items) #doctest: +ELLIPSIS
-    (<InterfaceClass sample_app.data.IItem>, ...
+    <checkmate._storage.PartitionStorage object at ...
     >>> module['exchanges'] = exchange_module
     >>> checkmate.partition_declarator.make_partition(module,
     ...     ex_items) #doctest: +ELLIPSIS
-    (<InterfaceClass sample_app.exchanges.IExchange>, ...
+    <checkmate._storage.PartitionStorage object at ...
 
 Creation of the transition.
 
@@ -94,7 +94,5 @@ from annotation.
 Rollback all changes in the common modules.
 
     >>> delattr(exchange_module, 'Exchange')
-    >>> delattr(exchange_module, 'IExchange')
     >>> delattr(data_structure_module, 'Item')
-    >>> delattr(data_structure_module, 'IItem')
     >>>

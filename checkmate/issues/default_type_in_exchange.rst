@@ -33,6 +33,5 @@ We should be able to use python default types when defining exchanges:
 
     >>> ts = checkmate._storage.TransitionStorage(item_out, module_dict)
 
-    >>> delattr(sample_app.exchanges, 'IBO')
     >>> delattr(sample_app.exchanges, 'BO')
 

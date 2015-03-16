@@ -4,20 +4,9 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface
-
 import checkmate._module
 import checkmate.transition
-import checkmate.interfaces
 import checkmate._exec_tools
-
-
-def _to_interface(_classname):
-    return 'I' + _classname
-
-
-def name_to_interface(name, modules):
-    return name_to_class(_to_interface(name), modules)
 
 
 def name_to_class(name, modules):
@@ -31,7 +20,8 @@ def name_to_class(name, modules):
     return partition_class
 
 class PartitionStorage(object):
-    def __init__(self, interface, code_arguments, full_description=None):
+    def __init__(self, partition_class, code_arguments,
+                 full_description=None):
         """
             >>> import checkmate._storage
             >>> import sample_app.application
@@ -43,22 +33,20 @@ class PartitionStorage(object):
             <sample_app.data_structure.ActionRequest object at ...
             >>> c1_module = sample_app.component.component_1_states
             >>> data = checkmate._storage.PartitionStorage(
-            ...             c1_module.IAnotherState,
+            ...             c1_module.AnotherState,
             ...             {'AnotherState1()': {'value': 'None'}})
             >>> state = data.storage[0].factory()
             >>> state.value
             >>> data = checkmate._storage.PartitionStorage(
-            ...         sample_app.exchanges.IAction, 
+            ...         sample_app.exchanges.Action,
             ...         {'AP(R)': {'value': 'AP'}})
             >>> ex = data.storage[0].factory(R='HIGH')
             >>> (ex.value, ex.R.value)
             ('AP', 'HIGH')
         """
         self.type = type
-        self.interface = interface
         self.full_description = full_description
-        self.partition_class = checkmate._module.get_class_implementing(
-                                interface)
+        self.partition_class = partition_class
         self.storage = []
         #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
@@ -70,9 +58,9 @@ class PartitionStorage(object):
                 value = arguments.pop('value')
             except KeyError:
                 value = None
-            _storage = InternalStorage(self.interface, code, code_description,
-                        partition_class=self.partition_class, value=value,
-                        arguments=arguments)
+            _storage = InternalStorage(self.partition_class,
+                                       code, code_description,
+                                       value=value, arguments=arguments)
             self.storage.append(_storage)
 
     def get_description(self, item):
@@ -108,16 +96,13 @@ class TransitionStorage(object):
                 continue
             for each_item in _v:
                 for _name, _data in each_item.items():
-                    interface = \
-                        name_to_interface(_name, module_dict[module_type])
                     code = checkmate._exec_tools.get_method_basename(_data)
                     define_class = \
                         name_to_class(_name, module_dict[module_type])
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)
-                    generate_storage = InternalStorage(interface, _data, None,
-                                        partition_class=define_class,
-                                        arguments=arguments)
+                    generate_storage = InternalStorage(define_class, _data,
+                                        None, arguments=arguments)
                     if _k == 'final':
                         generate_storage.function = define_class.__init__
                     for _s in define_class.partition_storage.storage:
@@ -140,31 +125,26 @@ class TransitionStorage(object):
                                                returned=self.returned)
 
 
-@zope.interface.implementer(checkmate.interfaces.IStorage)
 class InternalStorage(object):
     """Support local storage of data (status or data_structure)
     information in transition"""
-    def __init__(self, interface, code, description, partition_class=None,
+    def __init__(self, partition_class, code, description,
                  value=None, arguments={}):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(
-            ...         sample_app.exchanges.IAction, "AP(R)",
-            ...         None,
-            ...         value="AP(R)")
+            ...         sample_app.exchanges.Action,
+            ...         "AP(R)",  None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
         """
         self.origin_code = code
         self.code = checkmate._exec_tools.get_method_basename(code)
         self.description = description
-        self.interface = interface
-        self.cls = partition_class
-        if partition_class is None:
-            self.cls = checkmate._module.get_class_implementing(interface)
-        self.function = self.cls
+        self.partition_class = partition_class
+        self.function = self.partition_class
 
         self.arguments = dict(arguments)
         self.resolved_arguments = self.function.method_arguments(self.arguments)
@@ -181,7 +161,7 @@ class InternalStorage(object):
             >>> import sample_app.data_structure
             >>> import checkmate._storage
             >>> st = checkmate._storage.InternalStorage(
-            ...         sample_app.exchanges.IAction,
+            ...         sample_app.exchanges.Action,
             ...         "AP(R)", None, value="AP(R)")
             >>> [st.factory().R.C.value, st.factory().R.P.value]
             ['AT1', 'NORM']
@@ -218,7 +198,7 @@ class InternalStorage(object):
                 args = (self.value, )
             if len(kwargs) == 0:
                 kwargs.update(self.resolved_arguments)
-        if instance is not None and self.interface.providedBy(instance):
+        if instance is not None and isinstance(instance, self.partition_class):
             try:
                 value = self.value
             except IndexError:
@@ -285,13 +265,14 @@ class InternalStorage(object):
         if resolved_dict is None:
             resolved_dict = {}
         _attributes = {}
-        for attr, data_cls in self.cls._construct_values.items():
+        for attr, data_cls in self.partition_class._construct_values.items():
             if (attr in self.arguments and
                     type(self.arguments[attr]) != tuple and
                     self.arguments[attr] in resolved_dict):
-                interface, attr = resolved_dict[self.arguments[attr]]
+                partition_class, attr = resolved_dict[self.arguments[attr]]
                 for input in states + exchanges:
-                    if hasattr(input, attr) and interface.providedBy(input):
+                    if (hasattr(input, attr) and
+                            isinstance(input, partition_class)):
                         data = getattr(input, attr)
                         if isinstance(data, data_cls):
                             _attributes[attr] = data
@@ -322,7 +303,7 @@ class InternalStorage(object):
 
             >>> c1_states = sample_app.component.component_1_states
             >>> final = [_f for _f in run.final
-            ...          if _f.interface == c1_states.IState][0]
+            ...          if _f.partition_class == c1_states.State][0]
             >>> t1 = c1.state_machine.transitions[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
@@ -331,7 +312,7 @@ class InternalStorage(object):
 
             >>> c3_states = sample_app.component.component_3_states
             >>> final = [_f for _f in run.final
-            ...          if _f.interface == c3_states.IAcknowledge][0]
+            ...          if _f.partition_class == c3_states.Acknowledge][0]
             >>> t3 = c3.state_machine.transitions[0]
             >>> c3.simulate(t3)
             []
@@ -339,11 +320,11 @@ class InternalStorage(object):
             <sample_app.component.component_3_states.Acknowledge ...
         """
         for _target in [_t for _t in target_copy
-                        if self.interface.providedBy(_t)]:
+                        if isinstance(_t, self.partition_class)]:
             _initial = [None]
             if reference is not None:
                 _initial = [_i for _i in reference 
-                            if self.interface.providedBy(_i)]
+                            if isinstance(_i, self.partition_class)]
                 resolved_arguments = self.resolve(states=_initial,
                                         exchanges=incoming_list)
             else:

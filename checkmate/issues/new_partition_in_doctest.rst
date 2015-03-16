@@ -26,5 +26,5 @@ The partition should be returned by get_output()
 even if no transition is provided.
 
     >>> de.get_output()['exchanges'] # doctest: +ELLIPSIS
-    [(<InterfaceClass checkmate.exchanges.IRC>, <checkmate._storage.PartitionStorage object at ...
+    [<checkmate._storage.PartitionStorage object at ...
 
