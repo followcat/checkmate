@@ -1,3 +1,9 @@
+# This code is part of the checkmate project.
+# Copyright (C) 2015 The checkmate project contributors
+# 
+# This program is free software under the terms of the GNU GPL, either
+# version 3 of the License, or (at your option) any later version.
+
 __all__ = ['run_steps', 'run']
 
 
@@ -15,7 +21,7 @@ def visual_states(dump_states, level=0):
     return return_str
 
 
-def run_steps(run, level=0, with_state=False):
+def run_steps(run, level=0, show_states=True):
     visual_dump = run.visual_dump_steps()
     tab_space = ' ' * 4 * level
     string = "\n\
@@ -32,16 +38,19 @@ def run_steps(run, level=0, with_state=False):
         else:
             string += "']"
             
-    if with_state:
+    if show_states:
         final_states = visual_states(visual_dump['states'], level + 1)
         string += "\n{final}".format(final=final_states)
     for element in run.nodes:
-        string += run_steps(element, level + 1, with_state)
+        string += run_steps(element, level + 1, show_states)
     return string
 
 
-def run(run, level=0):
-    return_str = visual_states(run.visual_dump_initial(), level)
-    return_str += run_steps(run, level, with_state=True)
-    return_str += visual_states(run.visual_dump_final(), level)
+def run(run, level=0, show_states=True):
+    return_str = '\n' + run.root.name + '\n' + '=' * len(run.root.name)
+    if show_states:
+        return_str += visual_states(run.visual_dump_initial(), level)
+    return_str += run_steps(run, level, show_states)
+    if show_states:
+        return_str += visual_states(run.visual_dump_final(), level)
     return return_str
