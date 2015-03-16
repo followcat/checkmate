@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import os
+import collections
 
 import zope.interface
 
@@ -35,10 +36,6 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        fullfilename = namespace['component_definition']
-        with open(fullfilename, 'r') as _file:
-            define_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         def add_definition(namespace, data_source):
             return_dict = {}
             try:
@@ -79,7 +76,26 @@ class ComponentMeta(type):
                 return return_dict
             except Exception as e:
                 raise e
+        fullfilename = namespace['component_definition']
+        with open(fullfilename, 'r') as _file:
+            define_data = _file.read()
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         namespace.update(add_definition(namespace, data_source))
+        instance_transitions = collections.defaultdict(dict)
+        for _i, _t in namespace['instance_transitions'].items():
+            definition_data = ''
+            for (dirpath, dirnames, filenames) in os.walk(_t):
+                for _file in filenames:
+                    if _file.endswith(".yaml"):
+                        _file = os.path.join(dirpath, _file)
+                        with open(_file, 'r') as open_file:
+                            definition_data += open_file.read()
+            if definition_data != '':
+                data_source = \
+                    checkmate.parser.yaml_visitor.call_visitor(definition_data)
+                instance_namespace = add_definition(namespace, data_source)
+                instance_transitions[_i] = instance_namespace
+        namespace['instance_transitions'] = instance_transitions
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
