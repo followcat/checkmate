@@ -61,16 +61,16 @@ class Sandbox(object):
             self.application.start(
                 self.initial_application.default_state_value)
             for component in self.application.components.values():
-                for interface in [_d[0] for _d in 
-                                  component.state_machine.states]:
+                for partition_class in [_d.partition_class for _d in
+                                        component.state_machine.states]:
                     done = False
                     for state in component.states:
-                        if not interface.providedBy(state):
+                        if not isinstance(state, partition_class):
                             continue
                         init_components = self.initial_application.components
                         for init_state in \
                             init_components[component.name].states:
-                            if not interface.providedBy(init_state):
+                            if not isinstance(init_state, partition_class):
                                 continue
                             state.carbon_copy(init_state)
                             done = True
@@ -83,7 +83,7 @@ class Sandbox(object):
                 done = False
                 for component in self.application.components.values():
                     for state in component.states:
-                        if not initial.interface.providedBy(state):
+                        if not isinstance(state, initial.partition_class):
                             continue
                         state.carbon_copy(
                             initial.factory(**initial.resolve()))
@@ -190,7 +190,8 @@ class Sandbox(object):
         """
         transition = tree.root
         for index, _initial in enumerate(transition.initial):
-            if _initial.interface not in [_i.interface for _i in self.initial]:
+            if _initial.partition_class not in [_i.partition_class
+                                                for _i in self.initial]:
                 self.initial.append(_initial)
                 self.final.append(transition.final[index])
         for _node in tree.nodes:

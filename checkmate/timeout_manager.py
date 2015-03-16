@@ -43,8 +43,6 @@ class TimeoutManager():
         test_code = timeit.Timer("""
 import logging
 
-import zope.interface
-
 import checkmate.exchange
 import checkmate.component
 import checkmate.application
@@ -53,10 +51,9 @@ import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.runtime.component
 
-@zope.interface.implementer(checkmate.component.IComponent)
 class Comp(checkmate.component.Component):
     name = ''
-    service_interfaces = []
+    service_classes = []
     state_machine = checkmate.state_machine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 

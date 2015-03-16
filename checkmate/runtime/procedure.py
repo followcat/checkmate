@@ -12,7 +12,6 @@ import checkmate.sandbox
 import checkmate.pathfinder
 import checkmate.application
 import checkmate.timeout_manager
-import checkmate.runtime.interfaces
 
 
 def _compatible_skip_test(message):

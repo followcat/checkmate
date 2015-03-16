@@ -4,13 +4,9 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface.interface
-
 import checkmate.partition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IState)
 class State(checkmate.partition.Partition):
     """"""
 

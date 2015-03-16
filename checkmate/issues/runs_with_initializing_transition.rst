@@ -44,8 +44,8 @@ other runs
         ...         module_dict)
         >>> t_in = ts.factory()
         >>> state1.state_machine.transitions.append(t_in)
-        >>> state1.service_interfaces.append(
-        ...     sample_app.exchanges.IForthAction)
+        >>> state1.service_classes.append(
+        ...     sample_app.exchanges.ForthAction)
         >>> r = checkmate.runtime._runtime.Runtime(
         ...         sample_app.application.TestData,
         ...         checkmate.runtime._pyzmq.Communication,
@@ -89,8 +89,8 @@ other runs
         >>> r.stop_test()
 
     Revert changes for further use in doctest:
-        >>> state1.service_interfaces.remove(
-        ...     sample_app.exchanges.IForthAction)
+        >>> state1.service_classes.remove(
+        ...     sample_app.exchanges.ForthAction)
         >>> state1.state_machine.transitions.remove(t_in)
         >>> state2.state_machine.transitions.remove(t_out)
 

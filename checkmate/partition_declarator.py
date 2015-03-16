@@ -38,21 +38,19 @@ def make_partition(module,
         full_description = None
 
     _module = module[partition_type]
-    defined_class, defined_interface = \
-        checkmate._exec_tools.exec_class_definition(
-            module['data_structure'], partition_type, _module, signature,
-            values_list, attributes)
+    defined_class = checkmate._exec_tools.exec_class_definition(
+                        module['data_structure'], partition_type,
+                        _module, signature, values_list, attributes)
     code_arguments = collections.OrderedDict()
     for code, value in zip(codes_list, values_list):
         code_arguments[code] = {'value': value}
     if defined_class.__name__ in data_value:
         code_arguments.update(data_value[defined_class.__name__])
     partition_storage = checkmate._storage.PartitionStorage(
-                            defined_interface, code_arguments,
-                            full_description)
+                            defined_class, code_arguments, full_description)
     setattr(defined_class, 'define_attributes', define_attributes)
     setattr(defined_class, 'partition_storage', partition_storage)
-    return (defined_interface, partition_storage)
+    return partition_storage
 
 
 class Declarator(object):
@@ -106,9 +104,9 @@ class Declarator(object):
         >>> de.new_partition(items)
         >>> output = de.get_output()
         >>> ds = output['data_structure']
-        >>> ds[0][0]
-        <InterfaceClass checkmate.data.ITestActionRequest>
-        >>> ds[0][1].get_description(
+        >>> ds[0].partition_class
+        <class 'checkmate.data.TestActionRequest'>
+        >>> ds[0].get_description(
         ...             checkmate.data.TestActionRequest('NORM'))
         ('D-PRIO-01', 'NORM valid value', 'NORM priority value')
         >>> items = {
@@ -119,8 +117,8 @@ class Declarator(object):
         ...     }
         >>> de.new_partition(items)
         >>> dst = de.get_output()['states']
-        >>> dst[0][0]
-        <InterfaceClass checkmate.states.ITestState>
+        >>> dst[0].partition_class
+        <class 'checkmate.states.TestState'>
         >>> items = {
         ...     'partition_type': 'exchanges',
         ...     'signature': 'TestAction(R:TestActionRequest)',
@@ -130,11 +128,11 @@ class Declarator(object):
         >>> de.new_partition(items,
         ...     attributes={'communication':'test_comm'})
         >>> dee = de.get_output()['exchanges']
-        >>> dee[0][0]
-        <InterfaceClass checkmate.exchanges.ITestAction>
-        >>> dee[0][-1].storage[0].factory().R._valid_values
+        >>> dee[0].partition_class
+        <class 'checkmate.exchanges.TestAction'>
+        >>> dee[0].storage[0].factory().R._valid_values
         ['NORM']
-        >>> dee[0][-1].storage[0].factory().communication
+        >>> dee[0].storage[0].factory().communication
         'test_comm'
         """
         self.output[items['partition_type']].append(
@@ -237,12 +235,12 @@ class Declarator(object):
         ...          state_module=state_module)
         >>> de.new_definitions(data_source)
         >>> output = de.get_output()
-        >>> output['data_structure'][0][0]
-        <InterfaceClass checkmate.data.ITestActionRequest>
-        >>> output['states'][0][0]
-        <InterfaceClass checkmate.states.ITestState>
-        >>> output['exchanges'][0][0]
-        <InterfaceClass checkmate.exchanges.ITestAction>
+        >>> output['data_structure'][0].partition_class
+        <class 'checkmate.data.TestActionRequest'>
+        >>> output['states'][0].partition_class
+        <class 'checkmate.states.TestState'>
+        >>> output['exchanges'][0].partition_class
+        <class 'checkmate.exchanges.TestAction'>
         >>> output['transitions']
         []
         """

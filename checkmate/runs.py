@@ -4,17 +4,13 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface
-
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
 import checkmate.transition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IRun)
 class Run(checkmate._tree.Tree):
     def __init__(self, transition, nodes=None, states=None):
         assert type(transition) == checkmate.transition.Transition
@@ -29,7 +25,7 @@ class Run(checkmate._tree.Tree):
         self.change_states = []
         for f in transition.final:
             for s in states:
-                if f.interface.providedBy(s):
+                if isinstance(s, f.partition_class):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
@@ -47,12 +43,14 @@ class Run(checkmate._tree.Tree):
             self._final = []
             for run in self.breadthWalk():
                 for index, _initial in enumerate(run.root.initial):
-                    if _initial.interface not in [_temp_init.interface for
-                                                  _temp_init in self._initial]:
+                    if _initial.partition_class not in\
+                        [_temp_init.partition_class for
+                            _temp_init in self._initial]:
                         self._initial.append(_initial)
                         try:
                             _final = [_f for _f in run.root.final
-                                      if _f.interface == _initial.interface][0]
+                                      if _f.partition_class ==
+                                      _initial.partition_class][0]
                             _index = run.root.final.index(_final)
                             self._final.append(run.root.final[_index])
                         except IndexError:
@@ -85,7 +83,7 @@ class Run(checkmate._tree.Tree):
                     for final in run.root.final:
                         state = [_s for _s in
                                  box.application.components[name].states
-                                 if final.interface.providedBy(_s)][0]
+                                 if isinstance(_s, final.partition_class)][0]
                         index = \
                             box.application.components[name].states.index(
                                 state)
