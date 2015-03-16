@@ -126,6 +126,19 @@ class Component(object):
         self.expected_return_code = None
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+        for _k, _v in self.instance_transitions[name].items():
+            if _k == 'state_machine':
+                for _t in _v.transitions:
+                    if _t not in self.state_machine.transitions:
+                        self.state_machine.transitions.append(_t)
+            if _k == 'service_classes':
+                for _c in _v:
+                    if _c not in self.service_classes:
+                        self.service_classes.append(_c)
+            if _k in ['services', 'communication_list']:
+                _attribute = getattr(self, _k)
+                _attribute.update(_v)
+                setattr(self, _k, _attribute) 
 
     def transition_by_name(self, name):
         for _t in self.state_machine.transitions:
