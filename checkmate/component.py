@@ -39,46 +39,49 @@ class ComponentMeta(type):
         with open(fullfilename, 'r') as _file:
             define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        try:
-            declarator = checkmate.partition_declarator.Declarator(
-                            data_structure_module,
-                            exchange_module=exchange_module,
-                            state_module=state_module)
-            declarator.new_definitions(data_source)
-            declarator_output = declarator.get_output()
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(
-                                            declarator_output['states'],
-                                            declarator_output['transitions'])
-            services = {}
-            service_classes = []
-            communication_list = set()
-            for _t in declarator_output['transitions']:
-                for _i in _t.incoming:
-                    _ex = _i.factory()
-                    if _i.code not in services:
-                        services[_i.code] = _ex
-                    if _i.partition_class not in service_classes:
-                        service_classes.append(_i.partition_class)
-                    communication_list.add(_ex.communication)
-                for _o in _t.outgoing:
-                    _ex = _o.factory()
-                    communication_list.add(_ex.communication)
-            namespace['services'] = services
-            namespace['service_classes'] = service_classes
-            for _communication in communication_list:
-                if (_communication not in namespace['communication_list'] and
-                        'launch_command' in namespace):
-                    #if 'launch_command' is set,
-                    #communication should be set as well
-                    raise KeyError(
-                        "Communication '%s' is not defined in application" %
-                        _communication)
-            namespace['communication_list'] = communication_list
-
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
-        except Exception as e:
-            raise e
+        def add_definition(namespace, data_source):
+            return_dict = {}
+            try:
+                declarator = checkmate.partition_declarator.Declarator(
+                                data_structure_module,
+                                exchange_module=exchange_module,
+                                state_module=state_module)
+                declarator.new_definitions(data_source)
+                declarator_output = declarator.get_output()
+                return_dict['state_machine'] = checkmate.state_machine.StateMachine(
+                                                declarator_output['states'],
+                                                declarator_output['transitions'])
+                services = {}
+                service_classes = []
+                communication_list = set()
+                for _t in declarator_output['transitions']:
+                    for _i in _t.incoming:
+                        _ex = _i.factory()
+                        if _i.code not in services:
+                            services[_i.code] = _ex
+                        if _i.partition_class not in service_classes:
+                            service_classes.append(_i.partition_class)
+                        communication_list.add(_ex.communication)
+                    for _o in _t.outgoing:
+                        _ex = _o.factory()
+                        communication_list.add(_ex.communication)
+                return_dict['services'] = services
+                return_dict['service_classes'] = service_classes
+                for _communication in communication_list:
+                    if (_communication not in namespace['communication_list'] and
+                            'launch_command' in namespace):
+                        #if 'launch_command' is set,
+                        #communication should be set as well
+                        raise KeyError(
+                            "Communication '%s' is not defined in application" %
+                            _communication)
+                return_dict['communication_list'] = communication_list
+                return return_dict
+            except Exception as e:
+                raise e
+        namespace.update(add_definition(namespace, data_source))
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
