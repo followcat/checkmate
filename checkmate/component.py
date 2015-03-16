@@ -112,6 +112,11 @@ class Component(object):
         'C1'
         >>> len(c.states)
         2
+        >>> import pytango.checkmate.application
+        >>> a = pytango.checkmate.application.Application()
+        >>> c1 = a.components['C1']
+        >>> c1.state_machine.transitions[-1].outgoing[0].code
+        'PA'
         """
         self.states = []
         self.name = name
