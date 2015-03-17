@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import os
+import collections
 
 import zope.interface
 
@@ -35,50 +36,68 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
 
+        def add_definition(namespace, data_source):
+            return_dict = {}
+            try:
+                declarator = checkmate.partition_declarator.Declarator(
+                                data_structure_module,
+                                exchange_module=exchange_module,
+                                state_module=state_module)
+                declarator.new_definitions(data_source)
+                declarator_output = declarator.get_output()
+                return_dict['state_machine'] = checkmate.state_machine.StateMachine(
+                                                declarator_output['states'],
+                                                declarator_output['transitions'])
+                services = {}
+                service_classes = []
+                communication_list = set()
+                for _t in declarator_output['transitions']:
+                    for _i in _t.incoming:
+                        _ex = _i.factory()
+                        if _i.code not in services:
+                            services[_i.code] = _ex
+                        if _i.partition_class not in service_classes:
+                            service_classes.append(_i.partition_class)
+                        communication_list.add(_ex.communication)
+                    for _o in _t.outgoing:
+                        _ex = _o.factory()
+                        communication_list.add(_ex.communication)
+                return_dict['services'] = services
+                return_dict['service_classes'] = service_classes
+                for _communication in communication_list:
+                    if (_communication not in namespace['communication_list'] and
+                            'launch_command' in namespace):
+                        #if 'launch_command' is set,
+                        #communication should be set as well
+                        raise KeyError(
+                            "Communication '%s' is not defined in application" %
+                            _communication)
+                return_dict['communication_list'] = communication_list
+                return return_dict
+            except Exception as e:
+                raise e
         fullfilename = namespace['component_definition']
         with open(fullfilename, 'r') as _file:
             define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        try:
-            declarator = checkmate.partition_declarator.Declarator(
-                            data_structure_module,
-                            exchange_module=exchange_module,
-                            state_module=state_module)
-            declarator.new_definitions(data_source)
-            declarator_output = declarator.get_output()
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(
-                                            declarator_output['states'],
-                                            declarator_output['transitions'])
-            services = {}
-            service_classes = []
-            communication_list = set()
-            for _t in declarator_output['transitions']:
-                for _i in _t.incoming:
-                    _ex = _i.factory()
-                    if _i.code not in services:
-                        services[_i.code] = _ex
-                    if _i.partition_class not in service_classes:
-                        service_classes.append(_i.partition_class)
-                    communication_list.add(_ex.communication)
-                for _o in _t.outgoing:
-                    _ex = _o.factory()
-                    communication_list.add(_ex.communication)
-            namespace['services'] = services
-            namespace['service_classes'] = service_classes
-            for _communication in communication_list:
-                if (_communication not in namespace['communication_list'] and
-                        'launch_command' in namespace):
-                    #if 'launch_command' is set,
-                    #communication should be set as well
-                    raise KeyError(
-                        "Communication '%s' is not defined in application" %
-                        _communication)
-            namespace['communication_list'] = communication_list
-
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
-        except Exception as e:
-            raise e
+        namespace.update(add_definition(namespace, data_source))
+        instance_transitions = collections.defaultdict(dict)
+        for _i, _t in namespace['instance_transitions'].items():
+            definition_data = ''
+            for (dirpath, dirnames, filenames) in os.walk(_t):
+                for _file in filenames:
+                    if _file.endswith(".yaml"):
+                        _file = os.path.join(dirpath, _file)
+                        with open(_file, 'r') as open_file:
+                            definition_data += open_file.read()
+            if definition_data != '':
+                data_source = \
+                    checkmate.parser.yaml_visitor.call_visitor(definition_data)
+                instance_namespace = add_definition(namespace, data_source)
+                instance_transitions[_i] = instance_namespace
+        namespace['instance_transitions'] = instance_transitions
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
@@ -107,6 +126,19 @@ class Component(object):
         self.expected_return_code = None
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+        for _k, _v in self.instance_transitions[name].items():
+            if _k == 'state_machine':
+                for _t in _v.transitions:
+                    if _t not in self.state_machine.transitions:
+                        self.state_machine.transitions.append(_t)
+            if _k == 'service_classes':
+                for _c in _v:
+                    if _c not in self.service_classes:
+                        self.service_classes.append(_c)
+            if _k in ['services', 'communication_list']:
+                _attribute = getattr(self, _k)
+                _attribute.update(_v)
+                setattr(self, _k, _attribute) 
 
     def transition_by_name(self, name):
         for _t in self.state_machine.transitions:
