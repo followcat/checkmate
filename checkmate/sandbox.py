@@ -60,24 +60,10 @@ class Sandbox(object):
         else:
             self.application.start(
                 self.initial_application.default_state_value)
-            for component in self.application.components.values():
-                for partition_class in [_d.partition_class for _d in
-                                        component.state_machine.states]:
-                    done = False
-                    for state in component.states:
-                        if not isinstance(state, partition_class):
-                            continue
-                        init_components = self.initial_application.components
-                        for init_state in \
-                            init_components[component.name].states:
-                            if not isinstance(init_state, partition_class):
-                                continue
-                            state.carbon_copy(init_state)
-                            done = True
-                            break
-                        if done:
-                            break
-        
+            for component in self.initial_application.components.values():
+                for index, state in enumerate(component.states):
+                    self.application.components[component.name].states[index].\
+                        carbon_copy(state)
         for transition in self.initial_transitions:
             for initial in transition.initial:
                 done = False
