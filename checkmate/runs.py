@@ -206,7 +206,7 @@ def get_runs_from_application(application):
 
 @checkmate.fix_issue('checkmate/issues/get_followed_runs.rst')
 def followed_runs(application, run):
-    runs = application.origin_runs
+    runs = application.run_collection
     length = len(runs)
     run_index = runs.index(run)
     followed_runs = []

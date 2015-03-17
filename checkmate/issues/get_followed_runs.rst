@@ -3,7 +3,7 @@
     >>> import sample_app.application
     >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData)
     >>> app = box.application
-    >>> runs  = app.origin_runs
+    >>> runs  = app.run_collection
     >>> runs[0].compare_initial(app)
     True
     >>> box(runs[0])
