@@ -128,8 +128,8 @@ class Component(object):
         """
         transition_list = []
         for _t in self.state_machine.transitions:
-            if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange, self.states)):
+            if (_t.is_matching_incoming(exchange, self.states) and
+                    _t.is_matching_initial(self.states)):
                 transition_list.append(_t)
         return transition_list
 
@@ -148,8 +148,8 @@ class Component(object):
         True
         """
         for _t in self.state_machine.transitions:
-            if (_t.is_matching_initial(self.states) and
-                _t.is_matching_outgoing(exchange)):
+            if (_t.is_matching_outgoing(exchange) and
+                    _t.is_matching_initial(self.states)):
                 return _t
         return None
 
