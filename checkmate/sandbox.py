@@ -42,6 +42,7 @@ class Sandbox(object):
             >>> box.application.components['C1'].states[0].value
             False
         """
+        self.used = True
         self.final = []
         self.initial = []
         self.transitions = None
@@ -77,6 +78,10 @@ class Sandbox(object):
                         break
                     if done:
                         break
+
+    def restart(self):
+        if self.used is True:
+            self.start()
 
     @property
     def is_run(self):

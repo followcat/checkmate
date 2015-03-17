@@ -195,10 +195,10 @@ def get_runs_from_application(application):
     application = _class()
     application.start(default_state_value=False)
     origin_transitions = get_origin_transitions(application)
+    sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
     for _o in origin_transitions:
-        sandbox = \
-            checkmate.sandbox.CollectionSandbox(_class, application)
         run = Run(_o)
+        sandbox.restart()
         for _run in sandbox(run):
             runs.append(_run)
     return runs
