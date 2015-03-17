@@ -42,7 +42,7 @@ class Sandbox(object):
             >>> box.application.components['C1'].states[0].value
             False
         """
-        self.used = True
+        self.used = False
         self.final = []
         self.initial = []
         self.transitions = None
@@ -213,6 +213,7 @@ class CollectionSandbox(Sandbox):
                 for _t in _transitions:
                     if _t == tree.root:
                         continue
+                    self.used = True
                     _app = sandbox.application
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]
