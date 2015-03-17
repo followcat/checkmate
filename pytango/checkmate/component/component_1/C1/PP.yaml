@@ -1,0 +1,16 @@
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: 'Append element ok tran02'
+        initial: 
+          - State:            State2
+          - AnotherState:     AnotherState1()
+        incoming:
+          - Action:           PP()
+        final:
+          - State:            State1
+          - AnotherState:     pop()
+        outgoing:
+          - Pause:            PA()
+
