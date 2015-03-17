@@ -14,7 +14,13 @@ import pytango.checkmate.runtime.communication
 
 class Application(checkmate.application.Application,
                   metaclass=checkmate.application.ApplicationMeta):
-    """"""
+    """
+        >>> import pytango.checkmate.application
+        >>> a = pytango.checkmate.application.Application()
+        >>> c1 = a.components['C1']
+        >>> c1.state_machine.transitions[-1].outgoing[0].code
+        'PA'
+    """
     itp_definition = ['pytango/checkmate']
     feature_definition_path = 'sample_app/itp'
     exchange_definition = ['pytango/checkmate/exchanges']
