@@ -64,7 +64,7 @@ def get_matrix_by_run(application, run):
     return run_matrix
 
 
-def fill_matrix(runtime_app, app, run, des_matrix):
+def fill_matrix(runtime_app, app, run, des_matrix, depth=0, best=0):
     """
     >>> import checkmate.pathfinder
     >>> import sample_app.application
@@ -73,18 +73,20 @@ def fill_matrix(runtime_app, app, run, des_matrix):
     >>> runs = app.run_collection
     >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, runs[1])
     >>> checkmate.pathfinder.fill_matrix(app, app, runs[3], des_matrix)
-    True
+    2
     >>> app.matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 1, 0, 1],
             [1, 0, 0, 0]])
     """
+    if best and depth > best:
+        return best
     followed_runs = checkmate.runs.followed_runs(app, run)
     runtime_app.matrix = app.matrix
     runtime_app.runs_found = app.runs_found
     if (des_matrix * app.matrix.getT()).any(1):
-        return True
+        best = depth
     for run in followed_runs:
         run_index = app.run_collection.index(run)
         if app.runs_found[run_index] is True:
@@ -95,9 +97,11 @@ def fill_matrix(runtime_app, app, run, des_matrix):
         box.application.run_collection = runtime_app.run_collection
         if box(run) is False:
             continue
-        if fill_matrix(runtime_app, box.application, run, des_matrix) is True:
-            return True
-    return False
+        fill_depth = fill_matrix(runtime_app, box.application, run,
+                                 des_matrix, depth + 1, best)
+        if best == 0 or fill_depth < best:
+            best = fill_depth
+    return best
 
 
 def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
@@ -117,7 +121,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
     >>> ori_matrix
     matrix([[0, 0, 0, 1]])
     >>> checkmate.pathfinder.fill_matrix(app, app, _run, des_matrix)
-    True
+    2
     >>> path = []
     >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
     ...     des_matrix, app.matrix, path)
