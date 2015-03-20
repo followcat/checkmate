@@ -133,7 +133,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
         return True
 
 
-def get_runs_from_path(runs, path, app, des_matrix, steps=1):
+def get_runs_from_path(runs, path, app, des_matrix):
     """
     >>> import checkmate.runs
     >>> import checkmate.sandbox
@@ -158,17 +158,16 @@ def get_runs_from_path(runs, path, app, des_matrix, steps=1):
     >>> [_r.root.name for _r in path_runs]
     ["Press C2's Button AC", "Press C2's Button RL"]
     """
-    if steps == len(path):
+    if len(path) == 0:
         return True
-    elif steps == 1:
-        des_matrix = des_matrix.getT()
-    else:
-        des_matrix = app.matrix * des_matrix
-    for _r in [t[1] for t in list(zip(path[-steps].tolist()[0],
-                                  app.run_collection))if t[0] > 0]:
-        if (get_matrix_by_run(app, _r) * des_matrix).all():
-            runs.append(_r)
-            get_runs_from_path(runs, path, app, des_matrix, steps + 1)
-            return True
+    for _r in [t[1] for t in list(zip(path[-1].tolist()[0],
+                                  app.run_collection)) if t[0] > 0]:
+        if (get_matrix_by_run(app, _r) * des_matrix.getT()).all():
+            if (get_runs_from_path(runs, path[:-1], app,
+                    des_matrix * app.matrix.getT())):
+                runs.append(_r)
+                return True
+            else:
+                continue
     else:
         return False
