@@ -132,8 +132,6 @@ class Sandbox(object):
         return self.run_process(_outgoing)
 
     def run_process(self, outgoing):
-        if len(outgoing) == 0:
-            return False
         try:
             self.transitions = \
                 self.process(outgoing,
