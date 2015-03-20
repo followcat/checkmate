@@ -85,7 +85,7 @@ def fill_matrix(runtime_app, app, run, des_matrix, depth=0, best=0):
     followed_runs = checkmate.runs.followed_runs(app, run)
     runtime_app.matrix = app.matrix
     runtime_app.runs_found = app.runs_found
-    if (des_matrix * app.matrix.getT()).any(1):
+    if (des_matrix * app.matrix.getT()).sum():
         best = depth
     for run in followed_runs:
         run_index = app.run_collection.index(run)
@@ -127,11 +127,11 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
     ...     des_matrix, app.matrix, path)
     True
     >>> path
-    [matrix([[0, 0, 1, 0]]), matrix([[1, 0, 0, 0]])]
+    [matrix([[1, 0, 0, 0]]), matrix([[0, 0, 1, 0]]), matrix([[0, 1, 0, 1]])]
     """
-    new_des_matrix = des_matrix * app_matrix.getT()
-    if (ori_matrix * new_des_matrix.getT()).any(1):
+    new_ori_matrix = ori_matrix * app_matrix
+    path.append(new_ori_matrix)
+    if (des_matrix * new_ori_matrix.getT()).sum() > 0:
         return True
-    path.append(new_des_matrix)
-    if get_path_from_matrix(ori_matrix, new_des_matrix, app_matrix, path):
+    if get_path_from_matrix(new_ori_matrix, des_matrix, app_matrix, path):
         return True
