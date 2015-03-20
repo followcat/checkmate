@@ -123,11 +123,52 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
     ...     des_matrix, app.matrix, path)
     True
     >>> path
-    [matrix([[0, 0, 1, 0]]), matrix([[1, 0, 0, 0]])]
+    [matrix([[1, 0, 0, 0]]), matrix([[0, 0, 1, 0]]), matrix([[0, 1, 0, 1]])]
     """
-    new_des_matrix = des_matrix * app_matrix.getT()
-    if (ori_matrix * new_des_matrix.getT()).any(1):
+    new_ori_matrix = ori_matrix * app_matrix
+    path.append(new_ori_matrix)
+    if (des_matrix * new_ori_matrix.getT()).sum() > 0:
         return True
-    path.append(new_des_matrix)
-    if get_path_from_matrix(ori_matrix, new_des_matrix, app_matrix, path):
+    if get_path_from_matrix(new_ori_matrix, des_matrix, app_matrix, path):
         return True
+
+
+def get_runs_from_path(runs, path, app, des_matrix, steps=1):
+    """
+    >>> import checkmate.runs
+    >>> import checkmate.sandbox
+    >>> import checkmate.pathfinder
+    >>> import sample_app.application
+    >>> app = sample_app.application.TestData()
+    >>> app.start()
+    >>> runs  = app.run_collection
+    >>> _run = runs[3]
+    >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, runs[1])
+    >>> ori_matrix = checkmate.pathfinder.get_matrix_by_run(app, _run)
+    >>> checkmate.pathfinder.fill_matrix(app, app, _run, des_matrix)
+    2
+    >>> path = []
+    >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
+    ...     des_matrix, app.matrix, path)
+    True
+    >>> path_runs = []
+    >>> checkmate.pathfinder.get_runs_from_path(path_runs, path,
+    ... app, des_matrix)
+    True
+    >>> [_r.root.name for _r in path_runs]
+    ["Press C2's Button AC", "Press C2's Button RL"]
+    """
+    if steps == len(path):
+        return True
+    elif steps == 1:
+        des_matrix = des_matrix.getT()
+    else:
+        des_matrix = app.matrix * des_matrix
+    for _r in [t[1] for t in list(zip(path[-steps].tolist()[0],
+                                  app.run_collection))if t[0] > 0]:
+        if (get_matrix_by_run(app, _r) * des_matrix).all():
+            runs.append(_r)
+            get_runs_from_path(runs, path, app, des_matrix, steps + 1)
+            return True
+    else:
+        return False
