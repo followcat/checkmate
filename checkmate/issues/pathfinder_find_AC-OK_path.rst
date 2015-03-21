@@ -10,7 +10,8 @@ After execute run 'PBRL', components' state is State: Flase, Acknowledge: False,
         >>> r.start_test()
         >>> runs = r.application.run_collection
         >>> r.execute(runs[2], transform=True)
-        >>> path_list = list(checkmate.pathfinder._find_runs(r.application, runs[0]).keys())
+        >>> path_list = checkmate.pathfinder._find_runs(r.application,
+        ...                 runs[0])
         >>> [o.code for o in path_list[0].nodes[0].nodes[0].root.outgoing]
         ['RE', 'ER']
         >>> r.stop_test()
