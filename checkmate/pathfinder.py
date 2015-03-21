@@ -4,8 +4,6 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import collections
-
 import numpy
 
 import checkmate.runs
@@ -18,7 +16,7 @@ import checkmate.sandbox
 def _find_runs(application, target):
     """"""
     used_runs = _next_run(application, target, application.run_collection,
-                    collections.OrderedDict())
+                    list())
     return used_runs
 
 
@@ -31,21 +29,20 @@ def _next_run(application, target, runs, used_runs):
         box = checkmate.sandbox.Sandbox(type(application), application)
         box(_run)
         if box.is_run:
+            used_runs.append(_run)
             if target.compare_initial(box.application):
-                used_runs[_run] = box
                 return used_runs
             else:
-                used_runs.update({_run: box})
                 returned_runs = _next_run(box.application, target, runs,
                                     used_runs)
                 if len(returned_runs) == 0:
-                    del used_runs[_run]
+                    used_runs.pop()
                     box = checkmate.sandbox.Sandbox(\
                             type(application), application)
                     continue
                 else:
                     return returned_runs
-    return collections.OrderedDict()
+    return list()
 
 
 def get_matrix_by_run(application, run):
