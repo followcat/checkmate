@@ -143,7 +143,7 @@ def get_runs_from_path(runs, path, app, des_matrix):
     >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, runs[1])
     >>> ori_matrix = checkmate.pathfinder.get_matrix_by_run(app, _run)
     >>> checkmate.pathfinder.fill_matrix(app, app, _run, des_matrix)
-    2
+    True
     >>> path = []
     >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
     ...     des_matrix, app.matrix, path)
@@ -152,7 +152,7 @@ def get_runs_from_path(runs, path, app, des_matrix):
     >>> checkmate.pathfinder.get_runs_from_path(path_runs, path,
     ... app, des_matrix)
     True
-    >>> [_r.root.name for _r in path_runs]
+    >>> [_r.root.name for _r in path_runs][:-1]
     ["Press C2's Button AC", "Press C2's Button RL"]
     """
     if len(path) == 0:
