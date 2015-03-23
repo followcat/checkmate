@@ -62,11 +62,10 @@ class Run(checkmate._tree.Tree):
 
     def compare_initial(self, application):
         """"""
-        for run in self.breadthWalk():
+        for initial in self.initial:
             for component in application.components.values():
-                if run.root in component.state_machine.transitions:
-                    if run.root.is_matching_initial(component.states):
-                        break
+                if initial.match(component.states):
+                    break
             else:
                 return False
         return True
