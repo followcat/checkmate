@@ -85,7 +85,10 @@ class Sandbox(object):
 
     @property
     def is_run(self):
-        return self.transitions is not None
+        if self.transitions is None:
+            return False
+        else:
+            return set(self.run.walk()).issubset(set(self.transitions.walk()))
 
     def __call__(self, run, itp_run=False):
         """

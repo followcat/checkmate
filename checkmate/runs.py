@@ -31,15 +31,13 @@ class Run(checkmate._tree.Tree):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
-    @checkmate.report_issue(
+    @checkmate.fix_issue(
         'checkmate/issues/sandbox_call_notfound_transition.rst')
     def get_transition_by_input_states(self, exchanges, states):
         for _t in self.walk():
             if (_t.is_matching_incoming(exchanges, states) and
                     _t.is_matching_initial(states)):
                 return _t
-        else:
-            raise checkmate.exception.NoTransitionFound
 
     def get_states(self):
         if self._initial is None or self._final is None:
