@@ -7,7 +7,7 @@ import datetime
 notice_head = """\
 # This code is part of the checkmate project.
 # Copyright (C) 2013 The checkmate project contributors
-# 
+#
 """
 
 short_free_software = """\
