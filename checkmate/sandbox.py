@@ -85,10 +85,8 @@ class Sandbox(object):
 
     @property
     def is_run(self):
-        if self.transitions is None:
-            return False
-        else:
-            return set(self.run.walk()).issubset(set(self.transitions.walk()))
+        return (self.transitions is not None and
+                set(self.run.walk()).issubset(set(self.transitions.walk())))
 
     def __call__(self, run, itp_run=False):
         """
@@ -163,15 +161,11 @@ class Sandbox(object):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
-                try:
-                    _transition = \
-                        self.run.get_transition_by_input_states([_exchange],
-                            _c.states)
-                except IndexError:
-                    _transition = None
-                _outgoings = _c.process([_exchange])
+                _transition = self.run.get_transition_by_input_states(
+                    [_exchange], _c.states)
                 if _transition is None:
                     continue
+                _outgoings = _c.process([_exchange])
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(_transition, []))
                 tree.add_node(tmp_run)
