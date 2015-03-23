@@ -1,6 +1,7 @@
 import os
-import sys
 import re
+import sys
+import argparse
 import datetime
 
 notice_head = """\
@@ -12,6 +13,7 @@ notice_head = """\
 short_free_software = """\
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
+
 """
 
 long_free_software = """\
@@ -29,11 +31,20 @@ long_free_software = """\
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-def main(path):
-    for root, dirs, files in os.walk(path):
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-rm', '--remove', action='store_true')
+    parser.add_argument('path', nargs=1)
+    opts = parser.parse_args()
+    for root, dirs, files in os.walk(opts.path[0]):
         for f in files:
             filepath = os.path.join(root, f)
-            if filepath.endswith('__init__.py'):
+            if opts.remove:
+                if filepath.endswith('__init__.py'):
+                    remove_header(filepath, notice_head + long_free_software) 
+                elif filepath.endswith('.py'):
+                    remove_header(filepath, notice_head + short_free_software)
+            elif filepath.endswith('__init__.py'):
                 update_header(filepath, notice_head + long_free_software) 
             elif filepath.endswith('.py'):
                 update_header(filepath, notice_head + short_free_software)
@@ -70,7 +81,7 @@ def update_header(input_file, header):
         content = f.read()
         if not content.startswith('#'):
             f.seek(0, 0)
-            content = header + '\n' + content
+            content = header + content
             write_content(input_file, content)
         else:
             d = datetime.date.today()
@@ -86,10 +97,18 @@ def update_header(input_file, header):
                     write_content(input_file, content)
         f.close()
 
+def remove_header(input_file, header):
+    content = ''
+    with open(input_file, 'r') as f:
+        for line in f.readlines()[header.count('\n'):]:
+            content += line
+        write_content(input_file, content)
+        f.close()
+
 def write_content(input_file, content):
     with open(input_file, 'w') as new:
         new.write(content)
         new.close()
 
 if __name__ == "__main__":
-  main(sys.argv[1])
+  main()
