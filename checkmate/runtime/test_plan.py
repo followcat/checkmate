@@ -46,21 +46,24 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
-        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> app = sample_app.application.TestData
+        >>> com = checkmate.runtime._pyzmq.Communication
+        >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
-        >>> simulated_transition = c2.context.state_machine.transitions[0]
-        >>> o = c2.simulate(simulated_transition) # doctest: +ELLIPSIS
+        >>> transition = c2.context.state_machine.transitions[0]
+        >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
         >>> time.sleep(1)
         >>> c1.context.states[0].value
         False
         >>> c3.context.states[0].value
         True
-        >>> gen = checkmate.runtime.test_plan.TestProcedureInitialGenerator(sample_app.application.TestData)
-        >>> run = [run[0] for run in gen][0]
+        >>> test_plan = checkmate.runtime.test_plan
+        >>> run = [run[0] for run in
+        ...        test_plan.TestProcedureInitialGenerator(app)][0]
         >>> run.compare_initial(r.application)
         False
         >>> r.execute(run, transform=True)
@@ -85,8 +88,10 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> run_list.sort(key=lambda x:x.root.outgoing[0].code)
         >>> run_list[0].root.incoming[0].code
         'PBAC'
-        >>> box = checkmate.sandbox.Sandbox(type(a), a, run_list[0].walk())
-        >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].value
+        >>> box = checkmate.sandbox.Sandbox(type(a), a,
+        ...         run_list[0].walk())
+        >>> c1_state = box.application.components['C1'].states[0]
+        >>> c1_state.value == run_list[0].itp_run.root.initial[0].value
         True
         >>> run_list[0].compare_initial(box.application)
         True
@@ -98,15 +103,18 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
-        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> app = sample_app.application.TestData
+        >>> com = checkmate.runtime._pyzmq.Communication
+        >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
         >>> runs = []
-        >>> for run in checkmate.runtime.test_plan.TestProcedureFeaturesGenerator(sample_app.application.TestData):
-        ...     runs.append(run[0])
+        >>> test_plan = checkmate.runtime.test_plan
+        >>> runs = [run[0] for run in
+        ...        test_plan.TestProcedureFeaturesGenerator(app)]
         >>> r.execute(runs[0])
         >>> r.stop_test()
     """
@@ -123,8 +131,10 @@ def TestProcedureRunsGenerator(application_class):
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
         >>> runs = []
-        >>> for run in checkmate.runtime.test_plan.TestProcedureRunsGenerator(sample_app.application.TestData):
-        ...     runs.append(run[0])
+        >>> app = sample_app.application.TestData
+        >>> test_plan = checkmate.runtime.test_plan
+        >>> runs = [run[0] for run in
+        ...        test_plan.TestProcedureRunsGenerator(app)]
         >>> runs[0].root.outgoing[0].code
         'PBAC'
         >>> runs[1].root.outgoing[0].code
@@ -133,7 +143,8 @@ def TestProcedureRunsGenerator(application_class):
         'PBRL'
         >>> runs[3].root.outgoing[0].code
         'PBPP'
-        >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
+        >>> com = checkmate.runtime._pyzmq.Communication
+        >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
         >>> r.setup_environment(['C2'])
         >>> r.start_test()
         >>> r.execute(runs[0])
