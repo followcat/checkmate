@@ -33,10 +33,11 @@ class Run(checkmate._tree.Tree):
 
     @checkmate.fix_issue(
         'checkmate/issues/sandbox_call_notfound_transition.rst')
-    def get_transition_by_input_states(self, exchanges, states):
+    def get_transition_by_input_states(self, exchanges, component):
         for _t in self.walk():
-            if (_t.is_matching_incoming(exchanges, states) and
-                    _t.is_matching_initial(states)):
+            if (_t in component.state_machine.transitions and
+                _t.is_matching_incoming(exchanges, component.states) and
+                    _t.is_matching_initial(component.states)):
                 return _t
 
     def get_states(self):
