@@ -60,7 +60,7 @@ Should not get Runs when simulate has no outgoing.
         >>> Dummy = sample_app.component.dummycomponent.DummyComponent 
         >>> Dummy.state_machine.transitions.append(t_in)
         >>> a = sample_app.application.TestData() 
-        >>> len(a.run_collection)
+        >>> len(a.run_collection())
         4
 
     Revert changes for further use in doctest:

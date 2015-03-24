@@ -122,7 +122,7 @@ class Run(checkmate._tree.Tree):
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData())
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
             True
@@ -145,7 +145,7 @@ class Run(checkmate._tree.Tree):
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData())
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
             False
@@ -187,10 +187,9 @@ class Run(checkmate._tree.Tree):
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
-def get_runs_from_application(application):
+def get_runs_from_application(_class):
     runs = []
     origin_transitions = []
-    _class = type(application)
     application = _class()
     application.start(default_state_value=False)
     for _component in application.components.values():

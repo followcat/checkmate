@@ -57,13 +57,13 @@ other runs
         >>> r.start_test()
         >>> time.sleep(1)
         >>> app = r.application
-        >>> initializing_run = [r for r in app.run_collection
+        >>> initializing_run = [r for r in app.run_collection()
         ...      if r.root.outgoing[0].code=='AF'][0]
         >>> initializing_run # doctest: +ELLIPSIS
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
         False
-        >>> run1 = app.run_collection[-1]
+        >>> run1 = app.run_collection()[-1]
         >>> run1.root.outgoing[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS

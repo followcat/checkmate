@@ -106,7 +106,7 @@ class Sandbox(object):
             >>> c1 = box.application.components['C1']
             >>> c1.states[0].value
             True
-            >>> runs = box.application.run_collection
+            >>> runs = box.application.run_collection()
             >>> box(runs[0])
             True
             >>> box(runs[2])
@@ -159,7 +159,7 @@ class Sandbox(object):
             >>> box = checkmate.sandbox.Sandbox(_cls)
             >>> ex = sample_app.exchanges.Action('AC')
             >>> ex.origin_destination('C2', 'C1')
-            >>> runs = box.application.run_collection
+            >>> runs = box.application.run_collection()
             >>> c2 = box.application.components['C2']
             >>> _t = c2.get_transition_by_output([ex])
             >>> box.run = runs[0]

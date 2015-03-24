@@ -132,6 +132,19 @@ class Application(object):
     communication_list = {}
     feature_definition_path = None
 
+    @classmethod
+    def run_collection(cls):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.run_collection() #doctest: +ELLIPSIS
+        [<checkmate.runs.Run object at ...
+        """
+        if not hasattr(cls, '_runs'):
+            setattr(cls, '_runs',
+                checkmate.runs.get_runs_from_application(cls))
+        return cls._runs
+
     def __init__(self):
         """
         >>> import sample_app.application
@@ -153,19 +166,6 @@ class Application(object):
                     _class(_name, self.service_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
-
-    def __getattr__(self, name):
-        """
-        >>> import sample_app.application
-        >>> a = sample_app.application.TestData()
-        >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate.runs.Run object at ...
-        """
-        if name == 'run_collection':
-            setattr(self, 'run_collection',
-                checkmate.runs.get_runs_from_application(self))
-            return self.run_collection
-        super().__getattr__(self, name)
 
     def start(self, default_state_value=True):
         """
