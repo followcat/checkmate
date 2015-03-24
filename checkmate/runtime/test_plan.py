@@ -150,7 +150,5 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.execute(runs[0])
         >>> r.stop_test()
     """
-
-    runs = checkmate.runs.get_runs_from_application(application_class())
-    for _run in runs:
+    for _run in application_class().run_collection:
         yield _run, _run.root.name
