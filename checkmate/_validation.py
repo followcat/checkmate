@@ -27,9 +27,3 @@ class ValidationDict(object):
     def clear(self):
         self.collected_items.clear()
         self.validated_items.clear()
-
-    def all_items(self):
-        items = []
-        for item in self.validated_items.values():
-            items.extend(item)
-        return items

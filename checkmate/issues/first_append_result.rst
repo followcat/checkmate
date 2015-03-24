@@ -34,39 +34,11 @@ Send 'AC' for append default 'R':
     ...             r.application)
     >>> r.execute([_r for _r in runs if len(_r.root.incoming) > 0 and
     ...            _r.root.incoming[0].code == 'PBAC'][0])
-    >>> partition_class = \
-    ...     sample_app.component.component_1_states.AnotherState
-    >>> final = [_f for _f in run.final
-    ...          if _f.partition_class == partition_class][0]
-    >>> final.function #doctest: +ELLIPSIS
-    <function AnotherState.__init__ at ...
-    >>> t = c1.context.transition_by_name("Append element ok tran01")
-
-    >>> validated_incoming = r.application.validated_incoming_list()
-    >>> saved_final = [_f for _f in saved.application.state_list()
-    ...                if isinstance(_f, final.partition_class)]
-    >>> saved_initial = [_s for _s in saved.application.state_list()
-    ...                if isinstance(_s, final.partition_class)]
-    >>> resolved_arguments = final.resolve(saved_initial,
-    ...                         validated_incoming, t.resolve_dict)
-    >>> res = final.factory(instance=saved_final[0],
-    ...         **resolved_arguments)
-    >>> res.R #doctest: +ELLIPSIS
-    <sample_app.data_structure.ActionRequest object at ...
     >>> r.application.components['C1'].states[1].R #doctest: +ELLIPSIS
     <sample_app.data_structure.ActionRequest object at ...
 
-Check the resulting final state compared to transition's final:
-
-    >>> r.application.components['C1'].states[1] == res
-    True
-
 Result from compare_states():
 
-    >>> final.match(r.application.state_list(),
-    ...     saved.application.state_list(),
-    ...     validated_incoming) #doctest: +ELLIPSIS
-    <sample_app.component.component_1_states.AnotherState object at ...
     >>> run.compare_final(r.application, saved.application)
     True
     >>> 

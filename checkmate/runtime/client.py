@@ -29,9 +29,10 @@ class Client(object):
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
-        >>> 'ARE' in [item.value for item in
-        ...             rc2.context.validation_dict.all_items()]
-        True
+        >>> are_t = [_t for _t in rc2.context.state_machine.transitions
+        ...     if _t.incoming[0].code == 'ARE'][0]
+        >>> rc2.context.validation_dict.collected_items[are_t][0].value
+        'ARE'
         >>> rc2.reset()
         >>> rc3.reset()
         >>> pa = sample_app.exchanges.Pause('PA')
@@ -41,9 +42,13 @@ class Client(object):
         >>> rc1.client.send(pa)
         >>> time.sleep(0.5)
         >>> import time; time.sleep(1)
-        >>> rc2.context.validation_dict.all_items()[0].value
+        >>> pa_t = [_t for _t in rc2.context.state_machine.transitions
+        ...     if _t.incoming[0].code == 'PA'][0]
+        >>> rc2.context.validation_dict.collected_items[pa_t][0].value
         'PA'
-        >>> rc3.context.validation_dict.all_items()[0].value
+        >>> pa_t = [_t for _t in rc3.context.state_machine.transitions
+        ...     if _t.incoming[0].code == 'PA'][0]
+        >>> rc3.context.validation_dict.collected_items[pa_t][0].value
         'PA'
         >>> r.stop_test()
     """

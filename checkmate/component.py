@@ -368,7 +368,3 @@ class Component(object):
             False
         """
         return self.validation_dict.check(_transition)
-
-    def get_all_validated_incoming(self):
-        return self.validation_dict.all_items()
-
