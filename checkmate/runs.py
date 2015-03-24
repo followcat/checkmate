@@ -89,10 +89,8 @@ class Run(checkmate._tree.Tree):
                         index = \
                             box.application.components[name].states.index(
                                 state)
-                        incoming = \
-                            component.validation_list.validated_items[
-                                component.validation_list.transitions.index(
-                                    run.root)]
+                        incoming = component.validation_dict.validated_items[
+                            run.root]
                         _arguments = \
                             final.resolve(
                                 box.application.components[name].states,

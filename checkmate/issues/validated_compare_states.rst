@@ -1,6 +1,6 @@
 After running run1(PBAC). And run1.final has not Component_2 state. 
 If component c2 add an exchange with attribute 'R' and R.C != 'AT1'
-to it's validation_list.
+to it's validation_dict.
 The application.compare_states should get True.
 
     >>> import checkmate.sandbox
@@ -28,8 +28,7 @@ The application.compare_states should get True.
 
     >>> runs[0].compare_final(box_app, compare_app1)
     True
-    >>> c2.validation_list[-1].append(add_ac)
-    >>> c2.validation_list.validated_items[-1].append(add_ac)
+    >>> c2.validation_dict.record(runs[0].root, [add_ac])
     >>> runs[0].compare_final(box_app, compare_app2)
     True
 

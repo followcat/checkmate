@@ -83,11 +83,20 @@ class Component(object):
             >>> pp = sample_app.exchanges.Action('PP')
             >>> outgoing = c1.process([pp])
             >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
-            >>> c1.context.validation_list[0][0] # doctest: +ELLIPSIS
+            >>> c1_t = [ _t for _t in c1.context.state_machine.transitions
+            ...        if _t.incoming[0].code == 'PP'][0]
+            >>> c1.context.validation_dict.collected_items[c1_t][0]
+            ...         # doctest: +ELLIPSIS
             <sample_app.exchanges.Action object at ...
-            >>> c2.context.validation_list[6][0] # doctest: +ELLIPSIS
+            >>> c2_t = [ _t for _t in c2.context.state_machine.transitions
+            ...        if _t.incoming[0].code == 'PA'][0]
+            >>> c2.context.validation_dict.collected_items[c2_t][0]
+            ...         # doctest: +ELLIPSIS
             <sample_app.exchanges.Pause object at ...
-            >>> c3.context.validation_list[2][0] # doctest: +ELLIPSIS
+            >>> c3_t = [ _t for _t in c3.context.state_machine.transitions
+            ...        if _t.incoming[0].code == 'PA'][0]
+            >>> c3.context.validation_dict.collected_items[c3_t][0]
+            ...         # doctest: +ELLIPSIS
             <sample_app.exchanges.Pause object at ...
             >>> r.stop_test()
         """

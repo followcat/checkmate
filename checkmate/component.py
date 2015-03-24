@@ -115,8 +115,7 @@ class Component(object):
         """
         self.states = []
         self.name = name
-        self.validation_list = \
-            checkmate._validation.List(self.state_machine.transitions)
+        self.validation_dict = checkmate._validation.ValidationDict()
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
@@ -224,7 +223,7 @@ class Component(object):
         self.pending_incoming = []
         self.pending_outgoing = []
         self.expected_return_code = None
-        self.validation_list.clear()
+        self.validation_dict.clear()
 
     def stop(self):
         pass
@@ -295,7 +294,7 @@ class Component(object):
         else:
             _transition = transition
         output = []
-        self.validation_list.record(_transition, exchange)
+        self.validation_dict.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange,
                             default=self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing,
@@ -368,8 +367,8 @@ class Component(object):
             >>> c1.validate(transition)
             False
         """
-        return self.validation_list.check(_transition)
+        return self.validation_dict.check(_transition)
 
     def get_all_validated_incoming(self):
-        return self.validation_list.all_items()
+        return self.validation_dict.all_items()
 
