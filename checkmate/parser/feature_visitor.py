@@ -173,7 +173,7 @@ def get_array_list(paths, localization_path=None):
         new_run_features(lang_registry, features, handler)
     return fresher.glc.array_list
 
-def get_runs_from_features(application):
+def data_from_files(application):
     """
             >>> import checkmate.state
             >>> import checkmate.exchange
@@ -186,11 +186,9 @@ def get_runs_from_features(application):
             >>> for name, component in a.components.items():
             ...     state_modules.append(component.state_module)
             >>> visitor = checkmate.parser.feature_visitor
-            >>> runs = visitor.get_runs_from_features(a)
-            >>> len(runs)
+            >>> data = visitor.data_from_files(a)
+            >>> len(data)
             14
-            >>> runs # doctest: +ELLIPSIS
-            [<checkmate.runs.Run object at ...
         """
     try:
         path = os.path.join(os.getenv('CHECKMATE_HOME'),
@@ -203,17 +201,4 @@ def get_runs_from_features(application):
         array_list = get_array_list([path])
     except FileNotFoundError:
         return []
-
-    runs = []
-    components = list(application.components.keys())
-    state_modules = []
-    for name in components:
-        state_modules.append(application.components[name].state_module)
-    for array_items in array_list:
-        transition = \
-            checkmate.partition_declarator.make_transition(
-                array_items, [application.exchange_module], state_modules)
-        gen_runs = checkmate.runs.get_runs_from_transition(
-                        application, transition, itp_transition=True)
-        runs.append(gen_runs[0])
-    return runs
+    return array_list

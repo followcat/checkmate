@@ -13,39 +13,29 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
-def get_runs_from_test(application):
+def get_runs_from_test(data, application):
     """
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> checkmate.runtime.test_plan.get_runs_from_test(a) #doctest: +ELLIPSIS
+        >>> data = checkmate.parser.yaml_visitor.data_from_files(a)
+        >>> checkmate.runtime.test_plan.get_runs_from_test(
+        ...     data, a) #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
     """
 
-    exchange_module = application.exchange_module
-    state_modules = []
-    for name in list(application.components.keys()):
-            state_modules.append(application.components[name].state_module)
-    paths = application.itp_definition
-    if type(paths) != list:
-        paths = [paths]
-    array_list = []
-    try:
-        matrix = ''
-        for path in paths:
-            if not os.path.isdir(path):
-                continue
-            with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
-                matrix += _file.read()
-    except FileNotFoundError:
-        return []
-    _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
-    for data in _output['transitions']:
-        array_list.append(data)
     runs = []
-    for array_items in array_list:
-        transition = checkmate.partition_declarator.make_transition(array_items, [exchange_module], state_modules)
-        gen_runs = checkmate.runs.get_runs_from_transition(application, transition, itp_transition=True)
+    components = list(application.components.keys())
+    state_modules = []
+    for name in components:
+        state_modules.append(application.components[name].state_module)
+    exchange_module = application.exchange_module
+
+    for array_items in data:
+        transition = checkmate.partition_declarator.make_transition(
+                        array_items, [exchange_module], state_modules)
+        gen_runs = checkmate.runs.get_runs_from_transition(application,
+                        transition, itp_transition=True)
         runs.append(gen_runs[0])
     return runs
 
@@ -78,7 +68,8 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 
     """
     _application = application_class()
-    for _run in get_runs_from_test(_application):
+    data = checkmate.parser.yaml_visitor.data_from_files(_application)
+    for _run in get_runs_from_test(data, _application):
         yield _run, _run.root.name
 
 
@@ -87,12 +78,14 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> import checkmate.sandbox
         >>> import checkmate.parser.feature_visitor
         >>> import sample_app.application
-        >>> _application = sample_app.application.TestData()
-        >>> run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
+        >>> a = sample_app.application.TestData()
+        >>> data = checkmate.parser.feature_visitor.data_from_files(a)
+        >>> test_plan = checkmate.runtime.test_plan
+        >>> run_list = test_plan.get_runs_from_test(data, a)
         >>> run_list.sort(key=lambda x:x.root.outgoing[0].code)
         >>> run_list[0].root.incoming[0].code
         'PBAC'
-        >>> box = checkmate.sandbox.Sandbox(type(_application), _application, run_list[0].walk())
+        >>> box = checkmate.sandbox.Sandbox(type(a), a, run_list[0].walk())
         >>> box.application.components['C1'].states[0].value == run_list[0].itp_run.root.initial[0].value
         True
         >>> run_list[0].compare_initial(box.application)
@@ -118,8 +111,8 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> r.stop_test()
     """
     _application = application_class()
-    run_list = checkmate.parser.feature_visitor.get_runs_from_features(_application)
-    for _run in run_list:
+    data = checkmate.parser.feature_visitor.data_from_files(_application)
+    for _run in get_runs_from_test(data, _application):
         yield _run, _run.root.name
         
 
