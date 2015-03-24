@@ -6,8 +6,6 @@
 
 import logging
 
-import checkmate.logger
-
 
 class Client(object):
     """
