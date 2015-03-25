@@ -150,5 +150,6 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.execute(runs[0])
         >>> r.stop_test()
     """
-    for _run in application_class().run_collection:
+    for _run in application_class().run_collection():
         yield _run, _run.root.name
+

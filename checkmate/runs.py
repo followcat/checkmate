@@ -23,6 +23,7 @@ class Run(checkmate._tree.Tree):
         self._final = None
         self.itp_run = None
         self.change_states = []
+        self.collected_run = None
         for f in transition.final:
             for s in states:
                 if isinstance(s, f.partition_class):
@@ -122,7 +123,7 @@ class Run(checkmate._tree.Tree):
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData())
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
             True
@@ -145,7 +146,7 @@ class Run(checkmate._tree.Tree):
             >>> import checkmate.runs
             >>> import sample_app.application
             >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData())
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
             False
@@ -187,10 +188,9 @@ class Run(checkmate._tree.Tree):
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
-def get_runs_from_application(application):
+def get_runs_from_application(_class):
     runs = []
     origin_transitions = []
-    _class = type(application)
     application = _class()
     application.start(default_state_value=False)
     for _component in application.components.values():
@@ -206,6 +206,7 @@ def get_runs_from_application(application):
     return runs
 
 
+@checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = checkmate.runs.Run(transition)
@@ -215,6 +216,12 @@ def get_runs_from_transition(application, transition, itp_transition=False):
                     _class, application, transition_run.walk())
     else:
         sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
+    initial = checkmate.sandbox.Sandbox(_class, sandbox.application)
     for _run in sandbox(transition_run, itp_run=itp_transition):
+        for _r in sandbox.application.run_collection():
+            if (_r.compare_initial(initial.application) and
+                    set(_run.walk()).issubset(set(_r.walk()))):
+                _run.collected_run = _r
+                break
         runs.append(_run)
     return runs

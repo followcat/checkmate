@@ -7,7 +7,7 @@ The application.compare_states should get True.
     >>> import sample_app.application
     >>> cls = sample_app.application.TestData
     >>> app = cls()
-    >>> runs = app.run_collection
+    >>> runs = app.run_collection()
 
     >>> compare_box1 = checkmate.sandbox.Sandbox(cls)
     >>> compare_box2 = checkmate.sandbox.Sandbox(cls)

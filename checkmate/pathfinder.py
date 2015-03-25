@@ -12,7 +12,7 @@ import checkmate.sandbox
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
 def _find_runs(application, target):
     """"""
-    used_runs = _next_run(application, target, application.run_collection,
+    used_runs = _next_run(application, target, application.run_collection(),
                     list())
     return used_runs
 

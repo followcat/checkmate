@@ -8,7 +8,7 @@ After execute run 'PBRL', components' state is State: Flase, Acknowledge: False,
         >>> r = checkmate.runtime._runtime.Runtime(ac, cc, True)
         >>> r.setup_environment(['C1'])
         >>> r.start_test()
-        >>> runs = r.application.run_collection
+        >>> runs = r.application.run_collection()
         >>> r.execute(runs[2], transform=True)
         >>> path_list = checkmate.pathfinder._find_runs(r.application,
         ...                 runs[0])

@@ -1,26 +1,16 @@
 We should be able to use python default types when defining exchanges:
 
     >>> import checkmate._module
-    >>> import checkmate.partition_declarator
 
     >>> import sample_app.application
-    >>> application_name = 'sample_app.application'
-    >>> state_module = \
-    ...     checkmate._module.get_module(application_name, 'states')
-    >>> exchange_module = \
-    ...     checkmate._module.get_module(application_name, 'exchanges')
-    >>> data_structure_module = \
-    ...     checkmate._module.get_module(application_name, 'data')
-    >>> de = checkmate.partition_declarator.Declarator(
-    ...             data_structure_module, exchange_module,
-    ...             state_module=state_module)
+    >>> app = sample_app.application.TestData()
     >>> items = {
     ...     'partition_type': 'exchanges',
     ...     'signature': 'BO(F:bool)',
     ...     'codes_list': ['B1'],
     ...     'values_list': [True],
     ...     }
-    >>> par = de.new_partition(items)
+    >>> app.define_exchange(items)
 
     >>> import checkmate._storage
     >>> import checkmate.transition
