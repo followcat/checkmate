@@ -4,7 +4,7 @@ this run and return True.
 >>> import sample_app.application
 >>> import checkmate.sandbox
 >>> app = sample_app.application.TestData()
->>> runs = app.run_collection
+>>> runs = app.run_collection()
 >>> sandbox = checkmate.sandbox.Sandbox(type(app))
 >>> voda = runs[0].nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].\
 ... nodes.pop()

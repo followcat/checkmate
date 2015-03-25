@@ -9,22 +9,17 @@ other runs
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
-        >>> exchange_module = sample_app.exchanges
-        >>> data_structure_module = sample_app.data_structure
-        >>> state_module = sample_app.component.component_1_states
-        >>> data_source = {
-        ... 'exchanges': [{
+        >>> exchange_definition = {
+        ...    'partition_type': 'exchanges',
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
         ...    'full_description': None,
         ...    'attributes': {},
-        ...    'define_attributes': {}}]
+        ...    'define_attributes': {}
         ... }
-        >>> de = checkmate.partition_declarator.Declarator(
-        ...         data_structure_module, exchange_module,
-        ...         state_module=state_module)
-        >>> de.new_definitions(data_source)
+        >>> app = sample_app.application.TestData()
+        >>> app.define_exchange(exchange_definition)
         >>> item_out = {'name': 'Initializing tran01',
         ...             'initializing': True,
         ...             'outgoing': [{'ForthAction': 'AF()'}]}
@@ -33,7 +28,7 @@ other runs
         ... 'initial': [{'State': 'State1'}],
         ... 'final': [{'State': 'State2'}]}
         >>> module_dict = {'exchanges':[sample_app.exchanges],
-        ...     'states':[state_module]}
+        ...     'states':[sample_app.component.component_1_states]}
         >>> ts = checkmate._storage.TransitionStorage(item_out,
         ...         module_dict)
         >>> t_out = ts.factory()
@@ -57,13 +52,13 @@ other runs
         >>> r.start_test()
         >>> time.sleep(1)
         >>> app = r.application
-        >>> initializing_run = [r for r in app.run_collection
+        >>> initializing_run = [r for r in app.run_collection()
         ...      if r.root.outgoing[0].code=='AF'][0]
         >>> initializing_run # doctest: +ELLIPSIS
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
         False
-        >>> run1 = app.run_collection[-1]
+        >>> run1 = app.run_collection()[-1]
         >>> run1.root.outgoing[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS

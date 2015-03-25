@@ -27,7 +27,7 @@ We can match R with R2 when we do collect runs
         >>> out = c2.state_machine.transitions[2].outgoing[0]
         >>> (out.code, out.resolved_arguments['R'].C.value, out.resolved_arguments['R'].P.value)
         ('AP', 'AT2', 'HIGH')
-        >>> runs = a.run_collection
+        >>> runs = a.run_collection()
         >>> len(runs)
         4
         >>> 'AP' in [t.incoming[0].code for t in runs[0].walk() if len(t.incoming) > 0]

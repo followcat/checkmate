@@ -20,7 +20,7 @@ collected from application should be increased.
 
 No run should contain more than 1 'AP'
     >>> ap_list = []
-    >>> for r in app.run_collection:
+    >>> for r in app.run_collection():
     ...     for t in r.walk():
     ...         if len(t.outgoing)>0 and t.outgoing[0].code == 'AP':
     ...             ap_list.append(t.outgoing[0].code)
