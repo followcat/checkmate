@@ -54,4 +54,7 @@ We can match R with R2 when we do collect runs
     Revert changes in Component class definition for further use in doctest:
         >>> sample_app.component.component_1.Component_1.state_machine.transitions[1] = copy_t1
         >>> sample_app.component.component_2.Component_2.state_machine.transitions[2] = copy_t2
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
 

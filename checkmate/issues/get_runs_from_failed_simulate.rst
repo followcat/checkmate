@@ -66,4 +66,7 @@ Should not get Runs when simulate has no outgoing.
         >>> C1.state_machine.transitions.remove(t_out)
         >>> del sample_app.component.dummycomponent
         >>> del sample_app.exchanges.ForthAction
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
         >>> os.remove(class_file)
