@@ -131,6 +131,7 @@ class Application(object):
     component_classes = []
     communication_list = {}
     feature_definition_path = None
+    _run_collection_attribute = '_runs'
 
     @classmethod
     def run_collection(cls):
@@ -140,10 +141,36 @@ class Application(object):
         >>> a.run_collection() #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
         """
-        if not hasattr(cls, '_runs'):
-            setattr(cls, '_runs',
+        if not hasattr(cls, cls._run_collection_attribute):
+            setattr(cls, cls._run_collection_attribute,
                 checkmate.runs.get_runs_from_application(cls))
-        return cls._runs
+        return getattr(cls, cls._run_collection_attribute)
+
+    @classmethod
+    def define_exchange(cls, definition):
+        """
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> data_source = {
+        ...    'partition_type': 'exchanges',
+        ...    'signature': 'ForthAction',
+        ...    'codes_list': ['AF()'],
+        ...    'values_list': ['AF'],
+        ...    'attributes': {},
+        ...    'define_attributes': {}
+        ... }
+        >>> app.define_exchange(data_source)
+        >>> hasattr(app.exchange_module, 'ForthAction')
+        True
+        >>> delattr(app.exchange_module, 'ForthAction')
+        """
+        declarator = checkmate.partition_declarator.Declarator(
+                        cls.data_structure_module, cls.exchange_module)
+        declarator.new_partition(definition)
+        try:
+            delattr(cls, cls._run_collection_attribute)
+        except AttributeError:
+            pass
 
     def __init__(self):
         """
