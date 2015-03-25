@@ -206,7 +206,7 @@ def get_runs_from_application(_class):
     return runs
 
 
-@checkmate.report_issue('checkmate/issues/collected_run_in_itp_run.rst')
+@checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = checkmate.runs.Run(transition)
