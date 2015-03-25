@@ -4,6 +4,7 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import os
 import yaml
 import collections
 
@@ -244,3 +245,27 @@ class DataVisitor(collections.OrderedDict):
 
 def call_data_visitor(stream):
     return DataVisitor(stream)
+
+def data_from_files(application):
+    """"""
+    state_modules = []
+    for name in list(application.components.keys()):
+        state_modules.append(application.components[name].state_module)
+    paths = application.itp_definition
+    if type(paths) != list:
+        paths = [paths]
+    array_list = []
+    try:
+        matrix = ''
+        for path in paths:
+            if not os.path.isdir(path):
+                continue
+            with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
+                matrix += _file.read()
+    except FileNotFoundError:
+        return []
+    _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
+    for data in _output['transitions']:
+        array_list.append(data)
+    return array_list
+
