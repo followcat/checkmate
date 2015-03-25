@@ -87,4 +87,7 @@ other runs
         ...     sample_app.exchanges.ForthAction)
         >>> state1.state_machine.transitions.remove(t_in)
         >>> state2.state_machine.transitions.remove(t_out)
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
 
