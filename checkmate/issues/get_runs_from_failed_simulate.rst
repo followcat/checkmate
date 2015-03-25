@@ -6,6 +6,18 @@ Should not get Runs when simulate has no outgoing.
         >>> import checkmate.component
         >>> import sample_app.application
         >>> import sample_app.component.component_1
+
+        >>> data_source = {
+        ...    'partition_type' :'exchanges',
+        ...    'signature': 'ForthAction',
+        ...    'codes_list': ['AF()'],
+        ...    'values_list': ['AF'],
+        ...    'attributes': {},
+        ...    'define_attributes': {}
+        ... }
+        >>> app = sample_app.application.TestData()
+        >>> app.define_exchange(data_source)
+
         >>> class_name = 'DummyComponent'
         >>> class_file = 'sample_app/component/dummycomponent.yaml'
         >>> component_module = checkmate._module.get_module(
@@ -14,20 +26,7 @@ Should not get Runs when simulate has no outgoing.
         >>> exchange_module = sample_app.exchanges
         >>> data_structure_module = sample_app.data_structure
         >>> state_module = checkmate._module.get_module(
-        ...                     'checkmate.application', 'states')
-        >>> data_source = {
-        ... 'exchanges': [{
-        ...    'signature': 'ForthAction',
-        ...    'codes_list': ['AF()'],
-        ...    'values_list': ['AF'],
-        ...    'full_desciption': None,
-        ...    'attributes': {},
-        ...    'define_attributes': {}}]
-        ... }
-        >>> de = checkmate.partition_declarator.Declarator(
-        ...         data_structure_module, exchange_module,
-        ...         state_module=state_module)
-        >>> de.new_definitions(data_source)
+        ...                     'sample_app.application', 'states')
         >>> communication_list = \
         ...     sample_app.application.TestData.communication_list
         >>> d = {
