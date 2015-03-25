@@ -23,6 +23,7 @@ class Run(checkmate._tree.Tree):
         self._final = None
         self.itp_run = None
         self.change_states = []
+        self.collected_run = None
         for f in transition.final:
             for s in states:
                 if isinstance(s, f.partition_class):
@@ -205,6 +206,7 @@ def get_runs_from_application(_class):
     return runs
 
 
+@checkmate.report_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = checkmate.runs.Run(transition)
