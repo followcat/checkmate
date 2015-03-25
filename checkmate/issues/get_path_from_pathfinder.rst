@@ -17,7 +17,7 @@
         >>> app.components['C3'].states[0].value
         True
         >>> run = sample_app.runtime.test_procedure.TestProcedureRun1Threaded(_class)
-        >>> setup = checkmate.pathfinder._find_runs(app, run)
+        >>> setup = checkmate.pathfinder._find_runs(app, run, run)
         >>> for _s in setup:
         ...     print(_s.root.outgoing[0].code, _s.compare_initial(app))
         PBRL True

@@ -142,11 +142,12 @@ class Runtime(object):
 
     @checkmate.report_issue(
         "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
-    def execute(self, run, result=None, transform=True):
+    def execute(self, run, result=None, transform=True, previous_run=None):
         if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
                         "SUT do not simulate")
-        if transform is True and not self.transform_to_initial(run):
+        if (transform is True and
+                not self.transform_to_initial(run, previous_run)):
             return checkmate.runtime.procedure._compatible_skip_test(
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
@@ -159,10 +160,10 @@ class Runtime(object):
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
-    def transform_to_initial(self, run):
+    def transform_to_initial(self, run, previous_run=None):
         if not run.compare_initial(self.application):
             run_list = checkmate.pathfinder._find_runs(
-                            self.application, run)
+                            self.application, run, origin=previous_run)
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")

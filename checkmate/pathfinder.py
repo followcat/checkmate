@@ -13,11 +13,26 @@ import checkmate.sandbox
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_runs.rst")
 @checkmate.fix_issue("checkmate/issues/get_path_from_pathfinder.rst")
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
-def _find_runs(application, target):
+def _find_runs(application, target, origin=None):
     """"""
-    used_runs = _next_run(application, target, application.run_collection(),
-                    list())
-    return used_runs
+    if origin is None:
+        # Hardcoded value that fits sample_app application
+        origin = application.run_collection()[-1]
+    if target.collected_run is not None:
+        target = target.collected_run
+    if origin.collected_run is not None:
+        origin = origin.collected_run
+    path = []
+    ori_matrix = checkmate.pathfinder.get_matrix_by_run(application, origin)
+    des_matrix = checkmate.pathfinder.get_matrix_by_run(application, target)
+    checkmate.pathfinder.fill_matrix(
+        application, application, origin, des_matrix)
+    get_path_from_matrix(ori_matrix, des_matrix, application.matrix, path)
+
+    used_runs = []
+    checkmate.pathfinder.get_runs_from_path(used_runs, path,
+        application, des_matrix)
+    return used_runs[:-1]
 
 
 @checkmate.fix_issue("checkmate/issues/pathfinder_next_run.rst")

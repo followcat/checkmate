@@ -77,7 +77,7 @@ class Procedure(object):
             (False, True)
             >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
             False
-            >>> r2.execute(runs[0])
+            >>> r2.execute(runs[0], previous_run=runs[0])
             >>> (r1_c1.value, r1_c3.value) == (r2_c1.value, r2_c3.value)
             True
 
