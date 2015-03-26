@@ -157,7 +157,10 @@ class Runtime(object):
             _c.reset()
         try:
             checkmate.runtime.procedure.Procedure(run)(self, result)
-            self.active_run = run
+            if run.collected_run is None:
+                self.active_run = run
+            elif not run.compare_initial(self.application):
+                self.active_run = run
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
