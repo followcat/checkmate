@@ -24,6 +24,7 @@ class Runtime(object):
         """"""
         self.runs_log = logging.getLogger('runs.runtime')
         self.threaded = threaded
+        self.active_run = None
         self.runtime_components = {}
         self.application = application()
         self.application_class = application
@@ -143,6 +144,8 @@ class Runtime(object):
     @checkmate.report_issue(
         "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True, previous_run=None):
+        if previous_run is None:
+            previous_run = self.active_run
         if run.root.owner in self.application.system_under_test:
             return checkmate.runtime.procedure._compatible_skip_test(
                         "SUT do not simulate")
@@ -154,6 +157,7 @@ class Runtime(object):
             _c.reset()
         try:
             checkmate.runtime.procedure.Procedure(run)(self, result)
+            self.active_run = run
             self.runs_log.info(['Run', run.root.name])
         except ValueError:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
@@ -168,6 +172,7 @@ class Runtime(object):
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")
                 return False
-            for run in run_list:
-                checkmate.runtime.procedure.Procedure(run)(self)
+            for _run in run_list:
+                checkmate.runtime.procedure.Procedure(_run)(self)
+                self.active_run = _run
         return True
