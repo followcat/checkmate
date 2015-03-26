@@ -127,9 +127,9 @@ class Component(object):
             setattr(self, _k, _v)
         for _k, _v in self.instance_transitions[name].items():
             if _k == 'state_machine':
-                self.state_machine.transitions = list(
-                    set(self.state_machine.transitions).union(
-                        set(_v.transitions)))
+                self.state_machine.transitions.extend(_v.transitions)
+                self.state_machine.transitions = \
+                    list(set(self.state_machine.transitions))
             if _k == 'service_classes':
                 for _c in _v:
                     if _c not in self.service_classes:
