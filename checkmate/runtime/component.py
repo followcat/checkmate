@@ -193,9 +193,6 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
             except queue.Empty:
                 pass
 
-    def simulate(self, transition):
-        return super().simulate(transition)
-
     @checkmate.timeout_manager.WaitOnFalse(
         checkmate.timeout_manager.VALIDATE_SEC, 100)
     def validate(self, transition):
@@ -212,33 +209,46 @@ class ThreadedSut(ThreadedComponent, Sut):
     using_external_client = False
     reading_external_client = False
 
+    def __init__(self, component):
+        super().__init__(component)
+        if hasattr(self.context, 'launch_command'):
+            self._launched_in_thread = False
+        else:
+            self._launched_in_thread = True
+
     def setup(self, runtime):
         super().setup(runtime)
-        if hasattr(self.context, 'launch_command'):
+        if not self._launched_in_thread:
             for _name in self.context.communication_list:
                 runtime.application.communication_list[_name](self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(
                                 command=ThreadedComponent,
                                 component=copy.deepcopy(self.context),
-                                threaded=True,
+                                threaded=self._launched_in_thread,
                                 runtime=runtime)
 
     def initialize(self):
-        if hasattr(self.context, 'launch_command'):
+        if not self._launched_in_thread:
             if hasattr(self.context, 'command_env'):
                 self.launcher = checkmate.runtime.launcher.Launcher(
                                     command=self.context.launch_command,
                                     command_env=self.context.command_env,
-                                    threaded=False,
+                                    threaded=self._launched_in_thread,
                                     component=self.context)
             else:
                 self.launcher = checkmate.runtime.launcher.Launcher(
                                     command=self.context.launch_command,
-                                    threaded=False,
+                                    threaded=self._launched_in_thread,
                                     component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
+
+    def simulate(self, transition):
+        if self._launched_in_thread:
+            self.launcher.simulate(transition)
+            return super().simulate(transition)
+        raise ValueError("Launcher SUT can't simulate")
 
     def start(self):
         self.launcher.start()

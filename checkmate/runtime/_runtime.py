@@ -157,7 +157,7 @@ class Runtime(object):
         else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
             return checkmate.runtime.procedure._compatible_skip_test(
-                        "SUT do not simulate")
+                        "Non-threaded SUT do not simulate")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
@@ -175,9 +175,6 @@ class Runtime(object):
         return True
 
     def call_procedure(self, run, result=None):
-        if run.root.owner in self.application.system_under_test:
-            return checkmate.runtime.procedure._compatible_skip_test(
-                        "SUT do not simulate")
         try:
             checkmate.runtime.procedure.Procedure(run)(self, result)
             if run.collected_run is None:
