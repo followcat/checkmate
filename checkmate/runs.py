@@ -209,7 +209,8 @@ def followed_runs(application, run):
     run_index = runs.index(run)
     followed_runs = []
     if application.matrix is None:
-        application.matrix = numpy.matrix([[0]*length]*length)
+        application.matrix = numpy.matrix(
+            numpy.zeros((length, length), dtype=int))
         application.runs_found = [False]*length
     elif application.runs_found[run_index]:
         current_row = [0]*length
