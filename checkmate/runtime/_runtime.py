@@ -146,24 +146,18 @@ class Runtime(object):
     def execute(self, run, result=None, transform=True, previous_run=None):
         if previous_run is None:
             previous_run = self.active_run
-        if run.root.owner in self.application.system_under_test:
-            return checkmate.runtime.procedure._compatible_skip_test(
-                        "SUT do not simulate")
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
             return checkmate.runtime.procedure._compatible_skip_test(
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
-        try:
-            checkmate.runtime.procedure.Procedure(run)(self, result)
-            if run.collected_run is None:
-                self.active_run = run
-            elif not run.compare_initial(self.application):
-                self.active_run = run
+        if self.call_procedure(run, result):
             self.runs_log.info(['Run', run.root.name])
-        except ValueError:
+        else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
+            return checkmate.runtime.procedure._compatible_skip_test(
+                        "SUT do not simulate")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
@@ -176,6 +170,21 @@ class Runtime(object):
                     "Can't find a path to initial state")
                 return False
             for _run in run_list:
-                checkmate.runtime.procedure.Procedure(_run)(self)
-                self.active_run = _run
+                if not self.call_procedure(_run):
+                    return False
         return True
+
+    def call_procedure(self, run, result=None):
+        if run.root.owner in self.application.system_under_test:
+            return checkmate.runtime.procedure._compatible_skip_test(
+                        "SUT do not simulate")
+        try:
+            checkmate.runtime.procedure.Procedure(run)(self, result)
+            if run.collected_run is None:
+                self.active_run = run
+            elif not run.compare_initial(self.application):
+                self.active_run = run
+        except ValueError:
+            return False
+        return True
+ 
