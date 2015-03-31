@@ -26,12 +26,13 @@ It is impossible to specify the final state by providing arguments
     ...         r.application)
     >>> r.execute(runs[1])
     >>> t = c1.context.transition_by_name("Append element ok tran01")
-    >>> runs[1].final[0].function #doctest: +ELLIPSIS
-    <function AnotherState.__init__ at ...
+    >>> final_list = list(runs[1].final)
+    >>> an_index = [_f.function for _f in final_list].index(
+    ... sample_app.component.component_1_states.AnotherState.__init__)
     >>> ap = sample_app.exchanges.Action('AP')
-    >>> revolved_args = runs[1].final[0].resolve(exchanges=[ap],
+    >>> revolved_args = final_list[an_index].resolve(exchanges=[ap],
     ...                     resolved_dict=t.resolve_dict)
-    >>> fs = runs[1].final[0].factory(
+    >>> fs = final_list[an_index].factory(
     ...         instance=r.application.components['C1'].states[1],
     ...         **revolved_args)
     >>> (fs.R.C.value, fs.R.P.value)

@@ -19,13 +19,14 @@ Setting the procedure.final from the sandbox does not work.
     True
     >>> run = box.transitions
     >>> len(run.final)
-    3
-    >>> run.final[0].function #doctest: +ELLIPSIS
-    <function State.__init__ at ...
-    >>> run.final[1].function #doctest: +ELLIPSIS
-    <function State.toggle at ...
-    >>> run.final[2].function #doctest: +ELLIPSIS
-    <function State.append at ...
+    4
+    >>> ff = [_f.function for _f in run.final]
+    >>> sample_app.component.component_1_states.State.__init__ in ff
+    True
+    >>> sample_app.component.component_1_states.State.toggle in ff
+    True
+    >>> sample_app.component.component_1_states.State.append in ff
+    True
     >>> run.compare_initial(r.application)
     True
     >>> r.execute(_run)

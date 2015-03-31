@@ -43,24 +43,19 @@ class Run(checkmate._tree.Tree):
 
     def get_states(self):
         if self._initial is None or self._final is None:
-            self._initial = []
-            self._final = []
+            initial_dict = dict()
+            final_dict = dict()
             for run in self.breadthWalk():
                 for index, _initial in enumerate(run.root.initial):
-                    if _initial.partition_class not in\
-                        [_temp_init.partition_class for
-                            _temp_init in self._initial]:
-                        self._initial.append(_initial)
-                        try:
-                            _final = [_f for _f in run.root.final
-                                      if _f.partition_class ==
-                                      _initial.partition_class][0]
-                            _index = run.root.final.index(_final)
-                            self._final.append(run.root.final[_index])
-                        except IndexError:
-                            pass
+                    if _initial.partition_class not in initial_dict:
+                        initial_dict[_initial.partition_class] = _initial
+                    final_dict[_initial.partition_class] = _initial
+                for index, _final in enumerate(run.root.final):
+                    final_dict[_final.partition_class] = _final
+            self._initial = set(initial_dict.values())
+            self._final = set(final_dict.values())
             if self.itp_run is not None:
-                self._final = self.itp_run.root.final
+                self._final = set(self.itp_run.root.final)
 
     def compare_initial(self, application):
         """"""
