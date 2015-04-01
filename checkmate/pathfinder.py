@@ -30,8 +30,8 @@ def _find_runs(application, target, origin=None):
     get_path_from_matrix(ori_matrix, des_matrix, application._matrix, path)
 
     used_runs = []
-    checkmate.pathfinder.get_runs_from_path(used_runs, path,
-        application, des_matrix)
+    checkmate.pathfinder.get_runs_from_path(used_runs, path, origin.final,
+        application, des_matrix, target)
     return used_runs[:-1]
 
 
@@ -140,7 +140,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
         return True
 
 
-def get_runs_from_path(runs, path, app, des_matrix):
+def get_runs_from_path(runs, path, diff_set, app, des_matrix, nr):
     """
     >>> import checkmate.runs
     >>> import checkmate.sandbox
@@ -149,10 +149,12 @@ def get_runs_from_path(runs, path, app, des_matrix):
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> runs  = app.run_collection()
-    >>> _run = runs[3]
-    >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, runs[1])
-    >>> ori_matrix = checkmate.pathfinder.get_matrix_by_run(app, _run)
-    >>> checkmate.pathfinder.fill_matrix(app, app, _run, des_matrix)
+    >>> r0 = runs[3]
+    >>> nr = runs[1]
+    >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, nr)
+    >>> ori_matrix = checkmate.pathfinder.get_matrix_by_run(app, r0)
+    >>> diff_set = r0.final
+    >>> checkmate.pathfinder.fill_matrix(app, app, r0, des_matrix)
     True
     >>> path = []
     >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
@@ -160,21 +162,32 @@ def get_runs_from_path(runs, path, app, des_matrix):
     True
     >>> path_runs = []
     >>> checkmate.pathfinder.get_runs_from_path(path_runs, path,
-    ... app, des_matrix)
+    ... diff_set, app, des_matrix, nr)
     True
     >>> [_r.root.name for _r in path_runs][:-1]
     ["Press C2's Button AC", "Press C2's Button RL"]
     """
     if len(path) == 0:
-        return True
-    for _r in [t[1] for t in list(zip(path[-1].tolist()[0],
-                                  app.run_collection())) if t[0] > 0]:
-        if (get_matrix_by_run(app, _r) * des_matrix.getT()).all():
-            if (get_runs_from_path(runs, path[:-1], app,
-                    des_matrix * app._matrix.getT())):
-                runs.append(_r)
+        return False
+    pp1 = path[0].nonzero()[1].tolist()[0]
+    for t1 in range(len(pp1)):
+        index1 = pp1[t1]
+        run1 = app.run_collection()[index1]
+        diff_set1 = diff_set.union(run1.final)
+        if len(nr.initial.difference(diff_set1)) > len(nr.initial.difference(diff_set)):
+            continue                   
+        if not run1.compare_initial(app):
+            continue
+        runs.append(run1)
+        v1 = get_matrix_by_run(app, run1)
+        if (des_matrix*v1.getT()).sum() > 0:
+            return True
+        else:
+            box = checkmate.sandbox.Sandbox(type(app), app)
+            box(run1)
+            if checkmate.pathfinder.get_runs_from_path(runs, path[1:], diff_set1, box.application, des_matrix, nr):
                 return True
             else:
-                continue
-    else:
-        return False
+                runs.pop()
+    return False
+
