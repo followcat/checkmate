@@ -208,7 +208,7 @@ def followed_runs(application, run):
         current_row[run_index] = 1
         _followed = numpy.matrix(current_row) * application._matrix
         _followed = _followed.tolist()[0]
-        followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] == 1]
+        followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] > 0]
         return followed_runs
     not_alike = []
     row = [0] * length
