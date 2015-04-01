@@ -3,13 +3,14 @@
     >>> import sample_app.application
     >>> box = checkmate.sandbox.Sandbox(sample_app.application.TestData)
     >>> app = box.application
+    >>> app.define_exchange()
     >>> runs  = app.run_collection()
     >>> runs[0].compare_initial(app)
     True
     >>> box(runs[0])
     True
     >>> r0_fr = checkmate.runs.followed_runs(app, runs[0])
-    >>> app.matrix
+    >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -19,7 +20,7 @@
     >>> box(runs[2])
     True
     >>> r2_fr = checkmate.runs.followed_runs(app, runs[2])
-    >>> app.matrix
+    >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 1, 0, 1],
@@ -29,7 +30,7 @@
     >>> box(runs[1])
     True
     >>> r1_fr = checkmate.runs.followed_runs(app, runs[1])
-    >>> app.matrix
+    >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 1, 0],
             [0, 1, 0, 1],
@@ -41,7 +42,7 @@
     >>> box(runs[3])
     True
     >>> r3_fr = checkmate.runs.followed_runs(app, runs[3])
-    >>> app.matrix
+    >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 1, 0],
             [0, 1, 0, 1],

@@ -27,7 +27,7 @@ def _find_runs(application, target, origin=None):
     des_matrix = checkmate.pathfinder.get_matrix_by_run(application, target)
     checkmate.pathfinder.fill_matrix(
         application, application, origin, des_matrix)
-    get_path_from_matrix(ori_matrix, des_matrix, application.matrix, path)
+    get_path_from_matrix(ori_matrix, des_matrix, application._matrix, path)
 
     used_runs = []
     checkmate.pathfinder.get_runs_from_path(used_runs, path,
@@ -86,24 +86,20 @@ def fill_matrix(runtime_app, app, run, des_matrix):
     >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, runs[1])
     >>> checkmate.pathfinder.fill_matrix(app, app, runs[3], des_matrix)
     True
-    >>> app.matrix
+    >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
             [0, 1, 0, 1],
             [1, 0, 0, 0]])
     """
     followed_runs = checkmate.runs.followed_runs(app, run)
-    runtime_app.matrix = app.matrix
-    runtime_app.runs_found = app.runs_found
-    if (des_matrix * app.matrix.getT()).any(1):
+    if (des_matrix * app._matrix.getT()).any(1):
         return True
     for run in followed_runs:
         run_index = app.run_collection().index(run)
-        if app.runs_found[run_index] is True:
+        if app._runs_found[run_index] is True:
             continue
         box = checkmate.sandbox.Sandbox(type(app), app)
-        box.application.matrix = runtime_app.matrix
-        box.application.runs_found = runtime_app.runs_found
         if box(run) is False:
             continue
         if fill_matrix(runtime_app, box.application, run, des_matrix) is True:
@@ -131,7 +127,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
     True
     >>> path = []
     >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
-    ...     des_matrix, app.matrix, path)
+    ...     des_matrix, app._matrix, path)
     True
     >>> path
     [matrix([[1, 0, 0, 0]]), matrix([[0, 0, 1, 0]]), matrix([[0, 1, 0, 1]])]
@@ -160,7 +156,7 @@ def get_runs_from_path(runs, path, app, des_matrix):
     True
     >>> path = []
     >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
-    ...     des_matrix, app.matrix, path)
+    ...     des_matrix, app._matrix, path)
     True
     >>> path_runs = []
     >>> checkmate.pathfinder.get_runs_from_path(path_runs, path,
@@ -175,7 +171,7 @@ def get_runs_from_path(runs, path, app, des_matrix):
                                   app.run_collection())) if t[0] > 0]:
         if (get_matrix_by_run(app, _r) * des_matrix.getT()).all():
             if (get_runs_from_path(runs, path[:-1], app,
-                    des_matrix * app.matrix.getT())):
+                    des_matrix * app._matrix.getT())):
                 runs.append(_r)
                 return True
             else:
