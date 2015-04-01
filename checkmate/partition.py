@@ -49,6 +49,19 @@ class Partition(object):
             if storage.code == code:
                 return storage
 
+    @classmethod
+    def not_alike(cls, internal_storage):
+        """
+        >>> import sample_app.application
+        >>> state = sample_app.component.component_1_states.State
+        >>> not_like = state.not_alike(sample_app.component.component_1.
+        ... Component_1.state_machine.transitions[0].initial[0])
+        >>> not_like[0].code
+        'State2'
+        """
+        return [_s for _s in cls.partition_storage.storage
+                if _s != internal_storage]
+
     @checkmate.fix_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """

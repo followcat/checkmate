@@ -334,3 +334,21 @@ class InternalStorage(object):
                               default=False, **resolved_arguments):
                 return _target
         return None
+
+    def __key(self):
+        return (self.partition_class, self.value)
+
+    def __eq__(self, other):
+        """
+            >>> import sample_app.application
+            >>> state = sample_app.component.component_1_states.State
+            >>> (state.partition_storage.storage[0] ==
+            ... sample_app.component.component_1.Component_1.
+            ... state_machine.transitions[0].initial[0])
+            True
+        """
+        assert type(other) == InternalStorage
+        return self.__key() == other.__key()
+
+    def __hash__(self):
+        return hash(self.__key())

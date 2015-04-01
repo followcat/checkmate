@@ -210,10 +210,15 @@ def followed_runs(application, run):
         _followed = _followed.tolist()[0]
         followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] == 1]
         return followed_runs
-    row = [0]*length
-    for index, _run in enumerate(runs):
-        if _run.compare_initial(application):
-            followed_runs.append(_run)
+    not_alike = []
+    row = [0] * length
+    for _i in run.final:
+        not_alike.extend(_i.partition_class.not_alike(_i))
+    not_alike_set = set(not_alike)
+    for index, another_run in enumerate(runs):
+        if (set([_i for _i in another_run.initial]).isdisjoint(not_alike_set) and
+                another_run.compare_initial(application)):
+            followed_runs.append(another_run)
             row[index] = 1
     application._matrix[run_index] = row
     application._runs_found[run_index] = True
