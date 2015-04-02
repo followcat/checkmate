@@ -204,10 +204,7 @@ def followed_runs(application, run):
     run_index = runs.index(run)
     followed_runs = []
     if application._runs_found[run_index]:
-        current_row = [0]*length
-        current_row[run_index] = 1
-        _followed = numpy.matrix(current_row) * application._matrix
-        _followed = _followed.tolist()[0]
+        _followed = application._matrix[run_index].tolist()[0]
         followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] > 0]
         return followed_runs
     not_alike = []
