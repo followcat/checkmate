@@ -22,17 +22,9 @@ def _find_runs(application, target, origin=None):
         target = target.collected_run
     if origin.collected_run is not None:
         origin = origin.collected_run
-    path = []
-    ori_matrix = checkmate.pathfinder.get_matrix_by_run(application, origin)
-    des_matrix = checkmate.pathfinder.get_matrix_by_run(application, target)
-    checkmate.pathfinder.fill_matrix(
-        application, application, origin, des_matrix)
-    get_path_from_matrix(ori_matrix, des_matrix, application._matrix, path)
-
     used_runs = []
-    checkmate.pathfinder.get_runs_from_path(used_runs, path, origin.final,
-        application, des_matrix, target)
-    return used_runs[:-1]
+    checkmate.pathfinder.get_runs(used_runs, application, origin, target)
+    return used_runs
 
 
 @checkmate.fix_issue("checkmate/issues/pathfinder_next_run.rst")
@@ -140,7 +132,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
         return True
 
 
-def get_runs_from_path(runs, path, diff_set, app, des_matrix, nr):
+def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     """
     >>> import checkmate.runs
     >>> import checkmate.sandbox
@@ -151,43 +143,59 @@ def get_runs_from_path(runs, path, diff_set, app, des_matrix, nr):
     >>> runs  = app.run_collection()
     >>> r0 = runs[3]
     >>> nr = runs[1]
-    >>> des_matrix = checkmate.pathfinder.get_matrix_by_run(app, nr)
-    >>> ori_matrix = checkmate.pathfinder.get_matrix_by_run(app, r0)
-    >>> diff_set = r0.final
-    >>> checkmate.pathfinder.fill_matrix(app, app, r0, des_matrix)
-    True
-    >>> path = []
-    >>> checkmate.pathfinder.get_path_from_matrix(ori_matrix,
-    ...     des_matrix, app._matrix, path)
-    True
     >>> path_runs = []
-    >>> checkmate.pathfinder.get_runs_from_path(path_runs, path,
-    ... diff_set, app, des_matrix, nr)
+    >>> checkmate.pathfinder.get_runs(path_runs, app, r0, nr)
     True
-    >>> [_r.root.name for _r in path_runs][:-1]
+    >>> [_r.root.name for _r in path_runs]
     ["Press C2's Button AC", "Press C2's Button RL"]
     """
-    if len(path) == 0:
+    if diff_set is None:
+        diff_set = set()
+        for _state in app.state_list():
+            for _store in _state.partition_storage.storage:
+                if _state.value == _store.value:
+                    diff_set.add(_store)
+                    break
+
+    def unique_difference(run):
+        except_set = set()
+        for di in diff_set:
+            if (di.partition_class in
+               [_f.partition_class for _f in run.final]):
+                except_set.add(di)
+        return except_set
+
+    if depth == app.path_finder_depth:
         return False
-    pp1 = path[0].nonzero()[1].tolist()[0]
-    for t1 in range(len(pp1)):
-        index1 = pp1[t1]
-        run1 = app.run_collection()[index1]
-        diff_set1 = diff_set.union(run1.final)
-        if len(nr.initial.difference(diff_set1)) > len(nr.initial.difference(diff_set)):
-            continue                   
-        if not run1.compare_initial(app):
+    if len(nr.initial.difference(diff_set)) == 0:
+        return True
+    next_runs = checkmate.runs.followed_runs(app, ori_run)
+    for run1 in next_runs[:]:
+        new_state_set = set(diff_set)
+        if not new_state_set.issuperset(run1.initial):
+            next_runs.remove(run1)
             continue
-        runs.append(run1)
-        v1 = get_matrix_by_run(app, run1)
-        if (des_matrix*v1.getT()).sum() > 0:
+        if run1 == nr:
+            return True
+        if run1 == ori_run or run1 in runs:
+            next_runs.pop(next_runs.index(run1))
+            continue
+        if len(nr.initial.intersection(
+           run1.final.difference(diff_set))) == 0:
+            next_runs.remove(run1)
+            continue
+
+    sorted_list = sorted(next_runs,
+                      key=lambda r: len(nr.initial.intersection(
+                          r.final.difference(diff_set))), reverse=True)
+
+    for run in sorted_list:
+        runs.append(run)
+        except_set = unique_difference(run1)
+        diff_set1 = diff_set.difference(except_set).union(run.final)
+        if checkmate.pathfinder.get_runs(runs,
+           app, run, nr, diff_set1, depth + 1):
             return True
         else:
-            box = checkmate.sandbox.Sandbox(type(app), app)
-            box(run1)
-            if checkmate.pathfinder.get_runs_from_path(runs, path[1:], diff_set1, box.application, des_matrix, nr):
-                return True
-            else:
-                runs.pop()
+            runs.pop()
     return False
-

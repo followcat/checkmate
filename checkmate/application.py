@@ -136,6 +136,7 @@ class Application(object):
     communication_list = {}
     feature_definition_path = None
     _run_collection_attribute = '_collected_runs'
+    path_finder_depth = 10
 
     @classmethod
     def run_collection(cls):
