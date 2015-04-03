@@ -157,11 +157,11 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
                     diff_set.add(_store)
                     break
 
-    def unique_difference(run):
+    def unique_difference(ori_run, next_run):
         except_set = set()
-        for di in diff_set:
+        for di in ori_run.final:
             if (di.partition_class in
-               [_f.partition_class for _f in run.final]):
+               [_f.partition_class for _f in next_run.initial]):
                 except_set.add(di)
         return except_set
 
@@ -191,7 +191,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
 
     for run in sorted_list:
         runs.append(run)
-        except_set = unique_difference(run1)
+        except_set = unique_difference(ori_run, run)
         diff_set1 = diff_set.difference(except_set).union(run.final)
         if checkmate.pathfinder.get_runs(runs,
            app, run, nr, diff_set1, depth + 1):
