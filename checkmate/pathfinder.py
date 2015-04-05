@@ -180,18 +180,8 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
                     diff_set.add(_store)
                     break
 
-    def unique_difference(ori_run, next_run):
-        except_set = set()
-        for di in ori_run.final:
-            if (di.partition_class in
-               [_f.partition_class for _f in next_run.initial]):
-                except_set.add(di)
-        return except_set
-
     if depth == app.path_finder_depth:
         return False
-    if len(nr.initial.difference(diff_set)) == 0:
-        return True
     next_runs = checkmate.runs.followed_runs(app, ori_run)
     for run1 in next_runs[:]:
         new_state_set = set(diff_set)
@@ -203,21 +193,28 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
         if run1 == ori_run or run1 in runs:
             next_runs.pop(next_runs.index(run1))
             continue
-        if len(nr.initial.intersection(
-           run1.final.difference(diff_set))) == 0:
-            next_runs.remove(run1)
-            continue
 
-    sorted_list = sorted(next_runs,
-                      key=lambda r: len(nr.initial.intersection(
-                          r.final.difference(diff_set))), reverse=True)
+    nr_classes = [s.partition_class for s in nr.initial.difference(diff_set)]
+    next_runs_1 = filter(lambda r: len(nr.initial.intersection(
+                    r.final.difference(diff_set))) > 0, next_runs)
+    next_runs_2 = filter(lambda r: len(nr.initial.intersection(
+                    r.final.difference(diff_set))) == 0, next_runs)
+    sorted_list_1 = sorted(next_runs_1, key=lambda r: len(
+                        nr.initial.intersection(r.final.difference(diff_set))),
+                        reverse=True)
+    sorted_list_2 = sorted(next_runs_2, key=lambda r: len([s for s in r.final
+                        if s not in r.initial and
+                        s.partition_class in nr_classes]), reverse=True)
 
-    for run in sorted_list:
+    for run in sorted_list_1 + sorted_list_2:
         runs.append(run)
-        except_set = unique_difference(ori_run, run)
-        diff_set1 = diff_set.difference(except_set).union(run.final)
-        if checkmate.pathfinder.get_runs(runs,
-           app, run, nr, diff_set1, depth + 1):
+        diff_set1 = set(diff_set)
+        for di in diff_set:
+            if (di.partition_class in
+                    [_f.partition_class for _f in run.final]):
+                diff_set1.remove(di)
+        if (checkmate.pathfinder.get_runs(runs,
+                app, run, nr, diff_set1.union(run.final), depth + 1)):
             return True
         else:
             runs.pop()
