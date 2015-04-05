@@ -135,6 +135,7 @@ class Application(object):
     component_classes = []
     communication_list = {}
     feature_definition_path = None
+    _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
     path_finder_depth = 10
 
@@ -177,11 +178,26 @@ class Application(object):
                             cls.data_structure_module, cls.exchange_module)
             declarator.new_partition(definition)
         try:
+            delattr(cls, cls._starting_run_attribute)
             delattr(cls, cls._run_collection_attribute)
             cls._matrix = None
             cls._runs_found = []
         except AttributeError:
             pass
+
+    @classmethod
+    def starting_run(cls):
+        try:
+            return getattr(cls, cls._starting_run_attribute)
+        except AttributeError:
+            try:
+                for run in cls.run_collection():
+                    if run.root.name == cls.starting_run_name:
+                        break
+            except AttributeError:
+                run = cls.run_collection()[-1]
+            setattr(cls, cls._starting_run_attribute, run)
+            return run
 
     def __init__(self):
         """

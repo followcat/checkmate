@@ -122,6 +122,7 @@ class Runtime(object):
             _component = self.runtime_components[name]
             _component.start()
         self.runs_log.info(['State', self.application.visual_dump_states()])
+        self.active_run = self.application.starting_run()
 
     def stop_test(self):
         # Stop stubs last
@@ -144,8 +145,6 @@ class Runtime(object):
     @checkmate.report_issue(
         "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True, previous_run=None):
-        if previous_run is None:
-            previous_run = self.active_run
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
             return checkmate.runtime.procedure._compatible_skip_test(
@@ -163,6 +162,8 @@ class Runtime(object):
 
     def transform_to_initial(self, run, previous_run=None):
         if not run.compare_initial(self.application):
+            if previous_run is None:
+                previous_run = self.active_run
             run_list = checkmate.pathfinder._find_runs(
                             self.application, run, origin=previous_run)
             if len(run_list) == 0:

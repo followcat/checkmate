@@ -13,11 +13,8 @@ import checkmate.sandbox
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_runs.rst")
 @checkmate.fix_issue("checkmate/issues/get_path_from_pathfinder.rst")
 @checkmate.fix_issue("checkmate/issues/pathfinder_find_AC-OK_path.rst")
-def _find_runs(application, target, origin=None):
+def _find_runs(application, target, origin):
     """"""
-    if origin is None:
-        # Hardcoded value that fits sample_app application
-        origin = application.run_collection()[-1]
     if target.collected_run is not None:
         target = target.collected_run
     if origin.collected_run is not None:
