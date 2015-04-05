@@ -4,6 +4,8 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import time
+
 import numpy
 
 import checkmate.runs
@@ -129,6 +131,27 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
         return True
 
 
+class Timer():
+    def __init__(self, limit):
+        self.start = 0
+        self.limit = limit
+
+    def reset(self):
+        self.start = time.time()
+
+    def check(self):
+        return (time.time() < self.start + self.limit)
+
+timer = Timer(5)
+
+def fail_fast(depth):
+    global timer
+    if depth == 0:
+        timer.reset()
+        return False
+    else:
+        return not timer.check()
+    
 def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     """
     >>> import checkmate.runs
@@ -146,6 +169,9 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     >>> [_r.root.name for _r in path_runs]
     ["Press C2's Button AC", "Press C2's Button RL"]
     """
+    if fail_fast(depth):
+        return False
+
     if diff_set is None:
         diff_set = set()
         for _state in app.state_list():
