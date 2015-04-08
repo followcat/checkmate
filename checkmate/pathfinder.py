@@ -80,7 +80,7 @@ def fill_matrix(runtime_app, app, run, des_matrix):
     >>> app._matrix
     matrix([[0, 0, 1, 0],
             [0, 0, 0, 0],
-            [0, 1, 0, 1],
+            [1, 1, 0, 1],
             [1, 0, 0, 0]])
     """
     followed_runs = checkmate.runs.followed_runs(app, run)
@@ -121,7 +121,7 @@ def get_path_from_matrix(ori_matrix, des_matrix, app_matrix, path):
     ...     des_matrix, app._matrix, path)
     True
     >>> path
-    [matrix([[1, 0, 0, 0]]), matrix([[0, 0, 1, 0]]), matrix([[0, 1, 0, 1]])]
+    [matrix([[1, 0, 0, 0]]), matrix([[0, 0, 1, 0]]), matrix([[1, 1, 0, 1]])]
     """
     new_ori_matrix = ori_matrix * app_matrix
     path.append(new_ori_matrix)
