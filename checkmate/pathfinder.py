@@ -185,7 +185,9 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     next_runs = checkmate.runs.followed_runs(app, ori_run)
     for run1 in next_runs[:]:
         new_state_set = set(diff_set)
-        if not new_state_set.issuperset(run1.initial):
+        # Modify to support sample_app, diff_set hasn't RequestState
+        if (not new_state_set.issuperset(run1.initial) and not
+           run1.initial.issuperset(new_state_set)):
             next_runs.remove(run1)
             continue
         if run1 == nr:
