@@ -68,7 +68,7 @@ other runs
         False
         >>> run1.compare_initial(app)
         False
-        >>> run_list = checkmate.pathfinder._find_runs(app, run1)
+        >>> run_list = checkmate.pathfinder._find_runs(app, run1, run1)
 
     Initializing transition runs should not be used to do transform to
     initial during executing runs
