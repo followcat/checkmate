@@ -90,4 +90,6 @@ other runs
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
+        >>> delattr(application_class,
+        ...     application_class._starting_run_attribute)
 
