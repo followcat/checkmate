@@ -208,17 +208,19 @@ def followed_runs(application, run):
         followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] > 0]
         return followed_runs
     row = [0] * length
-    not_alike = []
+    alike_set = set()
+    partition_class_set = set()
     for _i in run.final:
-        not_alike.extend(_i.partition_class.not_alike(_i))
-    not_alike_set = set(not_alike)
+        alike = _i.partition_class.alike(_i)
+        if alike is not None:
+            alike_set.add(alike)
+            partition_class_set.add(_i.partition_class)
     for index, another_run in enumerate(runs):
         select_parititon = set()
         for _i in another_run.initial:
-            if (_i.partition_class in
-               [_f.partition_class for _f in not_alike_set]):
+            if _i.partition_class in partition_class_set:
                 select_parititon.add(_i)
-        if select_parititon.isdisjoint(not_alike_set):
+        if select_parititon.issubset(alike_set):
             followed_runs.append(another_run)
             row[index] = 1
     application._matrix[run_index] = row
