@@ -204,8 +204,8 @@ def followed_runs(application, run):
     run_index = runs.index(run)
     followed_runs = []
     if application._runs_found[run_index]:
-        _followed = application._matrix[run_index].tolist()[0]
-        followed_runs = [t[1] for t in list(zip(_followed, runs)) if t[0] > 0]
+        followed_runs = [runs[i] for i in application._matrix[run_index]
+                         .nonzero()[1].tolist()[0]]
         return followed_runs
     row = [0] * length
     alike_set = set()
