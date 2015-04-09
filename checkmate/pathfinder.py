@@ -210,9 +210,9 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     for run in sorted_list_1 + sorted_list_2:
         runs.append(run)
         diff_set1 = set(diff_set)
+        select_partition_class = [_f.partition_class for _f in run.final]
         for di in diff_set:
-            if (di.partition_class in
-                    [_f.partition_class for _f in run.final]):
+            if di.partition_class in select_partition_class:
                 diff_set1.remove(di)
         if (checkmate.pathfinder.get_runs(runs,
                 app, run, nr, diff_set1.union(run.final), depth + 1)):
