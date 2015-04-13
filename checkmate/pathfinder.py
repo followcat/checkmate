@@ -6,8 +6,6 @@
 
 import time
 
-import numpy
-
 import checkmate.runs
 import checkmate.sandbox
 
