@@ -143,7 +143,7 @@ class Runtime(object):
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
     @checkmate.report_issue(
-        "checkmate/issues/runs_with_initializing_transition.rst", failed=1)
+        "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True, previous_run=None):
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
