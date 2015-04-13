@@ -39,6 +39,7 @@ class Timer():
 
 timer = Timer(5)
 
+
 def fail_fast(depth):
     global timer
     if depth == 0:
@@ -46,7 +47,8 @@ def fail_fast(depth):
         return False
     else:
         return not timer.check()
-    
+
+
 def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     """
     >>> import checkmate.runs
