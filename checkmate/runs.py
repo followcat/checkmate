@@ -4,8 +4,6 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import numpy
-
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
