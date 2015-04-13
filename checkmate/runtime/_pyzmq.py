@@ -129,8 +129,7 @@ class Device(checkmate.runtime._threading.Thread):
             destination = exchange.origin.encode()
         else:
             destination = exchange.destination[0].encode()
-        self.socket_dealer_out.send(destination, flags=zmq.SNDMORE)
-        self.socket_dealer_out.send_pyobj(exchange)
+        self.socket_dealer_out.send_pyobj((destination, exchange))
 
     def stop(self):
         """"""
@@ -171,8 +170,7 @@ class Router(checkmate.runtime._threading.Thread):
             socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
                 origin = sock.recv()
-                destination = sock.recv()
-                exchange = sock.recv_pyobj()
+                destination, exchange = sock.recv_pyobj()
                 if exchange.broadcast:
                     channel = exchange.channel
                     self.publish.send(channel.encode(), flags=zmq.SNDMORE)

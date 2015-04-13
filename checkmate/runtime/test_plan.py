@@ -42,6 +42,7 @@ def get_runs_from_test(data, application):
 def TestProcedureInitialGenerator(application_class, transition_list=None):
     """
         >>> import time
+        >>> import checkmate.runs
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
@@ -55,6 +56,8 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
         >>> transition = c2.context.state_machine.transitions[0]
+        >>> previous_run = checkmate.runs.get_runs_from_transition(
+        ...                     r.application, transition)[0]
         >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
         >>> time.sleep(1)
         >>> c1.context.states[0].value
@@ -66,7 +69,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         ...        test_plan.TestProcedureInitialGenerator(app)][0]
         >>> run.compare_initial(r.application)
         False
-        >>> r.execute(run, transform=True)
+        >>> r.execute(run, transform=True, previous_run=previous_run)
         >>> r.stop_test()
 
     """
@@ -147,7 +150,7 @@ def TestProcedureRunsGenerator(application_class):
         >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
         >>> r.setup_environment(['C2'])
         >>> r.start_test()
-        >>> r.execute(runs[0])
+        >>> r.execute(runs[0], transform=False)
         >>> r.stop_test()
     """
     for _run in application_class().run_collection():

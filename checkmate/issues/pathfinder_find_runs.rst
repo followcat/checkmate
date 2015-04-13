@@ -25,5 +25,5 @@
 
         >>> runs[0].root.outgoing[0].code
         'AC'
-        >>> len(checkmate.pathfinder._find_runs(box.application, runs[0]))
-        3
+        >>> len(checkmate.pathfinder._find_runs(box.application, runs[0], rl_run))
+        1

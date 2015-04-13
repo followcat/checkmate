@@ -42,6 +42,7 @@ class Sandbox(object):
             >>> box.application.components['C1'].states[0].value
             False
         """
+        self.used = False
         self.final = []
         self.initial = []
         self.transitions = None
@@ -60,24 +61,10 @@ class Sandbox(object):
         else:
             self.application.start(
                 self.initial_application.default_state_value)
-            for component in self.application.components.values():
-                for partition_class in [_d.partition_class for _d in
-                                        component.state_machine.states]:
-                    done = False
-                    for state in component.states:
-                        if not isinstance(state, partition_class):
-                            continue
-                        init_components = self.initial_application.components
-                        for init_state in \
-                            init_components[component.name].states:
-                            if not isinstance(init_state, partition_class):
-                                continue
-                            state.carbon_copy(init_state)
-                            done = True
-                            break
-                        if done:
-                            break
-        
+            for component in self.initial_application.components.values():
+                for index, state in enumerate(component.states):
+                    self.application.components[component.name].states[index].\
+                        carbon_copy(state)
         for transition in self.initial_transitions:
             for initial in transition.initial:
                 done = False
@@ -92,9 +79,14 @@ class Sandbox(object):
                     if done:
                         break
 
+    def restart(self):
+        if self.used is True:
+            self.start()
+
     @property
     def is_run(self):
-        return self.transitions is not None
+        return (self.transitions is not None and
+                set(self.run.walk()).issubset(set(self.transitions.walk())))
 
     def __call__(self, run, itp_run=False):
         """
@@ -126,23 +118,21 @@ class Sandbox(object):
             if len(run.root.incoming) > 0:
                 _incoming = run.root.generic_incoming(component.states)
                 for _c in self.application.components.values():
+                    if _c == component:
+                        continue
                     _t = _c.get_transition_by_output(_incoming)
                     if _t is not None:
                         _outgoing = _c.simulate(_t)
                         self.transitions = _t
                         break
-                break
-            elif len(run.root.outgoing) > 0:
-                _outgoing = component.simulate(run.root)
-                if len(_outgoing) == 0:
-                    continue
-                self.transitions = run.root
-                break
+                if self.transitions is not None:
+                    break
+            _outgoing = component.simulate(run.root)
+            self.transitions = run.root
+            break
         return self.run_process(_outgoing)
 
     def run_process(self, outgoing):
-        if len(outgoing) == 0:
-            return False
         try:
             self.transitions = \
                 self.process(outgoing,
@@ -171,15 +161,11 @@ class Sandbox(object):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
-                try:
-                    _transition = \
-                        self.run.get_transition_by_input_states([_exchange],
-                            _c.states)
-                except IndexError:
-                    _transition = None
-                _outgoings = _c.process([_exchange])
+                _transition = self.run.get_transition_by_input_states(
+                    [_exchange], _c)
                 if _transition is None:
                     continue
+                _outgoings = _c.process([_exchange])
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(_transition, []))
                 tree.add_node(tmp_run)
@@ -220,6 +206,9 @@ class CollectionSandbox(Sandbox):
                 _c = sandbox.application.components[_d]
                 _transitions = _c.get_transitions_by_input([_exchange])
                 for _t in _transitions:
+                    if _t == tree.root:
+                        continue
+                    self.used = True
                     _app = sandbox.application
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]

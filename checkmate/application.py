@@ -7,6 +7,8 @@
 import os
 import collections
 
+import numpy
+
 import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
@@ -128,10 +130,14 @@ class ApplicationMeta(type):
 
 
 class Application(object):
+    _matrix = None
+    _runs_found = []
     component_classes = []
     communication_list = {}
     feature_definition_path = None
-    _run_collection_attribute = '_runs'
+    _starting_run_attribute = '_starting_run'
+    _run_collection_attribute = '_collected_runs'
+    path_finder_depth = 10
 
     @classmethod
     def run_collection(cls):
@@ -142,12 +148,15 @@ class Application(object):
         [<checkmate.runs.Run object at ...
         """
         if not hasattr(cls, cls._run_collection_attribute):
-            setattr(cls, cls._run_collection_attribute,
-                checkmate.runs.get_runs_from_application(cls))
+            collection = checkmate.runs.get_runs_from_application(cls)
+            length = len(collection)
+            cls._matrix = numpy.matrix(numpy.zeros((length, length), dtype=int))
+            cls._runs_found = [False]*length
+            setattr(cls, cls._run_collection_attribute, collection)
         return getattr(cls, cls._run_collection_attribute)
 
     @classmethod
-    def define_exchange(cls, definition):
+    def define_exchange(cls, definition=None):
         """
         >>> import sample_app.application
         >>> app = sample_app.application.TestData()
@@ -164,13 +173,31 @@ class Application(object):
         True
         >>> delattr(app.exchange_module, 'ForthAction')
         """
-        declarator = checkmate.partition_declarator.Declarator(
-                        cls.data_structure_module, cls.exchange_module)
-        declarator.new_partition(definition)
+        if definition is not None:
+            declarator = checkmate.partition_declarator.Declarator(
+                            cls.data_structure_module, cls.exchange_module)
+            declarator.new_partition(definition)
         try:
+            delattr(cls, cls._starting_run_attribute)
             delattr(cls, cls._run_collection_attribute)
+            cls._matrix = None
+            cls._runs_found = []
         except AttributeError:
             pass
+
+    @classmethod
+    def starting_run(cls):
+        try:
+            return getattr(cls, cls._starting_run_attribute)
+        except AttributeError:
+            try:
+                for run in cls.run_collection():
+                    if run.root.name == cls.starting_run_name:
+                        break
+            except AttributeError:
+                run = cls.run_collection()[-1]
+            setattr(cls, cls._starting_run_attribute, run)
+            return run
 
     def __init__(self):
         """
@@ -185,6 +212,8 @@ class Application(object):
         self._started = False
         self.components = collections.OrderedDict()
         self.service_registry = checkmate.service_registry.ServiceRegistry()
+        self.matrix = None
+        self.runs_found = None
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
             for component in _class_definition['instances']:

@@ -24,6 +24,7 @@ class Runtime(object):
         """"""
         self.runs_log = logging.getLogger('runs.runtime')
         self.threaded = threaded
+        self.active_run = None
         self.runtime_components = {}
         self.application = application()
         self.application_class = application
@@ -121,6 +122,7 @@ class Runtime(object):
             _component = self.runtime_components[name]
             _component.start()
         self.runs_log.info(['State', self.application.visual_dump_states()])
+        self.active_run = self.application.starting_run()
 
     def stop_test(self):
         # Stop stubs last
@@ -142,31 +144,45 @@ class Runtime(object):
 
     @checkmate.report_issue(
         "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
-    def execute(self, run, result=None, transform=True):
-        if run.root.owner in self.application.system_under_test:
-            return checkmate.runtime.procedure._compatible_skip_test(
-                        "SUT do not simulate")
-        if transform is True and not self.transform_to_initial(run):
+    def execute(self, run, result=None, transform=True, previous_run=None):
+        if (transform is True and
+                not self.transform_to_initial(run, previous_run)):
             return checkmate.runtime.procedure._compatible_skip_test(
                         "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
-        try:
-            checkmate.runtime.procedure.Procedure(run)(self, result)
+        if self.call_procedure(run, result):
             self.runs_log.info(['Run', run.root.name])
-        except ValueError:
+        else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
+            return checkmate.runtime.procedure._compatible_skip_test(
+                        "Non-threaded SUT do not simulate")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
-    def transform_to_initial(self, run):
+    def transform_to_initial(self, run, previous_run=None):
         if not run.compare_initial(self.application):
+            if previous_run is None:
+                previous_run = self.active_run
             run_list = checkmate.pathfinder._find_runs(
-                            self.application, run)
+                            self.application, run, origin=previous_run)
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")
                 return False
-            for run in run_list:
-                checkmate.runtime.procedure.Procedure(run)(self)
+            for _run in run_list:
+                if not self.call_procedure(_run):
+                    return False
         return True
+
+    def call_procedure(self, run, result=None):
+        try:
+            checkmate.runtime.procedure.Procedure(run)(self, result)
+            if run.collected_run is None:
+                self.active_run = run
+            elif not run.compare_initial(self.application):
+                self.active_run = run
+        except ValueError:
+            return False
+        return True
+ 

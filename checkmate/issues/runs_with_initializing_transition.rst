@@ -68,7 +68,7 @@ other runs
         False
         >>> run1.compare_initial(app)
         False
-        >>> run_list = checkmate.pathfinder._find_runs(app, run1)
+        >>> run_list = checkmate.pathfinder._find_runs(app, run1, run1)
 
     Initializing transition runs should not be used to do transform to
     initial during executing runs
@@ -87,4 +87,9 @@ other runs
         ...     sample_app.exchanges.ForthAction)
         >>> state1.state_machine.transitions.remove(t_in)
         >>> state2.state_machine.transitions.remove(t_out)
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
+        >>> delattr(application_class,
+        ...     application_class._starting_run_attribute)
 

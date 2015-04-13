@@ -49,6 +49,28 @@ class Partition(object):
             if storage.code == code:
                 return storage
 
+    @classmethod
+    def alike(cls, internal_storage, init_storage_list=None):
+        """
+        >>> import sample_app.application
+        >>> state = sample_app.component.component_1_states.State
+        >>> state.alike(sample_app.component.component_1.
+        ... Component_1.state_machine.transitions[0].initial[0]).code
+        'State1'
+        """
+        if init_storage_list is None:
+            init_storage_list = list()
+        for _s in cls.partition_storage.storage:
+            if _s == internal_storage:
+                return _s
+        else:
+            for _i in init_storage_list:
+                if _i.partition_class == internal_storage.partition_class:
+                    partition = internal_storage.factory(instance=_i.factory())
+                    for _s in cls.partition_storage.storage:
+                        if _s.value == partition.value:
+                            return _s
+
     @checkmate.fix_issue("checkmate/issues/list_attribute_definition.rst")
     def __init__(self, value=None, *args, default=True, **kwargs):
         """
