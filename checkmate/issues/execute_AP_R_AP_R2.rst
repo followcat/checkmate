@@ -34,7 +34,7 @@ We can match R with R2 when we do collect runs
         >>> out = c2.state_machine.transitions[2].outgoing[0]
         >>> (out.code, out.resolved_arguments)
         ('AP', {})
-        >>> runs = a.run_collection
+        >>> runs = a.run_collection()
         >>> len(runs)
         4
 
@@ -47,11 +47,14 @@ We can match R with R2 when we do collect runs
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, True)
         >>> r.setup_environment(['C3'])
         >>> r.start_test()
-        >>> runs = r.application.run_collection
+        >>> runs = r.application.run_collection()
         >>> r.execute(runs[0])
         >>> r.stop_test()
 
     Revert changes in Component class definition for further use in doctest:
         >>> sample_app.component.component_1.Component_1.state_machine.transitions[1] = copy_t1
         >>> sample_app.component.component_2.Component_2.state_machine.transitions[2] = copy_t2
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
 

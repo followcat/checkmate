@@ -122,6 +122,7 @@ Coding guidelines
     Consequently:
 
         it should be reported and fixed.
+        The fix should be done in a standalone commit.
 
 
 

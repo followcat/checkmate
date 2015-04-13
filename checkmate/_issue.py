@@ -26,7 +26,8 @@ def runtest(filename, runner=doctest.DocTestRunner()):
         _f = open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
     test = _f.read()
     _f.close()
-    return runner.run(doctest.DocTestParser().get_doctest(test, locals(), filename, None, None))
+    return runner.run(doctest.DocTestParser().get_doctest(test, locals(),
+                        filename, None, None))
 
 def runtest_silent(filename):
     return runtest(filename, Runner(verbose=False))
@@ -61,18 +62,22 @@ def report_issue(filename, failed=1):
         >>> filename = 'dt1.rst'
 
     Hardcoded failed doctest:
-        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(False)\\nFalse\")
         ... 
         >>> @checkmate._issue.report_issue(filename)
         ... def func():
         ...     pass
         >>> _r = checkmate._issue.Runner(verbose=False)
-        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None)) # doctest: +ELLIPSIS
+        >>> test = doctest.DocTestParser().get_doctest(func.__doc__,
+        ...             locals(), func.__name__, None, None)
+        >>> _r.run(test) # doctest: +ELLIPSIS
         TestResults(failed=1, ...
 
     Hardcoded successful doctest:
-        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(True)\\nFalse\")
         ... 
         >>> @checkmate._issue.report_issue(filename)
@@ -80,7 +85,8 @@ def report_issue(filename, failed=1):
         ...     pass
         ... 
         >>> doctest.run_docstring_examples(func, locals())
-        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
+        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]))
     """
     return _add_issue_doctest(filename, failed)
 
@@ -92,7 +98,8 @@ def fix_issue(filename):
         >>> filename = 'dt1.rst'
 
     Hardcoded successful doctest:
-        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(False)\\nFalse\")
         ... 
         >>> @checkmate._issue.fix_issue(filename)
@@ -102,16 +109,20 @@ def fix_issue(filename):
         >>> doctest.run_docstring_examples(func, locals())
 
     Hardcoded failed doctest:
-        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]), 'w') as f:
+        >>> with open(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(True)\\nFalse\")
         ... 
         >>> @checkmate._issue.fix_issue(filename)
         ... def func():
         ...     pass
         >>> _r = checkmate._issue.Runner(verbose=False)
-        >>> _r.run(doctest.DocTestParser().get_doctest(func.__doc__, locals(), func.__name__, None, None)) # doctest: +ELLIPSIS
+        >>> test = doctest.DocTestParser().get_doctest(func.__doc__,
+        ...             locals(), func.__name__, None, None)
+        >>> _r.run(test) # doctest: +ELLIPSIS
         TestResults(failed=1, ...
-        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
+        >>> os.remove(os.sep.join([os.getenv('CHECKMATE_HOME'),
+        ...             filename]))
     """
     return _add_issue_doctest(filename)
 

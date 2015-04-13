@@ -27,7 +27,7 @@ We can match R with R2 when we do collect runs
         >>> out = c2.state_machine.transitions[2].outgoing[0]
         >>> (out.code, out.resolved_arguments['R'].C.value, out.resolved_arguments['R'].P.value)
         ('AP', 'AT2', 'HIGH')
-        >>> runs = a.run_collection
+        >>> runs = a.run_collection()
         >>> len(runs)
         4
         >>> 'AP' in [t.incoming[0].code for t in runs[0].walk() if len(t.incoming) > 0]
@@ -36,4 +36,7 @@ We can match R with R2 when we do collect runs
     Revert changes in Component class definition for further use in doctest:
         >>> sample_app.component.component_1.Component_1.state_machine.transitions[1] = copy_t1
         >>> sample_app.component.component_2.Component_2.state_machine.transitions[2] = copy_t2
+        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._run_collection_attribute)
 

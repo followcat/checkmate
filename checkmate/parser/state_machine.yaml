@@ -4,8 +4,8 @@ data:
   - Definition and accessibility: 'TESTState'
     Value partitions:
       # [Partition,   State,      Valid value,        Comment]
-      - [S-STATE-01,  'True',   True valid value,   State true value]
-      - [S-STATE-02,  'False',  False valid value,  State false value]
+      - [S-STATE-01,  True,   True valid value,   State true value]
+      - [S-STATE-02,  False,  False valid value,  State false value]
 
   - Definition and accessibility: 'TESTAnotherState'
     Value partitions:

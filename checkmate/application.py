@@ -5,6 +5,9 @@
 # version 3 of the License, or (at your option) any later version.
 
 import os
+import collections
+
+import numpy
 
 import checkmate.runs
 import checkmate._module
@@ -28,50 +31,46 @@ class ApplicationMeta(type):
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
-        >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
-        >>> c1.broadcast_map
-        {}
-        >>> c2.broadcast_map
-        {'PA': 'C1'}
-        >>> c3.broadcast_map
-        {'PA': 'C1'}
         """
-        exchange_module = checkmate._module.get_module(namespace['__module__'], 'exchanges')
+        exchange_module = \
+            checkmate._module.get_module(namespace['__module__'], 'exchanges')
         namespace['exchange_module'] = exchange_module
 
-        data_structure_module = checkmate._module.get_module(namespace['__module__'], 'data_structure')
-        data_value_module = checkmate._module.get_module(namespace['__module__'], '_data')
+        data_structure_module = \
+            checkmate._module.get_module(namespace['__module__'],
+                'data_structure')
         namespace['data_structure_module'] = data_structure_module
 
         if 'exchange_definition' not in namespace:
-            namespace['exchange_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
-        if 'component_definition' not in namespace:
-            namespace['component_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1] + ['component'])
+            namespace['exchange_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1])
         if 'itp_definition' not in namespace:
-            namespace['itp_definition'] = os.sep.join(namespace['__module__'].split('.')[0:-1])
+            namespace['itp_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1])
         def get_definition_data(definitions):
             definition_data = ''
             if type(definitions) != list:
                 definitions = [definitions]
-            for definition in definitions:
-                if os.path.isfile(definition):
-                    with open(definition, 'r') as _file:
+            for _d in definitions:
+                if os.path.isfile(_d):
+                    with open(_d, 'r') as _file:
                         definition_data += _file.read()
-                elif os.path.isdir(definition):
-                    for filename in os.listdir(definition):
+                elif os.path.isdir(_d):
+                    for filename in os.listdir(_d):
                         if filename.endswith(".yaml"):
-                            with open(os.path.join(definition, filename), 'r') as _file:
-                                definition_data += _file.read() 
+                            _fullname = os.path.join(_d, filename)
+                            with open(_fullname, 'r') as _file:
+                                definition_data += _file.read()
             return definition_data
         define_data = get_definition_data(namespace['exchange_definition'])
         if 'data_structure_definition' in namespace:
-            define_data = get_definition_data(namespace['data_structure_definition']) + define_data
+            define_data += \
+                get_definition_data(namespace['data_structure_definition'])
         data_value = {}
         try:
             value_data = get_definition_data(namespace['test_data_definition'])
-            value_source = checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+            value_source = \
+                checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
                 data_value.update({code: structure})
             namespace['data_value'] = data_value
@@ -79,8 +78,9 @@ class ApplicationMeta(type):
             pass
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module,
-                                                   exchange_module, data_value=data_value)
+            declarator = checkmate.partition_declarator.Declarator(
+                            data_structure_module, exchange_module,
+                            data_value=data_value)
             declarator.new_definitions(data_source)
             output = declarator.get_output()
 
@@ -89,43 +89,115 @@ class ApplicationMeta(type):
         finally:
             pass
 
-        if 'communication_list' in namespace:
-            communication_list = namespace['communication_list'].keys()
-        else:
-            communication_list = []
-        for key, (class_name, class_dict) in namespace['component_classes'].items():
-            component_module = checkmate._module.get_module(namespace['__module__'], class_name.lower(), 'component')
+        _component_classes = namespace['component_classes']
+        for index, _definition in enumerate(_component_classes):
+            _tmp_dict = collections.defaultdict(dict)
+            _tmp_dict.update(_definition)
+            _component_classes[index] = _tmp_dict
+        for class_definition in _component_classes:
+            class_dict = class_definition['attributes']
+            _tmp_list = class_definition['class'].split('/')
+            class_name = _tmp_list[-1].split('.')[0].capitalize()
+            alternative_package = _tmp_list[-2]
+            component_module = \
+                checkmate._module.get_module(namespace['__module__'],
+                    class_name.lower(), alternative_package)
+            instance_attributes = collections.defaultdict(dict)
+            instance_transitions = collections.defaultdict(dict)
+            for _instance in class_definition['instances']:
+                if 'attributes' in _instance:
+                    instance_attributes[_instance['name']] = \
+                        _instance['attributes']
+                if 'transitions' in _instance:
+                    instance_transitions[_instance['name']] = \
+                        _instance['transitions']
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
-                 'component_definition': namespace['component_definition'],
+                 'component_definition': class_definition['class'],
                  '__module__': component_module.__name__,
-                 'communication_list': communication_list
+                 'communication_list': namespace['communication_list'].keys(),
+                 'instance_attributes': instance_attributes,
+                 'instance_transitions': instance_transitions
                 }
             d.update(class_dict)
-            _class = checkmate.component.ComponentMeta(class_name, (checkmate.component.Component,), d)
+            _class = checkmate.component.ComponentMeta(class_name,
+                        (checkmate.component.Component,), d)
             setattr(component_module, class_name, _class)
-            namespace['component_classes'][key] = _class
-            
-        publish_map = {}
-        for _name_tuple in namespace['component_classes']:
-            for _name in _name_tuple:
-                publish_map[_name] = namespace['component_classes'][_name_tuple].publish_exchange
-        for _c in namespace['component_classes']:
-            broadcast_map = {}
-            for _e in namespace['component_classes'][_c].subscribe_exchange:
-                for _name, _p in publish_map.items():
-                    if _e in _p:
-                        broadcast_map[_e] = _name
-            setattr(namespace['component_classes'][_c], 'broadcast_map', broadcast_map)
-            
+            class_definition['class'] = _class
+
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
 
 class Application(object):
-    component_classes = {}
+    _matrix = None
+    _runs_found = []
+    component_classes = []
     communication_list = {}
     feature_definition_path = None
+    _starting_run_attribute = '_starting_run'
+    _run_collection_attribute = '_collected_runs'
+    path_finder_depth = 10
+
+    @classmethod
+    def run_collection(cls):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> a.run_collection() #doctest: +ELLIPSIS
+        [<checkmate.runs.Run object at ...
+        """
+        if not hasattr(cls, cls._run_collection_attribute):
+            collection = checkmate.runs.get_runs_from_application(cls)
+            length = len(collection)
+            cls._matrix = numpy.matrix(numpy.zeros((length, length), dtype=int))
+            cls._runs_found = [False]*length
+            setattr(cls, cls._run_collection_attribute, collection)
+        return getattr(cls, cls._run_collection_attribute)
+
+    @classmethod
+    def define_exchange(cls, definition=None):
+        """
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> data_source = {
+        ...    'partition_type': 'exchanges',
+        ...    'signature': 'ForthAction',
+        ...    'codes_list': ['AF()'],
+        ...    'values_list': ['AF'],
+        ...    'attributes': {},
+        ...    'define_attributes': {}
+        ... }
+        >>> app.define_exchange(data_source)
+        >>> hasattr(app.exchange_module, 'ForthAction')
+        True
+        >>> delattr(app.exchange_module, 'ForthAction')
+        """
+        if definition is not None:
+            declarator = checkmate.partition_declarator.Declarator(
+                            cls.data_structure_module, cls.exchange_module)
+            declarator.new_partition(definition)
+        try:
+            delattr(cls, cls._starting_run_attribute)
+            delattr(cls, cls._run_collection_attribute)
+            cls._matrix = None
+            cls._runs_found = []
+        except AttributeError:
+            pass
+
+    @classmethod
+    def starting_run(cls):
+        try:
+            return getattr(cls, cls._starting_run_attribute)
+        except AttributeError:
+            try:
+                for run in cls.run_collection():
+                    if run.root.name == cls.starting_run_name:
+                        break
+            except AttributeError:
+                run = cls.run_collection()[-1]
+            setattr(cls, cls._starting_run_attribute, run)
+            return run
 
     def __init__(self):
         """
@@ -138,24 +210,18 @@ class Application(object):
         """
         self.name = self.__module__.split('.')[-2]
         self._started = False
-        self.components = {}
+        self.components = collections.OrderedDict()
         self.service_registry = checkmate.service_registry.ServiceRegistry()
-        for components, _class in self.component_classes.items():
-            for _c in components:
-                self.components[_c] = _class(_c, self.service_registry)
+        self.matrix = None
+        self.runs_found = None
+        for _class_definition in self.component_classes:
+            _class = _class_definition['class']
+            for component in _class_definition['instances']:
+                _name = component['name']
+                self.components[_name] = \
+                    _class(_name, self.service_registry)
         self.default_state_value = True
-
-    def __getattr__(self, name):
-        """
-        >>> import sample_app.application
-        >>> a = sample_app.application.TestData()
-        >>> a.run_collection #doctest: +ELLIPSIS
-        [<checkmate.runs.Run object at ...
-        """
-        if name == 'run_collection':
-            setattr(self, 'run_collection', checkmate.runs.get_runs_from_application(self))
-            return self.run_collection
-        super().__getattr__(self, name)
+        self.initializing_outgoing = []
 
     def start(self, default_state_value=True):
         """
@@ -170,7 +236,9 @@ class Application(object):
         """
         if not self._started:
             for component in list(self.components.values()):
-                component.start(default_state_value=default_state_value)
+                _out = component.start(default_state_value=default_state_value)
+                if _out is not None:
+                    self.initializing_outgoing.append(_out)
             self._started = True
         self.default_state_value = default_state_value
 
@@ -203,49 +271,6 @@ class Application(object):
         for _component in list(self.components.values()):
             incoming_list += _component.get_all_validated_incoming()
         return incoming_list
-
-    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
-    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
-    def compare_states(self, target, reference_state_list=None):
-        """Comparison between the states of the application's components and a target.
-
-        This comparison is  taking the length of the target into account.
-        If a matching state is twice in the target, the comparison will fail.
-        This should probably be fixed.
-            >>> import sample_app.application
-            >>> app = sample_app.application.TestData()
-            >>> app.start()
-            >>> c1 = app.components['C1']
-            >>> c1.states[0].value
-            'True'
-            >>> t = c1.state_machine.transitions[0]
-            >>> t.initial[0].values
-            ('True',)
-            >>> app.compare_states(t.initial)
-            True
-            >>> target = t.initial + t.initial
-            >>> app.compare_states(target)
-            False
-        """
-        if len(target) == 0:
-            return True
-
-        local_copy = self.state_list()[:]
-
-        incoming_list = []
-        if reference_state_list is not None:
-            incoming_list = self.validated_incoming_list()
-
-        match_list = []
-        for _target in target:
-            _length = len(local_copy)
-            match_item = _target.match(local_copy, reference_state_list, incoming_list)
-            if match_item is not None:
-                match_list.append(match_item)
-                local_copy.remove(match_item)
-            if len(local_copy) == _length:
-                return False
-        return True
 
     def visual_dump_states(self):
         state_dict = {}

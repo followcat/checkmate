@@ -6,12 +6,7 @@
 
 import collections
 
-import zope.interface
 
-import checkmate.interfaces
-
-
-@zope.interface.implementer(checkmate.interfaces.ITree)
 class Tree(object):
     def __init__(self, root, _nodes):
         """
@@ -23,7 +18,7 @@ class Tree(object):
         """
         assert type(_nodes) is list
         for _node in _nodes:
-            assert checkmate.interfaces.ITree.providedBy(_node)
+            assert isinstance(_node, Tree)
         self.root = root
         self.nodes = _nodes
 
@@ -47,7 +42,7 @@ class Tree(object):
             >>> t.nodes[1].nodes[0].root
             'longbowman'
         """
-        assert checkmate.interfaces.ITree.providedBy(tree)
+        assert isinstance(tree, Tree)
         self.nodes.append(tree)
 
     def copy(self, exclude_nodes=None):

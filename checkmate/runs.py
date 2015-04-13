@@ -1,20 +1,16 @@
 # This code is part of the checkmate project.
 # Copyright (C) 2013-2015 The checkmate project contributors
-# 
+#
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
-
-import zope.interface
 
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
 import checkmate.transition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IRun)
 class Run(checkmate._tree.Tree):
     def __init__(self, transition, nodes=None, states=None):
         assert type(transition) == checkmate.transition.Transition
@@ -23,41 +19,109 @@ class Run(checkmate._tree.Tree):
         if states is None:
             states = []
         super(Run, self).__init__(transition, nodes)
+        self._initial = None
+        self._final = None
         self.itp_run = None
         self.change_states = []
+        self.collected_run = None
         for f in transition.final:
             for s in states:
-                if f.interface.providedBy(s):
+                if isinstance(s, f.partition_class):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
-    def get_transition_by_input_states(self, exchanges, states):
+    @checkmate.fix_issue(
+        'checkmate/issues/sandbox_call_notfound_transition.rst')
+    def get_transition_by_input_states(self, exchanges, component):
         for _t in self.walk():
-            if (_t.is_matching_initial(states) and _t.is_matching_incoming(exchanges)):
+            if (_t in component.state_machine.transitions and
+                _t.is_matching_incoming(exchanges, component.states) and
+                    _t.is_matching_initial(component.states)):
                 return _t
-        else:
-            raise checkmate.exception.NoTransitionFound
 
-    def fill_procedure(self, procedure):
-        procedure.final = []
-        procedure.initial = []
+    def get_states(self):
+        if self._initial is None or self._final is None:
+            initial_dict = dict()
+            final_dict = dict()
+            for run in self.breadthWalk():
+                for index, _initial in enumerate(run.root.initial):
+                    if _initial.partition_class not in initial_dict:
+                        initial_dict[_initial.partition_class] = _initial
+                    final_dict[_initial.partition_class] = _initial
+                for index, _final in enumerate(run.root.final):
+                    final_dict[_final.partition_class] = _final
+            self._initial = set(initial_dict.values())
+            self._final = set(final_dict.values())
+            if self.itp_run is not None:
+                self._final = set(self.itp_run.root.final)
+
+    def compare_initial(self, application):
+        """"""
+        for initial in self.initial:
+            for component in application.components.values():
+                if initial.match(component.states):
+                    break
+            else:
+                return False
+        return True
+
+    @checkmate.fix_issue('checkmate/issues/compare_final.rst')
+    @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
+    @checkmate.fix_issue('checkmate/issues/validated_compare_states.rst')
+    @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
+    def compare_final(self, application, reference):
+        """"""
+        box = checkmate.sandbox.Sandbox(type(reference), reference)
         for run in self.breadthWalk():
-            for index, _initial in enumerate(run.root.initial):
-                if _initial.interface not in [_temp_init.interface for _temp_init in procedure.initial]:
-                    procedure.initial.append(_initial)
-                    procedure.final.append(run.root.final[index])
-        procedure.transitions = self
-        if self.itp_run is not None:
-            procedure.final = self.itp_run.root.final
+            for name, component in application.components.items():
+                _found = False
+                if run.root in component.state_machine.transitions:
+                    for final in run.root.final:
+                        state = [_s for _s in
+                                 box.application.components[name].states
+                                 if isinstance(_s, final.partition_class)][0]
+                        index = \
+                            box.application.components[name].states.index(
+                                state)
+                        incoming = component.validation_dict.validated_items[
+                            run.root]
+                        _arguments = \
+                            final.resolve(
+                                box.application.components[name].states,
+                                incoming, run.root.resolve_dict)
+                        final.factory(instance=state, **_arguments)
+                        if state == component.states[index]:
+                            _found = True
+                        else:
+                            _found = False
+                            break
+                    else:
+                        assert(_found or len(run.root.final) == 0)
+                        _found = True
+                else:
+                    continue
+                if _found:
+                    break
+            else:
+                return False
+        return True
+
+    def add_node(self, tree):
+        self._initial = None
+        self._final = None
+        super().add_node(tree)
 
     def visual_dump_initial(self):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_initial()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('True', 'False')
+            >>> states['C1']['State']['value']
+            True
+            >>> states['C3']['Acknowledge']['value']
+            False
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -74,10 +138,13 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(sample_app.application.TestData())
+            >>> src = checkmate.runs.get_runs_from_application(
+            ...         sample_app.application.TestData)
             >>> states = src[0].visual_dump_final()
-            >>> states['C1']['State']['value'], states['C3']['Acknowledge']['value']
-            ('False', 'True')
+            >>> states['C1']['State']['value']
+            False
+            >>> states['C3']['Acknowledge']['value']
+            True
         """
         state_dict = {}
         for run in self.breadthWalk():
@@ -98,36 +165,111 @@ class Run(checkmate._tree.Tree):
             dump_dict['nodes'].append(element.visual_dump_steps())
         return dump_dict
 
+    @property
+    def initial(self):
+        self.get_states()
+        return self._initial
 
+    @property
+    def final(self):
+        self.get_states()
+        return self._final
+
+    def final_alike(self):
+        final_alike = set()
+        for _f in self.final:
+            alike = _f.partition_class.alike(_f, self.initial)
+            if alike is not None:
+                final_alike.add(alike)
+        return final_alike
+
+
+@checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
+@checkmate.report_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
-def get_runs_from_application(application):
+def get_runs_from_application(_class):
     runs = []
-    origin_transitions = []
-    application = type(application)()
+    application = _class()
     application.start(default_state_value=False)
-    for _component in application.components.values():
-        for _transition in _component.state_machine.transitions:
-            if not len(_transition.incoming):
-                origin_transitions.append(_transition)
+    origin_transitions = get_origin_transitions(application)
+    sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
     for _o in origin_transitions:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
-        run = checkmate.runs.Run(_o)
+        run = Run(_o)
+        sandbox.restart()
         for _run in sandbox(run):
             runs.append(_run)
     return runs
 
 
+@checkmate.fix_issue('checkmate/issues/get_followed_runs.rst')
+def followed_runs(application, run):
+    runs = application.run_collection()
+    length = len(runs)
+    run_index = runs.index(run)
+    followed_runs = []
+    if application._runs_found[run_index]:
+        followed_runs = [runs[i] for i in application._matrix[run_index]
+                         .nonzero()[1].tolist()[0]]
+        return followed_runs
+    row = [0] * length
+    alike_set = set()
+    partition_class_set = set()
+    for _f in run.final:
+        alike = _f.partition_class.alike(_f, run.initial)
+        if alike is not None:
+            alike_set.add(alike)
+            partition_class_set.add(_f.partition_class)
+    for index, another_run in enumerate(runs):
+        select_parititon = set()
+        for _i in another_run.initial:
+            if _i.partition_class in partition_class_set:
+                select_parititon.add(_i)
+        if select_parititon.issubset(alike_set):
+            followed_runs.append(another_run)
+            row[index] = 1
+    application._matrix[run_index] = row
+    application._runs_found[run_index] = True
+    return followed_runs
+
+
+@checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
-    transition_run = checkmate.runs.Run(transition)
+    transition_run = Run(transition)
+    _class = type(application)
     if itp_transition:
-        application = type(application)()
-        application.start()
-        sandbox = checkmate.sandbox.CollectionSandbox(application, transition_run.walk())
+        sandbox = checkmate.sandbox.CollectionSandbox(
+                    _class, application, transition_run.walk())
     else:
-        sandbox = checkmate.sandbox.CollectionSandbox(application)
+        sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
+    initial = checkmate.sandbox.Sandbox(_class, sandbox.application)
     for _run in sandbox(transition_run, itp_run=itp_transition):
+        for _r in sandbox.application.run_collection():
+            if (_r.compare_initial(initial.application) and
+                    set(_run.walk()).issubset(set(_r.walk()))):
+                _run.collected_run = _r
+                break
         runs.append(_run)
     return runs
+
+
+@checkmate.fix_issue('checkmate/issues/get_origin_transitions.rst')
+def get_origin_transitions(application):
+    origin_transitions = []
+    for _component in application.components.values():
+        for _transition in _component.state_machine.transitions:
+            if not len(_transition.incoming):
+                origin_transitions.append(_transition)
+            else:
+                _incoming = _transition.generic_incoming(_component.states)
+                for _c in application.components.values():
+                    if _c == _component:
+                        continue
+                    if _c.get_transition_by_output(_incoming) is not None:
+                        break
+                else:
+                    origin_transitions.append(_transition)
+    return origin_transitions
+

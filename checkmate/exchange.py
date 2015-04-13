@@ -4,22 +4,23 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface.interface
+import inspect
 
 import checkmate.partition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IExchange)
 class Exchange(checkmate.partition.Partition):
     """"""
     broadcast = False
     communication = ''
 
-    def __init__(self, value=None, *args, default=True, origin='', destination='', **kwargs):
+    @checkmate.fix_issue("checkmate/issues/partition_code_as_value.rst")
+    def __init__(self, value=None, *args, default=True, origin='',
+                 destination='', **kwargs):
         """
             >>> import sample_app.application
-            >>> r2 = sample_app.application.TestData.data_value['ActionRequest']['R2']
+            >>> application_class = sample_app.application.TestData
+            >>> r2 = application_class.data_value['ActionRequest']['R2']
             >>> sorted(r2.items())
             [('C', 'AT2'), ('P', 'HIGH')]
             >>> ap = sample_app.exchanges.Action('AP', R=r2)
@@ -37,23 +38,28 @@ class Exchange(checkmate.partition.Partition):
         """
         Now hasn't attribute:parameters,use dir() to get attribute.
             >>> import checkmate.exchange
-            >>> checkmate.exchange.Exchange('CA') == checkmate.exchange.Exchange('TM')
+            >>> checkmate.exchange.Exchange('CA') == \
+                checkmate.exchange.Exchange('TM')
             False
-            >>> ca_1, ca_2 = checkmate.exchange.Exchange('CA'), checkmate.exchange.Exchange('CA', R=2)
+            >>> ca_1 = checkmate.exchange.Exchange('CA')
+            >>> ca_2 = checkmate.exchange.Exchange('CA', R=2)
             >>> ca_2.partition_attribute = ('R')
             >>> ca_1 == ca_2
             True
-            >>> ca_1, ca_2 = checkmate.exchange.Exchange('CA', R=1), checkmate.exchange.Exchange('CA', R=None)
+            >>> ca_1 = checkmate.exchange.Exchange('CA', R=1)
+            >>> ca_2 = checkmate.exchange.Exchange('CA', R=None)
             >>> ca_1.partition_attribute = ('R')
             >>> ca_2.partition_attribute = ('R')
             >>> ca_1 == ca_2
             True
-            >>> a_1, ca_2 = checkmate.exchange.Exchange('CA', R=1), checkmate.exchange.Exchange('CA', R=2)
+            >>> a_1 = checkmate.exchange.Exchange('CA', R=1)
+            >>> ca_2 = checkmate.exchange.Exchange('CA', R=2)
             >>> ca_1.partition_attribute = ('R')
             >>> ca_2.partition_attribute = ('R')
             >>> ca_1 == ca_2
             False
-            >>> a_1, ca_2 = checkmate.exchange.Exchange('CA', R=1), checkmate.exchange.Exchange('CA', R0=1)
+            >>> a_1 = checkmate.exchange.Exchange('CA', R=1)
+            >>> ca_2 = checkmate.exchange.Exchange('CA', R0=1)
             >>> ca_1.partition_attribute = ('R')
             >>> ca_2.partition_attribute = ('R0')
             >>> ca_1 == ca_2
@@ -116,7 +122,7 @@ class Exchange(checkmate.partition.Partition):
             False
         """
         try:
-            return checkmate.interfaces.IExchange.implementedBy(self.return_type)
+            return self.return_type != inspect._empty
         except AttributeError:
             return False
 

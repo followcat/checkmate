@@ -4,13 +4,9 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import zope.interface.interface
-
 import checkmate.partition
-import checkmate.interfaces
 
 
-@zope.interface.implementer(checkmate.interfaces.IState)
 class State(checkmate.partition.Partition):
     """"""
 
@@ -22,7 +18,8 @@ class State(checkmate.partition.Partition):
     def __eq__(self, other):
         """
             import checkmate.state
-            >>> s1 = checkmate.state.State(); s2 = checkmate.state.State()
+            >>> s1 = checkmate.state.State()
+            >>> s2 = checkmate.state.State()
             >>> s2.append('R')
             >>> s1 == s2
             True
@@ -42,11 +39,11 @@ class State(checkmate.partition.Partition):
         return super(State, self).__eq__(other)
 
     @classmethod
-    def start(cls, default):
+    def start(cls, default, kws={}):
         try:
             state = cls.partition_storage.storage[0].factory(default=default)
         except IndexError:
-            state = cls(default=default)
+            state = cls(default=default, **kws)
         return state
 
     @checkmate.fix_issue('checkmate/issues/first_append_result.rst')
@@ -94,7 +91,9 @@ class State(checkmate.partition.Partition):
             except:
                 pass
         if self.value is not None:
-            self.value = self._valid_values[(len(self._valid_values) - 1) - (self._valid_values.index(self.value))]
+            self.value = \
+                self._valid_values[(len(self._valid_values) - 1) -
+                    (self._valid_values.index(self.value))]
 
     def flush(self, *args, **kwargs):
         """
@@ -192,9 +191,13 @@ class State(checkmate.partition.Partition):
             else:
                 for value in list(kwargs.items()):
                     try:
-                        return self.value.pop(self.value.index({value[0]: value[1]}))
+                        return self.value.pop(
+                                self.value.index({value[0]: value[1]}))
                     except ValueError:
+                        if self.value == [None]:
+                            self.value = []
                         pass
                     setattr(self, value[0], None)
         except:
-            return None
+            if self.value == [None]:
+                self.value = []

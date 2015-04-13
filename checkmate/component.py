@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import os
+import collections
 
 import zope.interface
 
@@ -23,80 +24,80 @@ class ComponentMeta(type):
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c1 = a.components['C1']
-        >>> c2 = a.components['C2']
-        >>> c3 = a.components['C3']
         >>> c1.exchange_module #doctest: +ELLIPSIS
         <module 'sample_app.exchanges' from ...
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
-        >>> c1.is_publish, c2.is_publish, c3.is_publish
-        (True, False, False)
-        >>> c1.publish_exchange, c2.publish_exchange, c3.publish_exchange
-        (['PA'], [], [])
-        >>> c1.subscribe_exchange, c2.subscribe_exchange, c3.subscribe_exchange
-        ([], ['PA'], ['PA'])
         """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
 
-        state_module = checkmate._module.get_module(namespace['__module__'], name.lower() + '_states')
+        state_module = checkmate._module.get_module(namespace['__module__'],
+                            name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        paths = namespace['component_definition']
-        if type(paths) != list:
-            paths = [paths]
-        filename = name.lower() + '.yaml'
-        define_data = ''
-        for path in paths:
-            if not os.path.isdir(path):
-                continue
-            with open(os.sep.join([path, filename]), 'r') as _file:
-                define_data += _file.read()
+        def add_definition(namespace, data_source):
+            return_dict = {}
+            try:
+                declarator = checkmate.partition_declarator.Declarator(
+                                data_structure_module,
+                                exchange_module=exchange_module,
+                                state_module=state_module)
+                declarator.new_definitions(data_source)
+                declarator_output = declarator.get_output()
+                return_dict['state_machine'] = checkmate.state_machine.StateMachine(
+                                                declarator_output['states'],
+                                                declarator_output['transitions'])
+                services = {}
+                service_classes = []
+                communication_list = set()
+                for _t in declarator_output['transitions']:
+                    for _i in _t.incoming:
+                        _ex = _i.factory()
+                        if _i.code not in services:
+                            services[_i.code] = _ex
+                        if _i.partition_class not in service_classes:
+                            service_classes.append(_i.partition_class)
+                        communication_list.add(_ex.communication)
+                    for _o in _t.outgoing:
+                        _ex = _o.factory()
+                        communication_list.add(_ex.communication)
+                return_dict['services'] = services
+                return_dict['service_classes'] = service_classes
+                for _communication in communication_list:
+                    if (_communication not in namespace['communication_list'] and
+                            'launch_command' in namespace):
+                        #if 'launch_command' is set,
+                        #communication should be set as well
+                        raise KeyError(
+                            "Communication '%s' is not defined in application" %
+                            _communication)
+                return_dict['communication_list'] = communication_list
+                return return_dict
+            except Exception as e:
+                raise e
+        fullfilename = namespace['component_definition']
+        with open(fullfilename, 'r') as _file:
+            define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        try:
-            declarator = checkmate.partition_declarator.Declarator(data_structure_module, exchange_module=exchange_module, state_module=state_module)
-            declarator.new_definitions(data_source)
-            declarator_output = declarator.get_output()
-            namespace['state_machine'] = checkmate.state_machine.StateMachine(declarator_output['states'], declarator_output['transitions'])
-            services = []
-            service_interfaces = []
-            outgoings = []
-            namespace['is_publish'] = False
-            namespace['subscribe_exchange'] = []
-            namespace['publish_exchange'] = []
-            communication_list = set()
-            for _t in declarator_output['transitions']:
-                for _i in _t.incoming:
-                    _ex = _i.factory()
-                    if _i.code not in [_service[0] for _service in services]:
-                        services.append((_i.code, _ex))
-                    if _i.interface not in service_interfaces:
-                        service_interfaces.append(_i.interface)
-                    if _ex.broadcast:
-                        namespace['subscribe_exchange'].append(_i.code)
-                    communication_list.add(_ex.communication)
-                for _o in _t.outgoing:
-                    _ex = _o.factory()
-                    if _o.code not in outgoings:
-                        outgoings.append(_o.code)
-                    if _ex.broadcast:
-                        namespace['publish_exchange'].append(_o.code)
-                        namespace['is_publish'] = True
-                    communication_list.add(_ex.communication)
-            namespace['services'] = services
-            namespace['service_interfaces'] = service_interfaces
-            namespace['outgoings'] = outgoings
-            for _communication in communication_list:
-                if _communication not in namespace['communication_list']:
-                    #if 'launch_command' is set, communication should be set as well
-                    if 'launch_command' in namespace:
-                        raise KeyError("Communication '%s' is not defined in application" %_communication)
-            namespace['communication_list'] = communication_list
-
-            result = type.__new__(cls, name, bases, dict(namespace))
-            return result
-        except Exception as e:
-            raise e
+        namespace.update(add_definition(namespace, data_source))
+        instance_transitions = collections.defaultdict(dict)
+        for _i, _t in namespace['instance_transitions'].items():
+            definition_data = ''
+            for (dirpath, dirnames, filenames) in os.walk(_t):
+                for _file in filenames:
+                    if _file.endswith(".yaml"):
+                        _file = os.path.join(dirpath, _file)
+                        with open(_file, 'r') as open_file:
+                            definition_data += open_file.read()
+            if definition_data != '':
+                data_source = \
+                    checkmate.parser.yaml_visitor.call_visitor(definition_data)
+                instance_namespace = add_definition(namespace, data_source)
+                instance_transitions[_i] = instance_namespace
+        namespace['instance_transitions'] = instance_transitions
+        result = type.__new__(cls, name, bases, dict(namespace))
+        return result
 
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
@@ -109,12 +110,12 @@ class Component(object):
         >>> c = a.components['C1']
         >>> c.name
         'C1'
-        >>> len(c.states) 
+        >>> len(c.states)
         2
         """
         self.states = []
         self.name = name
-        self.validation_list = checkmate._validation.List(self.state_machine.transitions)
+        self.validation_dict = checkmate._validation.ValidationDict()
         self.service_registry = service_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
@@ -122,6 +123,26 @@ class Component(object):
         self.pending_outgoing = []
         self.default_state_value = True
         self.expected_return_code = None
+        for _k, _v in self.instance_attributes[name].items():
+            setattr(self, _k, _v)
+        for _k, _v in self.instance_transitions[name].items():
+            if _k == 'state_machine':
+                self.state_machine.transitions.extend(_v.transitions)
+                self.state_machine.transitions = \
+                    list(set(self.state_machine.transitions))
+            if _k == 'service_classes':
+                for _c in _v:
+                    if _c not in self.service_classes:
+                        self.service_classes.append(_c)
+            if _k in ['services', 'communication_list']:
+                _attribute = getattr(self, _k)
+                _attribute.update(_v)
+                setattr(self, _k, _attribute) 
+
+    def transition_by_name(self, name):
+        for _t in self.state_machine.transitions:
+            if _t.name == name:
+                return _t
 
     def get_transitions_by_input(self, exchange):
         """
@@ -131,13 +152,15 @@ class Component(object):
         >>> c.start(default_state_value=False)
         >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
         >>> transition_list = c.get_transitions_by_input([r_tm])
-        >>> transition_list[0] == c.state_machine.transitions[0], transition_list[1] == c.state_machine.transitions[3]
-        (True, True)
+        >>> transition_list[0] == c.state_machine.transitions[0]
+        True
+        >>> transition_list[1] == c.state_machine.transitions[3]
+        True
         """
         transition_list = []
         for _t in self.state_machine.transitions:
-            if (_t.is_matching_initial(self.states) and
-                _t.is_matching_incoming(exchange)):
+            if (_t.is_matching_incoming(exchange, self.states) and
+                    _t.is_matching_initial(self.states)):
                 transition_list.append(_t)
         return transition_list
 
@@ -147,19 +170,23 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> for service in c.service_interfaces:
+        >>> for service in c.service_classes:
         ...    print(c.service_registry._registry[service])
         ['C1']
-        >>> r_tm = c.state_machine.transitions[0].outgoing[0].factory()
-        >>> c.get_transition_by_output([r_tm]) == c.state_machine.transitions[0]
+        >>> _t = c.state_machine.transitions[0]
+        >>> r_tm = _t.outgoing[0].factory()
+        >>> c.get_transition_by_output([r_tm]) == _t
         True
         """
         for _t in self.state_machine.transitions:
-            if (_t.is_matching_initial(self.states) and
-                _t.is_matching_outgoing(exchange)):
+            if (_t.is_matching_outgoing(exchange) and
+                    _t.is_matching_initial(self.states)):
                 return _t
         return None
 
+    @checkmate.fix_issue("checkmate/issues/set_component_attribute_state.rst")
+    @checkmate.report_issue(
+        "checkmate/issues/validate_initializing_transition.rst", failed=1)
     def start(self, default_state_value=True):
         """
         >>> import sample_app.application
@@ -171,17 +198,32 @@ class Component(object):
         >>> c.states #doctest: +ELLIPSIS
         [<sample_app.component.component_1_states.State object at ...
         """
-        for interface, state in self.state_machine.states:
-            cls = checkmate._module.get_class_implementing(interface)
-            self.states.append(cls.start(default=default_state_value))
-        self.service_registry.register(self, self.service_interfaces)
+        for state in self.state_machine.states:
+            cls = state.partition_class
+            _kws = {}
+            try:
+                if cls.define_attributes['Definition from'] == 'attribute':
+                    kw_attributes = cls.define_attributes['Definition name']
+                    for _k, _v in kw_attributes.items():
+                        if _k in cls.partition_attribute and hasattr(self, _v):
+                            _kws[_k] = getattr(self, _v)
+            except KeyError:
+                pass
+            self.states.append(cls.start(default=default_state_value, kws=_kws))
+        self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
+        outgoing = []
+        for transition in self.state_machine.transitions:
+            if transition.initializing:
+                outgoing.extend(self.simulate(transition))
+        if len(outgoing) > 0:
+            return outgoing
 
     def reset(self):
         self.pending_incoming = []
         self.pending_outgoing = []
         self.expected_return_code = None
-        self.validation_list.clear()
+        self.validation_dict.clear()
 
     def stop(self):
         pass
@@ -196,7 +238,8 @@ class Component(object):
         >>> transition=c.state_machine.transitions[0]
         >>> transition.is_matching_initial(c.states)
         True
-        >>> output = transition.process(c.states, [sample_app.exchanges.Action("AC")])
+        >>> output = transition.process(c.states,
+        ...             [sample_app.exchanges.Action("AC")])
         >>> output[0].value
         'RE'
         >>> output[1].value
@@ -224,7 +267,8 @@ class Component(object):
             _incremental_output = self._do_process([_incoming])
             output.extend(_incremental_output)
             self.pending_incoming.remove(_incoming)
-            if len([_e for _e in _incremental_output if _e.data_returned]) == 0:
+            if len([_e for _e in _incremental_output
+                    if _e.data_returned]) == 0:
                 break
         return output
 
@@ -239,17 +283,22 @@ class Component(object):
             try:
                 _transition = self.get_transitions_by_input(exchange)[0]
             except IndexError:
-                if (exchange[0].return_code and self.expected_return_code is not None and
-                    isinstance(exchange[0], self.expected_return_code.return_type)):
+                if (exchange[0].return_code and
+                        self.expected_return_code is not None and
+                        isinstance(exchange[0],
+                            self.expected_return_code.return_type)):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
-                raise checkmate.exception.NoTransitionFound("No transition for incoming %s " %(exchange[0]))
+                raise checkmate.exception.NoTransitionFound(
+                    "No transition for incoming %s " % exchange[0])
         else:
             _transition = transition
         output = []
-        self.validation_list.record(_transition, exchange)
-        for _outgoing in _transition.process(self.states, exchange, default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
+        self.validation_dict.record(_transition, exchange)
+        for _outgoing in _transition.process(self.states, exchange,
+                            default=self.default_state_value):
+            for _e in self.service_registry.server_exchanges(_outgoing,
+                        self.name):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
@@ -257,7 +306,8 @@ class Component(object):
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
                 return_exchange._return_code = True
-                return_exchange.origin_destination(self.name, exchange[0].origin)
+                return_exchange.origin_destination(self.name,
+                    exchange[0].origin)
                 output.insert(0, return_exchange)
         for _index, _e in enumerate(output):
             if _e.data_returned:
@@ -277,7 +327,8 @@ class Component(object):
             >>> exchange = sample_app.exchanges.Action('AC')
             >>> transition = c2.get_transition_by_output([exchange])
 
-        We can't simulate a transition when no destination for outgoing is registered:
+        We can't simulate a transition when no destination for outgoing
+        is registered:
             >>> c2.simulate(transition)
             []
 
@@ -289,9 +340,12 @@ class Component(object):
         """
         output = []
         _incoming = _transition.generic_incoming(self.states)
-        for _outgoing in _transition.process(self.states, _incoming, default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing, self.name):
-                if len(_incoming) != 0 and isinstance(_e, _incoming[0].return_type):
+        for _outgoing in _transition.process(self.states, _incoming,
+                            default=self.default_state_value):
+            for _e in self.service_registry.server_exchanges(_outgoing,
+                        self.name):
+                if (len(_incoming) != 0 and
+                        isinstance(_e, _incoming[0].return_type)):
                     continue
                 output.append(_e)
         return output
@@ -313,8 +367,4 @@ class Component(object):
             >>> c1.validate(transition)
             False
         """
-        return self.validation_list.check(_transition)
-
-    def get_all_validated_incoming(self):
-        return self.validation_list.all_items()
-
+        return self.validation_dict.check(_transition)

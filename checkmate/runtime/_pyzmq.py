@@ -4,16 +4,20 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import socket
 import logging
+import threading
 
 import zmq
 
-import checkmate.timeout_manager
+import checkmate.runtime._threading
+import checkmate.runtime._zmq_wrapper
 import checkmate.runtime.communication
 
 
-class Connector(checkmate.runtime.communication.Connector):
+class Device(checkmate.runtime._threading.Thread):
     """
+        >>> import zmq
         >>> import sample_app.application
         >>> import checkmate.runtime._pyzmq
         >>> a = sample_app.application.TestData()
@@ -24,77 +28,164 @@ class Connector(checkmate.runtime.communication.Connector):
         >>> c3 = a.components['C3']
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c)
         >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER, connector.socket_pub.Type == zmq.DEALER, connector.socket_sub == None
-        (True, True, True)
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
         >>> connector.close()
 
         >>> connector = checkmate.runtime._pyzmq.Connector(c2, c)
         >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER, connector.socket_pub == None, connector.socket_sub.TYPE == zmq.SUB
-        (True, True, True)
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
         >>> connector.close()
 
         >>> connector = checkmate.runtime._pyzmq.Connector(c3, c)
         >>> connector.initialize()
-        >>> connector.socket_dealer_in.TYPE == zmq.DEALER, connector.socket_pub == None, connector.socket_sub.TYPE == zmq.SUB
-        (True, True, True)
+        >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER
+        True
+        >>> connector.device.socket_sub.TYPE == zmq.SUB
+        True
         >>> connector.close()
 
         >>> c.close()
     """
-    def __init__(self, component, communication=None, is_reading=True):
-        super(Connector, self).__init__(component, communication=communication, is_reading=is_reading)
+    def __init__(self, component=None, communication=None, is_reading=False):
+        super().__init__(component.name)
         self._name = component.name
+        self.component = component
+
         self.is_reading = is_reading
-        self.broadcast_map = component.broadcast_map
-        self.is_publish = component.is_publish
 
-        self.socket_pub = None
-        self.socket_sub = None
-        self.socket_dealer_in = None
-        self.socket_dealer_out = None
+        self.zmq_context = zmq.Context()
+        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
+        self.socket_sub = self.zmq_context.socket(zmq.SUB)
 
-        self.zmq_context = zmq.Context.instance()
-        self._routerport = self.communication.get_routerport()
-        self._broadcast_routerport = self.communication.get_broadcast_routerport()
+        self.communication = communication
+        self._routerport = communication.get_routerport()
         self._publishport = self.communication.get_publishport()
+        self.poller = checkmate.runtime._zmq_wrapper.Poller()
+
+        self.logger = \
+            logging.getLogger('checkmate.runtime.communication.Device')
 
     def initialize(self):
-        super(Connector, self).initialize()
-        if self.is_publish:
-            self.socket_pub = self.open_router_socket(zmq.DEALER, self._broadcast_routerport)
-        if self.broadcast_map:
-            self.socket_sub = self.open_router_socket(zmq.SUB, self._publishport)
-            for _cname in self.broadcast_map.values():
-                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _cname.encode())
-        self.socket_dealer_in = self.zmq_context.socket(zmq.DEALER)
+        """
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> import sample_app.application
+            >>> r = checkmate.runtime._runtime.Runtime(\
+                sample_app.application.TestData,\
+                checkmate.runtime._pyzmq.Communication, threaded=True)
+            >>> r.setup_environment(['C1', 'C2', 'C3'])
+            >>> r.runtime_components['C2'].client.internal_connector.device.\
+                socket_dealer_in.getsockopt(zmq.IDENTITY)
+            b'C2'
+            >>> r.runtime_components['C3'].client.internal_connector.device.\
+                socket_dealer_in.getsockopt(zmq.IDENTITY)
+            b'C3'
+        """
+        self.socket_sub.connect("tcp://127.0.0.1:%i" % self._publishport)
+        for _i in self.component.services.values():
+            if _i.broadcast is True:
+                self.socket_sub.setsockopt(zmq.SUBSCRIBE, _i.channel.encode())
         self.socket_dealer_in.setsockopt(zmq.IDENTITY, self._name.encode())
-        self.socket_dealer_out = self.zmq_context.socket(zmq.DEALER)
         self.socket_dealer_in.connect("tcp://127.0.0.1:%i" % self._routerport)
         self.socket_dealer_out.connect("tcp://127.0.0.1:%i" % self._routerport)
 
-    def open_router_socket(self, mode, port):
-        new_socket = self.zmq_context.socket(mode)
-        new_socket.connect("tcp://127.0.0.1:%i" % port)
-        return new_socket
+    def start(self):
+        if self.is_reading:
+            if self.socket_sub:
+                self.poller.register(self.socket_sub)
+            self.poller.register(self.socket_dealer_in)
+        super().start()
 
-    def open(self):
+    def run(self):
         """"""
-
-    def close(self):
-        if self.socket_pub:
-            self.socket_pub.close()
-        if self.socket_sub:
-            self.socket_sub.close()
-        self.socket_dealer_in.close()
-        self.socket_dealer_out.close()
+        self.logger.debug("%s startup" % self)
+        while True:
+            if self.check_for_stop():
+                self.socket_sub.close()
+                self.socket_dealer_in.close()
+                self.socket_dealer_out.close()
+                break
+            try:
+                socks = self.poller.poll_with_timeout()
+                for _s in socks:
+                    if _s.TYPE == zmq.SUB:
+                        _s.recv()
+                    exchange = _s.recv_pyobj()
+                    self.connector.inbound(exchange)
+            except zmq.error.ZMQError as e:
+                if not self.check_for_stop():
+                    raise e
 
     def send(self, exchange):
         """"""
         if exchange.broadcast:
-            self.socket_pub.send_multipart([exchange.origin.encode(), self.communication.encoder.encode(exchange)])
+            destination = exchange.origin.encode()
         else:
-            self.socket_dealer_out.send_multipart([exchange.destination[0].encode(), self.communication.encoder.encode(exchange)])
+            destination = exchange.destination[0].encode()
+        self.socket_dealer_out.send_pyobj((destination, exchange))
+
+    def stop(self):
+        """"""
+        self.logger.debug("%s stop request" % self)
+        super().stop()
+
+
+class Connector(checkmate.runtime.communication.Connector):
+    """"""
+    device_class = Device
+
+
+class Router(checkmate.runtime._threading.Thread):
+    """"""
+    def __init__(self, name=None):
+        """"""
+        super(Router, self).__init__(name=name)
+        self.poller = checkmate.runtime._zmq_wrapper.Poller()
+        self.zmq_context = zmq.Context()
+        self.router = self.zmq_context.socket(zmq.ROUTER)
+        self.broadcast_router = self.zmq_context.socket(zmq.ROUTER)
+        self.publish = self.zmq_context.socket(zmq.PUB)
+        self.get_assign_port_lock = threading.Lock()
+
+        self._routerport = self.pickfreeport()
+        self._publishport = self.pickfreeport()
+        self.router.bind("tcp://127.0.0.1:%i" % self._routerport)
+        self.publish.bind("tcp://127.0.0.1:%i" % self._publishport)
+
+        self.poller.register(self.router)
+        self.poller.register(self.broadcast_router)
+
+    def run(self):
+        """"""
+        while True:
+            if self.check_for_stop():
+                break
+            socks = self.poller.poll_with_timeout()
+            for sock in iter(socks):
+                origin = sock.recv()
+                destination, exchange = sock.recv_pyobj()
+                if exchange.broadcast:
+                    channel = exchange.channel
+                    self.publish.send(channel.encode(), flags=zmq.SNDMORE)
+                    self.publish.send_pyobj(exchange)
+                else:
+                    self.router.send(destination, flags=zmq.SNDMORE)
+                    self.router.send_pyobj(exchange)
+
+    def pickfreeport(self):
+        with self.get_assign_port_lock:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.bind(('127.0.0.1', 0))
+            addr, port = _socket.getsockname()
+            _socket.close()
+        return port
 
 
 class Communication(checkmate.runtime.communication.Communication):
@@ -112,11 +203,13 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> r.start_test()
         >>> c2_stub = r.runtime_components['C2']
         >>> c1_stub = r.runtime_components['C1']
-        >>> simulated_transition = r.application.components['C2'].state_machine.transitions[0]
+        >>> c2 = r.application.components['C2']
+        >>> simulated_transition = c2.state_machine.transitions[0]
         >>> o = c2_stub.simulate(simulated_transition)
-        >>> c1_stub.context.state_machine.transitions[0].is_matching_incoming(o)
+        >>> t = c1_stub.context.state_machine.transitions[0]
+        >>> t.is_matching_incoming(o, c1_stub.context.states)
         True
-        >>> c1_stub.validate(c1_stub.context.state_machine.transitions[0])
+        >>> c1_stub.validate(t)
         True
         >>> time.sleep(1)
         >>> r.stop_test()
@@ -125,26 +218,21 @@ class Communication(checkmate.runtime.communication.Communication):
 
     def __init__(self, component=None):
         """"""
-        super(Communication, self).__init__(component)
-        self.logger = logging.getLogger('checkmate.runtime._pyzmq.Communication')
-        self.logger.info("%s initialize" % self)
-        self.encoder = checkmate.runtime.communication.Encoder()
-        self.router = checkmate.runtime.communication.Router(self.encoder)
+        super().__init__(component)
+        self.router = Router()
 
-    def initialize(self):
+    def start(self):
         """"""
-        super(Communication, self).initialize()
+        super().start()
         self.router.start()
 
     def close(self):
+        """"""
+        super().close()
         self.router.stop()
-        self.logger.info("%s close" % self)
 
     def get_routerport(self):
         return self.router._routerport
-
-    def get_broadcast_routerport(self):
-        return self.router._broadcast_routerport
 
     def get_publishport(self):
         return self.router._publishport

@@ -153,10 +153,10 @@ An alternative definition of the exchange would allow to just call the exchange 
     >>> c2 = app.components['C2']
     >>> ex.origin_destination(c2, c1)
     >>> c1.states[0].value
-    'True'
+    True
     >>> ex()
     >>> c1.states[0].value
-    'False'
+    False
 
 .. todo:: The current implementation of ServiceRegistry is setting component's *name* in origin_destination()
 

@@ -1,14 +1,19 @@
 ---
+title: "State identification"
+data:
+  - @from_attribute(R=request) 'RequestState(R:ActionRequest)'
+
+---
 title: "State machine"
 data:
   - Transitions:
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 callback on AC button'
         incoming:
           - ExchangeButton:     PBAC()
         outgoing:
           - Action:             AC() 
 
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 process ER'
         incoming:
           - ActionCode:         ER()
         returned:
@@ -16,25 +21,27 @@ data:
         outgoing:
           - ValidateOutput:     VOER()
 
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 process ARE'
+        initial:
+          - RequestState:       R
         incoming:
           - AnotherReaction:    ARE()
         outgoing:
           - Action:             AP(R)
 
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 callback on AC button'
         incoming:
           - ExchangeButton:     PBRL()
         outgoing:
           - Reaction:           RL()
 
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 process DR'
         incoming:
           - ThirdReaction:      DR()
         outgoing:
           - ValidateOutput:     VODR()
 
-      - name: '[Input/Final state/Output]'
+      - name: 'C2 callback on AC button'
         incoming:
           - ExchangeButton:     PBPP()
         outgoing:
@@ -54,6 +61,6 @@ data:
           - ValidateOutput:     VODA()
 
   - Transitions:
-      - name: 'Return code OK'
+      - name: 'C2 return code OK'
         incoming:
           - ActionCode:         OK()

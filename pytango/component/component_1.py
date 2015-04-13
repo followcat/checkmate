@@ -37,7 +37,8 @@ class Component_1(PyTango.Device_4Impl):
         if self.attr_c_state == False:
             self.toggle()
             self.c2_dev.PA()
-            #Execute asynchronously in case of nested called caused infinitely wait(run C3.RL() while C1,C3 as SUT)
+            #Execute asynchronously in case of nested calls cause
+            #infinitely wait(run C3.RL() while C1,C3 as SUT)
             self.c3_dev.command_inout_asynch('PA')
 
 
@@ -57,7 +58,6 @@ class C1Interface(PyTango.DeviceClass):
                 'PP': [[PyTango.DevVarStringArray], [PyTango.DevVoid]]
                }
     attr_list = {
-                'PA': [[PyTango.DevDouble, PyTango.SCALAR, PyTango.READ]],
                 }
 
 

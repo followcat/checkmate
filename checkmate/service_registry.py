@@ -4,64 +4,32 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import copy
-
-import zope.interface
-import zope.interface.interface
-import zope.component.interfaces
 import zope.component.globalregistry
-
-import checkmate.interfaces
-
-
-@zope.component.adapter(checkmate.interfaces.IExchange)
-@zope.interface.implementer(zope.component.interfaces.IFactory)
-class ServiceFactory(object):
-    """"""
-    def __init__(self, exchange):
-        """"""
-        self.context = exchange
-
-    def __call__(self, origin, destinations):
-        """"""
-        if self.context.broadcast:
-            exchange = copy.deepcopy(self.context)
-            exchange.origin_destination(origin, destinations)
-            yield exchange
-        else:
-            for _d in destinations:
-                exchange = copy.deepcopy(self.context)
-                exchange.origin_destination(origin, _d)
-                yield exchange
-        yield from ()
 
 
 class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
-    """
-    """
+    """"""
     def __init__(self):
         super(ServiceRegistry, self).__init__()
-        self.registerAdapter(ServiceFactory, (checkmate.interfaces.IExchange,), zope.component.interfaces.IFactory)
         self._registry = {}
 
-    def register(self, component, services):
+    def register(self, component, classes):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
-            >>> _service = c1.state_machine.transitions[0].incoming[0].interface
-            >>> c1.service_registry._registry[_service]
+            >>> _t = c1.state_machine.transitions[0]
+            >>> _class = _t.incoming[0].partition_class
+            >>> c1.service_registry._registry[_class]
             ['C1']
         """
-        for _service in services:
-            assert isinstance(_service, zope.interface.interface.InterfaceClass)
-            if _service in self._registry.keys():
-                if component.name not in self._registry[_service]:
-                    self._registry[_service].append(component.name)
-            else:
-                self._registry[_service] = [component.name]
-
+        for _class in classes:
+            if _class not in self._registry.keys():
+                self._registry[_class] = []
+            if component.name not in self._registry[_class]:
+                self._registry[_class].append(component.name)
+                
     def server_exchanges(self, exchange, component_name=''):
         """
             >>> import sample_app.application
@@ -69,13 +37,21 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> c3 = a.components['C3']
-            >>> e = c1.state_machine.transitions[0].outgoing[0].factory()
+            >>> _t = c1.state_machine.transitions[0]
+            >>> e = _t.outgoing[0].factory()
             >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
             ...     print(_e.destination)
             ['C3']
         """
-        _factory = self.getAdapter(exchange, zope.component.interfaces.IFactory)
-        for _service, _servers in self._registry.items():
-            if _service.providedBy(exchange):
-                return _factory(component_name, _servers)
-        return _factory(component_name, [])
+        destinations = []
+        for _class, _servers in self._registry.items():
+            if isinstance(exchange, _class):
+                destinations = _servers
+                break
+        if exchange.broadcast:
+            destinations = [destinations]
+        for _d in destinations:
+            new_exchange = exchange.partition_storage.partition_class(exchange)
+            new_exchange.carbon_copy(exchange)
+            new_exchange.origin_destination(component_name, _d)
+            yield new_exchange

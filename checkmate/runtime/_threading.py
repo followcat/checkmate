@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import threading
+import multiprocessing
 
 
 class StopCondition(threading.Condition):
@@ -19,17 +20,11 @@ class StopCondition(threading.Condition):
         return self.end
 
 
-class Thread(threading.Thread):
-    """Thread class with stop mechanism.
-
-    A child class should be derived.
-    The run() method is not implemented.
-    """
-    def __init__(self, name=None):
+class BaseClass(object):
+    """"""
+    def __init__(self):
         """"""
-        super(Thread, self).__init__(name=name)
         self.stop_condition = StopCondition()
-
 
     def run(self):
         raise NotImplementedError()
@@ -50,4 +45,25 @@ class Thread(threading.Thread):
         """
         with self.stop_condition:
             self.stop_condition.request()
+
+
+class Thread(BaseClass, threading.Thread):
+    """Thread class with stop mechanism.
+
+    A child class should be derived.
+    The run() method is not implemented.
+    """
+    def __init__(self, name=None):
+        """"""
+        super().__init__()
+        threading.Thread.__init__(self, name=name)
+
+
+class Process(BaseClass, multiprocessing.Process):
+    """Process class with stop mechanism"""
+    def __init__(self, name=None):
+        """"""
+        super().__init__()
+        multiprocessing.Process.__init__(self, name=name)
+        self.daemon = True
 
