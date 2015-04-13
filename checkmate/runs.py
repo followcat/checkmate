@@ -177,6 +177,14 @@ class Run(checkmate._tree.Tree):
         self.get_states()
         return self._final
 
+    def final_alike(self):
+        final_alike = set()
+        for _f in self.final:
+            alike = _f.partition_class.alike(_f, self.initial)
+            if alike is not None:
+                final_alike.add(alike)
+        return final_alike
+
 
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
@@ -210,11 +218,11 @@ def followed_runs(application, run):
     row = [0] * length
     alike_set = set()
     partition_class_set = set()
-    for _i in run.final:
-        alike = _i.partition_class.alike(_i)
+    for _f in run.final:
+        alike = _f.partition_class.alike(_f, run.initial)
         if alike is not None:
             alike_set.add(alike)
-            partition_class_set.add(_i.partition_class)
+            partition_class_set.add(_f.partition_class)
     for index, another_run in enumerate(runs):
         select_parititon = set()
         for _i in another_run.initial:

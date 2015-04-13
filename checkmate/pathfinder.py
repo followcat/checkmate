@@ -215,7 +215,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
             if di.partition_class in select_partition_class:
                 diff_set1.remove(di)
         if (checkmate.pathfinder.get_runs(runs,
-                app, run, nr, diff_set1.union(run.final), depth + 1)):
+                app, run, nr, diff_set1.union(run.final_alike()), depth + 1)):
             return True
         else:
             runs.pop()
