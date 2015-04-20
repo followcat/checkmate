@@ -5,7 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 
-class StateMachine(object):
+class Engine(object):
     def __init__(self, states=[], transitions=[]):
         self.states = states
         self.transitions = transitions

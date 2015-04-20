@@ -62,7 +62,7 @@ class TestData(checkmate.application.Application,
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
             >>> i = sample_app.exchanges.Action('AC')
-            >>> t = c.state_machine.transitions[0]
+            >>> t = c.engine.transitions[0]
             >>> t.is_matching_incoming([i], c.states)
             True
             >>> c.process([i]) # doctest: +ELLIPSIS
@@ -79,7 +79,7 @@ class TestData(checkmate.application.Application,
             >>> c.states[0].value
             False
             >>> i = sample_app.exchanges.Action('PP')
-            >>> t = c.state_machine.transitions[2]
+            >>> t = c.engine.transitions[2]
             >>> t.is_matching_incoming([i], c.states)
             True
             >>> c.process([i])[-1] # doctest: +ELLIPSIS

@@ -33,7 +33,7 @@ class FullPython(checkmate.application.Application,
         ...         [pytango.checkmate.exchanges.AC()])
         >>> o = c2.simulate(simulated_transition)
         >>> time.sleep(1)
-        >>> _t = c1.context.state_machine.transitions[0]
+        >>> _t = c1.context.engine.transitions[0]
         >>> _t.is_matching_incoming(o)
         >>> c1.validate(_t)
         True

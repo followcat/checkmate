@@ -24,7 +24,7 @@ class Sandbox(object):
             >>> import sample_app.application
             >>> _cls = sample_app.application.TestData
             >>> c3 = _cls().components['C3']
-            >>> transitions = [c3.state_machine.transitions[1]]
+            >>> transitions = [c3.engine.transitions[1]]
             >>> box = checkmate.sandbox.Sandbox(_cls,
             ...         initial_transitions=transitions)
             >>> box.application.components['C1'].states[0].value
@@ -112,7 +112,7 @@ class Sandbox(object):
         self.run = run
         self.transitions = None
         for component in self.application.components.values():
-            _transitions = component.state_machine.transitions
+            _transitions = component.engine.transitions
             if not itp_run and not run.root in _transitions:
                 continue
             if len(run.root.incoming) > 0:

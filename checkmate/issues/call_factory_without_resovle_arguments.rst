@@ -2,7 +2,7 @@ if the transition incoming comes like "AP(R1)", calling factory()
 function without giving resolved_arguments will be ok.
     >>> import sample_app.application
     >>> a = sample_app.application.TestData()
-    >>> t = a.components['C1'].state_machine.transitions[0]
+    >>> t = a.components['C1'].engine.transitions[0]
     >>> t.incoming[0].factory().broadcast
     False
     >>> import checkmate._storage

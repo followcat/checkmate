@@ -19,7 +19,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> a = sample_app.application.TestData()
             >>> a.start()
             >>> c1 = a.components['C1']
-            >>> _t = c1.state_machine.transitions[0]
+            >>> _t = c1.engine.transitions[0]
             >>> _class = _t.incoming[0].partition_class
             >>> c1.service_registry._registry[_class]
             ['C1']
@@ -37,7 +37,7 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
             >>> a.start()
             >>> c1 = a.components['C1']
             >>> c3 = a.components['C3']
-            >>> _t = c1.state_machine.transitions[0]
+            >>> _t = c1.engine.transitions[0]
             >>> e = _t.outgoing[0].factory()
             >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
             ...     print(_e.destination)

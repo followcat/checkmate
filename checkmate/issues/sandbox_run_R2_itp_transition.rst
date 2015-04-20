@@ -17,7 +17,7 @@ state is AnotherState1(R1).
 Save transition which will be replaced
 
     >>> save_transition = \
-    ...     r.application.components['C1'].state_machine.transitions[1]
+    ...     r.application.components['C1'].engine.transitions[1]
 
 Replace the second transition in component1 to initial is
 AnotherState1(R1) 
@@ -31,7 +31,7 @@ AnotherState1(R1)
     >>> new_transition = \
     ...     checkmate.partition_declarator.make_transition(new_items,
     ...         [exchange_module], state_modules)
-    >>> r.application.components['C1'].state_machine.transitions[1] = \
+    >>> r.application.components['C1'].engine.transitions[1] = \
     ...     new_transition
 
 Make an itp transition which initial state is AnotherState1(R2):
@@ -76,5 +76,5 @@ Can not run sandbox:
 
 Recover transition:
 
-    >>> r.application.components['C1'].state_machine.transitions[1] = \
+    >>> r.application.components['C1'].engine.transitions[1] = \
     ...     save_transition

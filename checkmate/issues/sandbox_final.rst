@@ -14,7 +14,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> data = checkmate.parser.yaml_visitor.data_from_files(_application)
     >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(data, _application)
     >>> _run = run_list[0]
-    >>> box = checkmate.sandbox.Sandbox(type(_application), initial_transitions=[_run.root])
+    >>> box = checkmate.sandbox.Sandbox(type(_application))
     >>> box(_run, itp_run=True)
     True
     >>> run = box.transitions

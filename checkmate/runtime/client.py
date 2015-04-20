@@ -27,7 +27,7 @@ class Client(object):
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
-        >>> are_t = [_t for _t in rc2.context.state_machine.transitions
+        >>> are_t = [_t for _t in rc2.context.engine.transitions
         ...     if _t.incoming[0].code == 'ARE'][0]
         >>> rc2.context.validation_dict.collected_items[are_t][0].value
         'ARE'
@@ -40,11 +40,11 @@ class Client(object):
         >>> rc1.client.send(pa)
         >>> time.sleep(0.5)
         >>> import time; time.sleep(1)
-        >>> pa_t = [_t for _t in rc2.context.state_machine.transitions
+        >>> pa_t = [_t for _t in rc2.context.engine.transitions
         ...     if _t.incoming[0].code == 'PA'][0]
         >>> rc2.context.validation_dict.collected_items[pa_t][0].value
         'PA'
-        >>> pa_t = [_t for _t in rc3.context.state_machine.transitions
+        >>> pa_t = [_t for _t in rc3.context.engine.transitions
         ...     if _t.incoming[0].code == 'PA'][0]
         >>> rc3.context.validation_dict.collected_items[pa_t][0].value
         'PA'

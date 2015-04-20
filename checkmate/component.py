@@ -11,9 +11,9 @@ import zope.interface
 
 import checkmate._module
 import checkmate._validation
+import checkmate.engine
 import checkmate.exception
 import checkmate.interfaces
-import checkmate.state_machine
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
@@ -45,9 +45,9 @@ class ComponentMeta(type):
                                 state_module=state_module)
                 declarator.new_definitions(data_source)
                 declarator_output = declarator.get_output()
-                return_dict['state_machine'] = checkmate.state_machine.StateMachine(
-                                                declarator_output['states'],
-                                                declarator_output['transitions'])
+                return_dict['engine'] = checkmate.engine.Engine(
+                                            declarator_output['states'],
+                                            declarator_output['transitions'])
                 services = {}
                 service_classes = []
                 communication_list = set()
@@ -117,7 +117,7 @@ class Component(object):
         self.name = name
         self.validation_dict = checkmate._validation.ValidationDict()
         self.service_registry = service_registry
-        for _tr in self.state_machine.transitions:
+        for _tr in self.engine.transitions:
             _tr.owner = self.name
         self.pending_incoming = []
         self.pending_outgoing = []
@@ -126,10 +126,10 @@ class Component(object):
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
         for _k, _v in self.instance_transitions[name].items():
-            if _k == 'state_machine':
-                self.state_machine.transitions.extend(_v.transitions)
-                self.state_machine.transitions = \
-                    list(set(self.state_machine.transitions))
+            if _k == 'engine':
+                self.engine.transitions.extend(_v.transitions)
+                self.engine.transitions = \
+                    list(set(self.engine.transitions))
             if _k == 'service_classes':
                 for _c in _v:
                     if _c not in self.service_classes:
@@ -140,7 +140,7 @@ class Component(object):
                 setattr(self, _k, _attribute) 
 
     def transition_by_name(self, name):
-        for _t in self.state_machine.transitions:
+        for _t in self.engine.transitions:
             if _t.name == name:
                 return _t
 
@@ -150,15 +150,15 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start(default_state_value=False)
-        >>> r_tm = c.state_machine.transitions[0].incoming[0].factory()
+        >>> r_tm = c.engine.transitions[0].incoming[0].factory()
         >>> transition_list = c.get_transitions_by_input([r_tm])
-        >>> transition_list[0] == c.state_machine.transitions[0]
+        >>> transition_list[0] == c.engine.transitions[0]
         True
-        >>> transition_list[1] == c.state_machine.transitions[3]
+        >>> transition_list[1] == c.engine.transitions[3]
         True
         """
         transition_list = []
-        for _t in self.state_machine.transitions:
+        for _t in self.engine.transitions:
             if (_t.is_matching_incoming(exchange, self.states) and
                     _t.is_matching_initial(self.states)):
                 transition_list.append(_t)
@@ -173,12 +173,12 @@ class Component(object):
         >>> for service in c.service_classes:
         ...    print(c.service_registry._registry[service])
         ['C1']
-        >>> _t = c.state_machine.transitions[0]
+        >>> _t = c.engine.transitions[0]
         >>> r_tm = _t.outgoing[0].factory()
         >>> c.get_transition_by_output([r_tm]) == _t
         True
         """
-        for _t in self.state_machine.transitions:
+        for _t in self.engine.transitions:
             if (_t.is_matching_outgoing(exchange) and
                     _t.is_matching_initial(self.states)):
                 return _t
@@ -198,7 +198,7 @@ class Component(object):
         >>> c.states #doctest: +ELLIPSIS
         [<sample_app.component.component_1_states.State object at ...
         """
-        for state in self.state_machine.states:
+        for state in self.engine.states:
             cls = state.partition_class
             _kws = {}
             try:
@@ -213,7 +213,7 @@ class Component(object):
         self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
         outgoing = []
-        for transition in self.state_machine.transitions:
+        for transition in self.engine.transitions:
             if transition.initializing:
                 outgoing.extend(self.simulate(transition))
         if len(outgoing) > 0:
@@ -235,7 +235,7 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> transition=c.state_machine.transitions[0]
+        >>> transition=c.engine.transitions[0]
         >>> transition.is_matching_initial(c.states)
         True
         >>> output = transition.process(c.states,

@@ -34,7 +34,7 @@ class Run(checkmate._tree.Tree):
         'checkmate/issues/sandbox_call_notfound_transition.rst')
     def get_transition_by_input_states(self, exchanges, component):
         for _t in self.walk():
-            if (_t in component.state_machine.transitions and
+            if (_t in component.engine.transitions and
                 _t.is_matching_incoming(exchanges, component.states) and
                     _t.is_matching_initial(component.states)):
                 return _t
@@ -75,7 +75,7 @@ class Run(checkmate._tree.Tree):
         for run in self.breadthWalk():
             for name, component in application.components.items():
                 _found = False
-                if run.root in component.state_machine.transitions:
+                if run.root in component.engine.transitions:
                     for final in run.root.final:
                         state = [_s for _s in
                                  box.application.components[name].states
@@ -259,7 +259,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
 def get_origin_transitions(application):
     origin_transitions = []
     for _component in application.components.values():
-        for _transition in _component.state_machine.transitions:
+        for _transition in _component.engine.transitions:
             if not len(_transition.incoming):
                 origin_transitions.append(_transition)
             else:

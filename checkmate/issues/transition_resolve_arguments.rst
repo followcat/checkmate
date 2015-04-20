@@ -3,7 +3,7 @@
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> t = c.state_machine.transitions[1]
+        >>> t = c.engine.transitions[1]
         >>> i = t.incoming[0].factory(kwargs={'R': 1})
         >>> t.final[0].resolve(c.states, [i],
         ...     t.resolve_dict) # doctest: +ELLIPSIS

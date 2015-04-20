@@ -180,7 +180,7 @@ class InternalStorage(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
-            >>> t = c.state_machine.transitions[2]
+            >>> t = c.engine.transitions[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
@@ -215,7 +215,7 @@ class InternalStorage(object):
             >>> import sample_app.exchanges
             >>> import checkmate._storage
             >>> a = sample_app.application.TestData()
-            >>> t = a.components['C1'].state_machine.transitions[1]
+            >>> t = a.components['C1'].engine.transitions[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve(states, resolved_dict=t.resolve_dict)
@@ -304,7 +304,7 @@ class InternalStorage(object):
             >>> c1_states = sample_app.component.component_1_states
             >>> final = [_f for _f in run.final
             ...          if _f.partition_class == c1_states.State][0]
-            >>> t1 = c1.state_machine.transitions[0]
+            >>> t1 = c1.engine.transitions[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
@@ -313,7 +313,7 @@ class InternalStorage(object):
             >>> c3_states = sample_app.component.component_3_states
             >>> final = [_f for _f in run.final
             ...          if _f.partition_class == c3_states.Acknowledge][0]
-            >>> t3 = c3.state_machine.transitions[0]
+            >>> t3 = c3.engine.transitions[0]
             >>> c3.simulate(t3)
             []
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
@@ -344,7 +344,7 @@ class InternalStorage(object):
             >>> state = sample_app.component.component_1_states.State
             >>> (state.partition_storage.storage[0] ==
             ... sample_app.component.component_1.Component_1.
-            ... state_machine.transitions[0].initial[0])
+            ... engine.transitions[0].initial[0])
             True
         """
         assert type(other) == InternalStorage
