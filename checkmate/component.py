@@ -14,8 +14,6 @@ import checkmate._validation
 import checkmate.engine
 import checkmate.exception
 import checkmate.interfaces
-import checkmate.parser.yaml_visitor
-import checkmate.partition_declarator
 
 
 class ComponentMeta(type):
@@ -36,51 +34,30 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        def add_definition(namespace, data_source):
+        def add_definition(namespace, fullfilename):
             return_dict = {}
             try:
-                declarator = checkmate.partition_declarator.Declarator(
-                                data_structure_module,
-                                exchange_module=exchange_module,
-                                state_module=state_module)
-                declarator.new_definitions(data_source)
-                declarator_output = declarator.get_output()
-                return_dict['engine'] = checkmate.engine.Engine(
-                                            declarator_output['states'],
-                                            declarator_output['transitions'])
-                services = {}
-                service_classes = []
-                communication_list = set()
-                for _t in declarator_output['transitions']:
-                    for _i in _t.incoming:
-                        _ex = _i.factory()
-                        if _i.code not in services:
-                            services[_i.code] = _ex
-                        if _i.partition_class not in service_classes:
-                            service_classes.append(_i.partition_class)
-                        communication_list.add(_ex.communication)
-                    for _o in _t.outgoing:
-                        _ex = _o.factory()
-                        communication_list.add(_ex.communication)
-                return_dict['services'] = services
-                return_dict['service_classes'] = service_classes
-                for _communication in communication_list:
-                    if (_communication not in namespace['communication_list'] and
-                            'launch_command' in namespace):
-                        #if 'launch_command' is set,
-                        #communication should be set as well
+
+                engine = checkmate.engine.Engine(
+                    data_structure_module, exchange_module,
+                    state_module, fullfilename)
+                return_dict['engine'] = engine
+                return_dict['services'] = engine.services
+                return_dict['service_classes'] = engine.service_classes
+                return_dict['communication_list'] = engine.communication_list
+                for _communication in engine.communication_list:
+                    if (_communication not in namespace['communication_list']
+                            and 'launch_command' in namespace):
+                        # if 'launch_command' is set,
+                        # communication should be set as well
                         raise KeyError(
-                            "Communication '%s' is not defined in application" %
-                            _communication)
-                return_dict['communication_list'] = communication_list
+                            "Communication '%s' is not defined in application"
+                            % _communication)
                 return return_dict
             except Exception as e:
                 raise e
         fullfilename = namespace['component_definition']
-        with open(fullfilename, 'r') as _file:
-            define_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        namespace.update(add_definition(namespace, data_source))
+        namespace.update(add_definition(namespace, fullfilename))
         instance_transitions = collections.defaultdict(dict)
         for _i, _t in namespace['instance_transitions'].items():
             definition_data = ''
