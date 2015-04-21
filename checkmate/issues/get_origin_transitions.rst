@@ -29,8 +29,8 @@
     >>> ts = checkmate._storage.TransitionStorage(item_in,
     ...         module_dict)
     >>> user = sample_app.component.user.User
-    >>> t_copy = user.engine.transitions[0]
-    >>> user.engine.transitions[0] = ts.factory()
+    >>> t_copy = user.engine.blocks[0]
+    >>> user.engine.blocks[0] = ts.factory()
     >>> app = sample_app.application.TestData()
     >>> app.start(default_state_value=False)
     >>> transitions = checkmate.runs.get_origin_transitions(app)
@@ -43,4 +43,4 @@
     True
 
     Revert changes for further use in doctest:
-    >>> user.engine.transitions[0] = t_copy
+    >>> user.engine.blocks[0] = t_copy

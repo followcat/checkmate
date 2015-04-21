@@ -54,20 +54,20 @@ class Transition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
-            >>> c.engine.transitions[0].name
+            >>> c.engine.blocks[0].name
             'Toggle state tran01'
-            >>> c.engine.transitions[0].initializing
+            >>> c.engine.blocks[0].initializing
             False
-            >>> i = c.engine.transitions[0].incoming[0].factory()
+            >>> i = c.engine.blocks[0].incoming[0].factory()
             >>> i.value
             'AC'
             >>> s = c.states
-            >>> c.engine.transitions[0].is_matching_incoming([i], s)
+            >>> c.engine.blocks[0].is_matching_incoming([i], s)
             True
-            >>> c.engine.transitions[2].is_matching_incoming([i], s)
+            >>> c.engine.blocks[2].is_matching_incoming([i], s)
             False
 
-            >>> i = c.engine.transitions[1].incoming[0].factory()
+            >>> i = c.engine.blocks[1].incoming[0].factory()
         """
         keys = {}
         if len(exchange_list) > 0:
@@ -101,12 +101,12 @@ class Transition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C2']
-            >>> i = c.engine.transitions[0].outgoing[0].factory()
+            >>> i = c.engine.blocks[0].outgoing[0].factory()
             >>> i.value
             'AC'
-            >>> c.engine.transitions[0].is_matching_outgoing([i])
+            >>> c.engine.blocks[0].is_matching_outgoing([i])
             True
-            >>> c.engine.transitions[1].is_matching_outgoing([i])
+            >>> c.engine.blocks[1].is_matching_outgoing([i])
             False
         """
         match_list = self.matching_list(self.outgoing, exchange_list)
@@ -118,15 +118,15 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> a.start()
-            >>> sm = c.engine
-            >>> sm.transitions[0].is_matching_initial(c.states)
+            >>> engine = c.engine
+            >>> engine.blocks[0].is_matching_initial(c.states)
             True
-            >>> sm.transitions[2].is_matching_initial(c.states)
+            >>> engine.blocks[2].is_matching_initial(c.states)
             False
 
             >>> c3 = a.components['C3']
             >>> c3.states[0].value = True
-            >>> t3 = c3.engine.transitions[2]
+            >>> t3 = c3.engine.blocks[2]
             >>> t3.is_matching_initial(c3.states)
             False
             >>> a.start()
@@ -157,7 +157,7 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.start()
-            >>> ts = c.engine.transitions
+            >>> ts = c.engine.blocks
             >>> i = ts[0].incoming[0].factory()
             >>> ts[0].process(c.states, [i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

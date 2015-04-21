@@ -2,7 +2,7 @@ Init a new Action AP from transition incoming storage and modify it's arguments 
 >>> import sample_app.application
 >>> a = sample_app.application.TestData()
 >>> c1 = a.components['C1']
->>> incoming = c1.engine.transitions[1].incoming[0]
+>>> incoming = c1.engine.blocks[1].incoming[0]
 >>> incoming.code
 'AP'
 >>> incoming.arguments.update({'attribute_values':{}, 'values':('R2', )})

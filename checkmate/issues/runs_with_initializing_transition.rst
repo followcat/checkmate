@@ -34,11 +34,11 @@ other runs
         >>> t_out = ts.factory()
         >>> state1 = sample_app.component.component_1.Component_1
         >>> state2 = sample_app.component.component_2.Component_2
-        >>> state2.engine.transitions.append(t_out)
+        >>> state2.engine.blocks.append(t_out)
         >>> ts = checkmate._storage.TransitionStorage(item_in,
         ...         module_dict)
         >>> t_in = ts.factory()
-        >>> state1.engine.transitions.append(t_in)
+        >>> state1.engine.blocks.append(t_in)
         >>> state1.service_classes.append(
         ...     sample_app.exchanges.ForthAction)
         >>> r = checkmate.runtime._runtime.Runtime(
@@ -85,8 +85,8 @@ other runs
     Revert changes for further use in doctest:
         >>> state1.service_classes.remove(
         ...     sample_app.exchanges.ForthAction)
-        >>> state1.engine.transitions.remove(t_in)
-        >>> state2.engine.transitions.remove(t_out)
+        >>> state1.engine.blocks.remove(t_in)
+        >>> state2.engine.blocks.remove(t_out)
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)

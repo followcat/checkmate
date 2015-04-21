@@ -75,8 +75,8 @@ Setup:
     ...         'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
-    >>> saved_transition = c1.engine.transitions[1]
-    >>> c1.engine.transitions[1] = t
+    >>> saved_transition = c1.engine.blocks[1]
+    >>> c1.engine.blocks[1] = t
 
 Default behavior. The exchange AP(R2) can't be processed.
     >>> ap = sample_app.exchanges.Action('AP')
@@ -105,6 +105,6 @@ the expected final state is reached.
     ('AT2', 'HIGH')
 
 Restore original transition for further testing.
-    >>> c1.engine.transitions[1] = saved_transition
+    >>> c1.engine.blocks[1] = saved_transition
     >>>
 

@@ -5,8 +5,8 @@ We can match R with R2 when we do collect runs
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
-        >>> copy_t1 = sample_app.component.component_1.Component_1.engine.transitions[1]
-        >>> copy_t2 = sample_app.component.component_2.Component_2.engine.transitions[2]
+        >>> copy_t1 = sample_app.component.component_1.Component_1.engine.blocks[1]
+        >>> copy_t2 = sample_app.component.component_2.Component_2.engine.blocks[2]
 
         >>> module_dict = {'states': [sample_app.component.component_1_states],
         ...                'exchanges':[sample_app.exchanges]}
@@ -22,16 +22,16 @@ We can match R with R2 when we do collect runs
         >>> t_in = ts.factory()
         >>> ts = checkmate._storage.TransitionStorage(item_out, module_dict)
         >>> t_out = ts.factory()
-        >>> sample_app.component.component_1.Component_1.engine.transitions[1] = t_in
-        >>> sample_app.component.component_2.Component_2.engine.transitions[2] = t_out
+        >>> sample_app.component.component_1.Component_1.engine.blocks[1] = t_in
+        >>> sample_app.component.component_2.Component_2.engine.blocks[2] = t_out
 
         >>> a = sample_app.application.TestData()
         >>> c1 = a.components['C1']
         >>> c2 = a.components['C2']
-        >>> inc = c1.engine.transitions[1].incoming[0]
+        >>> inc = c1.engine.blocks[1].incoming[0]
         >>> (inc.code, inc.resolved_arguments['R'].C.value, inc.resolved_arguments['R'].P.value)
         ('AP', 'AT2', 'HIGH')
-        >>> out = c2.engine.transitions[2].outgoing[0]
+        >>> out = c2.engine.blocks[2].outgoing[0]
         >>> (out.code, out.resolved_arguments)
         ('AP', {})
         >>> runs = a.run_collection()
@@ -52,8 +52,8 @@ We can match R with R2 when we do collect runs
         >>> r.stop_test()
 
     Revert changes in Component class definition for further use in doctest:
-        >>> sample_app.component.component_1.Component_1.engine.transitions[1] = copy_t1
-        >>> sample_app.component.component_2.Component_2.engine.transitions[2] = copy_t2
+        >>> sample_app.component.component_1.Component_1.engine.blocks[1] = copy_t1
+        >>> sample_app.component.component_2.Component_2.engine.blocks[2] = copy_t2
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)

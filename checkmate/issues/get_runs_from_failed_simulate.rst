@@ -52,18 +52,18 @@ Should not get Runs when simulate has no outgoing.
         ...         module_dict)
         >>> t_out = ts.factory()
         >>> C1 = sample_app.component.component_1.Component_1
-        >>> C1.engine.transitions.append(t_out)
+        >>> C1.engine.blocks.append(t_out)
         >>> ts = checkmate._storage.TransitionStorage(item_in,
         ...         module_dict)
         >>> t_in = ts.factory()
         >>> Dummy = sample_app.component.dummycomponent.DummyComponent 
-        >>> Dummy.engine.transitions.append(t_in)
+        >>> Dummy.engine.blocks.append(t_in)
         >>> a = sample_app.application.TestData() 
         >>> len(a.run_collection())
         4
 
     Revert changes for further use in doctest:
-        >>> C1.engine.transitions.remove(t_out)
+        >>> C1.engine.blocks.remove(t_out)
         >>> del sample_app.component.dummycomponent
         >>> del sample_app.exchanges.ForthAction
         >>> application_class = sample_app.application.TestData

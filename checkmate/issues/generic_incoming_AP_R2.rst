@@ -36,7 +36,7 @@ the exchange value is filled:
     >>> app.start(default_state_value=False)
     >>> c1.default_state_value
     False
-    >>> tr = c1.engine.transitions[1]
+    >>> tr = c1.engine.blocks[1]
     >>> ex = tr.generic_incoming(c1.states)
     >>> ex[0].R.C.value
     >>> ex[0].value

@@ -10,6 +10,7 @@ import checkmate.partition_declarator
 
 
 class Engine(object):
+    # This is Transition Engine
     def __init__(self, data_structure_module, exchange_module,
                  state_module, source_filenames):
         declarator = checkmate.partition_declarator.Declarator(
@@ -24,42 +25,42 @@ class Engine(object):
         declarator.new_definitions(data_source)
         declarator_output = declarator.get_output()
         self.states = declarator_output['states']
-        self.transitions = declarator_output['transitions']
+        self.blocks = declarator_output['transitions']
         self.services = {}
         self.service_classes = []
         self.communication_list = set()
-        for _t in self.transitions:
-            for _i in _t.incoming:
+        for _b in self.blocks:
+            for _i in _b.incoming:
                 _ex = _i.factory()
                 if _i.code not in self.services:
                     self.services[_i.code] = _ex
                 if _i.partition_class not in self.service_classes:
                     self.service_classes.append(_i.partition_class)
                 self.communication_list.add(_ex.communication)
-            for _o in _t.outgoing:
+            for _o in _b.outgoing:
                 _ex = _o.factory()
                 self.communication_list.add(_ex.communication)
 
     def block_by_name(self, name):
-        for _t in self.transitions:
-            if _t.name == name:
-                return _t
+        for _b in self.blocks:
+            if _b.name == name:
+                return _b
 
     def set_owner(self, name):
-        for _tr in self.transitions:
-            _tr.owner = name
+        for _b in self.blocks:
+            _b.owner = name
 
     def get_blocks_by_input(self, exchange, states):
         block_list = []
-        for _t in self.transitions:
-            if (_t.is_matching_incoming(exchange, states) and
-                    _t.is_matching_initial(states)):
-                block_list.append(_t)
+        for _b in self.blocks:
+            if (_b.is_matching_incoming(exchange, states) and
+                    _b.is_matching_initial(states)):
+                block_list.append(_b)
         return block_list
 
     def get_blocks_by_output(self, exchange, states):
-        for _t in self.transitions:
-            if (_t.is_matching_outgoing(exchange) and
-                    _t.is_matching_initial(states)):
-                return _t
+        for _b in self.blocks:
+            if (_b.is_matching_outgoing(exchange) and
+                    _b.is_matching_initial(states)):
+                return _b
         return None

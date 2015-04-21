@@ -109,11 +109,11 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start(default_state_value=False)
-        >>> r_tm = c.engine.transitions[0].incoming[0].factory()
-        >>> transition_list = c.get_blocks_by_input([r_tm])
-        >>> transition_list[0] == c.engine.transitions[0]
+        >>> r_tm = c.engine.blocks[0].incoming[0].factory()
+        >>> block_list = c.get_blocks_by_input([r_tm])
+        >>> block_list[0] == c.engine.blocks[0]
         True
-        >>> transition_list[1] == c.engine.transitions[3]
+        >>> block_list[1] == c.engine.blocks[3]
         True
         """
         return self.engine.get_blocks_by_input(exchange, self.states)
@@ -127,7 +127,7 @@ class Component(object):
         >>> for service in c.service_classes:
         ...    print(c.service_registry._registry[service])
         ['C1']
-        >>> _t = c.engine.transitions[0]
+        >>> _t = c.engine.blocks[0]
         >>> r_tm = _t.outgoing[0].factory()
         >>> c.get_blocks_by_output([r_tm]) == _t
         True
@@ -163,9 +163,9 @@ class Component(object):
         self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
         outgoing = []
-        for transition in self.engine.transitions:
-            if transition.initializing:
-                outgoing.extend(self.simulate(transition))
+        for block in self.engine.blocks:
+            if block.initializing:
+                outgoing.extend(self.simulate(block))
         if len(outgoing) > 0:
             return outgoing
 
@@ -179,33 +179,33 @@ class Component(object):
         pass
 
     @checkmate.fix_issue("checkmate/issues/process_pending_incoming.rst")
-    def process(self, exchange, transition=None):
+    def process(self, exchange, block=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> transition=c.engine.transitions[0]
-        >>> transition.is_matching_initial(c.states)
+        >>> block=c.engine.blocks[0]
+        >>> block.is_matching_initial(c.states)
         True
-        >>> output = transition.process(c.states,
+        >>> output = block.process(c.states,
         ...             [sample_app.exchanges.Action("AC")])
         >>> output[0].value
         'RE'
         >>> output[1].value
         True
-        >>> transition.is_matching_initial(c.states)
+        >>> block.is_matching_initial(c.states)
         False
         """
         output = self.process_pending_outgoing()
         if self.expected_return_code is None:
             if len(self.pending_incoming) > 0:
                 output = self.process_pending_incoming(output)
-            output.extend(self._do_process(exchange, transition))
+            output.extend(self._do_process(exchange, block))
         else:
             if isinstance(exchange[0], self.expected_return_code.return_type):
                 self.expected_return_code = None
-                output = self._do_process(exchange, transition)
+                output = self._do_process(exchange, block)
                 output = self.process_pending_incoming(output)
             else:
                 self.pending_incoming.append(exchange[0])
@@ -227,11 +227,11 @@ class Component(object):
         self.pending_outgoing = []
         return output
 
-    def _do_process(self, exchange, transition=None):
+    def _do_process(self, exchange, block=None):
         """"""
-        if transition is None:
+        if block is None:
             try:
-                _transition = self.get_blocks_by_input(exchange)[0]
+                _block = self.get_blocks_by_input(exchange)[0]
             except IndexError:
                 if (exchange[0].return_code and
                         self.expected_return_code is not None and
@@ -240,12 +240,12 @@ class Component(object):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
                 raise checkmate.exception.NoTransitionFound(
-                    "No transition for incoming %s " % exchange[0])
+                    "No block for incoming %s " % exchange[0])
         else:
-            _transition = transition
+            _block = block
         output = []
-        self.validation_dict.record(_transition, exchange)
-        for _outgoing in _transition.process(self.states, exchange,
+        self.validation_dict.record(_block, exchange)
+        for _outgoing in _block.process(self.states, exchange,
                             default=self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing,
                         self.name):
@@ -268,29 +268,29 @@ class Component(object):
         return output
 
     @checkmate.report_issue("checkmate/issues/simulate_return_code.rst")
-    def simulate(self, _transition):
+    def simulate(self, block):
         """
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c2 = a.components['C2']
             >>> c2.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c2.get_blocks_by_output([exchange])
+            >>> block = c2.get_blocks_by_output([exchange])
 
-        We can't simulate a transition when no destination for outgoing
+        We can't simulate a block when no destination for outgoing
         is registered:
-            >>> c2.simulate(transition)
+            >>> c2.simulate(block)
             []
 
         Registration is done when the destination component is started:
             >>> a.components['C1'].start()
-            >>> out = c2.simulate(transition)
+            >>> out = c2.simulate(block)
             >>> out[0].value == 'AC'
             True
         """
         output = []
-        _incoming = _transition.generic_incoming(self.states)
-        for _outgoing in _transition.process(self.states, _incoming,
+        _incoming = block.generic_incoming(self.states)
+        for _outgoing in block.process(self.states, _incoming,
                             default=self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing,
                         self.name):
@@ -300,7 +300,7 @@ class Component(object):
                 output.append(_e)
         return output
 
-    def validate(self, _transition):
+    def validate(self, block):
         """
             >>> import sample_app.application
             >>> import sample_app.component.component_1
@@ -308,13 +308,13 @@ class Component(object):
             >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c1.get_blocks_by_input([exchange])[0]
-            >>> c1.validate(transition)
+            >>> block = c1.get_blocks_by_input([exchange])[0]
+            >>> c1.validate(block)
             False
             >>> out = c1.process([exchange])
-            >>> c1.validate(transition)
+            >>> c1.validate(block)
             True
-            >>> c1.validate(transition)
+            >>> c1.validate(block)
             False
         """
-        return self.validation_dict.check(_transition)
+        return self.validation_dict.check(block)

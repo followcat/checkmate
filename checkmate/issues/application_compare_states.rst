@@ -9,7 +9,7 @@ still be ok.
     >>> c1 = app.components['C1']
     >>> c1.states[0].value
     True
-    >>> t = c1.engine.transitions[0]
+    >>> t = c1.engine.blocks[0]
     >>> t.initial[0].value
     True
     >>> run = checkmate.runs.Run(t)

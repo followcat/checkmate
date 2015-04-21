@@ -55,7 +55,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
-        >>> transition = c2.context.engine.transitions[0]
+        >>> transition = c2.context.engine.blocks[0]
         >>> previous_run = checkmate.runs.get_runs_from_transition(
         ...                     r.application, transition)[0]
         >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
