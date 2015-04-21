@@ -14,12 +14,12 @@ state is AnotherState1(R1).
     ...     state_modules.append(
     ...         r.application.components[name].state_module)
 
-Save transition which will be replaced
+Save block which will be replaced
 
-    >>> save_transition = \
+    >>> save_block = \
     ...     r.application.components['C1'].engine.blocks[1]
 
-Replace the second transition in component1 to initial is
+Replace the second block in component1 to initial is
 AnotherState1(R1) 
 
     >>> new_items = {
@@ -74,7 +74,7 @@ Can not run sandbox:
     >>> box(checkmate.runs.Run(run_transition), itp_run=True)
     False
 
-Recover transition:
+Recover block:
 
     >>> r.application.components['C1'].engine.blocks[1] = \
-    ...     save_transition
+    ...     save_block

@@ -17,7 +17,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> box = checkmate.sandbox.Sandbox(type(_application))
     >>> box(_run, itp_run=True)
     True
-    >>> run = box.transitions
+    >>> run = box.blocks
     >>> len(run.final)
     4
     >>> ff = [_f.function for _f in run.final]

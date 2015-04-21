@@ -23,7 +23,7 @@ class Procedure(object):
         self.result = None
         self.test = test
         self.logger = logging.getLogger('checkmate.runtime.procedure')
-        self.transitions = run
+        self.blocks = run
         self.initial = run.initial
         self.final = run.final
 
@@ -85,7 +85,7 @@ class Procedure(object):
         """
         self.result = result
         self.runtime = runtime
-        self.name = self.transitions.root.name
+        self.name = self.blocks.root.name
         self._run_from_startpoint()
 
     def _run_from_startpoint(self):
@@ -94,15 +94,15 @@ class Procedure(object):
             self.result.startTest(self)
         saved_initial = \
             checkmate.sandbox.Sandbox(type(_application), _application)
-        stub = self.runtime.runtime_components[self.transitions.root.owner]
-        stub.simulate(self.transitions.root)
-        self._follow_up(self.transitions)
+        stub = self.runtime.runtime_components[self.blocks.root.owner]
+        stub.simulate(self.blocks.root)
+        self._follow_up(self.blocks)
 
-        if hasattr(self.transitions, 'final'):
+        if hasattr(self.blocks, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(
                 checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.transitions.compare_final(
+                return self.blocks.compare_final(
                             self.runtime.application,
                             saved_initial.application)
             if not check_compare_states():

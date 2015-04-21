@@ -10,10 +10,10 @@ import checkmate.exception
 
 class Sandbox(object):
     def __init__(self, application_class, application=None,
-            initial_transitions=[]):
+            initial_blocks=[]):
         self.application_class = application_class
         self.initial_application = application
-        self.initial_transitions = initial_transitions
+        self.initial_blocks = initial_blocks
         self.start()
 
     @checkmate.fix_issue('checkmate/issues/sandbox_run_R2_itp_transition.rst')
@@ -24,9 +24,9 @@ class Sandbox(object):
             >>> import sample_app.application
             >>> _cls = sample_app.application.TestData
             >>> c3 = _cls().components['C3']
-            >>> transitions = [c3.engine.blocks[1]]
+            >>> blocks = [c3.engine.blocks[1]]
             >>> box = checkmate.sandbox.Sandbox(_cls,
-            ...         initial_transitions=transitions)
+            ...         initial_blocks=blocks)
             >>> box.application.components['C1'].states[0].value
             True
             >>> box.application.components['C3'].states[0].value
@@ -45,7 +45,7 @@ class Sandbox(object):
         self.used = False
         self.final = []
         self.initial = []
-        self.transitions = None
+        self.blocks = None
         self.application = self.application_class()
         if self.initial_application is None:
             self.application.start()
@@ -53,8 +53,8 @@ class Sandbox(object):
                 for _o in outgoing:
                     for _d in _o.destination:
                         component = self.application.components[_d]
-                        transitions = component.get_blocks_by_input([_o])
-                        _run = checkmate.runs.Run(transitions[0], [])
+                        blocks = component.get_blocks_by_input([_o])
+                        _run = checkmate.runs.Run(blocks[0], [])
                         if not self.__call__(_run):
                             raise \
                                 RuntimeError("Applicaiton initializing Failed")
@@ -65,8 +65,8 @@ class Sandbox(object):
                 for index, state in enumerate(component.states):
                     self.application.components[component.name].states[index].\
                         carbon_copy(state)
-        for transition in self.initial_transitions:
-            for initial in transition.initial:
+        for block in self.initial_blocks:
+            for initial in block.initial:
                 done = False
                 for component in self.application.components.values():
                     for state in component.states:
@@ -85,8 +85,8 @@ class Sandbox(object):
 
     @property
     def is_run(self):
-        return (self.transitions is not None and
-                set(self.run.walk()).issubset(set(self.transitions.walk())))
+        return (self.blocks is not None and
+                set(self.run.walk()).issubset(set(self.blocks.walk())))
 
     def __call__(self, run, itp_run=False):
         """
@@ -110,35 +110,35 @@ class Sandbox(object):
         """
         _outgoing = []
         self.run = run
-        self.transitions = None
+        self.blocks = None
         for component in self.application.components.values():
-            _transitions = component.engine.blocks
-            if not itp_run and not run.root in _transitions:
+            _blocks = component.engine.blocks
+            if not itp_run and not run.root in _blocks:
                 continue
             if len(run.root.incoming) > 0:
                 _incoming = run.root.generic_incoming(component.states)
                 for _c in self.application.components.values():
                     if _c == component:
                         continue
-                    _t = _c.get_blocks_by_output(_incoming)
-                    if _t is not None:
-                        _outgoing = _c.simulate(_t)
-                        self.transitions = _t
+                    _b = _c.get_blocks_by_output(_incoming)
+                    if _b is not None:
+                        _outgoing = _c.simulate(_b)
+                        self.blocks = _b
                         break
-                if self.transitions is not None:
+                if self.blocks is not None:
                     break
             _outgoing = component.simulate(run.root)
-            self.transitions = run.root
+            self.blocks = run.root
             break
         return self.run_process(_outgoing)
 
     def run_process(self, outgoing):
         try:
-            self.transitions = \
+            self.blocks = \
                 self.process(outgoing,
-                    checkmate.runs.Run(self.transitions, []))
+                    checkmate.runs.Run(self.blocks, []))
         except checkmate.exception.NoBlockFound:
-            self.transitions = None
+            self.blocks = None
         return self.is_run
 
     def process(self, exchanges, tree=None):
@@ -151,10 +151,10 @@ class Sandbox(object):
             >>> ex.origin_destination('C2', 'C1')
             >>> runs = box.application.run_collection()
             >>> c2 = box.application.components['C2']
-            >>> _t = c2.get_blocks_by_output([ex])
+            >>> _b = c2.get_blocks_by_output([ex])
             >>> box.run = runs[0]
-            >>> _run = checkmate.runs.Run(_t, [])
-            >>> transitions = box.process([ex], _run)
+            >>> _run = checkmate.runs.Run(_b, [])
+            >>> blocks = box.process([ex], _run)
             >>> box.application.components['C3'].states[0].value
             True
         """
@@ -174,12 +174,12 @@ class Sandbox(object):
     def update_required_states(self, tree):
         """
         """
-        transition = tree.root
-        for index, _initial in enumerate(transition.initial):
+        block = tree.root
+        for index, _initial in enumerate(block.initial):
             if _initial.partition_class not in [_i.partition_class
                                                 for _i in self.initial]:
                 self.initial.append(_initial)
-                self.final.append(transition.final[index])
+                self.final.append(block.final[index])
         for _node in tree.nodes:
             self.update_required_states(_node)
 
@@ -194,7 +194,7 @@ class CollectionSandbox(Sandbox):
 
     def run_process(self, outgoing):
         try:
-            tree = checkmate.runs.Run(self.transitions, [])
+            tree = checkmate.runs.Run(self.blocks, [])
         except AssertionError:
             return []
         return self.process(self, outgoing, tree)
@@ -204,20 +204,20 @@ class CollectionSandbox(Sandbox):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = sandbox.application.components[_d]
-                _transitions = _c.get_blocks_by_input([_exchange])
-                for _t in _transitions:
-                    if _t == tree.root:
+                _blocks = _c.get_blocks_by_input([_exchange])
+                for _b in _blocks:
+                    if _b == tree.root:
                         continue
                     self.used = True
                     _app = sandbox.application
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]
-                    _outgoings = _c.process([_exchange], _t)
+                    _outgoings = _c.process([_exchange], _b)
                     split_runs = \
                         self.process(new_sandbox, _outgoings,
-                            checkmate.runs.Run(_t, [], states=_c.states))
+                            checkmate.runs.Run(_b, [], states=_c.states))
                     for split, tmp_run in split_runs:
-                        if len(_transitions) > 1 or split:
+                        if len(_blocks) > 1 or split:
                             split = True
                             new_run = tree.copy()
                             new_run.add_node(tmp_run)
