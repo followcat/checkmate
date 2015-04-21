@@ -113,7 +113,7 @@ class Sandbox(object):
         self.blocks = None
         for component in self.application.components.values():
             _blocks = component.engine.blocks
-            if not itp_run and not run.root in _blocks:
+            if not itp_run and run.root not in _blocks:
                 continue
             if len(run.root.incoming) > 0:
                 _incoming = run.root.generic_incoming(component.states)
