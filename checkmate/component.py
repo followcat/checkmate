@@ -58,8 +58,8 @@ class ComponentMeta(type):
                 raise e
         fullfilename = [namespace['component_definition']]
         namespace.update(add_definition(namespace, fullfilename))
-        instance_transitions = collections.defaultdict(dict)
-        for _i, _t in namespace['instance_transitions'].items():
+        instance_engines = collections.defaultdict(dict)
+        for _i, _t in namespace['instance_engines'].items():
             definition_data = ''
             fullfilenames = list()
             for (dirpath, dirnames, filenames) in os.walk(_t):
@@ -69,8 +69,8 @@ class ComponentMeta(type):
                         fullfilenames.append(_file)
             if definition_data != '':
                 instance_namespace = add_definition(namespace, fullfilenames)
-                instance_transitions[_i] = instance_namespace
-        namespace['instance_transitions'] = instance_transitions
+                instance_engines[_i] = instance_namespace
+        namespace['instance_engines'] = instance_engines
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
@@ -100,7 +100,7 @@ class Component(object):
         self.expected_return_code = None
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
-        for _k, _v in self.instance_transitions[name].items():
+        for _k, _v in self.instance_engines[name].items():
             if _k == 'engine':
                 self.engine.transitions.extend(_v.transitions)
                 self.engine.transitions = \

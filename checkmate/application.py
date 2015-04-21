@@ -103,13 +103,13 @@ class ApplicationMeta(type):
                 checkmate._module.get_module(namespace['__module__'],
                     class_name.lower(), alternative_package)
             instance_attributes = collections.defaultdict(dict)
-            instance_transitions = collections.defaultdict(dict)
+            instance_engines = collections.defaultdict(dict)
             for _instance in class_definition['instances']:
                 if 'attributes' in _instance:
                     instance_attributes[_instance['name']] = \
                         _instance['attributes']
                 if 'transitions' in _instance:
-                    instance_transitions[_instance['name']] = \
+                    instance_engines[_instance['name']] = \
                         _instance['transitions']
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
@@ -117,7 +117,7 @@ class ApplicationMeta(type):
                  '__module__': component_module.__name__,
                  'communication_list': namespace['communication_list'].keys(),
                  'instance_attributes': instance_attributes,
-                 'instance_transitions': instance_transitions
+                 'instance_engines': instance_engines
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name,

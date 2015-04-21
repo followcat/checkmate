@@ -44,7 +44,7 @@ Should be able to set component state with component instance's attribute
         >>> _dict = sample_app.application.TestData.communication_list
         >>> communication_list = _dict.keys()
         >>> instance_attributes = collections.defaultdict(dict)
-        >>> instance_transitions = collections.defaultdict(dict)
+        >>> instance_engines = collections.defaultdict(dict)
 
     set component instance attribute "ID" to 1
         >>> instance_attributes['D1'] = {'ID': 1}
@@ -53,7 +53,7 @@ Should be able to set component state with component instance's attribute
         ...  '__module__': component_module.__name__,
         ...  'component_definition': class_file,
         ...  'instance_attributes': instance_attributes,
-        ...  'instance_transitions': instance_transitions,
+        ...  'instance_engines': instance_engines,
         ...  'communication_list': communication_list}
 
         >>> _class = checkmate.component.ComponentMeta(class_name,
