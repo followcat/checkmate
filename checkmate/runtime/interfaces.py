@@ -13,9 +13,9 @@ class ISut(zope.interface.Interface):
 
 class IStub(ISut):
     """"""
-    def simulate(self, transition):
+    def simulate(self, block):
         """"""
 
-    def validate(self, transition):
+    def validate(self, block):
         """"""
 

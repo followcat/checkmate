@@ -204,8 +204,8 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> c2_stub = r.runtime_components['C2']
         >>> c1_stub = r.runtime_components['C1']
         >>> c2 = r.application.components['C2']
-        >>> simulated_transition = c2.engine.blocks[0]
-        >>> o = c2_stub.simulate(simulated_transition)
+        >>> simulated_block = c2.engine.blocks[0]
+        >>> o = c2_stub.simulate(simulated_block)
         >>> t = c1_stub.context.engine.blocks[0]
         >>> t.is_matching_incoming(o, c1_stub.context.states)
         True

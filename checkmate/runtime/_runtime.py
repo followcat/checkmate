@@ -103,9 +103,9 @@ class Runtime(object):
             >>> checkmate.runtime.interfaces.IStub.providedBy(c2_stub)
             True
             >>> a = r.application
-            >>> simulated_transition = a.components['C2'].engine.\
+            >>> simulated_block = a.components['C2'].engine.\
                                         blocks[0]
-            >>> o = c2_stub.simulate(simulated_transition) # doctest: +ELLIPSIS
+            >>> o = c2_stub.simulate(simulated_block) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c1)
             False
