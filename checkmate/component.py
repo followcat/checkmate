@@ -34,13 +34,13 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
 
-        def add_definition(namespace, fullfilename):
+        def add_definition(namespace, source_files):
             return_dict = {}
             try:
 
                 engine = checkmate.engine.Engine(
                     data_structure_module, exchange_module,
-                    state_module, fullfilename)
+                    state_module, source_files)
                 return_dict['engine'] = engine
                 return_dict['services'] = engine.services
                 return_dict['service_classes'] = engine.service_classes
@@ -56,21 +56,19 @@ class ComponentMeta(type):
                 return return_dict
             except Exception as e:
                 raise e
-        fullfilename = namespace['component_definition']
+        fullfilename = [namespace['component_definition']]
         namespace.update(add_definition(namespace, fullfilename))
         instance_transitions = collections.defaultdict(dict)
         for _i, _t in namespace['instance_transitions'].items():
             definition_data = ''
+            fullfilenames = list()
             for (dirpath, dirnames, filenames) in os.walk(_t):
                 for _file in filenames:
                     if _file.endswith(".yaml"):
                         _file = os.path.join(dirpath, _file)
-                        with open(_file, 'r') as open_file:
-                            definition_data += open_file.read()
+                        fullfilenames.append(_file)
             if definition_data != '':
-                data_source = \
-                    checkmate.parser.yaml_visitor.call_visitor(definition_data)
-                instance_namespace = add_definition(namespace, data_source)
+                instance_namespace = add_definition(namespace, fullfilenames)
                 instance_transitions[_i] = instance_namespace
         namespace['instance_transitions'] = instance_transitions
         result = type.__new__(cls, name, bases, dict(namespace))

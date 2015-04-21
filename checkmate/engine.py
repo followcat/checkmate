@@ -11,13 +11,15 @@ import checkmate.partition_declarator
 
 class Engine(object):
     def __init__(self, data_structure_module, exchange_module,
-                 state_module, fullfilename):
+                 state_module, source_filenames):
         declarator = checkmate.partition_declarator.Declarator(
             data_structure_module,
             exchange_module=exchange_module,
             state_module=state_module)
-        with open(fullfilename, 'r') as _file:
-            define_data = _file.read()
+        define_data = ''
+        for _f in source_filenames:
+            with open(_f, 'r') as _file:
+                define_data += _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator.new_definitions(data_source)
         declarator_output = declarator.get_output()
