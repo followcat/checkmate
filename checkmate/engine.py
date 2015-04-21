@@ -39,3 +39,9 @@ class Engine(object):
             for _o in _t.outgoing:
                 _ex = _o.factory()
                 self.communication_list.add(_ex.communication)
+
+    def block_by_name(self, name):
+        for _t in self.transitions:
+            if _t.name == name:
+                return _t
+

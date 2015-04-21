@@ -25,7 +25,7 @@ It is impossible to specify the final state by providing arguments
     ...     checkmate.sandbox.Sandbox(type(r.application),
     ...         r.application)
     >>> r.execute(runs[1])
-    >>> t = c1.context.transition_by_name("Append element ok tran01")
+    >>> t = c1.context.block_by_name("Append element ok tran01")
     >>> final_list = list(runs[1].final)
     >>> an_index = [_f.function for _f in final_list].index(
     ... sample_app.component.component_1_states.AnotherState.__init__)

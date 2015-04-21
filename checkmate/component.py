@@ -114,10 +114,8 @@ class Component(object):
                 _attribute.update(_v)
                 setattr(self, _k, _attribute) 
 
-    def transition_by_name(self, name):
-        for _t in self.engine.transitions:
-            if _t.name == name:
-                return _t
+    def block_by_name(self, name):
+        return self.engine.block_by_name(name)
 
     def get_transitions_by_input(self, exchange):
         """

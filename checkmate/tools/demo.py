@@ -47,7 +47,7 @@ def show_path(run):
         
 def run_transition(name):
     for component in app.component:
-        transition = app.components[component].transition_by_name(name)
+        transition = app.components[component].block_by_name(name)
         if transition is not None:
             break
     else:
