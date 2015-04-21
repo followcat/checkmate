@@ -13,13 +13,13 @@ class ValidationDict(object):
         self.collected_items = collections.defaultdict(list)
         self.validated_items = collections.defaultdict(list)
 
-    def record(self, transition, item_list):
-        self.collected_items[transition].extend(item_list)
-        self.validated_items[transition].extend(item_list)
+    def record(self, block, item_list):
+        self.collected_items[block].extend(item_list)
+        self.validated_items[block].extend(item_list)
 
-    def check(self, transition):
+    def check(self, block):
         try:
-            self.collected_items[transition].pop()
+            self.collected_items[block].pop()
             return True
         except IndexError:
             return False

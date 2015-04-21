@@ -1,4 +1,4 @@
-when component start, its initializing transition will be simulated.
+when component start, its initializing block will be simulated.
 
         >>> import time
         >>> import checkmate.sandbox
@@ -61,7 +61,7 @@ when component start, its initializing transition will be simulated.
         >>> r.setup_environment(['C3'])
 
     send before starting the destination component of initializing
-    transition outgoing
+    block outgoing
         >>> r.application.stubs.sort()
         >>> r.application.stubs.reverse()
         >>> c1 = r.runtime_components['C1']
