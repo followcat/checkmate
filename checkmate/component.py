@@ -60,14 +60,12 @@ class ComponentMeta(type):
         namespace.update(add_definition(namespace, fullfilename))
         instance_engines = collections.defaultdict(dict)
         for _i, _t in namespace['instance_engines'].items():
-            definition_data = ''
             fullfilenames = list()
             for (dirpath, dirnames, filenames) in os.walk(_t):
                 for _file in filenames:
                     if _file.endswith(".yaml"):
-                        _file = os.path.join(dirpath, _file)
-                        fullfilenames.append(_file)
-            if definition_data != '':
+                        fullfilenames.append(os.path.join(dirpath, _file))
+            if len(fullfilenames) > 0:
                 instance_namespace = add_definition(namespace, fullfilenames)
                 instance_engines[_i] = instance_namespace
         namespace['instance_engines'] = instance_engines
