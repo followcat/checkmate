@@ -1,5 +1,5 @@
-When using a transition defining AP(R) to process AP(R2),
-the component should be able to execute the transition:
+When using a block defining AP(R) to process AP(R2),
+the component should be able to execute the block:
 
     >>> import sample_app.application
     >>> app = sample_app.application.TestData()
@@ -10,14 +10,14 @@ the component should be able to execute the transition:
     >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> t = c1.get_blocks_by_input([ap_r2])[0]
-    >>> t.is_matching_initial(c1.states)
+    >>> b = c1.get_blocks_by_input([ap_r2])[0]
+    >>> b.is_matching_initial(c1.states)
     True
     >>> sample_app.exchanges.ActionCode(True) in c1.process([ap_r2])
     True
 
 
-define a transition to to process AP(R2)
+define a block to to process AP(R2)
     >>> import sample_app.application
     >>> import checkmate._storage
     >>> a = sample_app.application.TestData()
@@ -55,13 +55,12 @@ define a transition to to process AP(R2)
     ('AT2', 'HIGH')
 
 
-When using a transition defining AP(R2) to process AP(R, default=False),
-the component should be able to execute the transition:
+When using a block defining AP(R2) to process AP(R, default=False),
+the component should be able to execute the block:
 
 Setup:
     >>> import sample_app.application
     >>> import checkmate._storage
-    >>> import checkmate.transition
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
@@ -75,7 +74,7 @@ Setup:
     ...         'final': [{'AnotherState': 'append(R2)'}]}
     >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
-    >>> saved_transition = c1.engine.blocks[1]
+    >>> saved_block = c1.engine.blocks[1]
     >>> c1.engine.blocks[1] = t
 
 Default behavior. The exchange AP(R2) can't be processed.
@@ -104,7 +103,7 @@ the expected final state is reached.
     >>> c1.states[1].R.C.value, c1.states[1].R.P.value
     ('AT2', 'HIGH')
 
-Restore original transition for further testing.
-    >>> c1.engine.blocks[1] = saved_transition
+Restore original block for further testing.
+    >>> c1.engine.blocks[1] = saved_block
     >>>
 
