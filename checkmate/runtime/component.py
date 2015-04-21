@@ -111,16 +111,16 @@ class Component(object):
                 (self.context.name, _o.value, _o.destination))
         return output
 
-    def simulate(self, transition):
-        output = self.context.simulate(transition)
+    def simulate(self, block):
+        output = self.context.simulate(block)
         for _o in output:
             self.client.send(_o)
-            self.logger.info("%s simulate transition and output %s to %s" %
+            self.logger.info("%s simulate block and output %s to %s" %
                 (self.context.name, _o.value, _o.destination))
         return output
 
-    def validate(self, transition):
-        return self.context.validate(transition)
+    def validate(self, block):
+        return self.context.validate(block)
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.ISut)
@@ -195,9 +195,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
     @checkmate.timeout_manager.WaitOnFalse(
         checkmate.timeout_manager.VALIDATE_SEC, 100)
-    def validate(self, transition):
+    def validate(self, block):
         with self.validation_lock:
-            return super().validate(transition)
+            return super().validate(block)
 
 
 @zope.component.adapter(checkmate.interfaces.IComponent)
@@ -244,10 +244,10 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 
-    def simulate(self, transition):
+    def simulate(self, block):
         if self._launched_in_thread:
-            self.launcher.simulate(transition)
-            return super().simulate(transition)
+            self.launcher.simulate(block)
+            return super().simulate(block)
         raise ValueError("Launcher SUT can't simulate")
 
     def start(self):
