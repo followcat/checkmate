@@ -47,7 +47,6 @@ class Transition(Block):
                 local_copy.remove(match_item)
         return match_list
 
-
     def is_matching_incoming(self, exchange_list, state_list):
         """Check if the transition incoming list is matching a list of
         exchange.
@@ -96,7 +95,7 @@ class Transition(Block):
 
     def is_matching_outgoing(self, exchange_list):
         """Check if the transition outgoing list is matching a list of
-        exchange. 
+        exchange.
 
         The exchange_list can contain only a subset of the transition
         outgoing to match. All item in exchange_list must be matched
@@ -151,7 +150,6 @@ class Transition(Block):
             incoming_exchanges.append(
                 incoming.factory(incoming.value, default=False, **arguments))
         return incoming_exchanges
-            
 
     @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
     @checkmate.fix_issue("checkmate/issues/process_AP_R2.rst")
