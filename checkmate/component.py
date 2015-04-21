@@ -239,7 +239,7 @@ class Component(object):
                             self.expected_return_code.return_type)):
                     self.expected_return_code = None
                     return self.process_pending_outgoing()
-                raise checkmate.exception.NoTransitionFound(
+                raise checkmate.exception.NoBlockFound(
                     "No block for incoming %s " % exchange[0])
         else:
             _block = block

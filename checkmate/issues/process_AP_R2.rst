@@ -88,7 +88,7 @@ Default behavior. The exchange AP(R2) can't be processed.
     >>> res = c1.process([ap]) #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
-    checkmate.exception.NoTransitionFound:
+    checkmate.exception.NoBlockFound:
     >>> sample_app.exchanges.ActionCode(True) in res
     False
 

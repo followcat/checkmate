@@ -4,5 +4,5 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-class NoTransitionFound(RuntimeError):
+class NoBlockFound(RuntimeError):
     """"""

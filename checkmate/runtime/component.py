@@ -101,7 +101,7 @@ class Component(object):
         """
         try:
             output = self.context.process(exchanges)
-        except checkmate.exception.NoTransitionFound:
+        except checkmate.exception.NoBlockFound:
             output = []
         self.logger.info("%s process exchange %s" %
             (self.context.name, exchanges[0].value))

@@ -137,7 +137,7 @@ class Sandbox(object):
             self.transitions = \
                 self.process(outgoing,
                     checkmate.runs.Run(self.transitions, []))
-        except checkmate.exception.NoTransitionFound:
+        except checkmate.exception.NoBlockFound:
             self.transitions = None
         return self.is_run
 
