@@ -12,19 +12,19 @@ import checkmate.transition
 
 
 class Run(checkmate._tree.Tree):
-    def __init__(self, transition, nodes=None, states=None):
-        assert type(transition) == checkmate.transition.Transition
+    def __init__(self, block, nodes=None, states=None):
+        assert isinstance(block, checkmate.transition.Block)
         if nodes is None:
             nodes = []
         if states is None:
             states = []
-        super(Run, self).__init__(transition, nodes)
+        super(Run, self).__init__(block, nodes)
         self._initial = None
         self._final = None
         self.itp_run = None
         self.change_states = []
         self.collected_run = None
-        for f in transition.final:
+        for f in block.final:
             for s in states:
                 if isinstance(s, f.partition_class):
                     self.change_states.append((type(s).__name__, s._dump()))
@@ -32,12 +32,12 @@ class Run(checkmate._tree.Tree):
 
     @checkmate.fix_issue(
         'checkmate/issues/sandbox_call_notfound_transition.rst')
-    def get_transition_by_input_states(self, exchanges, component):
-        for _t in self.walk():
-            if (_t in component.engine.blocks and
-                _t.is_matching_incoming(exchanges, component.states) and
-                    _t.is_matching_initial(component.states)):
-                return _t
+    def get_block_by_input_states(self, exchanges, component):
+        for _b in self.walk():
+            if (_b in component.engine.blocks and
+                _b.is_matching_incoming(exchanges, component.states) and
+                    _b.is_matching_initial(component.states)):
+                return _b
 
     def get_states(self):
         if self._initial is None or self._final is None:

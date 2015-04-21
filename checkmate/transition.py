@@ -7,7 +7,11 @@
 import checkmate
 
 
-class Transition(object):
+class Block(object):
+    """"""
+
+
+class Transition(Block):
     """Driving a change of state inside a state machine
     """
     def __init__(self, **argc):

@@ -161,7 +161,7 @@ class Sandbox(object):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
-                _transition = self.run.get_transition_by_input_states(
+                _transition = self.run.get_block_by_input_states(
                     [_exchange], _c)
                 if _transition is None:
                     continue
