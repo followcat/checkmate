@@ -48,3 +48,18 @@ class Engine(object):
     def set_owner(self, name):
         for _tr in self.transitions:
             _tr.owner = name
+
+    def get_blocks_by_input(self, exchange, states):
+        block_list = []
+        for _t in self.transitions:
+            if (_t.is_matching_incoming(exchange, states) and
+                    _t.is_matching_initial(states)):
+                block_list.append(_t)
+        return block_list
+
+    def get_blocks_by_output(self, exchange, states):
+        for _t in self.transitions:
+            if (_t.is_matching_outgoing(exchange) and
+                    _t.is_matching_initial(states)):
+                return _t
+        return None

@@ -103,27 +103,22 @@ class Component(object):
     def block_by_name(self, name):
         return self.engine.block_by_name(name)
 
-    def get_transitions_by_input(self, exchange):
+    def get_blocks_by_input(self, exchange):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start(default_state_value=False)
         >>> r_tm = c.engine.transitions[0].incoming[0].factory()
-        >>> transition_list = c.get_transitions_by_input([r_tm])
+        >>> transition_list = c.get_blocks_by_input([r_tm])
         >>> transition_list[0] == c.engine.transitions[0]
         True
         >>> transition_list[1] == c.engine.transitions[3]
         True
         """
-        transition_list = []
-        for _t in self.engine.transitions:
-            if (_t.is_matching_incoming(exchange, self.states) and
-                    _t.is_matching_initial(self.states)):
-                transition_list.append(_t)
-        return transition_list
+        return self.engine.get_blocks_by_input(exchange, self.states)
 
-    def get_transition_by_output(self, exchange):
+    def get_blocks_by_output(self, exchange):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -134,14 +129,10 @@ class Component(object):
         ['C1']
         >>> _t = c.engine.transitions[0]
         >>> r_tm = _t.outgoing[0].factory()
-        >>> c.get_transition_by_output([r_tm]) == _t
+        >>> c.get_blocks_by_output([r_tm]) == _t
         True
         """
-        for _t in self.engine.transitions:
-            if (_t.is_matching_outgoing(exchange) and
-                    _t.is_matching_initial(self.states)):
-                return _t
-        return None
+        return self.engine.get_blocks_by_output(exchange, self.states)
 
     @checkmate.fix_issue("checkmate/issues/set_component_attribute_state.rst")
     @checkmate.report_issue(
@@ -240,7 +231,7 @@ class Component(object):
         """"""
         if transition is None:
             try:
-                _transition = self.get_transitions_by_input(exchange)[0]
+                _transition = self.get_blocks_by_input(exchange)[0]
             except IndexError:
                 if (exchange[0].return_code and
                         self.expected_return_code is not None and
@@ -284,7 +275,7 @@ class Component(object):
             >>> c2 = a.components['C2']
             >>> c2.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c2.get_transition_by_output([exchange])
+            >>> transition = c2.get_blocks_by_output([exchange])
 
         We can't simulate a transition when no destination for outgoing
         is registered:
@@ -317,7 +308,7 @@ class Component(object):
             >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> transition = c1.get_transitions_by_input([exchange])[0]
+            >>> transition = c1.get_blocks_by_input([exchange])[0]
             >>> c1.validate(transition)
             False
             >>> out = c1.process([exchange])

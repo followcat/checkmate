@@ -53,7 +53,7 @@ class Sandbox(object):
                 for _o in outgoing:
                     for _d in _o.destination:
                         component = self.application.components[_d]
-                        transitions = component.get_transitions_by_input([_o])
+                        transitions = component.get_blocks_by_input([_o])
                         _run = checkmate.runs.Run(transitions[0], [])
                         if not self.__call__(_run):
                             raise \
@@ -120,7 +120,7 @@ class Sandbox(object):
                 for _c in self.application.components.values():
                     if _c == component:
                         continue
-                    _t = _c.get_transition_by_output(_incoming)
+                    _t = _c.get_blocks_by_output(_incoming)
                     if _t is not None:
                         _outgoing = _c.simulate(_t)
                         self.transitions = _t
@@ -151,7 +151,7 @@ class Sandbox(object):
             >>> ex.origin_destination('C2', 'C1')
             >>> runs = box.application.run_collection()
             >>> c2 = box.application.components['C2']
-            >>> _t = c2.get_transition_by_output([ex])
+            >>> _t = c2.get_blocks_by_output([ex])
             >>> box.run = runs[0]
             >>> _run = checkmate.runs.Run(_t, [])
             >>> transitions = box.process([ex], _run)
@@ -204,7 +204,7 @@ class CollectionSandbox(Sandbox):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = sandbox.application.components[_d]
-                _transitions = _c.get_transitions_by_input([_exchange])
+                _transitions = _c.get_blocks_by_input([_exchange])
                 for _t in _transitions:
                     if _t == tree.root:
                         continue

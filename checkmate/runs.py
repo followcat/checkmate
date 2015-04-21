@@ -267,7 +267,7 @@ def get_origin_transitions(application):
                 for _c in application.components.values():
                     if _c == _component:
                         continue
-                    if _c.get_transition_by_output(_incoming) is not None:
+                    if _c.get_blocks_by_output(_incoming) is not None:
                         break
                 else:
                     origin_transitions.append(_transition)
