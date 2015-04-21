@@ -45,3 +45,6 @@ class Engine(object):
             if _t.name == name:
                 return _t
 
+    def set_owner(self, name):
+        for _tr in self.transitions:
+            _tr.owner = name

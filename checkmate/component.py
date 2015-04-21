@@ -92,27 +92,13 @@ class Component(object):
         self.name = name
         self.validation_dict = checkmate._validation.ValidationDict()
         self.service_registry = service_registry
-        for _tr in self.engine.transitions:
-            _tr.owner = self.name
         self.pending_incoming = []
         self.pending_outgoing = []
         self.default_state_value = True
         self.expected_return_code = None
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
-        for _k, _v in self.instance_engines[name].items():
-            if _k == 'engine':
-                self.engine.transitions.extend(_v.transitions)
-                self.engine.transitions = \
-                    list(set(self.engine.transitions))
-            if _k == 'service_classes':
-                for _c in _v:
-                    if _c not in self.service_classes:
-                        self.service_classes.append(_c)
-            if _k in ['services', 'communication_list']:
-                _attribute = getattr(self, _k)
-                _attribute.update(_v)
-                setattr(self, _k, _attribute) 
+        self.engine.set_owner(name)
 
     def block_by_name(self, name):
         return self.engine.block_by_name(name)
