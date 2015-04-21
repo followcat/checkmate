@@ -37,7 +37,6 @@ class ComponentMeta(type):
         def add_definition(namespace, source_files):
             return_dict = {}
             try:
-
                 engine = checkmate.engine.Engine(
                     data_structure_module, exchange_module,
                     state_module, source_files)
@@ -96,6 +95,18 @@ class Component(object):
         self.expected_return_code = None
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+        for _k, _v in self.instance_engines[name].items():
+            if _k == 'engine':
+                self.engine.blocks.extend(_v.blocks)
+                self.engine.blocks = list(set(self.engine.blocks))
+            if _k == 'service_classes':
+                for _c in _v:
+                    if _c not in self.service_classes:
+                        self.service_classes.append(_c)
+            if _k in ['services', 'communication_list']:
+                _attribute = getattr(self, _k)
+                _attribute.update(_v)
+                setattr(self, _k, _attribute)
         self.engine.set_owner(name)
 
     def block_by_name(self, name):
