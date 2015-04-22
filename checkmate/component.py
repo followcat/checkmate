@@ -29,21 +29,22 @@ class ComponentMeta(type):
         """
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
-
         state_module = checkmate._module.get_module(namespace['__module__'],
                             name.lower() + '_states')
         namespace['state_module'] = state_module
+        instance_attributes = collections.defaultdict(dict)
+        instance_engines = collections.defaultdict(dict)
+        for _instance in namespace['instances']:
+            if 'attributes' in _instance:
+                instance_attributes[_instance['name']] = \
+                    _instance['attributes']
+        namespace['instance_attributes'] = instance_attributes
 
         def add_definition(namespace, source_files):
-            return_dict = {}
             try:
                 engine = checkmate.engine.Engine(
                     data_structure_module, exchange_module,
                     state_module, source_files)
-                return_dict['engine'] = engine
-                return_dict['services'] = engine.services
-                return_dict['service_classes'] = engine.service_classes
-                return_dict['communication_list'] = engine.communication_list
                 for _communication in engine.communication_list:
                     if (_communication not in namespace['communication_list']
                             and 'launch_command' in namespace):
@@ -52,21 +53,20 @@ class ComponentMeta(type):
                         raise KeyError(
                             "Communication '%s' is not defined in application"
                             % _communication)
-                return return_dict
+                return engine
             except Exception as e:
                 raise e
         fullfilename = [namespace['component_definition']]
-        namespace.update(add_definition(namespace, fullfilename))
-        instance_engines = collections.defaultdict(dict)
-        for _i, _t in namespace['instance_engines'].items():
-            fullfilenames = list()
-            for (dirpath, dirnames, filenames) in os.walk(_t):
-                for _file in filenames:
-                    if _file.endswith(".yaml"):
-                        fullfilenames.append(os.path.join(dirpath, _file))
-            if len(fullfilenames) > 0:
-                instance_namespace = add_definition(namespace, fullfilenames)
-                instance_engines[_i] = instance_namespace
+        for _instance in namespace['instances']:
+            fullfilenames = list(fullfilename)
+            if 'transitions' in _instance:
+                _t = _instance['transitions']
+                for (dirpath, dirnames, filenames) in os.walk(_t):
+                    for _file in filenames:
+                        if _file.endswith(".yaml"):
+                            fullfilenames.append(os.path.join(dirpath, _file))
+            instance_namespace = add_definition(namespace, fullfilenames)
+            instance_engines[_instance['name']] = instance_namespace
         namespace['instance_engines'] = instance_engines
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
@@ -93,21 +93,13 @@ class Component(object):
         self.pending_outgoing = []
         self.default_state_value = True
         self.expected_return_code = None
+        self.engine = self.instance_engines[name]
+        self.service_classes = self.engine.service_classes
+        self.services = self.engine.services
+        self.communication_list = self.engine.communication_list
+        self.engine.set_owner(name)
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
-        for _k, _v in self.instance_engines[name].items():
-            if _k == 'engine':
-                self.engine.blocks.extend(_v.blocks)
-                self.engine.blocks = list(set(self.engine.blocks))
-            if _k == 'service_classes':
-                for _c in _v:
-                    if _c not in self.service_classes:
-                        self.service_classes.append(_c)
-            if _k in ['services', 'communication_list']:
-                _attribute = getattr(self, _k)
-                _attribute.update(_v)
-                setattr(self, _k, _attribute)
-        self.engine.set_owner(name)
 
     def block_by_name(self, name):
         return self.engine.block_by_name(name)

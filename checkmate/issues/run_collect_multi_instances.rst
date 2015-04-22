@@ -2,7 +2,8 @@ Add one Component_2's instance with request=R2, runs
 collected from application should be increased.
 
     >>> import sample_app.application
-    >>> C2 = sample_app.application.TestData.component_classes[1]
+    >>> import checkmate.engine
+    >>> C2 = sample_app.application.TestData.component_classes[2]
     >>> len(C2['instances'])
     1
     >>> C2['instances'].append({'name': 'C4',
@@ -11,6 +12,11 @@ collected from application should be increased.
     >>> C2_cls = sample_app.component.component_2.Component_2
     >>> C2_cls.instance_attributes['C4'] = {'request':
     ...      {'P': 'HIGH', 'C': 'AT2'}}
+
+    >>> C2_cls.instance_engines['C4'] = checkmate.engine.Engine(
+    ...                C2_cls.data_structure_module,
+    ...                C2_cls.exchange_module,
+    ...                C2_cls.state_module, [C2_cls.component_definition])
 
     >>> app = sample_app.application.TestData()
     >>> app.start()
@@ -32,3 +38,7 @@ revert..
     >>> _v = C2_cls.instance_attributes.pop('C4')
     >>> C2['instances'].remove({'name': 'C4',
     ...     'attributes': {'request': {'C': 'AT2', 'P': 'HIGH'}}})
+    >>> _e = C2_cls.instance_engines.pop('C4')
+    >>> application_class = sample_app.application.TestData
+    >>> delattr(application_class,
+    ...     application_class._run_collection_attribute)

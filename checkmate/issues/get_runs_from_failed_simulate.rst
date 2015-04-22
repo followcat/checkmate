@@ -34,7 +34,7 @@ Should not get Runs when simulate has no outgoing.
         ...     'data_structure_module': data_structure_module,
         ...     '__module__': component_module.__name__,
         ...     'component_definition': class_file,
-        ...     'instance_engines': {},
+        ...     'instances': [{'name': 'DUMMY'}],
         ...     'communication_list': communication_list.keys()}
         >>> _file = open(class_file, 'w')
         >>> _file.close()
@@ -52,18 +52,18 @@ Should not get Runs when simulate has no outgoing.
         ...         module_dict)
         >>> t_out = ts.factory()
         >>> C1 = sample_app.component.component_1.Component_1
-        >>> C1.engine.blocks.append(t_out)
+        >>> C1.instance_engines['C1'].blocks.append(t_out)
         >>> ts = checkmate._storage.TransitionStorage(item_in,
         ...         module_dict)
         >>> t_in = ts.factory()
         >>> Dummy = sample_app.component.dummycomponent.DummyComponent 
-        >>> Dummy.engine.blocks.append(t_in)
+        >>> Dummy.instance_engines['DUMMY'].blocks.append(t_in)
         >>> a = sample_app.application.TestData() 
         >>> len(a.run_collection())
         4
 
     Revert changes for further use in doctest:
-        >>> C1.engine.blocks.remove(t_out)
+        >>> C1.instance_engines['C1'].blocks.remove(t_out)
         >>> del sample_app.component.dummycomponent
         >>> del sample_app.exchanges.ForthAction
         >>> application_class = sample_app.application.TestData

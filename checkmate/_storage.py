@@ -344,7 +344,7 @@ class InternalStorage(object):
             >>> state = sample_app.component.component_1_states.State
             >>> (state.partition_storage.storage[0] ==
             ... sample_app.component.component_1.Component_1.
-            ... engine.blocks[0].initial[0])
+            ... instance_engines['C1'].blocks[0].initial[0])
             True
         """
         assert type(other) == InternalStorage

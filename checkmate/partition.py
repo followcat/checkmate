@@ -55,7 +55,7 @@ class Partition(object):
         >>> import sample_app.application
         >>> state = sample_app.component.component_1_states.State
         >>> state.alike(sample_app.component.component_1.
-        ... Component_1.engine.blocks[0].initial[0]).code
+        ... Component_1.instance_engines['C1'].blocks[0].initial[0]).code
         'State1'
         """
         if init_storage_list is None:
