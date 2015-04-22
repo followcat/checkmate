@@ -4,7 +4,6 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import os
 import collections
 
 import zope.interface
@@ -33,18 +32,23 @@ class ComponentMeta(type):
                             name.lower() + '_states')
         namespace['state_module'] = state_module
         instance_attributes = collections.defaultdict(dict)
-        instance_engines = collections.defaultdict(dict)
         for _instance in namespace['instances']:
             if 'attributes' in _instance:
                 instance_attributes[_instance['name']] = \
                     _instance['attributes']
         namespace['instance_attributes'] = instance_attributes
+        namespace['instance_engines'] = collections.defaultdict(dict)
 
-        def add_definition(namespace, class_file, instance_files):
+        class_file = namespace['component_definition']
+        for _instance in namespace['instances']:
+            instance_dir = None
+            if 'transitions' in _instance:
+                instance_dir = _instance['transitions']
+            engine = checkmate.engine.Engine(
+                data_structure_module, exchange_module,
+                state_module, class_file, instance_dir)
+            engine.set_owner(_instance['name'])
             try:
-                engine = checkmate.engine.Engine(
-                    data_structure_module, exchange_module,
-                    state_module, class_file, instance_files)
                 for _communication in engine.communication_list:
                     if (_communication not in namespace['communication_list']
                             and 'launch_command' in namespace):
@@ -53,23 +57,9 @@ class ComponentMeta(type):
                         raise KeyError(
                             "Communication '%s' is not defined in application"
                             % _communication)
-                return engine
             except Exception as e:
                 raise e
-        fullfilename = namespace['component_definition']
-        for _instance in namespace['instances']:
-            instance_files = list()
-            if 'transitions' in _instance:
-                _t = _instance['transitions']
-                for (dirpath, dirnames, filenames) in os.walk(_t):
-                    for _file in filenames:
-                        if _file.endswith(".yaml"):
-                            instance_files.append(os.path.join(dirpath, _file))
-            instance_namespace = add_definition(namespace, fullfilename,
-                                                instance_files)
-            instance_namespace.set_owner(_instance['name'])
-            instance_engines[_instance['name']] = instance_namespace
-        namespace['instance_engines'] = instance_engines
+            namespace['instance_engines'][_instance['name']] = engine
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 

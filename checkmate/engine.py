@@ -4,6 +4,7 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import os
 
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
@@ -12,19 +13,19 @@ import checkmate.partition_declarator
 class Engine(object):
     # This is Transition Engine
     def __init__(self, data_structure_module, exchange_module,
-                 state_module, class_file, instance_files=None):
-        if instance_files is None:
-            instance_files = []
+                 state_module, class_file, instance_dir=None):
         declarator = checkmate.partition_declarator.Declarator(
             data_structure_module,
             exchange_module=exchange_module,
             state_module=state_module)
-        define_data = ''
         with open(class_file, 'r') as _file:
-            define_data += _file.read()
-        for _f in instance_files:
-            with open(_f, 'r') as _file:
-                define_data += _file.read()
+            define_data = _file.read()
+        if instance_dir is not None:
+            for (dirpath, dirnames, filenames) in os.walk(instance_dir):
+                for _file in filenames:
+                    if _file.endswith(".yaml"):
+                        with open(os.path.join(dirpath, _file), 'r') as _file:
+                            define_data += _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator.new_definitions(data_source)
         declarator_output = declarator.get_output()
