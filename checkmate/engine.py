@@ -12,13 +12,17 @@ import checkmate.partition_declarator
 class Engine(object):
     # This is Transition Engine
     def __init__(self, data_structure_module, exchange_module,
-                 state_module, source_filenames):
+                 state_module, class_file, instance_files=None):
+        if instance_files is None:
+            instance_files = []
         declarator = checkmate.partition_declarator.Declarator(
             data_structure_module,
             exchange_module=exchange_module,
             state_module=state_module)
         define_data = ''
-        for _f in source_filenames:
+        with open(class_file, 'r') as _file:
+            define_data += _file.read()
+        for _f in instance_files:
             with open(_f, 'r') as _file:
                 define_data += _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)

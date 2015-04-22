@@ -40,11 +40,11 @@ class ComponentMeta(type):
                     _instance['attributes']
         namespace['instance_attributes'] = instance_attributes
 
-        def add_definition(namespace, source_files):
+        def add_definition(namespace, class_file, instance_files):
             try:
                 engine = checkmate.engine.Engine(
                     data_structure_module, exchange_module,
-                    state_module, source_files)
+                    state_module, class_file, instance_files)
                 for _communication in engine.communication_list:
                     if (_communication not in namespace['communication_list']
                             and 'launch_command' in namespace):
@@ -56,16 +56,17 @@ class ComponentMeta(type):
                 return engine
             except Exception as e:
                 raise e
-        fullfilename = [namespace['component_definition']]
+        fullfilename = namespace['component_definition']
         for _instance in namespace['instances']:
-            fullfilenames = list(fullfilename)
+            instance_files = list()
             if 'transitions' in _instance:
                 _t = _instance['transitions']
                 for (dirpath, dirnames, filenames) in os.walk(_t):
                     for _file in filenames:
                         if _file.endswith(".yaml"):
-                            fullfilenames.append(os.path.join(dirpath, _file))
-            instance_namespace = add_definition(namespace, fullfilenames)
+                            instance_files.append(os.path.join(dirpath, _file))
+            instance_namespace = add_definition(namespace, fullfilename,
+                                                instance_files)
             instance_namespace.set_owner(_instance['name'])
             instance_engines[_instance['name']] = instance_namespace
         namespace['instance_engines'] = instance_engines

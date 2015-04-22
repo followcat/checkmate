@@ -16,7 +16,7 @@ collected from application should be increased.
     >>> C2_cls.instance_engines['C4'] = checkmate.engine.Engine(
     ...                C2_cls.data_structure_module,
     ...                C2_cls.exchange_module,
-    ...                C2_cls.state_module, [C2_cls.component_definition])
+    ...                C2_cls.state_module, C2_cls.component_definition)
 
     >>> app = sample_app.application.TestData()
     >>> app.start()
