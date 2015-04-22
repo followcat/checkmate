@@ -13,7 +13,6 @@ We should be able to use python default types when defining exchanges:
     >>> app.define_exchange(items)
 
     >>> import checkmate._storage
-    >>> import checkmate.transition
     >>> import sample_app.application
     >>> item_out = {'name': 'Toggle TestState tran01',
     ...             'incoming': [{'ThirdAction': 'AL()'}],

@@ -5,8 +5,8 @@
 # version 3 of the License, or (at your option) any later version.
 
 import checkmate._module
-import checkmate.transition
 import checkmate._exec_tools
+import checkmate.tymata.transition
 
 
 def name_to_class(name, modules):
@@ -116,7 +116,8 @@ class TransitionStorage(object):
                     getattr(self, _k).append(generate_storage)
 
     def factory(self):
-        return checkmate.transition.Transition(tran_name=self.name,
+        return checkmate.tymata.transition.Transition(
+                                               tran_name=self.name,
                                                initializing=self.initializing,
                                                initial=self.initial,
                                                incoming=self.incoming,

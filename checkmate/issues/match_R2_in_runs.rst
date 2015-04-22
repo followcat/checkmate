@@ -1,7 +1,6 @@
 We can match R with R2 when we do collect runs
     A defined transition with incoming AP(R) matching outgoing AP(R2):
         >>> import checkmate._storage
-        >>> import checkmate.transition
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2

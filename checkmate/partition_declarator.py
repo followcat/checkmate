@@ -187,7 +187,7 @@ class Declarator(object):
         ...         'final': [{'TestState': 'TestStateFalse'}]}
         >>> de.new_transition(item)
         >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
-        [<checkmate.transition.Transition object at ...
+        [<checkmate.tymata.transition.Transition object at ...
         """
         self.output['transitions'].append(
             make_transition(items, [self.module['exchanges']],

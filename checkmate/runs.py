@@ -8,12 +8,12 @@ import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
-import checkmate.transition
+import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
     def __init__(self, block, nodes=None, states=None):
-        assert isinstance(block, checkmate.transition.Block)
+        assert isinstance(block, checkmate.tymata.transition.Block)
         if nodes is None:
             nodes = []
         if states is None:
