@@ -66,6 +66,7 @@ class ComponentMeta(type):
                         if _file.endswith(".yaml"):
                             fullfilenames.append(os.path.join(dirpath, _file))
             instance_namespace = add_definition(namespace, fullfilenames)
+            instance_namespace.set_owner(_instance['name'])
             instance_engines[_instance['name']] = instance_namespace
         namespace['instance_engines'] = instance_engines
         result = type.__new__(cls, name, bases, dict(namespace))
@@ -97,7 +98,6 @@ class Component(object):
         self.service_classes = self.engine.service_classes
         self.services = self.engine.services
         self.communication_list = self.engine.communication_list
-        self.engine.set_owner(name)
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
 
