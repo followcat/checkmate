@@ -58,7 +58,7 @@ class Declarator(object):
     data_value = {}
 
     def __init__(self, data_module, exchange_module,
-                 state_module=None, transition_module=None, data_value=None):
+                 state_module=None, data_value=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
