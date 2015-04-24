@@ -6,7 +6,7 @@
 
 import os
 
-import checkmate.parser.yaml_visitor
+import checkmate.tymata.visitor
 import checkmate.partition_declarator
 
 
@@ -26,7 +26,7 @@ class Engine(object):
                     if _file.endswith(".yaml"):
                         with open(os.path.join(dirpath, _file), 'r') as _file:
                             define_data += _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        data_source = checkmate.tymata.visitor.call_visitor(define_data)
         declarator.new_definitions(data_source)
         declarator_output = declarator.get_output()
         self.states = declarator_output['states']

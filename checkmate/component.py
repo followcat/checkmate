@@ -13,6 +13,7 @@ import checkmate._validation
 import checkmate.engine
 import checkmate.exception
 import checkmate.interfaces
+import checkmate.partition_declarator
 
 
 class ComponentMeta(type):
@@ -40,6 +41,14 @@ class ComponentMeta(type):
         namespace['instance_engines'] = collections.defaultdict(dict)
 
         class_file = namespace['component_definition']
+        with open(class_file, 'r') as _file:
+            define_data = _file.read()
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        declarator = checkmate.partition_declarator.Declarator(
+            data_structure_module, exchange_module, state_module)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+        namespace['class_states'] = output['states']
         for _instance in namespace['instances']:
             instance_dir = None
             if 'transitions' in _instance:
@@ -140,7 +149,7 @@ class Component(object):
         >>> c.states #doctest: +ELLIPSIS
         [<sample_app.component.component_1_states.State object at ...
         """
-        for state in self.engine.states:
+        for state in self.class_states:
             cls = state.partition_class
             _kws = {}
             try:

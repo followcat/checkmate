@@ -10,7 +10,7 @@ Using compare_state() with transition's final InternalStorage as target does not
     >>> r.start_test()
     >>> _application = sample_app.application.TestData()
     >>> components = list(_application.components.keys())
-    >>> data = checkmate.parser.yaml_visitor.data_from_files(_application)
+    >>> data = checkmate.tymata.visitor.data_from_files(_application)
     >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(data, _application)
     >>> _run = run_list[1]
     >>> list(_run.final)[0].function #doctest: +ELLIPSIS

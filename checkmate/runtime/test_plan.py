@@ -8,7 +8,7 @@ import os.path
 
 import checkmate.runs
 import checkmate.sandbox
-import checkmate.parser.yaml_visitor
+import checkmate.tymata.visitor
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
@@ -18,7 +18,7 @@ def get_runs_from_test(data, application):
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> data = checkmate.parser.yaml_visitor.data_from_files(a)
+        >>> data = checkmate.tymata.visitor.data_from_files(a)
         >>> checkmate.runtime.test_plan.get_runs_from_test(
         ...     data, a) #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
@@ -74,7 +74,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 
     """
     _application = application_class()
-    data = checkmate.parser.yaml_visitor.data_from_files(_application)
+    data = checkmate.tymata.visitor.data_from_files(_application)
     for _run in get_runs_from_test(data, _application):
         yield _run, _run.root.name
 
