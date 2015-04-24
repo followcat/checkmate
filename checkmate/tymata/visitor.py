@@ -37,6 +37,18 @@ class Visitor():
 
 
 def call_visitor(content):
+    """
+        >>> import os
+        >>> import checkmate.tymata.visitor
+        >>> input_file = os.getenv("CHECKMATE_HOME") +\
+                             '/checkmate/parser/state_machine.yaml'
+        >>> f = open(input_file,'r')
+        >>> c = f.read()
+        >>> f.close()
+        >>> output = checkmate.tymata.visitor.call_visitor(c)
+        >>> len(output['transitions'])
+        4
+    """
     visitor = Visitor(content)
     return collections.OrderedDict([('transitions', visitor._transitions)])
 
