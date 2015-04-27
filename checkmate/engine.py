@@ -22,12 +22,12 @@ class Engine(object):
                     if _file.endswith(".yaml"):
                         with open(os.path.join(dirpath, _file), 'r') as _file:
                             define_data += _file.read()
-        data_source = checkmate.tymata.visitor.call_visitor(define_data)
+        transitions = checkmate.tymata.visitor.call_visitor(define_data)
         self.blocks = []
-        for data in data_source['transitions']:
-            new_transition = checkmate.tymata.transition.make_transition(
+        for data in transitions:
+            new_block = checkmate.tymata.transition.make_transition(
                 data, [exchange_module], [state_module])
-            self.blocks.append(new_transition)
+            self.blocks.append(new_block)
         self.services = {}
         self.service_classes = []
         self.communication_list = set()

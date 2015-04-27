@@ -6,7 +6,6 @@
 
 import os
 import yaml
-import collections
 
 import checkmate._yaml
 
@@ -46,11 +45,11 @@ def call_visitor(content):
         >>> c = f.read()
         >>> f.close()
         >>> output = checkmate.tymata.visitor.call_visitor(c)
-        >>> len(output['transitions'])
+        >>> len(output)
         4
     """
     visitor = Visitor(content)
-    return collections.OrderedDict([('transitions', visitor._transitions)])
+    return visitor._transitions
 
 
 def data_from_files(application):
@@ -72,6 +71,4 @@ def data_from_files(application):
     except FileNotFoundError:
         return []
     _output = call_visitor(matrix)
-    for data in _output['transitions']:
-        array_list.append(data)
-    return array_list
+    return _output
