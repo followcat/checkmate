@@ -7,17 +7,13 @@
 import os
 
 import checkmate.tymata.visitor
-import checkmate.partition_declarator
+import checkmate.tymata.transition
 
 
 class Engine(object):
     # This is Transition Engine
     def __init__(self, data_structure_module, exchange_module,
                  state_module, class_file, instance_dir=None):
-        declarator = checkmate.partition_declarator.Declarator(
-            data_structure_module,
-            exchange_module=exchange_module,
-            state_module=state_module)
         with open(class_file, 'r') as _file:
             define_data = _file.read()
         if instance_dir is not None:
@@ -27,9 +23,11 @@ class Engine(object):
                         with open(os.path.join(dirpath, _file), 'r') as _file:
                             define_data += _file.read()
         data_source = checkmate.tymata.visitor.call_visitor(define_data)
-        declarator.new_definitions(data_source)
-        declarator_output = declarator.get_output()
-        self.blocks = declarator_output['transitions']
+        self.blocks = []
+        for data in data_source['transitions']:
+            new_transition = checkmate.tymata.transition.new_transition(
+                data, exchange_module, state_module)
+            self.blocks.append(new_transition)
         self.services = {}
         self.service_classes = []
         self.communication_list = set()

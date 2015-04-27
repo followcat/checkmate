@@ -18,6 +18,57 @@ def make_transition(items, exchanges, state_modules):
     return ts.factory()
 
 
+def new_transition(items, exchange_module, state_module):
+    """
+    >>> import checkmate._module
+    >>> import checkmate.application
+    >>> import checkmate.data_structure
+    >>> import checkmate.partition_declarator
+    >>> state_module = checkmate._module.get_module(
+    ...                    'checkmate.application', 'states')
+    >>> exchange_module = checkmate._module.get_module(
+    ...                       'checkmate.application', 'exchanges')
+    >>> data_structure_module = checkmate._module.get_module(
+    ...                             'checkmate.application', 'data')
+    >>> de = checkmate.partition_declarator.Declarator(
+    ...         data_structure_module,
+    ...         exchange_module,
+    ...         state_module=state_module)
+    >>> items = {
+    ...     'partition_type': 'data_structure',
+    ...     'signature': 'TestActionRequest',
+    ...     'codes_list': ['TestActionRequestNORM'],
+    ...     'values_list': ['NORM'],
+    ...     }
+    >>> de.new_partition(items)
+    >>> items = {
+    ...     'partition_type': 'states',
+    ...     'signature': 'TestState',
+    ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
+    ...     'values_list': [True, False],
+    ...     }
+    >>> de.new_partition(items)
+    >>> items = {
+    ...     'partition_type': 'exchanges',
+    ...     'signature': 'TestReturn()',
+    ...     'codes_list': ['DA()'],
+    ...     'values_list': ['DA']
+    ...     }
+    >>> de.new_partition(items)
+    >>> item = {'name': 'Toggle TestState tran01',
+    ...         'initial': [{'TestState': 'TestStateTrue'}],
+    ...         'outgoing': [{'TestReturn': 'DA()'}],
+    ...         'incoming': [{'TestAction': 'AP(R)'}],
+    ...         'final': [{'TestState': 'TestStateFalse'}]}
+    >>> checkmate.tymata.transition.new_transition(item,
+    ...     exchange_module,
+    ...     state_module) # doctest: +ELLIPSIS
+    <checkmate.tymata.transition.Transition object at ...
+    """
+    return checkmate.tymata.transition.make_transition(
+        items, [exchange_module], [state_module])
+
+
 class Block(object):
     """"""
 

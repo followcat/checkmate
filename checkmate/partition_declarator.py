@@ -133,56 +133,6 @@ class Declarator(object):
                 self.__class__.data_value,
                 define_attributes))
 
-    def new_transition(self, items):
-        """
-        >>> import checkmate._module
-        >>> import checkmate.application
-        >>> import checkmate.data_structure
-        >>> import checkmate.partition_declarator
-        >>> state_module = checkmate._module.get_module(
-        ...                    'checkmate.application', 'states')
-        >>> exchange_module = checkmate._module.get_module(
-        ...                       'checkmate.application', 'exchanges')
-        >>> data_structure_module = checkmate._module.get_module(
-        ...                             'checkmate.application', 'data')
-        >>> de = checkmate.partition_declarator.Declarator(
-        ...         data_structure_module,
-        ...         exchange_module,
-        ...         state_module=state_module)
-        >>> items = {
-        ...     'partition_type': 'data_structure',
-        ...     'signature': 'TestActionRequest',
-        ...     'codes_list': ['TestActionRequestNORM'],
-        ...     'values_list': ['NORM'],
-        ...     }
-        >>> de.new_partition(items)
-        >>> items = {
-        ...     'partition_type': 'states',
-        ...     'signature': 'TestState',
-        ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
-        ...     'values_list': [True, False],
-        ...     }
-        >>> de.new_partition(items)
-        >>> items = {
-        ...     'partition_type': 'exchanges',
-        ...     'signature': 'TestReturn()',
-        ...     'codes_list': ['DA()'],
-        ...     'values_list': ['DA']
-        ...     }
-        >>> de.new_partition(items)
-        >>> item = {'name': 'Toggle TestState tran01',
-        ...         'initial': [{'TestState': 'TestStateTrue'}],
-        ...         'outgoing': [{'TestReturn': 'DA()'}],
-        ...         'incoming': [{'TestAction': 'AP(R)'}],
-        ...         'final': [{'TestState': 'TestStateFalse'}]}
-        >>> de.new_transition(item)
-        >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
-        [<checkmate.tymata.transition.Transition object at ...
-        """
-        self.output['transitions'].append(
-            checkmate.tymata.transition.make_transition(
-                items, [self.module['exchanges']], [self.module['states']]))
-
     def new_definitions(self, data_source):
         """
         >>> import collections
@@ -236,12 +186,9 @@ class Declarator(object):
         """
         for partition_type, chunk in data_source.items():
             for data in chunk:
-                if partition_type == 'transitions':
-                    self.new_transition(data)
-                else:
-                    data['partition_type'] = partition_type
-                    self.new_partition(data, data['attributes'],
-                        data['define_attributes'])
+                data['partition_type'] = partition_type
+                self.new_partition(data, data['attributes'],
+                    data['define_attributes'])
 
     def get_output(self):
         return self.output
