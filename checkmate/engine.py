@@ -25,8 +25,8 @@ class Engine(object):
         data_source = checkmate.tymata.visitor.call_visitor(define_data)
         self.blocks = []
         for data in data_source['transitions']:
-            new_transition = checkmate.tymata.transition.new_transition(
-                data, exchange_module, state_module)
+            new_transition = checkmate.tymata.transition.make_transition(
+                data, [exchange_module], [state_module])
             self.blocks.append(new_transition)
         self.services = {}
         self.service_classes = []

@@ -20,13 +20,6 @@ def name_to_class(name, modules):
 
 
 def make_transition(items, exchanges, state_modules):
-    module_dict = {'states': state_modules,
-                   'exchanges': exchanges}
-    ts = TransitionStorage(items, module_dict)
-    return ts.factory()
-
-
-def new_transition(items, exchange_module, state_module):
     """
     >>> import checkmate._module
     >>> import checkmate.application
@@ -68,13 +61,15 @@ def new_transition(items, exchange_module, state_module):
     ...         'outgoing': [{'TestReturn': 'DA()'}],
     ...         'incoming': [{'TestAction': 'AP(R)'}],
     ...         'final': [{'TestState': 'TestStateFalse'}]}
-    >>> checkmate.tymata.transition.new_transition(item,
-    ...     exchange_module,
-    ...     state_module) # doctest: +ELLIPSIS
+    >>> checkmate.tymata.transition.make_transition(item,
+    ...     [exchange_module],
+    ...     [state_module]) # doctest: +ELLIPSIS
     <checkmate.tymata.transition.Transition object at ...
     """
-    return checkmate.tymata.transition.make_transition(
-        items, [exchange_module], [state_module])
+    module_dict = {'states': state_modules,
+                   'exchanges': exchanges}
+    ts = TransitionStorage(items, module_dict)
+    return ts.factory()
 
 
 class TransitionStorage(object):
