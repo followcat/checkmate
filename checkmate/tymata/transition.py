@@ -76,24 +76,23 @@ class TransitionStorage(object):
     def __init__(self, items, module_dict):
         """"""
         super().__init__()
-        self.name = ''
-        self.initializing = False
-        self.final = []
-        self.initial = []
-        self.incoming = []
-        self.outgoing = []
-        self.returned = []
+        self.tran_dict = {
+            'name': '',
+            'initializing': False,
+            'final': [],
+            'initial': [],
+            'incoming': [],
+            'outgoing': [],
+            'returned': [],
+        }
 
         for _k, _v in items.items():
-            if _k == 'initial' or _k == 'final':
+            if _k in ['initial', 'final']:
                 module_type = 'states'
-            elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
+            elif _k in ['incoming', 'outgoing', 'returned']:
                 module_type = 'exchanges'
-            elif _k == 'initializing' and _v == True:
-                self.initializing = True
-                continue
-            elif _k == 'name':
-                self.name = _v
+            elif _k == 'initializing' and _v is True or _k == 'name':
+                self.tran_dict[_k] = _v
                 continue
             for each_item in _v:
                 for _name, _data in each_item.items():
@@ -114,17 +113,10 @@ class TransitionStorage(object):
                         if hasattr(define_class, code):
                             generate_storage.function = \
                                 getattr(define_class, code)
-                    getattr(self, _k).append(generate_storage)
+                    self.tran_dict[_k].append(generate_storage)
 
     def factory(self):
-        return checkmate.tymata.transition.Transition(
-                                               tran_name=self.name,
-                                               initializing=self.initializing,
-                                               initial=self.initial,
-                                               incoming=self.incoming,
-                                               final=self.final,
-                                               outgoing=self.outgoing,
-                                               returned=self.returned)
+        return checkmate.tymata.transition.Transition(**self.tran_dict)
 
 
 class Block(object):
@@ -139,7 +131,7 @@ class Transition(Block):
         self.owner = ''
         self.initializing = argc['initializing']
         try:
-            self.name = argc['tran_name']
+            self.name = argc['name']
         except KeyError:
             self.name = 'unknown'
         finally:
