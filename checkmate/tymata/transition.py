@@ -10,10 +10,6 @@ import checkmate
 def make_transition(items, exchanges, state_modules):
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
-    try:
-        tran_name = items['name']
-    except KeyError:
-        tran_name = 'unknown'
     ts = checkmate._storage.TransitionStorage(items, module_dict)
     return ts.factory()
 
