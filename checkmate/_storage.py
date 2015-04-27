@@ -38,7 +38,6 @@ class PartitionStorage(object):
         self.full_description = full_description
         self.partition_class = partition_class
         self.storage = []
-        #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
             try:
                 code_description = self.full_description[code]
@@ -171,15 +170,12 @@ class InternalStorage(object):
             >>> t.final[0].resolve(exchanges=[inc],
             ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> module_dict = {
-            ...     'states': [sample_app.component.component_1_states],
-            ...     'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01',
             ...         'outgoing': [{'Action': 'AP(R2)'}],
             ...         'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate.tymata.transition.TransitionStorage(
-            ...         item, module_dict)
-            >>> t = ts.factory()
+            >>> t = checkmate.tymata.transition.make_transition(
+            ...         item, [sample_app.exchanges],
+            ...         [sample_app.component.component_1_states])
             >>> t.outgoing[0].resolved_arguments['R'].C.value
             'AT2'
             >>> t.outgoing[0].resolved_arguments['R'].P.value
@@ -189,7 +185,7 @@ class InternalStorage(object):
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
-            >>> resolved_arguments['R'].C.value 
+            >>> resolved_arguments['R'].C.value
             'AT2'
             >>> resolved_arguments['R'].P.value
             'HIGH'

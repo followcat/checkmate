@@ -24,16 +24,13 @@ when component start, its initializing block will be simulated.
         ...             'outgoing': [{'ForthAction': 'AF()'}]}
         >>> item_in = {'name': 'TestState tran02',
         ... 'incoming': [{'ForthAction': 'AF()'}]}
-        >>> module_dict = {'exchanges':[sample_app.exchanges]}
-        >>> ts = checkmate.tymata.transition.TransitionStorage(item_out,
-        ...         module_dict)
-        >>> t_out = ts.factory()
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges])
         >>> state1 = sample_app.component.component_1.Component_1
         >>> state2 = sample_app.component.component_2.Component_2
         >>> state2.instance_engines['C2'].blocks.append(t_out)
-        >>> ts = checkmate.tymata.transition.TransitionStorage(item_in,
-        ...         module_dict)
-        >>> t_in = ts.factory()
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges])
         >>> state1.instance_engines['C1'].blocks.append(t_in)
         >>> state1.instance_engines['C1'].service_classes.append(
         ...     sample_app.exchanges.ForthAction)

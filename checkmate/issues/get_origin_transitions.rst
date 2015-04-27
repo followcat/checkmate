@@ -25,12 +25,11 @@
     >>> item_in = {'name': 'TestState tran02',
     ...            'incoming': [{'ForthAction': 'AF()'}],
     ...            'outgoing': [{'ExchangeButton': 'PBAC()'}]}
-    >>> module_dict = {'exchanges':[sample_app.exchanges]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item_in,
-    ...         module_dict)
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item_in, [sample_app.exchanges])
     >>> user = sample_app.component.user.User
     >>> t_copy = user.instance_engines['USER'].blocks[0]
-    >>> user.instance_engines['USER'].blocks[0] = ts.factory()
+    >>> user.instance_engines['USER'].blocks[0] = t
     >>> app = sample_app.application.TestData()
     >>> app.start(default_state_value=False)
     >>> transitions = checkmate.runs.get_origin_transitions(app)

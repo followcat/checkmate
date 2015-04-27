@@ -49,11 +49,9 @@ Creation of the transition.
     ...     'incoming': [{'Exchange': 'EX(IT, IT, IT)'}],
     ...     }
 
-    >>> module = {
-    ...     'states': [sample_app.component.component_1_states],
-    ...     'exchanges':[sample_app.exchanges]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item_in, module)
-    >>> t_in = ts.factory()
+    >>> t_in = checkmate.tymata.transition.make_transition(
+    ...         item_in, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> c1 = sample_app.application.TestData().components['C1']
     >>> c1.start()
 

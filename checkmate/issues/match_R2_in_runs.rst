@@ -5,15 +5,14 @@ We can match R with R2 when we do collect runs
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
 
-        >>> module_dict = {'states': [sample_app.component.component_1_states], 'exchanges':[sample_app.exchanges]}
         >>> item_in = {'name': 'Toggle TestState tran01', 'initial': [{'AnotherState': 'AnotherState1()'}], 'incoming': [{'Action': 'AP(R)'}], 'final': [{'AnotherState': 'append(R)'}], 'outgoing': [{'ThirdAction': 'DA()'}]}
         >>> item_out = {'name': 'Toggle TestState tran01', 'incoming': [{'AnotherReaction': 'ARE()'}], 'outgoing': [{'Action': 'AP(R2)'}]}
-        >>> ts = checkmate.tymata.transition.TransitionStorage(
-        ... item_in, module_dict)
-        >>> t_in = ts.factory()
-        >>> ts = checkmate.tymata.transition.TransitionStorage(
-        ... item_out, module_dict)
-        >>> t_out = ts.factory()
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges],
+        ...         [sample_app.component.component_1_states])
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges],
+        ...         [sample_app.component.component_1_states])
         >>> component_1 = sample_app.component.component_1.Component_1
         >>> component_2 = sample_app.component.component_2.Component_2
         >>> copy_t1 = component_1.instance_engines['C1'].blocks[1]

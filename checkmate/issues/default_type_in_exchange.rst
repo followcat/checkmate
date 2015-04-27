@@ -18,9 +18,8 @@ We should be able to use python default types when defining exchanges:
     ...             'incoming': [{'ThirdAction': 'AL()'}],
     ...             'outgoing': [{'BO': 'B1(True)'}]}
 
-    >>> module_dict = {'exchanges':[sample_app.exchanges]}
-
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item_out, module_dict)
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item_out, [sample_app.exchanges])
 
     >>> delattr(sample_app.exchanges, 'BO')
 

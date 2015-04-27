@@ -6,16 +6,14 @@ function without giving resolved_arguments will be ok.
     >>> t.incoming[0].factory().broadcast
     False
     >>> import checkmate.tymata.transition
-    >>> module_dict = {
-    ...     'states': [sample_app.component.component_1_states], 
-    ...     'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01', 
     ...         'initial': [{'AnotherState': '__init__()'}], 
     ...         'outgoing': [{'ThirdAction': 'DA()'}], 
     ...         'incoming': [{'Action': 'AP(R1)'}], 
     ...         'final': [{'AnotherState': 'append(R1)'}]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> ex = t.incoming[0].factory()
     >>> ex.broadcast
     False

@@ -47,15 +47,12 @@ Should not get Runs when simulate has no outgoing.
         >>> item_in = {
         ...     'name': 'Toggle TestState tran02',
         ...     'incoming': [{'ForthAction': 'AF()'}]}
-        >>> module_dict = {'exchanges':[sample_app.exchanges]}
-        >>> ts = checkmate.tymata.transition.TransitionStorage(item_out,
-        ...         module_dict)
-        >>> t_out = ts.factory()
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges])
         >>> C1 = sample_app.component.component_1.Component_1
         >>> C1.instance_engines['C1'].blocks.append(t_out)
-        >>> ts = checkmate.tymata.transition.TransitionStorage(item_in,
-        ...         module_dict)
-        >>> t_in = ts.factory()
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges])
         >>> Dummy = sample_app.component.dummycomponent.DummyComponent 
         >>> Dummy.instance_engines['DUMMY'].blocks.append(t_in)
         >>> a = sample_app.application.TestData() 

@@ -6,15 +6,13 @@ first is resolve
     >>> import checkmate.tymata.transition
     >>> a = sample_app.application.TestData()
     >>> a.start()
-    >>> c1_states = sample_app.component.component_1_states
-    >>> module_dict = {'states': [c1_states],
-    ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
     ...         'initial':[{'AnotherState':'AnotherState1()'}],
     ...         'final': [{'AnotherState': 'AnotherState1(R2)'}],
     ...         'incoming': [{'Action': 'AP(R2)'}]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> _R = t.incoming[0].resolved_arguments['R']
     >>> t.incoming[0].code, _R.C.value, _R.P.value
     ('AP', 'AT2', 'HIGH')

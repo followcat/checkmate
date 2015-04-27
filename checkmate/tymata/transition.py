@@ -19,7 +19,7 @@ def name_to_class(name, modules):
     return partition_class
 
 
-def make_transition(items, exchanges, state_modules):
+def make_transition(items, exchanges=[], state_modules=[]):
     """
     >>> import checkmate._module
     >>> import checkmate.application
@@ -68,55 +68,42 @@ def make_transition(items, exchanges, state_modules):
     """
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
-    ts = TransitionStorage(items, module_dict)
-    return ts.factory()
-
-
-class TransitionStorage(object):
-    def __init__(self, items, module_dict):
-        """"""
-        super().__init__()
-        self.tran_dict = {
-            'name': '',
-            'initializing': False,
-            'final': [],
-            'initial': [],
-            'incoming': [],
-            'outgoing': [],
-            'returned': [],
-        }
-
-        for _k, _v in items.items():
-            if _k in ['initial', 'final']:
-                module_type = 'states'
-            elif _k in ['incoming', 'outgoing', 'returned']:
-                module_type = 'exchanges'
-            elif _k == 'initializing' and _v is True or _k == 'name':
-                self.tran_dict[_k] = _v
-                continue
-            for each_item in _v:
-                for _name, _data in each_item.items():
-                    code = checkmate._exec_tools.get_method_basename(_data)
-                    define_class = name_to_class(
-                        _name, module_dict[module_type])
-                    arguments = checkmate._exec_tools.get_signature_arguments(
-                                    _data, define_class)
-                    generate_storage = checkmate._storage.InternalStorage(
-                        define_class, _data, None, arguments=arguments)
-                    if _k == 'final':
-                        generate_storage.function = define_class.__init__
-                    for _s in define_class.partition_storage.storage:
-                        if _s.code == code:
-                            generate_storage.value = _s.value
-                            break
-                    else:
-                        if hasattr(define_class, code):
-                            generate_storage.function = \
-                                getattr(define_class, code)
-                    self.tran_dict[_k].append(generate_storage)
-
-    def factory(self):
-        return checkmate.tymata.transition.Transition(**self.tran_dict)
+    tran_dict = {
+        'name': '',
+        'initializing': False,
+        'final': [],
+        'initial': [],
+        'incoming': [],
+        'outgoing': [],
+        'returned': [],
+    }
+    for _k, _v in items.items():
+        if _k in ['initial', 'final']:
+            module_type = 'states'
+        elif _k in ['incoming', 'outgoing', 'returned']:
+            module_type = 'exchanges'
+        elif _k == 'initializing' and _v is True or _k == 'name':
+            tran_dict[_k] = _v
+            continue
+        for each_item in _v:
+            for _name, _data in each_item.items():
+                code = checkmate._exec_tools.get_method_basename(_data)
+                define_class = name_to_class(_name, module_dict[module_type])
+                arguments = checkmate._exec_tools.get_signature_arguments(
+                                _data, define_class)
+                generate_storage = checkmate._storage.InternalStorage(
+                    define_class, _data, None, arguments=arguments)
+                if _k == 'final':
+                    generate_storage.function = define_class.__init__
+                for _s in define_class.partition_storage.storage:
+                    if _s.code == code:
+                        generate_storage.value = _s.value
+                        break
+                else:
+                    if hasattr(define_class, code):
+                        generate_storage.function = getattr(define_class, code)
+                tran_dict[_k].append(generate_storage)
+    return checkmate.tymata.transition.Transition(**tran_dict)
 
 
 class Block(object):

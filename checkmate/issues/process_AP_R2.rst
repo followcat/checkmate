@@ -30,17 +30,15 @@ define a block to to process AP(R2)
     ('AT1', 'NORM')
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> c1_states = sample_app.component.component_1_states
     >>> c1 = a.components['C1']
-    >>> module_dict = {'states': [c1_states],
-    ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
     ...         'initial': [{'AnotherState': 'AnotherState1()'}],
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> t.is_matching_incoming([ap_r1], c1.states)
     False
     >>> t.is_matching_incoming([ap_r2], c1.states)
@@ -64,16 +62,14 @@ Setup:
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
-    >>> c1_states = sample_app.component.component_1_states
-    >>> module_dict = {'states': [c1_states],
-    ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
     ...         'initial': [{'AnotherState': 'AnotherState1()'}],
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> saved_block = c1.engine.blocks[1]
     >>> c1.engine.blocks[1] = t
 
