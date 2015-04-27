@@ -8,6 +8,17 @@ import checkmate
 import checkmate._storage
 
 
+def name_to_class(name, modules):
+    for _m in modules:
+        if hasattr(_m, name):
+            partition_class = getattr(_m, name)
+            break
+    else:
+        raise AttributeError(
+            _m.__name__ + ' has no class defined:' + name)
+    return partition_class
+
+
 def make_transition(items, exchanges, state_modules):
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
@@ -92,7 +103,7 @@ class TransitionStorage(object):
             for each_item in _v:
                 for _name, _data in each_item.items():
                     code = checkmate._exec_tools.get_method_basename(_data)
-                    define_class = checkmate._storage.name_to_class(
+                    define_class = name_to_class(
                         _name, module_dict[module_type])
                     arguments = checkmate._exec_tools.get_signature_arguments(
                                     _data, define_class)

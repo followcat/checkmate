@@ -9,16 +9,6 @@ import checkmate._exec_tools
 import checkmate.tymata.transition
 
 
-def name_to_class(name, modules):
-    for _m in modules:
-        if hasattr(_m, name):
-            partition_class = getattr(_m, name)
-            break
-    else:
-        raise AttributeError(
-            _m.__name__ + ' has no class defined:' + name)
-    return partition_class
-
 class PartitionStorage(object):
     def __init__(self, partition_class, code_arguments,
                  full_description=None):
