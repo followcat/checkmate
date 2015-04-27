@@ -29,7 +29,6 @@ class Engine(object):
         data_source = checkmate.tymata.visitor.call_visitor(define_data)
         declarator.new_definitions(data_source)
         declarator_output = declarator.get_output()
-        self.states = declarator_output['states']
         self.blocks = declarator_output['transitions']
         self.services = {}
         self.service_classes = []
