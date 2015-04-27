@@ -10,9 +10,9 @@ import zope.interface
 
 import checkmate._module
 import checkmate._validation
-import checkmate.engine
 import checkmate.exception
 import checkmate.interfaces
+import checkmate.tymata.engine
 import checkmate.partition_declarator
 
 
@@ -53,7 +53,7 @@ class ComponentMeta(type):
             instance_dir = None
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
-            engine = checkmate.engine.Engine(
+            engine = checkmate.tymata.engine.Engine(
                 exchange_module, state_module,
                 class_file, instance_dir)
             engine.set_owner(_instance['name'])
