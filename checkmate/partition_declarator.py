@@ -8,7 +8,6 @@ import collections
 
 import checkmate._storage
 import checkmate._exec_tools
-import checkmate.tymata.transition
 import checkmate.parser.yaml_visitor
 
 
@@ -59,8 +58,7 @@ class Declarator(object):
         self.output = {
             'data_structure': [],
             'states': [],
-            'exchanges': [],
-            'transitions': []}
+            'exchanges': []}
 
     @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
     def new_partition(self, items, attributes={}, define_attributes={}):
@@ -181,8 +179,6 @@ class Declarator(object):
         <class 'checkmate.states.TestState'>
         >>> output['exchanges'][0].partition_class
         <class 'checkmate.exchanges.TestAction'>
-        >>> output['transitions']
-        []
         """
         for partition_type, chunk in data_source.items():
             for data in chunk:
