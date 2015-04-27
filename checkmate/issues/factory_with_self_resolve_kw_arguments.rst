@@ -2,7 +2,7 @@ new a transition with initial like "__init__(R2)" then, get initial
 factory() to return a state with R=R2, ('AT2','HIGH')
     >>> import sample_app.application
     >>> a = sample_app.application.TestData()
-    >>> import checkmate._storage
+    >>> import checkmate.tymata.transition
     >>> c1_states = sample_app.component.component_1_states
     >>> module_dict = {'states': [c1_states],
     ...                'exchanges':[sample_app.exchanges]}
@@ -11,7 +11,7 @@ factory() to return a state with R=R2, ('AT2','HIGH')
     ...         'final': [{'AnotherState': 'pop(R)'}],
     ...         'incoming': [{'Action': 'PP(R)'}],
     ...         'outgoing': [{"Pause":"PA()"}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> init_1 = t.initial[0].factory(**t.initial[0].resolve())
     >>> init_1.partition_attribute
@@ -22,7 +22,7 @@ factory() to return a state with R=R2, ('AT2','HIGH')
     ...         'final': [{'AnotherState': 'pop(R2)'}],
     ...         'incoming': [{'Action': 'PP(R2)'}],
     ...         'outgoing': [{"Pause":"PA()"}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> init_1 = t.initial[0].factory(**t.initial[0].resolve())
     >>> init_1.partition_attribute
@@ -34,7 +34,7 @@ factory() to return a state with R=R2, ('AT2','HIGH')
     ...         'final': [{'AnotherState': 'pop(R)'}],
     ...         'incoming': [{'Action': 'PP(R)'}],
     ...         'outgoing': [{"Pause":"PA()"}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> init_1 = t.initial[0].factory(**t.initial[0].resolve())
     >>> init_1.partition_attribute

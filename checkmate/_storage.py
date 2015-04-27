@@ -71,61 +71,6 @@ class PartitionStorage(object):
         return (None, None)
 
 
-class TransitionStorage(object):
-    def __init__(self, items, module_dict):
-        """"""
-        super().__init__()
-        self.name = ''
-        self.initializing = False
-        self.final = []
-        self.initial = []
-        self.incoming = []
-        self.outgoing = []
-        self.returned = []
-
-        for _k, _v in items.items():
-            if _k == 'initial' or _k == 'final':
-                module_type = 'states'
-            elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
-                module_type = 'exchanges'
-            elif _k == 'initializing' and _v == True:
-                self.initializing = True
-                continue
-            elif _k == 'name':
-                self.name = _v
-                continue
-            for each_item in _v:
-                for _name, _data in each_item.items():
-                    code = checkmate._exec_tools.get_method_basename(_data)
-                    define_class = \
-                        name_to_class(_name, module_dict[module_type])
-                    arguments = checkmate._exec_tools.get_signature_arguments(
-                                    _data, define_class)
-                    generate_storage = InternalStorage(define_class, _data,
-                                        None, arguments=arguments)
-                    if _k == 'final':
-                        generate_storage.function = define_class.__init__
-                    for _s in define_class.partition_storage.storage:
-                        if _s.code == code:
-                            generate_storage.value = _s.value
-                            break
-                    else:
-                        if hasattr(define_class, code):
-                            generate_storage.function = \
-                                getattr(define_class, code)
-                    getattr(self, _k).append(generate_storage)
-
-    def factory(self):
-        return checkmate.tymata.transition.Transition(
-                                               tran_name=self.name,
-                                               initializing=self.initializing,
-                                               initial=self.initial,
-                                               incoming=self.incoming,
-                                               final=self.final,
-                                               outgoing=self.outgoing,
-                                               returned=self.returned)
-
-
 class InternalStorage(object):
     """Support local storage of data (status or data_structure)
     information in transition"""
@@ -214,7 +159,7 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
-            >>> import checkmate._storage
+            >>> import checkmate.tymata.transition
             >>> a = sample_app.application.TestData()
             >>> t = a.components['C1'].engine.blocks[1]
             >>> inc = t.incoming[0].factory()
@@ -242,7 +187,7 @@ class InternalStorage(object):
             >>> item = {'name': 'Toggle TestState tran01',
             ...         'outgoing': [{'Action': 'AP(R2)'}],
             ...         'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate._storage.TransitionStorage(
+            >>> ts = checkmate.tymata.transition.TransitionStorage(
             ...         item, module_dict)
             >>> t = ts.factory()
             >>> t.outgoing[0].resolved_arguments['R'].C.value

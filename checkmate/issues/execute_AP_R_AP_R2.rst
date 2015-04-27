@@ -1,6 +1,6 @@
 We can match R with R2 when we do collect runs
     A defined transition with incoming AP(R2) matching outgoing AP(R):
-        >>> import checkmate._storage
+        >>> import checkmate.tymata.transition
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
@@ -19,9 +19,11 @@ We can match R with R2 when we do collect runs
         >>> item_out = {'name': 'Toggle TestState tran01',
         ...             'incoming': [{'AnotherReaction': 'ARE()'}],
         ...             'outgoing': [{'Action': 'AP(R)'}]}
-        >>> ts = checkmate._storage.TransitionStorage(item_in, module_dict)
+        >>> ts = checkmate.tymata.transition.TransitionStorage(
+        ...         item_in, module_dict)
         >>> t_in = ts.factory()
-        >>> ts = checkmate._storage.TransitionStorage(item_out, module_dict)
+        >>> ts = checkmate.tymata.transition.TransitionStorage(
+        ...         item_out, module_dict)
         >>> t_out = ts.factory()
         >>> component_1.instance_engines['C1'].blocks[1] = t_in
         >>> component_2.instance_engines['C2'].blocks[2] = t_out

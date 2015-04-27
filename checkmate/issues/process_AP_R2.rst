@@ -19,7 +19,7 @@ the component should be able to execute the block:
 
 define a block to to process AP(R2)
     >>> import sample_app.application
-    >>> import checkmate._storage
+    >>> import checkmate.tymata.transition
     >>> a = sample_app.application.TestData()
     >>> a.start()
     >>> r1 = action_request.storage_by_code('R1').factory()
@@ -39,7 +39,7 @@ define a block to to process AP(R2)
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> t.is_matching_incoming([ap_r1], c1.states)
     False
@@ -60,7 +60,7 @@ the component should be able to execute the block:
 
 Setup:
     >>> import sample_app.application
-    >>> import checkmate._storage
+    >>> import checkmate.tymata.transition
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
@@ -72,7 +72,7 @@ Setup:
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> saved_block = c1.engine.blocks[1]
     >>> c1.engine.blocks[1] = t

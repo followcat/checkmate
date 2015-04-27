@@ -52,7 +52,7 @@ Creation of the transition.
     >>> module = {
     ...     'states': [sample_app.component.component_1_states],
     ...     'exchanges':[sample_app.exchanges]}
-    >>> ts = checkmate._storage.TransitionStorage(item_in, module)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item_in, module)
     >>> t_in = ts.factory()
     >>> c1 = sample_app.application.TestData().components['C1']
     >>> c1.start()

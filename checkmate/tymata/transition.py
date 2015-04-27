@@ -5,12 +5,13 @@
 # version 3 of the License, or (at your option) any later version.
 
 import checkmate
+import checkmate._storage
 
 
 def make_transition(items, exchanges, state_modules):
     module_dict = {'states': state_modules,
                    'exchanges': exchanges}
-    ts = checkmate._storage.TransitionStorage(items, module_dict)
+    ts = TransitionStorage(items, module_dict)
     return ts.factory()
 
 
@@ -63,6 +64,61 @@ def new_transition(items, exchange_module, state_module):
     """
     return checkmate.tymata.transition.make_transition(
         items, [exchange_module], [state_module])
+
+
+class TransitionStorage(object):
+    def __init__(self, items, module_dict):
+        """"""
+        super().__init__()
+        self.name = ''
+        self.initializing = False
+        self.final = []
+        self.initial = []
+        self.incoming = []
+        self.outgoing = []
+        self.returned = []
+
+        for _k, _v in items.items():
+            if _k == 'initial' or _k == 'final':
+                module_type = 'states'
+            elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
+                module_type = 'exchanges'
+            elif _k == 'initializing' and _v == True:
+                self.initializing = True
+                continue
+            elif _k == 'name':
+                self.name = _v
+                continue
+            for each_item in _v:
+                for _name, _data in each_item.items():
+                    code = checkmate._exec_tools.get_method_basename(_data)
+                    define_class = checkmate._storage.name_to_class(
+                        _name, module_dict[module_type])
+                    arguments = checkmate._exec_tools.get_signature_arguments(
+                                    _data, define_class)
+                    generate_storage = checkmate._storage.InternalStorage(
+                        define_class, _data, None, arguments=arguments)
+                    if _k == 'final':
+                        generate_storage.function = define_class.__init__
+                    for _s in define_class.partition_storage.storage:
+                        if _s.code == code:
+                            generate_storage.value = _s.value
+                            break
+                    else:
+                        if hasattr(define_class, code):
+                            generate_storage.function = \
+                                getattr(define_class, code)
+                    getattr(self, _k).append(generate_storage)
+
+    def factory(self):
+        return checkmate.tymata.transition.Transition(
+                                               tran_name=self.name,
+                                               initializing=self.initializing,
+                                               initial=self.initial,
+                                               incoming=self.incoming,
+                                               final=self.final,
+                                               outgoing=self.outgoing,
+                                               returned=self.returned)
 
 
 class Block(object):

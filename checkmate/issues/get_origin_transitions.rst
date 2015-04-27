@@ -1,6 +1,6 @@
     >>> import checkmate.runs
-    >>> import checkmate._storage
     >>> import checkmate._module
+    >>> import checkmate.tymata.transition
     >>> import checkmate.partition_declarator
     >>> import sample_app.application
     >>> import sample_app.component.component_1
@@ -26,7 +26,7 @@
     ...            'incoming': [{'ForthAction': 'AF()'}],
     ...            'outgoing': [{'ExchangeButton': 'PBAC()'}]}
     >>> module_dict = {'exchanges':[sample_app.exchanges]}
-    >>> ts = checkmate._storage.TransitionStorage(item_in,
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item_in,
     ...         module_dict)
     >>> user = sample_app.component.user.User
     >>> t_copy = user.instance_engines['USER'].blocks[0]

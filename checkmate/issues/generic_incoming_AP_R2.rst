@@ -3,7 +3,7 @@ first is resolve
     >>> import collections
     >>> import sample_app.application
     >>> import checkmate.sandbox
-    >>> import checkmate._storage
+    >>> import checkmate.tymata.transition
     >>> a = sample_app.application.TestData()
     >>> a.start()
     >>> c1_states = sample_app.component.component_1_states
@@ -13,7 +13,7 @@ first is resolve
     ...         'initial':[{'AnotherState':'AnotherState1()'}],
     ...         'final': [{'AnotherState': 'AnotherState1(R2)'}],
     ...         'incoming': [{'Action': 'AP(R2)'}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
+    >>> ts = checkmate.tymata.transition.TransitionStorage(item, module_dict)
     >>> t = ts.factory()
     >>> _R = t.incoming[0].resolved_arguments['R']
     >>> t.incoming[0].code, _R.C.value, _R.P.value
