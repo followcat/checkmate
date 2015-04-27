@@ -53,7 +53,7 @@ class ComponentMeta(type):
             instance_dir = None
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
-            engine = checkmate.tymata.engine.Engine(
+            engine = checkmate.tymata.engine.AutoMata(
                 exchange_module, state_module,
                 class_file, instance_dir)
             engine.set_owner(_instance['name'])

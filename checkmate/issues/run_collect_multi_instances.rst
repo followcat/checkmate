@@ -13,7 +13,7 @@ collected from application should be increased.
     >>> C2_cls.instance_attributes['C4'] = {'request':
     ...      {'P': 'HIGH', 'C': 'AT2'}}
 
-    >>> C2_cls.instance_engines['C4'] = checkmate.tymata.engine.Engine(
+    >>> C2_cls.instance_engines['C4'] = checkmate.tymata.engine.AutoMata(
     ...                C2_cls.exchange_module, C2_cls.state_module,
     ...                C2_cls.component_definition)
 

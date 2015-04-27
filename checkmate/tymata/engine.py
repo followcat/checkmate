@@ -10,7 +10,7 @@ import checkmate.tymata.visitor
 import checkmate.tymata.transition
 
 
-class Engine(object):
+class AutoMata(object):
     # This is Transition Engine
     def __init__(self, exchange_module,
                  state_module, class_file, instance_dir=None):
