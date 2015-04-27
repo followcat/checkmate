@@ -5,6 +5,7 @@ state is AnotherState1(R1).
     >>> import sample_app.application
     >>> import checkmate.runs
     >>> import checkmate.runtime._runtime
+    >>> import checkmate.tymata.transition
     >>> ac = sample_app.application.TestData
     >>> cc = checkmate.runtime.communication.Communication
     >>> r = checkmate.runtime._runtime.Runtime(ac, cc)
@@ -29,7 +30,7 @@ AnotherState1(R1)
     ...     'final': [{'AnotherState': 'append(R)'}], 
     ...     'outgoing':[{'ThirdAction':'DA()'}]}
     >>> new_transition = \
-    ...     checkmate.partition_declarator.make_transition(new_items,
+    ...     checkmate.tymata.transition.make_transition(new_items,
     ...         [exchange_module], state_modules)
     >>> r.application.components['C1'].engine.blocks[1] = \
     ...     new_transition
@@ -45,9 +46,9 @@ Make an itp transition which initial state is AnotherState1(R2):
     ...                  'AnotherState': 'AnotherState1(R2)'}],
     ...     'final': [{'AnotherState': 'AnotherState1(R)'}]}
     >>> per_transition = \
-    ...     checkmate.partition_declarator.make_transition(pre_items,
+    ...     checkmate.tymata.transition.make_transition(pre_items,
     ...         [exchange_module], state_modules)
-    >>> run_transition = checkmate.partition_declarator.make_transition(
+    >>> run_transition = checkmate.tymata.transition.make_transition(
     ...                     run_items, [exchange_module], state_modules)
 
 All state in sandbox.application will be set as the run_transition

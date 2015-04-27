@@ -8,18 +8,8 @@ import collections
 
 import checkmate._storage
 import checkmate._exec_tools
+import checkmate.tymata.transition
 import checkmate.parser.yaml_visitor
-
-
-def make_transition(items, exchanges, state_modules):
-    module_dict = {'states': state_modules,
-                   'exchanges': exchanges}
-    try:
-        tran_name = items['name']
-    except KeyError:
-        tran_name = 'unknown'
-    ts = checkmate._storage.TransitionStorage(items, module_dict)
-    return ts.factory()
 
 
 def make_partition(module,
@@ -190,8 +180,8 @@ class Declarator(object):
         [<checkmate.tymata.transition.Transition object at ...
         """
         self.output['transitions'].append(
-            make_transition(items, [self.module['exchanges']],
-            [self.module['states']]))
+            checkmate.tymata.transition.make_transition(
+                items, [self.module['exchanges']], [self.module['states']]))
 
     def new_definitions(self, data_source):
         """

@@ -9,6 +9,7 @@ import os.path
 import checkmate.runs
 import checkmate.sandbox
 import checkmate.tymata.visitor
+import checkmate.tymata.transition
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
@@ -32,7 +33,7 @@ def get_runs_from_test(data, application):
     exchange_module = application.exchange_module
 
     for array_items in data:
-        transition = checkmate.partition_declarator.make_transition(
+        transition = checkmate.tymata.transition.make_transition(
                         array_items, [exchange_module], state_modules)
         gen_runs = checkmate.runs.get_runs_from_transition(application,
                         transition, itp_transition=True)
