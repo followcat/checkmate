@@ -12,7 +12,7 @@ import checkmate.tymata.transition
 
 class Engine(object):
     # This is Transition Engine
-    def __init__(self, data_structure_module, exchange_module,
+    def __init__(self, exchange_module,
                  state_module, class_file, instance_dir=None):
         with open(class_file, 'r') as _file:
             define_data = _file.read()

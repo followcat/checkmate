@@ -54,8 +54,8 @@ class ComponentMeta(type):
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
             engine = checkmate.engine.Engine(
-                data_structure_module, exchange_module,
-                state_module, class_file, instance_dir)
+                exchange_module, state_module,
+                class_file, instance_dir)
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:
