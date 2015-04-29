@@ -26,7 +26,7 @@ long_free_software = """\
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
@@ -53,12 +53,14 @@ def update_header(input_file, header):
     """
     >>> import re
     >>> import datetime
-    >>> import update_header
-    >>> head = update_header.notice_head.replace('2015','2012')
+    >>> import checkmate.tools.update_header
+    >>> head = checkmate.tools.update_header.notice_head.replace(
+    ...             '2013','2012')
     >>> print(head)
     # This code is part of the checkmate project.
     # Copyright (C) 2012 The checkmate project contributors
-    # 
+    #
+    <BLANKLINE>
     >>> m = re.search(r".*Copyright\D+(\d[0-9-, ]+\d)",head)
     >>> m.group(1)
     '2012'
@@ -75,7 +77,8 @@ def update_header(input_file, header):
     >>> print(head.replace(years, new_years))
     # This code is part of the checkmate project.
     # Copyright (C) 2012-2015 The checkmate project contributors
-    # 
+    #
+    <BLANKLINE>
     """
     with open(input_file, 'r') as f:
         content = f.read()
