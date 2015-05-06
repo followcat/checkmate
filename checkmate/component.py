@@ -287,14 +287,10 @@ class Component(object):
             True
         """
         output = []
-        _incoming = block.generic_incoming(self.states)
-        for _outgoing in block.process(self.states, _incoming,
-                            default=self.default_state_value):
+        for _outgoing in self.engine.simulate(block, self.states,
+                                              self.default_state_value):
             for _e in self.service_registry.server_exchanges(_outgoing,
-                        self.name):
-                if (len(_incoming) != 0 and
-                        isinstance(_e, _incoming[0].return_type)):
-                    continue
+                                                             self.name):
                 output.append(_e)
         return output
 

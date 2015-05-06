@@ -73,3 +73,12 @@ class AutoMata(object):
         else:
             _block = block
         return _block, _block.process(states, exchange, default=default)
+
+    def simulate(self, block, states, default):
+        _incoming = block.generic_incoming(states)
+        output = []
+        for _o in block.process(states, _incoming, default=default):
+            if (_incoming and isinstance(_o, _incoming[0].return_type)):
+                continue
+            output.append(_o)
+        return output
