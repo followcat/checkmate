@@ -66,3 +66,10 @@ class AutoMata(object):
                     _b.is_matching_initial(states)):
                 return _b
         return None
+
+    def process(self, exchange, states, default, block=None):
+        if block is None:
+            _block = self.get_blocks_by_input(exchange, states)[0]
+        else:
+            _block = block
+        return _block, _block.process(states, exchange, default=default)

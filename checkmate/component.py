@@ -230,29 +230,26 @@ class Component(object):
 
     def _do_process(self, exchange, block=None):
         """"""
-        if block is None:
-            try:
-                _block = self.get_blocks_by_input(exchange)[0]
-            except IndexError:
-                if (exchange[0].return_code and
-                        self.expected_return_code is not None and
-                        isinstance(exchange[0],
-                            self.expected_return_code.return_type)):
-                    self.expected_return_code = None
-                    return self.process_pending_outgoing()
-                raise checkmate.exception.NoBlockFound(
-                    "No block for incoming %s " % exchange[0])
-        else:
-            _block = block
+        try:
+            _block, outgoing = self.engine.process(exchange, self.states,
+                                                 self.default_state_value,
+                                                 block)
+        except IndexError:
+            if (exchange[0].return_code and
+                    self.expected_return_code is not None and
+                    isinstance(exchange[0],
+                        self.expected_return_code.return_type)):
+                self.expected_return_code = None
+                return self.process_pending_outgoing()
+            raise checkmate.exception.NoBlockFound(
+                "No block for incoming %s " % exchange[0])
         output = []
-        self.validation_dict.record(_block, exchange)
-        for _outgoing in _block.process(self.states, exchange,
-                            default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing,
-                        self.name):
+        for _o in outgoing:
+            for _e in self.service_registry.server_exchanges(_o, self.name):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
+        self.validation_dict.record(_block, exchange)
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
