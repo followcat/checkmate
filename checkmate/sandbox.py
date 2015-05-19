@@ -213,9 +213,14 @@ class CollectionSandbox(Sandbox):
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]
                     _outgoings = _c.process([_exchange], _b)
-                    split_runs = \
-                        self.process(new_sandbox, _outgoings,
-                            checkmate.runs.Run(_b, [], states=_c.states))
+                    _states = []
+                    for index, _s in enumerate(_c.states):
+                        _states.append(type(_s)())
+                        _states[index].carbon_copy(_s)
+                    _items = tuple([tuple([_exchange]), tuple(_states)])
+                    _run = checkmate.runs.Run(_b, [], states=_c.states,
+                                                validate_items=_items)
+                    split_runs = self.process(new_sandbox, _outgoings, _run)
                     for split, tmp_run in split_runs:
                         if len(_blocks) > 1 or split:
                             split = True

@@ -12,7 +12,7 @@ import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
-    def __init__(self, block, nodes=None, states=None):
+    def __init__(self, block, nodes=None, states=None, validate_items=None):
         assert isinstance(block, checkmate.tymata.transition.Block)
         if nodes is None:
             nodes = []
@@ -23,6 +23,7 @@ class Run(checkmate._tree.Tree):
         self._final = None
         self.itp_run = None
         self.change_states = []
+        self.validate_items = validate_items
         self.collected_run = None
         for f in block.final:
             for s in states:
@@ -105,6 +106,11 @@ class Run(checkmate._tree.Tree):
             else:
                 return False
         return True
+
+    def copy(self):
+        _run = super().copy()
+        _run.validate_items = self.validate_items
+        return _run
 
     def add_node(self, tree):
         self._initial = None
