@@ -244,6 +244,8 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     transition_run = Run(transition)
     _class = type(application)
+    application = _class()
+    application.start(default_state_value=False)
     if itp_transition:
         sandbox = checkmate.sandbox.CollectionSandbox(
                     _class, application, transition_run.walk())
