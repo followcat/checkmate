@@ -70,41 +70,40 @@ class Run(checkmate._tree.Tree):
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
     @checkmate.fix_issue('checkmate/issues/validated_compare_states.rst')
     @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
-    def compare_final(self, application, reference):
+    def compare_final(self, application):
         """"""
-        box = checkmate.sandbox.Sandbox(type(reference), reference)
-        for run in self.breadthWalk():
-            for name, component in application.components.items():
-                _found = False
-                if run.root in component.engine.blocks:
-                    for final in run.root.final:
-                        state = [_s for _s in
-                                 box.application.components[name].states
-                                 if isinstance(_s, final.partition_class)][0]
-                        index = \
-                            box.application.components[name].states.index(
-                                state)
-                        incoming = component.validation_dict.validated_items[
-                            run.root]
-                        _arguments = \
-                            final.resolve(
-                                box.application.components[name].states,
-                                incoming, run.root.resolve_dict)
-                        final.factory(instance=state, **_arguments)
-                        if state == component.states[index]:
-                            _found = True
-                        else:
-                            _found = False
-                            break
-                    else:
-                        assert(_found or len(run.root.final) == 0)
-                        _found = True
+        final = []
+        def save_final(final, run):
+            try:
+                if len(final) == 0:
+                    final.extend(run.validate_items[1])
                 else:
-                    continue
-                if _found:
-                    break
-            else:
-                return False
+                    for state in run.validate_items[1]:
+                        added = False
+                        for index, _state in enumerate(final):
+                            if type(_state) == type(state):
+                                final[index] = state
+                                added = True
+                                break
+                        if not added:
+                            final.append(state)
+            except (TypeError, IndexError):
+                pass
+            for node in run.nodes:
+                save_final(final, node)
+
+        save_final(final, self)
+        matched = 0
+        for state in final:
+            for c in application.components.values():
+                for _state in c.states:
+                    if type(state) != type(_state):
+                        continue
+                    if _state != state:
+                        return False
+                    matched += 1
+        if matched != len(final):
+            return False
         return True
 
     def copy(self):
