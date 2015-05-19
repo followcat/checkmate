@@ -82,21 +82,16 @@ class Component(object):
             >>> pp = sample_app.exchanges.Action('PP')
             >>> outgoing = c1.process([pp])
             >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
-            >>> c1_t = [ _t for _t in c1.context.engine.blocks
-            ...        if _t.incoming[0].code == 'PP'][0]
-            >>> c1.context.validation_dict.collected_items[c1_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Action object at ...
-            >>> c2_t = [ _t for _t in c2.context.engine.blocks
-            ...        if _t.incoming[0].code == 'PA'][0]
-            >>> c2.context.validation_dict.collected_items[c2_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Pause object at ...
-            >>> c3_t = [ _t for _t in c3.context.engine.blocks
-            ...        if _t.incoming[0].code == 'PA'][0]
-            >>> c3.context.validation_dict.collected_items[c3_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Pause object at ...
+            >>> items_c1 = ((pp,), tuple(c1.context.states))
+            >>> items_c1 in c1.context.validation_dict.collected_items
+            True
+            >>> pa = [ _o for _o in outgoing if _o.value == 'PA'][0]
+            >>> items_c2 = ((pa,), tuple(c2.context.states))
+            >>> items_c2 in c2.context.validation_dict.collected_items
+            True
+            >>> items_c3 = ((pa,), tuple(c3.context.states))
+            >>> items_c3 in c3.context.validation_dict.collected_items
+            True
             >>> r.stop_test()
         """
         try:

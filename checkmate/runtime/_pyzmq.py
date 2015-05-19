@@ -206,12 +206,10 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> c2 = r.application.components['C2']
         >>> simulated_block = c2.engine.blocks[0]
         >>> o = c2_stub.simulate(simulated_block)
-        >>> t = c1_stub.context.engine.blocks[0]
-        >>> t.is_matching_incoming(o, c1_stub.context.states)
-        True
-        >>> c1_stub.validate(t)
-        True
         >>> time.sleep(1)
+        >>> items = (tuple(o), tuple(c1_stub.context.states))
+        >>> c1_stub.validate(items)
+        True
         >>> r.stop_test()
     """
     connector_class = Connector

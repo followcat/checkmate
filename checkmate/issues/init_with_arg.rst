@@ -21,9 +21,6 @@ It is impossible to specify the final state by providing arguments
     ... 
     >>> runs[1].compare_initial(r.application)
     True
-    >>> saved_initial = \
-    ...     checkmate.sandbox.Sandbox(type(r.application),
-    ...         r.application)
     >>> r.execute(runs[1])
     >>> t = c1.context.block_by_name("Append element ok tran01")
     >>> final_list = list(runs[1].final)
@@ -37,7 +34,7 @@ It is impossible to specify the final state by providing arguments
     ...         **revolved_args)
     >>> (fs.R.C.value, fs.R.P.value)
     ('AT1', 'NORM')
-    >>> runs[1].compare_final(r.application, saved_initial.application)
+    >>> runs[1].compare_final(r.application)
     True
     >>> r.stop_test()
     >>>

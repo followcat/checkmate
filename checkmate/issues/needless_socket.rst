@@ -11,8 +11,10 @@ Should not have same socket from C2stub to C1stub which is_server = False, is_br
     >>> c1_stub = r.runtime_components['C1']
     >>> simulated_transition = r.application.components['C2'].engine.blocks[0]
     >>> o = c2_stub.simulate(simulated_transition)
-    >>> c1_stub.validate(c1_stub.context.engine.blocks[1])
+    >>> ap = sample_app.exchanges.Action('AP')
+    >>> items = ((ap,), tuple(c1_stub.context.states))
+    >>> c1_stub.validate(items)
     True
-    >>> c1_stub.validate(c1_stub.context.engine.blocks[1])
+    >>> c1_stub.validate(items)
     False
     >>> r.stop_test()

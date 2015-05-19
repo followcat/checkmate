@@ -21,15 +21,16 @@ The application.compare_states should get True.
 
     >>> c1 = box_app.components['C1']
     >>> c2 = box_app.components['C2']
-    >>> c1_ac_trian = runs[0].nodes[0].nodes[0].root
-    >>> ac = c1.validation_dict.collected_items[c1_ac_trian][0]
+    >>> c1_ac_trian = runs[0].nodes[0].nodes[0].validate_items
+    >>> ac = c1_ac_trian[0][0]
     >>> add_ac = sample_app.exchanges.Action()
     >>> ac.carbon_copy(add_ac)
     >>> add_ac.R.C = 'AT2'
 
-    >>> runs[0].compare_final(box_app, compare_app1)
+    >>> runs[0].compare_final(box_app)
     True
-    >>> c2.validation_dict.record(runs[0].root, [add_ac])
-    >>> runs[0].compare_final(box_app, compare_app2)
+    >>> items = ((add_ac,), c1_ac_trian[1])
+    >>> c2.validation_dict.record(items)
+    >>> runs[0].compare_final(box_app)
     True
 

@@ -48,7 +48,8 @@ when component start, its initializing block will be simulated.
         >>> app_cls = sample_app.application.TestData
         >>> box = checkmate.sandbox.Sandbox(app_cls)
         >>> c1 = box.application.components['C1']
-        >>> c1.validate(t_in)
+        >>> items = tuple([tuple(outgoing), tuple(c1.states)])
+        >>> c1.validate(items)
         True
 
         >>> r = checkmate.runtime._runtime.Runtime(
@@ -66,7 +67,8 @@ when component start, its initializing block will be simulated.
         >>> c3 = r.runtime_components['C3']
         >>> r.start_test()
         >>> time.sleep(1)
-        >>> c1.validate(c1.context.engine.blocks[-1])
+        >>> items = tuple([tuple(outgoing), tuple(c1.context.states)])
+        >>> c1.validate(items)
         True
         >>> r.stop_test()
 
