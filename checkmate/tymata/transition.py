@@ -271,9 +271,14 @@ class Transition(Block):
         if not self.is_matching_initial(states) or \
            not self.is_matching_incoming(_incoming, states):
             return _outgoing_list
-        for _state in states:
+        for index, _state in enumerate(states):
             for _final in self.final:
                 if isinstance(_state, _final.partition_class):
+                    if _state.value is None:
+                        for _init in self.initial:
+                            if isinstance(_state, _init.partition_class):
+                                _state = _init.factory()
+                                states[index] = _state
                     resolved_arguments = _final.resolve(states, _incoming,
                                                         self.resolve_dict)
                     _final.factory(instance=_state, default=default,
