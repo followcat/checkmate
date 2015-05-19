@@ -249,7 +249,11 @@ class Component(object):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
-        self.validation_dict.record(_block, exchange)
+        _states = []
+        for index, _s in enumerate(self.states):
+            _states.append(type(_s)())
+            _states[index].carbon_copy(_s)
+        self.validation_dict.record(tuple([tuple(exchange), tuple(_states)]))
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
@@ -306,6 +310,7 @@ class Component(object):
             >>> c1.validate(block)
             False
             >>> out = c1.process([exchange])
+            >>> block = tuple([tuple([exchange]), tuple(c1.states)])
             >>> c1.validate(block)
             True
             >>> c1.validate(block)

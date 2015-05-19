@@ -10,18 +10,18 @@ import collections
 class ValidationDict(object):
     def __init__(self):
         super().__init__()
-        self.collected_items = collections.defaultdict(list)
-        self.validated_items = collections.defaultdict(list)
+        self.collected_items = list()
+        self.validated_items = list()
 
-    def record(self, block, item_list):
-        self.collected_items[block].extend(item_list)
-        self.validated_items[block].extend(item_list)
+    def record(self, item_list):
+        self.collected_items.append(item_list)
+        self.validated_items.append(item_list)
 
-    def check(self, block):
+    def check(self, items):
         try:
-            self.collected_items[block].pop()
+            self.collected_items.remove(items)
             return True
-        except IndexError:
+        except ValueError:
             return False
 
     def clear(self):
