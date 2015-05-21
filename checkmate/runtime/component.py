@@ -13,6 +13,7 @@ import multiprocessing
 import zope.interface
 import zope.component
 
+import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
 import checkmate.runtime.client
