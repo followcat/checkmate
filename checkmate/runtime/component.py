@@ -1,6 +1,6 @@
 # This code is part of the checkmate project.
 # Copyright (C) 2013-2015 The checkmate project contributors
-# 
+#
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
@@ -13,6 +13,7 @@ import multiprocessing
 import zope.interface
 import zope.component
 
+import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
 import checkmate.runtime.client
