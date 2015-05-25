@@ -212,6 +212,18 @@ class CollectionSandbox(Sandbox):
                     _app = sandbox.application
                     new_sandbox = Sandbox(type(_app), _app)
                     _c = new_sandbox.application.components[_d]
+                    for index, _state in enumerate(_c.states):
+                        if _state.value is not None:
+                            continue
+                        for _final in _b.final:
+                            if not isinstance(_state, _final.partition_class):
+                                continue
+                            for _init in _b.initial:
+                                if isinstance(_state, _init.partition_class):
+                                    _state = _init.factory()
+                                    _c.states[index] = _state
+                                    break
+                            break
                     _outgoings = _c.process([_exchange], _b)
                     _run = checkmate.runs.Run(_b, [], states=_c.states,
                                                 exchanges=[_exchange])
