@@ -12,18 +12,20 @@ import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
-    def __init__(self, block, nodes=None, states=None, validate_items=None):
+    def __init__(self, block, nodes=None, states=None, exchanges=None):
         assert isinstance(block, checkmate.tymata.transition.Block)
         if nodes is None:
             nodes = []
         if states is None:
-            states = []
+            states = ()
+        if exchanges is None:
+            exchanges = ()
         super(Run, self).__init__(block, nodes)
         self._initial = None
         self._final = None
         self.itp_run = None
         self.change_states = []
-        self.validate_items = validate_items
+        self.validate_items = (tuple(exchanges), tuple(states))
         self.collected_run = None
         for f in block.final:
             for s in states:
