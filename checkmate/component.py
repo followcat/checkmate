@@ -298,7 +298,7 @@ class Component(object):
                 output.append(_e)
         return output
 
-    def validate(self, block):
+    def validate(self, items):
         """
             >>> import sample_app.application
             >>> import sample_app.component.component_1
@@ -306,14 +306,13 @@ class Component(object):
             >>> c1 = a.components['C1']
             >>> c1.start()
             >>> exchange = sample_app.exchanges.Action('AC')
-            >>> block = c1.get_blocks_by_input([exchange])[0]
-            >>> c1.validate(block)
+            >>> items = tuple([tuple([exchange]), tuple(c1.states)])
+            >>> c1.validate(items)
             False
             >>> out = c1.process([exchange])
-            >>> block = tuple([tuple([exchange]), tuple(c1.states)])
-            >>> c1.validate(block)
+            >>> c1.validate(items)
             True
-            >>> c1.validate(block)
+            >>> c1.validate(items)
             False
         """
-        return self.validation_dict.check(block)
+        return self.validation_dict.check(items)
