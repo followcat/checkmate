@@ -2,13 +2,14 @@ Add one Component_2's instance with request=R2, runs
 collected from application should be increased.
 
     >>> import sample_app.application
-    >>> C2 = sample_app.application.TestData.component_classes[1]
+    >>> C2_cls = sample_app.component.component_2.Component_2
+    >>> classes = sample_app.application.TestData.component_classes
+    >>> C2 = [c for c in classes if c['class'] == C2_cls][0]
     >>> len(C2['instances'])
     1
     >>> C2['instances'].append({'name': 'C4',
     ...     'attributes': {'request': {'C': 'AT2', 'P': 'HIGH'}}})
 
-    >>> C2_cls = sample_app.component.component_2.Component_2
     >>> C2_cls.instance_attributes['C4'] = {'request':
     ...      {'P': 'HIGH', 'C': 'AT2'}}
 
@@ -32,3 +33,5 @@ revert..
     >>> _v = C2_cls.instance_attributes.pop('C4')
     >>> C2['instances'].remove({'name': 'C4',
     ...     'attributes': {'request': {'C': 'AT2', 'P': 'HIGH'}}})
+    >>> delattr(sample_app.application.TestData,
+    ...     sample_app.application.TestData._run_collection_attribute)
