@@ -58,8 +58,8 @@ other runs
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
         False
-        >>> run1 = app.run_collection()[-1]
-        >>> run1.root.outgoing[0].code
+        >>> run1 = app.run_collection()[-2]
+        >>> run1.root.incoming[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS
         >>> c1.context.states[0].value
