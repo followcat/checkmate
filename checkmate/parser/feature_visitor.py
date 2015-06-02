@@ -56,7 +56,7 @@ def new_load_features(paths, language):
         >>> features = visitor.new_load_features([itp_paths],
         ...                 fresher.core.load_language('en'))
         >>> len(features)
-        7
+        4
         >>> feature_names = []
         >>> for _f in features:
         ...     feature_names.append(_f.name)
@@ -65,7 +65,7 @@ def new_load_features(paths, language):
         >>> features = visitor.new_load_features([itp_paths],
         ...                 fresher.core.load_language('zh-CN'))
         >>> len(features)
-        7
+        4
         >>> feature_names.clear()
         >>> for _f in features:
         ...     feature_names.append(_f.name)
@@ -153,7 +153,7 @@ def get_array_list(paths, localization_path=None):
         ...                     path)
         >>> len(checkmate.parser.feature_visitor.get_array_list(
         ...         [absolute_path]))
-        14
+        8
     """
     if localization_path is None:
         localization_path = paths[0]
@@ -188,7 +188,7 @@ def data_from_files(application):
             >>> visitor = checkmate.parser.feature_visitor
             >>> data = visitor.data_from_files(a)
             >>> len(data)
-            14
+            8
         """
     try:
         path = os.path.join(os.getenv('CHECKMATE_HOME'),

@@ -23,7 +23,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
             >>> r.start_test()
             >>> test_procedure = sample_app.runtime.test_procedure
             >>> run = test_procedure.TestProcedureRun1Threaded(app)
-            >>> nodes = run.nodes[0].nodes[0].nodes
+            >>> nodes = run.nodes[0].nodes
             >>> nodes[2].root.incoming[0].code
             'ARE'
             >>> nodes[2].nodes[0].root.incoming[0].code
@@ -60,11 +60,11 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             >>> r.start_test()
             >>> test_procedure = sample_app.runtime.test_procedure
             >>> run = test_procedure.TestProcedureRun2Threaded(app)
-            >>> run.root.outgoing[0].code
+            >>> run.root.incoming[0].code
             'PBRL'
             >>> run.nodes[0].root.incoming[0].code
-            'PBRL'
-            >>> run.nodes[0].nodes[0].nodes[0].root.incoming[0].code
+            'RL'
+            >>> run.nodes[0].nodes[0].root.incoming[0].code
             'DR'
             >>> r.execute(run, transform=True)
             >>> r.stop_test()

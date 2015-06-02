@@ -18,7 +18,6 @@ Setup:
     >>> c1 = r.runtime_components['C1']
     >>> c2 = r.runtime_components['C2']
     >>> c3 = r.runtime_components['C3']
-    >>> user = r.runtime_components['USER']
     >>> runs = []
     >>> g = checkmate.runtime.test_plan.TestProcedureFeaturesGenerator
     >>> for run in g(sample_app.application.TestData):

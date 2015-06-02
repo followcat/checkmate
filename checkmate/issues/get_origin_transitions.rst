@@ -24,22 +24,22 @@
     >>> de.new_definitions(data_source)
     >>> item_in = {'name': 'TestState tran02',
     ...            'incoming': [{'ForthAction': 'AF()'}],
-    ...            'outgoing': [{'ExchangeButton': 'PBAC()'}]}
+    ...            'outgoing': [{'Action': 'AC()'}]}
     >>> t = checkmate.tymata.transition.make_transition(
     ...         item_in, [sample_app.exchanges])
-    >>> user = sample_app.component.user.User
-    >>> t_copy = user.instance_engines['USER'].blocks[0]
-    >>> user.instance_engines['USER'].blocks[0] = t
+    >>> c2 = sample_app.component.component_2.Component_2
+    >>> t_copy = c2.instance_engines['C2'].blocks[0]
+    >>> c2.instance_engines['C2'].blocks[0] = t
     >>> app = sample_app.application.TestData()
     >>> app.start(default_state_value=False)
     >>> transitions = checkmate.runs.get_origin_transitions(app)
     >>> transitions[0].incoming[0].code
     'AF'
-    >>> 'PBAC' in [t.outgoing[0].code for t in transitions]
+    >>> 'AC' in [t.outgoing[0].code for t in transitions]
     True
     >>> runs = app.run_collection()
-    >>> 'PBAC' in [r.root.outgoing[0].code for r in runs]
+    >>> 'AC' in [r.root.outgoing[0].code for r in runs]
     True
 
     Revert changes for further use in doctest:
-    >>> user.instance_engines['USER'].blocks[0] = t_copy
+    >>> c2.instance_engines['C2'].blocks[0] = t_copy
