@@ -21,7 +21,7 @@ The application.compare_states should get True.
 
     >>> c1 = box_app.components['C1']
     >>> c2 = box_app.components['C2']
-    >>> c1_ac_trian = runs[0].nodes[0].nodes[0].root
+    >>> c1_ac_trian = runs[0].nodes[0].root
     >>> ac = c1.validation_dict.collected_items[c1_ac_trian][0]
     >>> add_ac = sample_app.exchanges.Action()
     >>> ac.carbon_copy(add_ac)

@@ -206,7 +206,7 @@ class Application(object):
         >>> a.name
         'sample_app'
         >>> len(a.components)
-        4
+        3
         """
         self.name = self.__module__.split('.')[-2]
         self._started = False
@@ -248,7 +248,7 @@ class Application(object):
         >>> a = sample_app.application.TestData()
         >>> a.sut(['C1'])
         >>> len(a.stubs)
-        3
+        2
         """
         self.stubs = list(self.components.keys())
         self.system_under_test = list(system_under_test)
