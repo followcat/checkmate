@@ -282,3 +282,27 @@ def get_origin_transitions(application):
                     origin_transitions.append(_transition)
     return origin_transitions
 
+
+def get_origin_exchanges(application):
+    """
+        >>> import sample_app.application
+        >>> import checkmate.runs
+        >>> app = sample_app.application.TestData()
+        >>> app.start(default_state_value=False)
+        >>> exchanges = checkmate.runs.get_origin_exchanges(app)
+        >>> [_e.value for _e in exchanges]
+        ['PBAC', 'PBRL', 'PBPP']
+    """
+    origin_exchanges = []
+    for _component in application.components.values():
+        for _block in _component.engine.blocks:
+            _incoming = _block.generic_incoming(_component.states)
+            for _c in application.components.values():
+                if _c == _component:
+                    continue
+                if _c.get_blocks_by_output(_incoming) is not None:
+                    break
+            else:
+                origin_exchanges.extend(_incoming)
+    return origin_exchanges
+
