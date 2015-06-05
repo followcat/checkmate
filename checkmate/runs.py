@@ -194,19 +194,22 @@ class Run(checkmate._tree.Tree):
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
-@checkmate.report_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
+@checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
 def get_runs_from_application(_class):
     runs = []
     application = _class()
     application.start(default_state_value=False)
-    origin_transitions = get_origin_transitions(application)
+    origin_exchanges = get_origin_exchanges(application)
     sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
-    for _o in origin_transitions:
-        run = Run(_o)
-        sandbox.restart()
-        for _run in sandbox(run):
-            runs.append(_run)
+    for _ex in origin_exchanges:
+        for _c in application.components.values():
+            blocks = _c.get_blocks_by_input([_ex])
+            for _b in blocks:
+                run = Run(_b)
+                sandbox.restart()
+                for _run in sandbox(run):
+                    runs.append(_run)
     return runs
 
 
