@@ -308,6 +308,8 @@ def get_origin_exchanges(application):
                 if _c.get_blocks_by_output(_incoming) is not None:
                     break
             else:
-                origin_exchanges.extend(_incoming)
+                for _i in _incoming:
+                    for _e in _component.service_registry.server_exchanges(_i):
+                        origin_exchanges.append(_e)
     return origin_exchanges
 
