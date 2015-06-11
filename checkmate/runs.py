@@ -21,6 +21,7 @@ class Run(checkmate._tree.Tree):
         if exchanges is None:
             exchanges = ()
         super(Run, self).__init__(block, nodes)
+        self.exchanges = exchanges
         self._initial = None
         self._final = None
         self.itp_run = None
@@ -110,6 +111,7 @@ class Run(checkmate._tree.Tree):
 
     def copy(self):
         _run = super().copy()
+        _run.exchanges = self.exchanges
         _run.validate_items = self.validate_items
         return _run
 
@@ -206,7 +208,7 @@ def get_runs_from_application(_class):
         for _c in application.components.values():
             blocks = _c.get_blocks_by_input([_ex])
             for _b in blocks:
-                run = Run(_b)
+                run = Run(_b, states=_c.states, exchanges=[_ex])
                 sandbox.restart()
                 for _run in sandbox(run):
                     runs.append(_run)
