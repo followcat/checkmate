@@ -249,10 +249,20 @@ def followed_runs(application, run):
 @checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
-    transition_run = Run(transition)
+    exchanges = []
     _class = type(application)
     application = _class()
     application.start(default_state_value=False)
+    for _i in transition.incoming:
+        _exchange = _i.factory()
+        _origin = ''
+        for _c in application.components.values():
+            if _c.get_blocks_by_output([_exchange]) is not None:
+                _origin = _c.name
+                break
+        for _e in _c.service_registry.server_exchanges(_exchange, _origin):
+            exchanges.append(_e)
+    transition_run = Run(transition, exchanges=exchanges)
     if itp_transition:
         sandbox = checkmate.sandbox.CollectionSandbox(
                     _class, application, transition_run.walk())
