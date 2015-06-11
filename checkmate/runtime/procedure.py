@@ -44,7 +44,7 @@ class Procedure(object):
             >>> for run in gen:
             ...     runs.append(run[0])
 
-            >>> runs[0].root.outgoing[0].code
+            >>> runs[0].root.incoming[0].code
             'AC'
 
         And we create two different Runtime instances:
@@ -93,7 +93,7 @@ class Procedure(object):
         if self.result is not None:
             self.result.startTest(self)
         stub = self.runtime.runtime_components[self.blocks.root.owner]
-        stub.simulate(self.blocks.root)
+        stub.process(self.blocks.exchanges, startpoint=True)
         self._follow_up(self.blocks)
 
         if hasattr(self.blocks, 'final'):

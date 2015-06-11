@@ -59,7 +59,7 @@ class Component(object):
     def receive(self):
         return self.exchange_queue.get(timeout=self.timeout_value)
 
-    def process(self, exchanges):
+    def process(self, exchanges, startpoint=False):
         """
             >>> import time
             >>> import checkmate.runtime._pyzmq
@@ -239,6 +239,12 @@ class ThreadedSut(ThreadedComponent, Sut):
                                     component=self.context)
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
+
+    def process(self, exchanges, startpoint=False):
+        if self._launched_in_thread and startpoint:
+            self.launcher.process(exchanges)
+        return super().process(exchanges)
+        raise ValueError("Launcher SUT can't process from start piont")
 
     def simulate(self, block):
         if self._launched_in_thread:

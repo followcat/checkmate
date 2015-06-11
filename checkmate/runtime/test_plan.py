@@ -91,18 +91,18 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> test_plan = checkmate.runtime.test_plan
         >>> run_list = test_plan.get_runs_from_test(data, a)
         >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
-        >>> run_list[2].root.incoming[0].code
-        'PBAC'
+        >>> run_list[1].root.incoming[0].code
+        'AC'
         >>> box = checkmate.sandbox.Sandbox(type(a), a,
-        ...         run_list[2].walk())
+        ...         run_list[1].walk())
         >>> c1_state = box.application.components['C1'].states[0]
-        >>> c1_state.value == run_list[2].itp_run.root.initial[0].value
+        >>> c1_state.value == run_list[1].itp_run.root.initial[0].value
         True
-        >>> run_list[2].compare_initial(box.application)
+        >>> run_list[1].compare_initial(box.application)
         True
-        >>> box(run_list[2])
+        >>> box(run_list[1])
         True
-        >>> len(run_list[2].initial)
+        >>> len(run_list[1].initial)
         4
 
         >>> import checkmate.runtime._pyzmq

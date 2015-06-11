@@ -54,7 +54,8 @@ class Sandbox(object):
                     for _d in _o.destination:
                         component = self.application.components[_d]
                         blocks = component.get_blocks_by_input([_o])
-                        _run = checkmate.runs.Run(blocks[0], [])
+                        _run = checkmate.runs.Run(blocks[0], [],
+                                exchanges=[_o])
                         if not self.__call__(_run):
                             raise \
                                 RuntimeError("Applicaiton initializing Failed")
@@ -111,32 +112,26 @@ class Sandbox(object):
         _outgoing = []
         self.run = run
         self.blocks = None
+        _states = None
+        _exchanges = list(run.exchanges)
         for component in self.application.components.values():
-            _blocks = component.engine.blocks
-            if not itp_run and run.root not in _blocks:
-                continue
-            if len(run.root.incoming) > 0:
-                _incoming = run.root.generic_incoming(component.states)
-                for _c in self.application.components.values():
-                    if _c == component:
-                        continue
-                    _b = _c.get_blocks_by_output(_incoming)
-                    if _b is not None:
-                        _outgoing = _c.simulate(_b)
-                        self.blocks = _b
-                        break
-                if self.blocks is not None:
-                    break
-            _outgoing = component.simulate(run.root)
-            self.blocks = run.root
-            break
-        return self.run_process(_outgoing)
+            if len(_exchanges):
+                start_blocks = component.get_blocks_by_input(_exchanges)
+                if len(start_blocks) == 0:
+                    continue
+                _outgoing = component.process(_exchanges)
+                _states = component.states
+                self.blocks = start_blocks[0]
+                break
+        if self.blocks is None:
+            return False
+        return self.run_process(_outgoing, _states, _exchanges)
 
-    def run_process(self, outgoing):
+    def run_process(self, outgoing, states, exchanges):
         try:
             self.blocks = \
                 self.process(outgoing,
-                    checkmate.runs.Run(self.blocks, []))
+                    checkmate.runs.Run(self.blocks, [], states, exchanges))
         except checkmate.exception.NoBlockFound:
             self.blocks = None
         return self.is_run
@@ -192,9 +187,9 @@ class CollectionSandbox(Sandbox):
                 _run.itp_run = run
             yield _run
 
-    def run_process(self, outgoing):
+    def run_process(self, outgoing, states, exchanges):
         try:
-            tree = checkmate.runs.Run(self.blocks, [])
+            tree = checkmate.runs.Run(self.blocks, [], states, exchanges)
         except AssertionError:
             return []
         return self.process(self, outgoing, tree)
