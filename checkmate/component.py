@@ -102,7 +102,7 @@ class ComponentMeta(type):
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
 class Component(object):
-    def __init__(self, name, service_registry):
+    def __init__(self, name, service_registry, component_registry=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -117,6 +117,7 @@ class Component(object):
         self.name = name
         self.validation_dict = checkmate._validation.ValidationDict()
         self.service_registry = service_registry
+        self.component_registry = component_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
         self.pending_incoming = []

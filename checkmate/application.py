@@ -229,7 +229,8 @@ class Application(object):
             for component in _class_definition['instances']:
                 _name = component['name']
                 self.components[_name] = \
-                    _class(_name, self.service_registry)
+                    _class(_name, self.service_registry,
+                           self.component_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
 
