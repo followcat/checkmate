@@ -92,8 +92,9 @@ class Procedure(object):
         _application = self.runtime.application
         if self.result is not None:
             self.result.startTest(self)
-        stub = self.runtime.runtime_components[self.blocks.root.owner]
-        stub.process(self.blocks.exchanges, startpoint=True)
+        for _d in self.blocks.exchanges[0].destination:
+            component = self.runtime.runtime_components[_d]
+            component.process(self.blocks.exchanges, startpoint=True)
         self._follow_up(self.blocks)
 
         if hasattr(self.blocks, 'final'):
