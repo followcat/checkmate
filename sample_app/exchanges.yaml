@@ -17,26 +17,41 @@ data:
 title: "Exchange identification"
 data:
   - Definition and accessibility: 'ActionCode'
+    Attributes:
+      destination:
+      - C2
     Value partitions:
     - [X-ACT-CODE-01, OK(), True, OK action code]
     - [X-ACT-CODE-02, ER(), False, Error action code]
 
   - Definition and accessibility: 'Action(R:ActionRequest)->ActionCode'
+    Attributes:
+      destination:
+      - C1
     Value partitions:
     - [X-ACTION-01, AC(), 'AC', Comment AC action]
     - [X-ACTION-02, AP(R), 'AP', Comment AP action]
     - [X-ACTION-03, PP(R), 'PP', Comment PP action]
 
   - Definition and accessibility: 'Reaction'
+    Attributes:
+      destination:
+      - C3
     Value partitions:
     - [X-REACTION-01, RE(), 'RE', Comment]
     - [X-REACTION-02, RL(), 'RL', Comment]
 
   - Definition and accessibility: 'AnotherReaction'
+    Attributes:
+      destination:
+      - C2
     Value partitions:
     - [X-ANOREACT-01, ARE(), 'ARE', Comment]
 
   - Definition and accessibility: 'ThirdReaction'
+    Attributes:
+      destination:
+      - C2
     Value partitions:
     - [X-THRDREACT-01, DR(), 'DR', Comment]
 
@@ -44,6 +59,9 @@ data:
     Attributes:
       broadcast: True
       channel: pause
+      destination:
+      - C2
+      - C3
     Value partitions:
     - [X-PAUSE-01, PA(), 'PA', Comment]
 
@@ -57,6 +75,8 @@ data:
   - Definition and accessibility: 'ExchangeButton'
     Attributes:
       communication: interactive
+      destination:
+      - C2
     Value partitions:
     - [X-EXBUTTON-01, PBAC(), 'PBAC', Press Button AC]
     - [X-EXBUTTON-02, PBRL(), 'PBRL', Press Button RL]
@@ -65,6 +85,8 @@ data:
   - Definition and accessibility: 'ValidateOutput'
     Attributes:
       communication: interactive
+      destination:
+      - USER
     Value partitions:
     - [X-VLOUTPUT-01, VODA(), 'VODA', Validate Output DA]
     - [X-VLOUTPUT-02, VODR(), 'VODR', Validate Output DR]
