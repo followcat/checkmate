@@ -112,10 +112,14 @@ class Procedure(object):
 
     def _follow_up(self, node):
         for _next in node.nodes:
-            component = self.runtime.runtime_components[_next.root.owner]
-            if not component.validate(_next.validate_items):
-                raise Exception("No exchange '%s' received by component '%s'"
-                            % (_next.root.incoming[0].code, _next.root.owner))
+            for _d in _next.exchanges[0].destination:
+                component = self.runtime.runtime_components[_d]
+                if component.validate(_next.validate_items):
+                    break
+            else:
+                 raise Exception("No exchange '%s' received by component '%s'"
+                         % (_next.exchanges[0].value, _d))
+
         for _next in node.nodes:
             self._follow_up(_next)
 
