@@ -165,10 +165,12 @@ class Application(object):
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> app.define_exchange(data_source)
+        >>> app.exchange_module.ForthAction.class_destination
+        ['Component_1']
         >>> hasattr(app.exchange_module, 'ForthAction')
         True
         >>> delattr(app.exchange_module, 'ForthAction')
@@ -176,7 +178,10 @@ class Application(object):
         if definition is not None:
             declarator = checkmate.partition_declarator.Declarator(
                             cls.data_structure_module, cls.exchange_module)
-            declarator.new_partition(definition)
+            if 'attributes' in definition:
+                declarator.new_partition(definition, definition['attributes'])
+            else:
+                declarator.new_partition(definition)
         try:
             delattr(cls, cls._starting_run_attribute)
             delattr(cls, cls._run_collection_attribute)
