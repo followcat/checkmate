@@ -70,4 +70,5 @@ Should not get Runs when simulate has no outgoing.
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
+        >>> _tmp = app.component_registry.pop('DummyComponent')
         >>> os.remove(class_file)

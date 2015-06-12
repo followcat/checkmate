@@ -36,10 +36,6 @@ class TestData(checkmate.application.Application,
                 request:
                   C: AT1
                   P: NORM
-        - class: sample_app/component/user.yaml
-          attributes: {}
-          instances:
-            - name: USER
         """)
 
     communication_list = {'': checkmate.runtime._pyzmq.Communication}

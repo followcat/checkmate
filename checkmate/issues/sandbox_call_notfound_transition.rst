@@ -6,9 +6,8 @@ this run and return True.
 >>> app = sample_app.application.TestData()
 >>> runs = app.run_collection()
 >>> sandbox = checkmate.sandbox.Sandbox(type(app))
->>> voda = runs[0].nodes[0].nodes[0].nodes[2].nodes[0].nodes[1].\
-... nodes.pop()
->>> voda.root.incoming[0].code
+>>> voda = runs[0].nodes[0].nodes[2].nodes[0].nodes[1].root
+>>> voda.outgoing[0].code
 'VODA'
 >>> sandbox(runs[0])
 True

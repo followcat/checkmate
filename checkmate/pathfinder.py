@@ -62,7 +62,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     >>> checkmate.pathfinder.get_runs(path_runs, app, r0, nr)
     True
     >>> [_r.root.name for _r in path_runs]
-    ["Press C2's Button AC", "Press C2's Button RL"]
+    ['C2 callback on AC button', 'C2 callback on AC button']
     """
     if fail_fast(depth):
         return False
