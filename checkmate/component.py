@@ -369,3 +369,34 @@ class Component(object):
             False
         """
         return self.validation_dict.check(_transition)
+
+    def exchange_destination(self, exchange):
+        """
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> app.start()
+        >>> c1 = app.components['C1']
+        >>> ac = sample_app.exchanges.Action('AC')
+        >>> ac.destination
+        ['']
+        >>> exchanges = []
+        >>> for ex in c1.exchange_destination(ac):
+        ...     exchanges.append(ex)
+        >>> len(exchanges)
+        1
+        >>> exchanges[0].destination
+        ['C1']
+        >>> exchanges[0] == ac
+        True
+        """
+        _destinations = []
+        for _class_dest in exchange.class_destination:
+            _destinations.extend(self.component_registry[_class_dest])
+        if exchange.broadcast:
+            _destinations = [_destinations]
+        for _d in _destinations:
+            new_exchange = \
+                exchange.partition_storage.partition_class(exchange)
+            new_exchange.carbon_copy(exchange)
+            new_exchange.origin_destination(self.name, _d)
+            yield new_exchange
