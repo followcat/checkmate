@@ -298,11 +298,10 @@ class Component(object):
         self.validation_dict.record(_transition, exchange)
         for _outgoing in _transition.process(self.states, exchange,
                             default=self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing,
-                        self.name):
-                if isinstance(_e, exchange[0].return_type):
-                    _e._return_code = True
-                output.append(_e)
+            for new_exchange in self.exchange_destination(_outgoing):
+                if isinstance(new_exchange, exchange[0].return_type):
+                    new_exchange._return_code = True
+                output.append(new_exchange)
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
                 return_exchange = exchange[0].return_type()
