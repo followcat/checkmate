@@ -14,16 +14,16 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
         self._registry = {}
 
     def register(self, component, classes):
-        """
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> a.start()
-            >>> c1 = a.components['C1']
-            >>> _t = c1.state_machine.transitions[0]
-            >>> _class = _t.incoming[0].partition_class
-            >>> c1.service_registry._registry[_class]
-            ['C1']
-        """
+        # """
+        #     >>> import sample_app.application
+        #     >>> a = sample_app.application.TestData()
+        #     >>> a.start()
+        #     >>> c1 = a.components['C1']
+        #     >>> _t = c1.state_machine.transitions[0]
+        #     >>> _class = _t.incoming[0].partition_class
+        #     >>> c1.service_registry._registry[_class]
+        #     ['C1']
+        # """
         for _class in classes:
             if _class not in self._registry.keys():
                 self._registry[_class] = []
@@ -31,18 +31,18 @@ class ServiceRegistry(zope.component.globalregistry.BaseGlobalComponents):
                 self._registry[_class].append(component.name)
                 
     def server_exchanges(self, exchange, component_name=''):
-        """
-            >>> import sample_app.application
-            >>> a = sample_app.application.TestData()
-            >>> a.start()
-            >>> c1 = a.components['C1']
-            >>> c3 = a.components['C3']
-            >>> _t = c1.state_machine.transitions[0]
-            >>> e = _t.outgoing[0].factory()
-            >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
-            ...     print(_e.destination)
-            ['C3']
-        """
+        # """
+        #     >>> import sample_app.application
+        #     >>> a = sample_app.application.TestData()
+        #     >>> a.start()
+        #     >>> c1 = a.components['C1']
+        #     >>> c3 = a.components['C3']
+        #     >>> _t = c1.state_machine.transitions[0]
+        #     >>> e = _t.outgoing[0].factory()
+        #     >>> for _e in c1.service_registry.server_exchanges(e, 'C1'):
+        #     ...     print(_e.destination)
+        #     ['C3']
+        # """
         destinations = []
         for _class, _servers in self._registry.items():
             if isinstance(exchange, _class):

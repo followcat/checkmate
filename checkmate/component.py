@@ -102,7 +102,7 @@ class ComponentMeta(type):
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
 class Component(object):
-    def __init__(self, name, service_registry, component_registry=None):
+    def __init__(self, name, component_registry=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -116,7 +116,6 @@ class Component(object):
         self.states = []
         self.name = name
         self.validation_dict = checkmate._validation.ValidationDict()
-        self.service_registry = service_registry
         self.component_registry = component_registry
         for _tr in self.state_machine.transitions:
             _tr.owner = self.name
@@ -171,9 +170,6 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> for service in c.service_classes:
-        ...    print(c.service_registry._registry[service])
-        ['C1']
         >>> _t = c.state_machine.transitions[0]
         >>> r_tm = _t.outgoing[0].factory()
         >>> c.get_transition_by_output([r_tm]) == _t
@@ -211,7 +207,6 @@ class Component(object):
             except KeyError:
                 pass
             self.states.append(cls.start(default=default_state_value, kws=_kws))
-        self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
         outgoing = []
         for transition in self.state_machine.transitions:
