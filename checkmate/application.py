@@ -13,7 +13,6 @@ import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
 import checkmate.component
-import checkmate.service_registry
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
@@ -221,7 +220,6 @@ class Application(object):
         self.name = self.__module__.split('.')[-2]
         self._started = False
         self.components = collections.OrderedDict()
-        self.service_registry = checkmate.service_registry.ServiceRegistry()
         self.matrix = None
         self.runs_found = None
         for _class_definition in self.component_classes:
