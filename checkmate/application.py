@@ -94,6 +94,7 @@ class ApplicationMeta(type):
             _tmp_dict = collections.defaultdict(dict)
             _tmp_dict.update(_definition)
             _component_classes[index] = _tmp_dict
+        _component_registry = {}
         for class_definition in _component_classes:
             class_dict = class_definition['attributes']
             _tmp_list = class_definition['class'].split('/')
@@ -104,7 +105,9 @@ class ApplicationMeta(type):
                     class_name.lower(), alternative_package)
             instance_attributes = collections.defaultdict(dict)
             instance_transitions = collections.defaultdict(dict)
+            _component_registry[class_name] = []
             for _instance in class_definition['instances']:
+                _component_registry[class_name].append(_instance['name'])
                 if 'attributes' in _instance:
                     instance_attributes[_instance['name']] = \
                         _instance['attributes']
@@ -125,6 +128,7 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             class_definition['class'] = _class
 
+        namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
@@ -134,6 +138,7 @@ class Application(object):
     _runs_found = []
     component_classes = []
     communication_list = {}
+    component_registry = {}
     feature_definition_path = None
     _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
