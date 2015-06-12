@@ -75,39 +75,19 @@ class Run(checkmate._tree.Tree):
     @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
     def compare_final(self, application):
         """"""
-        final = []
-        def save_final(final, run):
-            try:
-                if len(final) == 0:
-                    final.extend(run.validate_items[1])
-                else:
-                    for state in run.validate_items[1]:
-                        added = False
-                        for index, _state in enumerate(final):
-                            if type(_state) == type(state):
-                                final[index] = state
-                                added = True
-                                break
-                        if not added:
-                            final.append(state)
-            except (TypeError, IndexError):
-                pass
-            for node in run.nodes:
-                save_final(final, node)
-
-        save_final(final, self)
+        final = {}
+        for run in self.breadthWalk():
+            for state in run.validate_items[1]:
+                final[type(state)] = state
         matched = 0
-        for state in final:
+        for state in final.values():
             for c in application.components.values():
-                for _state in c.states:
-                    if type(state) != type(_state):
-                        continue
-                    if _state != state:
-                        return False
+                if state in c.states:
                     matched += 1
-        if matched != len(final):
-            return False
-        return True
+                    break
+        if matched == len(final):
+            return True
+        return False
 
     def copy(self):
         _run = super().copy()
