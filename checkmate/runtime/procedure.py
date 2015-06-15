@@ -117,8 +117,8 @@ class Procedure(object):
                 if component.validate(_next.validate_items):
                     break
             else:
-                 raise Exception("No exchange '%s' received by component '%s'"
-                         % (_next.exchanges[0].value, _d))
+                raise Exception("No exchange '%s' received by component '%s'"
+                        % (_next.exchanges[0].value, _d))
 
         for _next in node.nodes:
             self._follow_up(_next)

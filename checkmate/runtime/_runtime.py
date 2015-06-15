@@ -156,7 +156,7 @@ class Runtime(object):
         else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
             return checkmate.runtime.procedure._compatible_skip_test(
-                        "Non-threaded SUT do not simulate")
+                        "Non-threaded SUT do not process from startpoint")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 

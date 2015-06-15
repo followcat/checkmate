@@ -241,10 +241,13 @@ class ThreadedSut(ThreadedComponent, Sut):
         super(ThreadedSut, self).initialize()
 
     def process(self, exchanges, startpoint=False):
-        if self._launched_in_thread and startpoint:
-            self.launcher.process(exchanges)
+        if startpoint:
+            if self._launched_in_thread:
+                self.launcher.process(exchanges)
+                return super().process(exchanges)
+            else:
+                raise ValueError("Launcher SUT can't process from start piont")
         return super().process(exchanges)
-        raise ValueError("Launcher SUT can't process from start piont")
 
     def simulate(self, block):
         if self._launched_in_thread:
