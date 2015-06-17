@@ -196,8 +196,11 @@ class CollectionSandbox(Sandbox):
 
     def process(self, sandbox, exchanges, tree=None):
         split = False
-        for _exchange in exchanges:
-            for _d in _exchange.destination:
+        for _e in exchanges:
+            for _d in _e.destination:
+                _exchange = _e.partition_storage.partition_class(_e)
+                _exchange.carbon_copy(_e)
+                _exchange.origin_destination(_e.origin, _d)
                 _c = sandbox.application.components[_d]
                 _blocks = _c.get_blocks_by_input([_exchange])
                 for _b in _blocks:
