@@ -43,6 +43,16 @@ class Run(checkmate._tree.Tree):
                     _b.is_matching_initial(component.states)):
                 return _b
 
+    def get_validate_items_by_input(self, exchanges):
+        items = []
+        for run in self.breadthWalk():
+            for _e in exchanges:
+                if _e not in run.exchanges:
+                    break
+            else:
+                items.append(run.validate_items)
+        return items
+
     def get_states(self):
         if self._initial is None or self._final is None:
             initial_dict = dict()
