@@ -169,7 +169,8 @@ class Sandbox(object):
                 else:
                     return None
                 tmp_run = self.process(_outgoings,
-                            checkmate.runs.Run(_transition, []))
+                            checkmate.runs.Run(_transition, [],
+                                states=_c.states, exchanges=[_exchange]))
                 tree.add_node(tmp_run)
         return tree
 
