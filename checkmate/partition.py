@@ -200,6 +200,7 @@ class Partition(object):
         except AttributeError:
             return (None, None)
 
+    @checkmate.report_issue("checkmate/issues/carbon_copy_list.rst")
     def carbon_copy(self, other):
         assert(type(self) == type(other))
         self.value = other.value
