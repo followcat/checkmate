@@ -2,7 +2,7 @@
 title: "State machine"
 data:
   - Transitions:
-      - name: '[Input/Final state/Output]'
+      - name: '[press pbac]'
         incoming:
           - ExchangeButton:     PBAC()
         outgoing:
@@ -14,7 +14,7 @@ data:
         outgoing:
           - Action:             AP(R)
 
-      - name: '[Input/Final state/Output]'
+      - name: '[press pbrl]'
         incoming:
           - ExchangeButton:     PBRL()
         outgoing:
@@ -26,7 +26,7 @@ data:
         outgoing:
           - ValidateOutput:     VODR()
 
-      - name: '[Input/Final state/Output]'
+      - name: '[press pbpp]'
         incoming:
           - ExchangeButton:     PBPP()
         outgoing:
