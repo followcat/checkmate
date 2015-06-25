@@ -37,12 +37,15 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
         c2 = application.components['C2']
         runs = checkmate.runs.get_runs_from_transition(application,
                     c2.state_machine.transitions[0])
-        super(TestProcedureRun1Threaded, self).__init__(runs[0].root,
-            runs[0].nodes)
+        super().__init__(runs[0].root, runs[0].nodes)
         self.collected_run = runs[0].collected_run
 
     def __call__(self):
         pass
+
+    def __str__(self):
+        return (self.__class__.__module__ + '.' + 
+                self.__class__.__name__ + '()')
 
 
 class TestProcedureRun2Threaded(checkmate.runs.Run):
@@ -79,12 +82,15 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         run_pbrl = checkmate.runs.get_runs_from_transition(box.application,
                         transition_rl_index[0])[0]
-        super(TestProcedureRun2Threaded, self).__init__(run_pbrl.root,
-            run_pbrl.nodes)
+        super().__init__(run_pbrl.root, run_pbrl.nodes)
         self.collected_run = run_pbrl.collected_run
 
     def __call__(self):
         pass
+
+    def __str__(self):
+        return (self.__class__.__module__ + '.' + 
+                self.__class__.__name__ + '()')
 
 
 def TestProcedureGenerator(application_class):
