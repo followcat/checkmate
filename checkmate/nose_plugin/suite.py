@@ -4,6 +4,7 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import sys
 import random
 import unittest
 import collections
@@ -11,6 +12,7 @@ import collections
 import nose.case
 import nose.suite
 import nose.proxy
+import nose.plugins.skip
 
 import checkmate.runs
 
@@ -28,7 +30,15 @@ class TestCase(nose.case.Test):
             test = plug_test
         if isinstance(test, checkmate.runs.Run):
             config_as_dict = self.config.todict()
-            config_as_dict['runtime'].execute(test, result)
+            result.startTest(self)
+            try:
+                config_as_dict['runtime'].execute(test, result)
+            except nose.plugins.skip.SkipTest as e:
+                result.addSkip(self, Exception(str(e)))
+            except:
+                err = sys.exc_info()
+                result.addError(self, err)
+            result.stopTest(self)
         else:
             test(result)
 

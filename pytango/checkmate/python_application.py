@@ -67,10 +67,6 @@ class FullPython(checkmate.application.Application,
                                 {component.name}"
           instances:
             - name: C3
-        - class: pytango/checkmate/component/user.yaml
-          attributes: {}
-          instances:
-            - name: USER
         """)
 
     communication_list = {

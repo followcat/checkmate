@@ -20,7 +20,6 @@ class Component_2(PyTango.Device_4Impl):
         self.set_state(PyTango.DevState.ON)
         self.c1_dev = PyTango.DeviceProxy('sys/component_1/C1')
         self.c3_dev = PyTango.DeviceProxy('sys/component_3/C3')
-        self.user_dev = PyTango.DeviceProxy('sys/user/USER')
 
     def PBAC(self):
         #Execute asynchronously in case of nested calls cause
@@ -42,13 +41,13 @@ class Component_2(PyTango.Device_4Impl):
         self.c1_dev.command_inout_asynch('AP', _R)
 
     def PA(self):
-        self.user_dev.VOPA()
+        pass
 
     def DA(self):
-        self.user_dev.VODA()
+        pass
 
     def DR(self):
-        self.user_dev.VODR()
+        pass
 
 
 class C2Interface(PyTango.DeviceClass):
