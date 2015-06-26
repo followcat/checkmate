@@ -52,10 +52,6 @@ class Application(checkmate.application.Application,
             launch_command: ./pytango/component/Component_3 {component.name}
           instances:
             - name: C3
-        - class: pytango/checkmate/component/user.yaml
-          attributes: {}
-          instances:
-            - name: USER
         """ % yaml.dump(c2_env))
 
     communication_list = {
