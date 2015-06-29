@@ -59,7 +59,7 @@ class Component(object):
     def receive(self):
         return self.exchange_queue.get(timeout=self.timeout_value)
 
-    def process(self, exchanges, startpoint=False):
+    def process(self, exchanges):
         """
             >>> import time
             >>> import checkmate.runtime._pyzmq
@@ -107,13 +107,13 @@ class Component(object):
                 (self.context.name, _o.value, _o.destination))
         return output
 
-    def simulate(self, block):
-        output = self.context.simulate(block)
-        for _o in output:
-            self.client.send(_o)
-            self.logger.info("%s simulate block and output %s to %s" %
-                (self.context.name, _o.value, _o.destination))
-        return output
+    def simulate(self, exchanges):
+        for ex in exchanges:
+            self.client.send(ex)
+            self.logger.info("%s simulate exchange %s to %s" %
+                (self.context.name, ex.value, ex.destination))
+        return exchanges
+
 
     def validate(self, block):
         return self.context.validate(block)
@@ -240,19 +240,10 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 
-    def process(self, exchanges, startpoint=False):
-        if startpoint:
-            if self._launched_in_thread:
-                self.launcher.process(exchanges)
-                return super().process(exchanges)
-            else:
-                raise ValueError("Launcher SUT can't process from start piont")
-        return super().process(exchanges)
-
-    def simulate(self, block):
+    def simulate(self, exchanges):
         if self._launched_in_thread:
-            self.launcher.simulate(block)
-            return super().simulate(block)
+            self.launcher.simulate(exchanges)
+            return super().simulate(exchanges)
         raise ValueError("Launcher SUT can't simulate")
 
     def start(self):

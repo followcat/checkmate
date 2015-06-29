@@ -59,7 +59,12 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> transition = c2.context.engine.blocks[0]
         >>> previous_run = checkmate.runs.get_runs_from_transition(
         ...                     r.application, transition)[0]
-        >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
+        >>> inc = transition.incoming[0]
+        >>> exchange = inc.factory(**inc.resolve())
+        >>> exchange.origin_destination('', ['C2'])
+        >>> simulated_exchanges = [exchange]
+
+        >>> o = c2.simulate(simulated_exchanges)
         >>> time.sleep(1)
         >>> c1.context.states[0].value
         False

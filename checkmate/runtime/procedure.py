@@ -94,7 +94,7 @@ class Procedure(object):
             self.result.startTest(self)
         for _d in self.blocks.exchanges[0].destination:
             component = self.runtime.runtime_components[_d]
-            component.process(self.blocks.exchanges, startpoint=True)
+            component.simulate(self.blocks.exchanges)
         self._follow_up(self.blocks)
 
         if hasattr(self.blocks, 'final'):
