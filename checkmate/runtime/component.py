@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import copy
+import time
 import queue
 import logging
 import threading
@@ -213,6 +214,7 @@ class ThreadedSut(ThreadedComponent, Sut):
             self._launched_in_thread = True
 
     def setup(self, runtime):
+        self.communication_delay = runtime.communication_delay
         super().setup(runtime)
         if not self._launched_in_thread:
             for _name in self.context.communication_list:
@@ -245,6 +247,10 @@ class ThreadedSut(ThreadedComponent, Sut):
             self.launcher.simulate(exchanges)
             return super().simulate(exchanges)
         raise ValueError("Launcher SUT can't simulate")
+
+    def validate(self, block):
+        time.sleep(self.communication_delay)
+        return super().validate(block)
 
     def start(self):
         self.launcher.start()

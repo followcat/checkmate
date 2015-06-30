@@ -32,6 +32,11 @@ class Runtime(object):
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
         for _k, _c in self.application.communication_list.items():
+            if type(_c) == tuple:
+                _c, self.communication_delay = _c
+            else:
+                self.communication_delay = \
+                    checkmate.timeout_manager.SUT_COMMUNICATE_DELAY
             self.communication_list[_k] = _c()
 
         if self.threaded:
