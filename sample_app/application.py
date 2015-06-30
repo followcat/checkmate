@@ -38,7 +38,7 @@ class TestData(checkmate.application.Application,
                   P: NORM
         """)
 
-    communication_list = {'': checkmate.runtime._pyzmq.Communication}
+    communication_list = {'': (checkmate.runtime._pyzmq.Communication, 0.001)}
 
 
     def __init__(self):
