@@ -14,8 +14,7 @@ data:
   - Definition and accessibility: 'ValidateOutput'
     Attributes:
       communication: pytango
-      class_destination:
-      - User
+      class_destination: []
     Value partitions:
     - [X-VLOUTPUT-01, VODA(), 'VODA', 'Validate Output DA']
     - [X-VLOUTPUT-02, VODR(), 'VODR', 'Validate Output DR']
