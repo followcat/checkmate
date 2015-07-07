@@ -13,7 +13,6 @@ import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
 import checkmate.component
-import checkmate.service_registry
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
@@ -94,6 +93,7 @@ class ApplicationMeta(type):
             _tmp_dict = collections.defaultdict(dict)
             _tmp_dict.update(_definition)
             _component_classes[index] = _tmp_dict
+        _component_registry = {}
         for class_definition in _component_classes:
             class_dict = class_definition['attributes']
             _tmp_list = class_definition['class'].split('/')
@@ -104,7 +104,9 @@ class ApplicationMeta(type):
                     class_name.lower(), alternative_package)
             instance_attributes = collections.defaultdict(dict)
             instance_transitions = collections.defaultdict(dict)
+            _component_registry[class_name] = []
             for _instance in class_definition['instances']:
+                _component_registry[class_name].append(_instance['name'])
                 if 'attributes' in _instance:
                     instance_attributes[_instance['name']] = \
                         _instance['attributes']
@@ -125,6 +127,7 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             class_definition['class'] = _class
 
+        namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
@@ -134,6 +137,7 @@ class Application(object):
     _runs_found = []
     component_classes = []
     communication_list = {}
+    component_registry = {}
     feature_definition_path = None
     _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
@@ -165,10 +169,12 @@ class Application(object):
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> app.define_exchange(data_source)
+        >>> app.exchange_module.ForthAction.class_destination
+        ['Component_1']
         >>> hasattr(app.exchange_module, 'ForthAction')
         True
         >>> delattr(app.exchange_module, 'ForthAction')
@@ -176,7 +182,10 @@ class Application(object):
         if definition is not None:
             declarator = checkmate.partition_declarator.Declarator(
                             cls.data_structure_module, cls.exchange_module)
-            declarator.new_partition(definition)
+            if 'attributes' in definition:
+                declarator.new_partition(definition, definition['attributes'])
+            else:
+                declarator.new_partition(definition)
         try:
             delattr(cls, cls._starting_run_attribute)
             delattr(cls, cls._run_collection_attribute)
@@ -211,7 +220,6 @@ class Application(object):
         self.name = self.__module__.split('.')[-2]
         self._started = False
         self.components = collections.OrderedDict()
-        self.service_registry = checkmate.service_registry.ServiceRegistry()
         self.matrix = None
         self.runs_found = None
         for _class_definition in self.component_classes:
@@ -219,7 +227,7 @@ class Application(object):
             for component in _class_definition['instances']:
                 _name = component['name']
                 self.components[_name] = \
-                    _class(_name, self.service_registry)
+                    _class(_name, self.component_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
 

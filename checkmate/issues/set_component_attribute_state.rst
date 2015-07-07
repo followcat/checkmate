@@ -60,7 +60,7 @@ Should be able to set component state with component instance's attribute
         ...             (checkmate.component.Component,), d)
         >>> setattr(component_module, class_name, _class)
         >>> _app = sample_app.application.TestData()
-        >>> d1 = _class('D1', _app.service_registry)
+        >>> d1 = _class('D1', _app.component_registry)
         >>> len(d1.states)
         0
         >>> d1.start()

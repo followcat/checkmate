@@ -53,6 +53,8 @@ class TestData(checkmate.application.Application,
             ('S-STATE-01', ...
             >>> ds = sample_app.data_structure.ActionRequest('HIGH') 
             >>> i = sample_app.exchanges.Action('AP')
+            >>> i.class_destination
+            ['Component_1']
             >>> c.process([i])[-1] # doctest: +ELLIPSIS
             <sample_app.exchanges.ThirdAction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
