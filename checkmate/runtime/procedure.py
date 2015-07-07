@@ -90,8 +90,6 @@ class Procedure(object):
 
     def _run_from_startpoint(self):
         _application = self.runtime.application
-        if self.result is not None:
-            self.result.startTest(self)
         for _d in self.blocks.exchanges[0].destination:
             component = self.runtime.runtime_components[_d]
             component.simulate(self.blocks.exchanges)

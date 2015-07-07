@@ -153,16 +153,16 @@ class Runtime(object):
     def execute(self, run, result=None, transform=True, previous_run=None):
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
-            return checkmate.runtime.procedure._compatible_skip_test(
-                        "Procedure components states do not match initial")
+            checkmate.runtime.procedure._compatible_skip_test(
+                "Procedure components states do not match initial")
         for _c in self.runtime_components.values():
             _c.reset()
         if self.call_procedure(run, result):
             self.runs_log.info(['Run', run.root.name])
         else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
-            return checkmate.runtime.procedure._compatible_skip_test(
-                        "Non-threaded SUT do not process from startpoint")
+            checkmate.runtime.procedure._compatible_skip_test(
+                "Non-threaded SUT do not process from startpoint")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
