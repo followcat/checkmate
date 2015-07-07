@@ -110,9 +110,7 @@ class Component(object):
 
     def simulate(self, exchanges):
         for ex in exchanges:
-            self.client.send(ex)
-            self.logger.info("%s simulate exchange %s to %s" %
-                (self.context.name, ex.value, ex.destination))
+            self.exchange_queue.put(ex)
         return exchanges
 
 
