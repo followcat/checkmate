@@ -298,5 +298,5 @@ class ThreadedStub(ThreadedComponent, Stub):
     def simulate(self, exchanges):
         for ex in exchanges:
             self.internal_queue.put(ex)
-        super().simulate(exchanges)
+        return super().simulate(exchanges)
 
