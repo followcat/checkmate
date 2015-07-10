@@ -292,7 +292,7 @@ class ThreadedStub(ThreadedComponent, Stub):
                 pass
 
     def reset(self):
-        self.received_internal_exchanges = []
+        self.received_internal_exchanges.clear()
         super(ThreadedStub, self).reset()
 
     def simulate(self, exchanges):
