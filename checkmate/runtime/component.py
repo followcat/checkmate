@@ -111,8 +111,9 @@ class Component(object):
     def simulate(self, exchanges):
         for ex in exchanges:
             self.exchange_queue.put(ex)
+            self.logger.info("%s simulate exchange %s to %s" %
+                (self.context.name, ex.value, ex.destination))
         return exchanges
-
 
     def validate(self, block):
         return self.context.validate(block)
@@ -264,10 +265,38 @@ class ThreadedSut(ThreadedComponent, Sut):
 class ThreadedStub(ThreadedComponent, Stub):
     """"""
     using_internal_client = True
-    reading_internal_client = False
+    reading_internal_client = True
     using_external_client = True
     reading_external_client = True
 
     def __init__(self, component):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
+        self.received_internal_exchanges = []
+
+    def setup(self, runtime):
+        self.internal_queue = multiprocessing.Queue()
+        super(ThreadedStub, self).setup(runtime)
+        self.client.internal_connector.queue = self.internal_queue
+
+    def receive(self):
+        exchange = self.exchange_queue.get(timeout=self.timeout_value)        
+        while True:
+            if exchange in self.received_internal_exchanges:
+                self.received_internal_exchanges.remove(exchange)
+                return exchange
+            try:
+                self.received_internal_exchanges.append(
+                    self.internal_queue.get(timeout=self.timeout_value))
+            except queue.Empty:
+                pass
+
+    def reset(self):
+        self.received_internal_exchanges = []
+        super(ThreadedStub, self).reset()
+
+    def simulate(self, exchanges):
+        for ex in exchanges:
+            self.internal_queue.put(ex)
+        super().simulate(exchanges)
+
