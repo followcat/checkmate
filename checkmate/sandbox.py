@@ -56,7 +56,7 @@ class Sandbox(object):
                         blocks = component.get_blocks_by_input([_o])
                         _run = checkmate.runs.Run(blocks[0], [],
                                 exchanges=[_o])
-                        if not self.__call__(_run):
+                        if not self.__call__(_run.exchanges):
                             raise \
                                 RuntimeError("Applicaiton initializing Failed")
         else:
@@ -86,10 +86,9 @@ class Sandbox(object):
 
     @property
     def is_run(self):
-        return (self.blocks is not None and
-                set(self.run.walk()).issubset(set(self.blocks.walk())))
+        return self.blocks is not None
 
-    def __call__(self, run, itp_run=False):
+    def __call__(self, exchanges, itp_run=False):
         """
             >>> import checkmate.sandbox
             >>> import checkmate.runs
@@ -100,9 +99,9 @@ class Sandbox(object):
             >>> c1.states[0].value
             True
             >>> runs = box.application.run_collection()
-            >>> box(runs[0])
+            >>> box(runs[0].exchanges)
             True
-            >>> box(runs[2])
+            >>> box(runs[2].exchanges)
             True
             >>> c1.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
@@ -110,24 +109,24 @@ class Sandbox(object):
             False
         """
         _outgoing = []
-        self.run = run
         self.blocks = None
         _states = None
-        _exchanges = list(run.exchanges)
+        if exchanges is None or len(exchanges) == 0:
+            return self.is_run
         for component in self.application.components.values():
-            if len(_exchanges):
-                start_blocks = component.get_blocks_by_input(_exchanges)
-                if len(start_blocks) == 0:
-                    continue
-                _outgoing = component.process(_exchanges)
-                _states = component.states
-                self.blocks = start_blocks[0]
+            start_blocks = component.get_blocks_by_input(exchanges)
+            if len(start_blocks) > 0:
                 break
-        if self.blocks is None:
-            return False
-        return self.run_process(_outgoing, _states, _exchanges)
+        else:
+            return self.is_run
+        _outgoing = component.process(exchanges)
+        _states = component.states
+        self.blocks = start_blocks[0]
+        return self.run_process(_outgoing, _states, exchanges)
 
     def run_process(self, outgoing, states, exchanges):
+        if self.blocks is None:
+            return False
         try:
             self.blocks = \
                 self.process(outgoing,
@@ -181,7 +180,8 @@ class Sandbox(object):
 
 class CollectionSandbox(Sandbox):
     def __call__(self, run, itp_run=False):
-        results = super(CollectionSandbox, self).__call__(run, itp_run)
+        results = super(CollectionSandbox,
+                    self).__call__(run.exchanges, itp_run)
         for _split, _run in results:
             if itp_run is True:
                 _run.itp_run = run
