@@ -9,6 +9,6 @@ this run and return True.
 >>> voda = runs[0].nodes[0].nodes[2].nodes[0].nodes[1].root
 >>> voda.outgoing[0].code
 'VODA'
->>> sandbox(runs[0])
+>>> sandbox(runs[0].exchanges)
 True
 

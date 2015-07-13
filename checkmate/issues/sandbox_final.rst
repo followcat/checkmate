@@ -15,7 +15,7 @@ Setting the procedure.final from the sandbox does not work.
     >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(data, _application)
     >>> _run = run_list[0]
     >>> box = checkmate.sandbox.Sandbox(type(_application))
-    >>> box(_run, itp_run=True)
+    >>> box(_run.exchanges, itp_run=True)
     True
     >>> run = box.blocks
     >>> len(run.final)

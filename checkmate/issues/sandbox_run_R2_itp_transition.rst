@@ -72,7 +72,9 @@ initial state:
 
 Can not run sandbox:
 
-    >>> box(checkmate.runs.Run(run_transition), itp_run=True)
+    >>> incoming = run_transition.incoming[0]
+    >>> ex = incoming.factory(**incoming.resolve())
+    >>> box([ex], itp_run=True)
     False
 
 Recover block:

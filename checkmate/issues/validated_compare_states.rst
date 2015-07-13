@@ -16,7 +16,7 @@ The application.compare_states should get True.
 
     >>> box = checkmate.sandbox.Sandbox(cls)
     >>> box_app = box.application
-    >>> box(runs[0])
+    >>> box(runs[0].exchanges)
     True
 
     >>> c1 = box_app.components['C1']

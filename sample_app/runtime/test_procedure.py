@@ -79,7 +79,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         run_pbac = checkmate.runs.get_runs_from_transition(application,
                         c2.engine.blocks[0])[0]
         box = checkmate.sandbox.Sandbox(application_class)
-        box(run_pbac)
+        box(run_pbac.exchanges)
         transition_rl_index = [_t for _t in c2.engine.blocks
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         run_pbrl = checkmate.runs.get_runs_from_transition(box.application,
