@@ -156,20 +156,12 @@ class Sandbox(object):
         for _exchange in exchanges:
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
-                _transition = self.run.get_block_by_input_states(
-                    [_exchange], _c)
-                items = self.run.get_validate_items_by_input(
-                            [_exchange])
-                if _transition is None or len(items) == 0:
+                blocks = _c.get_blocks_by_input([_exchange])
+                if len(blocks) == 0:
                     continue
                 _outgoings = _c.process([_exchange])
-                for validate_items in items:
-                    if _c.validate(validate_items):
-                        break
-                else:
-                    return None
                 tmp_run = self.process(_outgoings,
-                            checkmate.runs.Run(_transition, [],
+                            checkmate.runs.Run(blocks[0], [],
                                 states=_c.states, exchanges=[_exchange]))
                 tree.add_node(tmp_run)
         return tree
