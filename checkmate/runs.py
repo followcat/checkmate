@@ -71,13 +71,9 @@ class Run(checkmate._tree.Tree):
 
     def compare_initial(self, application):
         """"""
-        for initial in self.initial:
-            for component in application.components.values():
-                if initial.match(component.states):
-                    break
-            else:
-                return False
-        return True
+        box = checkmate.sandbox.Sandbox(type(application), application)
+        return box(self.exchanges) and \
+                set(self.walk()).issubset(set(box.blocks.walk()))
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')

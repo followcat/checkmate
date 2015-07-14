@@ -12,7 +12,9 @@ still be ok.
     >>> t = c1.engine.blocks[0]
     >>> t.initial[0].value
     True
-    >>> run = checkmate.runs.Run(t)
+    >>> inc = t.incoming[0]
+    >>> ex = inc.factory(**inc.resolve())
+    >>> run = checkmate.runs.Run(t, exchanges=[ex])
     >>> run.compare_initial(app)
     True
     >>> target = t.initial + t.initial
