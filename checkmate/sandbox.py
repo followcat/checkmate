@@ -156,8 +156,6 @@ class Sandbox(object):
             for _d in _exchange.destination:
                 _c = self.application.components[_d]
                 blocks = _c.get_blocks_by_input([_exchange])
-                if len(blocks) == 0:
-                    continue
                 _outgoings = _c.process([_exchange])
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(blocks[0], [],
