@@ -120,7 +120,7 @@ class Sandbox(object):
         else:
             return self.is_run
         _outgoing = component.process(exchanges)
-        _states = component.states
+        _states = component.copy_states()
         self.blocks = start_blocks[0]
         return self.run_process(_outgoing, _states, exchanges)
 
@@ -157,9 +157,10 @@ class Sandbox(object):
                 _c = self.application.components[_d]
                 blocks = _c.get_blocks_by_input([_exchange])
                 _outgoings = _c.process([_exchange])
+                states = _c.copy_states()
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(blocks[0], [],
-                                states=_c.states, exchanges=[_exchange]))
+                                states=states, exchanges=[_exchange]))
                 tree.add_node(tmp_run)
         return tree
 
