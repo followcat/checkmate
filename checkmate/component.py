@@ -228,6 +228,13 @@ class Component(object):
         self.pending_outgoing = []
         return output
 
+    def copy_states(self):
+        states = []
+        for index, _s in enumerate(self.states):
+            states.append(type(_s)())
+            states[index].carbon_copy(_s)
+        return states
+
     def _do_process(self, exchange, block=None):
         """"""
         try:
@@ -249,10 +256,7 @@ class Component(object):
                 if isinstance(_e, exchange[0].return_type):
                     _e._return_code = True
                 output.append(_e)
-        _states = []
-        for index, _s in enumerate(self.states):
-            _states.append(type(_s)())
-            _states[index].carbon_copy(_s)
+        _states = self.copy_states()
         self.validation_dict.record(tuple([tuple(exchange), tuple(_states)]))
         if exchange[0].data_returned:
             if len([_o for _o in output if _o.return_code]) == 0:
