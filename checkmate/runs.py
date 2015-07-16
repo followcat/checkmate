@@ -289,23 +289,25 @@ def get_origin_exchanges(application):
         >>> import sample_app.application
         >>> import checkmate.runs
         >>> app = sample_app.application.TestData()
-        >>> app.start(default_state_value=False)
+        >>> app.start()
         >>> exchanges = checkmate.runs.get_origin_exchanges(app)
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
+    incomings = []
+    outgoings = []
     origin_exchanges = []
     for _component in application.components.values():
         for _block in _component.engine.blocks:
-            _incoming = _block.generic_incoming(_component.states)
-            for _c in application.components.values():
-                if _c == _component:
-                    continue
-                if _c.get_blocks_by_output(_incoming) is not None:
-                    break
-            else:
-                for _i in _incoming:
-                    for _e in _component.service_registry.server_exchanges(_i):
-                        origin_exchanges.append(_e)
+            incomings.extend(_block.incoming)
+            outgoings.extend(_block.outgoing)
+    for _incoming in incomings:
+        for _o in outgoings:
+            if _incoming.partition_class == _o.partition_class:
+                break
+        else:
+            _i = _incoming.factory(**_incoming.resolve())
+            for _e in _component.service_registry.server_exchanges(_i):
+                origin_exchanges.append(_e)
     return origin_exchanges
 
