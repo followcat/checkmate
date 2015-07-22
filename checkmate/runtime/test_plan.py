@@ -163,3 +163,18 @@ def TestProcedureRunsGenerator(application_class):
     for _run in application_class().run_collection():
         yield _run, _run.root.name
 
+
+def TestProcedureExchangesGenerator(application_class):
+    """
+    >>> import sample_app.application
+    >>> import checkmate.runtime.test_plan
+    >>> app = sample_app.application.TestData
+    >>> exchanges = checkmate.runtime.test_plan.TestProcedureExchangesGenerator(app)
+    >>> exchanges[0].value
+    'PBAC'
+    """
+    app = application_class()
+    app.start()
+    exchanges = checkmate.runs.get_origin_exchanges(app)
+    yield exchanges
+
