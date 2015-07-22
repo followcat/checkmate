@@ -15,6 +15,7 @@ import nose.proxy
 import nose.plugins.skip
 
 import checkmate.runs
+import checkmate.sandbox
 
 
 class TestCase(nose.case.Test):
@@ -40,7 +41,11 @@ class TestCase(nose.case.Test):
                 result.addError(self, err)
             result.stopTest(self)
         else:
-            test(result)
+            if isinstance(test.test, list):
+                setattr(test, 'proxyResult', result.result)
+                test()
+            else:
+                test(result)
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
@@ -51,7 +56,23 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
-        runtime.execute(self.test, transform=True)
+        if isinstance(self.test, list):
+            def generate_test_from_exchange(exchanges, application):
+                for item in exchanges:
+                    for exchange in exchanges:
+                        sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                            application)
+                        if sandbox([exchange]):
+                            yield sandbox.blocks
+                            break
+            for _test in generate_test_from_exchange(self.test,
+                                                     runtime.application):
+                setattr(_test, '__name__', _test.root.name)
+                _FunctionTestCase = FunctionTestCase(_test,
+                                                     config=self.config)
+                _FunctionTestCase(self.proxyResult)
+        else:
+            runtime.execute(self.test, transform=True)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
