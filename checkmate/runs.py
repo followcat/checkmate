@@ -12,6 +12,18 @@ import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
+    def __eq__(self, other):
+        try:
+            return set(self.walk()) == set(other.walk())
+        except AttributeError:
+            return False
+
+    def __ne__(self, other):
+        try:
+            return set(self.walk()) != set(other.walk())
+        except AttributeError:
+            raise TypeError('this 2 arguments are not comparable!')
+
     def __init__(self, block, nodes=None, states=None, exchanges=None):
         assert isinstance(block, checkmate.tymata.transition.Block)
         if nodes is None:
