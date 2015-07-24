@@ -108,6 +108,10 @@ class Device(checkmate.runtime._threading.Thread):
         self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
+                if self.is_reading:
+                    if self.socket_sub:
+                        self.poller.unregister(self.socket_sub)
+                    self.poller.unregister(self.socket_dealer_in)
                 self.socket_sub.close()
                 self.socket_dealer_in.close()
                 self.socket_dealer_out.close()
@@ -166,6 +170,8 @@ class Router(checkmate.runtime._threading.Thread):
         """"""
         while True:
             if self.check_for_stop():
+                self.poller.unregister(self.router)
+                self.poller.unregister(self.broadcast_router)
                 break
             socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
