@@ -4,6 +4,8 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import numpy
+
 import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
@@ -323,3 +325,63 @@ def get_origin_exchanges(application):
                 origin_exchanges.append(_e)
     return origin_exchanges
 
+def find_next_exchanges(application, exchanges, current_run_index):
+    """
+    find next exchanges from current run
+
+    >>> import sample_app.application
+    >>> import checkmate.runs
+    >>> import checkmate.runtime._pyzmq
+    >>> import checkmate.runtime._runtime
+    >>> import checkmate.sandbox
+    >>> com = checkmate.runtime._pyzmq.Communication
+    >>> app = sample_app.application.TestData
+    >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
+    >>> r.setup_environment(['C2'])
+    >>> r.start_test()
+    >>> runs = app.run_collection()
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> next_exchanges = checkmate.runs.find_next_exchanges(r.application,origin_exchanges,-1)
+    >>> sandbox = checkmate.sandbox.Sandbox(type(r.application), r.application)
+    >>> sandbox([next_exchanges[0]])
+    True
+    >>> runs.index(sandbox.blocks)
+    0
+    >>> r.execute(sandbox.blocks)
+    >>> next_exchanges = checkmate.runs.find_next_exchanges(r.application,origin_exchanges,0)
+    >>> sandbox = checkmate.sandbox.Sandbox(type(r.application), r.application)
+    >>> sandbox([next_exchanges[0]])
+    True
+    >>> runs.index(sandbox.blocks)
+    2
+    >>> r.application.reliable_matrix
+    matrix([[0, 1, 0]])
+    """
+    return_exchanges = []
+    if current_run_index == -1:
+        for exchange in exchanges:
+            sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                application)
+            if sandbox([exchange]):
+                return_exchanges.append(exchange)
+    elif len(application.reliable_matrix) > current_run_index and\
+            len(application.reliable_matrix) != 1:
+        for index in\
+                application.reliable_matrix[
+                    current_run_index].nonzero()[1].tolist()[0]:
+            return_exchanges.append(exchanges[index])
+    else:
+        row = [0]*len(exchanges)
+        for index, exchange in enumerate(exchanges):
+            sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                application)
+            if sandbox([exchange]):
+                return_exchanges.append(exchange)
+                row[index] = 1
+        _matrix = application.reliable_matrix.tolist()
+        if current_run_index == 0:
+            _matrix[0] = row
+        else:
+            _matrix.append(row)
+        application.reliable_matrix = numpy.matrix(_matrix)
+    return return_exchanges

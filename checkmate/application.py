@@ -128,6 +128,7 @@ class Application(object):
     _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
     path_finder_depth = 10
+    reliable_matrix = None
 
     @classmethod
     def run_collection(cls):
@@ -204,6 +205,7 @@ class Application(object):
         self.service_registry = checkmate.service_registry.ServiceRegistry()
         self.matrix = None
         self.runs_found = None
+        self.reliable_matrix = numpy.matrix([])
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
             for component in _class_definition['instances']:
