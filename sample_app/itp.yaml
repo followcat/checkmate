@@ -25,15 +25,6 @@ data:
           - AnotherState:       AnotherState1(R)
 
   - Procedures:
-      - name: 'Toggle acknowledge with RL'
-        initial: 
-          - Acknowledge:        Acknowledge2
-        incoming:
-          - Reaction:           RL()
-        final:
-          - Acknowledge:        Acknowledge1
-
-  - Procedures:
       - name: 'Toggle C1 state back PP'
         initial: 
           - State:              State2
