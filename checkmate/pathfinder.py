@@ -115,3 +115,66 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
         else:
             runs.pop()
     return False
+
+
+def find_untested_path(application, next_runs, untested_runs,
+                       history_runs, origin_exchanges):
+    """
+    find path of nearest untested run.
+
+    >>> import sample_app.application
+    >>> import checkmate.runtime._pyzmq
+    >>> import checkmate.runtime._runtime
+    >>> import checkmate.pathfinder as pf
+    >>> import checkmate.runs
+    >>> com = checkmate.runtime._pyzmq.Communication
+    >>> app = sample_app.application.TestData
+    >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
+    >>> r.setup_environment(['C2'])
+    >>> r.start_test()
+    >>> runs = app.run_collection()
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> r.execute(runs[0])
+    >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,0) #doctest: +ELLIPSIS
+    [<sample_app.exchanges.ExchangeButton ...
+    >>> r.execute(runs[2])
+    >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,1) #doctest: +ELLIPSIS
+    [<sample_app.exchanges.ExchangeButton object ...
+    >>> r.execute(runs[3])
+    >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,2) #doctest: +ELLIPSIS
+    [<sample_app.exchanges.ExchangeButton object at ...
+    >>> untested_runs = [runs[1]]
+    >>> tested_runs = [runs[0],runs[2],runs[3]]
+    >>> run, path = pf.find_untested_path(r.application, [runs[0]], untested_runs, tested_runs, origin_exchanges)
+    >>> runs.index(run)
+    1
+    >>> runs.index(path[0])
+    0
+    >>> runs.index(path[1])
+    2
+    >>> r.stop_test()
+
+    """
+    if len(untested_runs) == 0:
+        return None, None
+    paths = []
+    for next_run in next_runs:
+        sandbox = checkmate.sandbox.Sandbox(type(application), application)
+        assert sandbox(next_run.exchanges)
+        paths.append(dict({'path': [next_run],
+                           'application': sandbox.application}))
+    while len(paths) != 0:
+        path = paths.pop(0)
+        end_index = history_runs.index(path['path'][-1])
+        for next_exchange_index in\
+                application.reliable_matrix[
+                    end_index].nonzero()[1].tolist()[0]:
+            sandbox = checkmate.sandbox.Sandbox(type(application), path['application'])
+            if sandbox([origin_exchanges[next_exchange_index]]):
+                if sandbox.blocks in untested_runs:
+                    return sandbox.blocks, path['path']
+                else:
+                    new_path = {'path': [], 'application': sandbox.application}
+                    new_path['path'].extend(path['path'])
+                    new_path['path'].append(sandbox.blocks)
+                    paths.append(new_path)
