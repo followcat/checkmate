@@ -16,6 +16,7 @@ import nose.plugins.skip
 
 import checkmate.runs
 import checkmate.sandbox
+import checkmate.pathfinder
 
 
 class TestCase(nose.case.Test):
@@ -56,18 +57,13 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
+        runs = runtime.application.run_collection()
         if isinstance(self.test, list):
-            def generate_test_from_exchange(exchanges, application):
-                for item in exchanges:
-                    for exchange in exchanges:
-                        sandbox = checkmate.sandbox.Sandbox(type(application),
-                                                            application)
-                        if sandbox([exchange]):
-                            yield sandbox.blocks
-                            break
-            for _test in generate_test_from_exchange(self.test,
-                                                     runtime.application):
-                setattr(_test, '__name__', _test.root.name)
+            for _test, _path in \
+                    generate_test_from_exchange(self.test,
+                                                runtime.application):
+                transform_state(runtime, _path)
+                setattr(_test, '__name__', _test.root.name+str(runs.index(_test)))
                 _FunctionTestCase = FunctionTestCase(_test,
                                                      config=self.config)
                 _FunctionTestCase(self.proxyResult)
@@ -121,3 +117,83 @@ class ContextSuiteFactory(nose.suite.ContextSuiteFactory):
                     )
         return wrapped
 
+def transform_state(runtime, path):
+    """
+    transform the state of application
+    """
+    for _run in path:
+        runtime.execute(_run)
+
+
+def generate_test_from_exchange(exchanges, application):
+    """
+    in charge of the runnable test yielding
+    step1. find current application what exchange we can run
+    step2. choose the untested one yield,if no untested runs go step3
+    step3. find untested run and return a path
+    step4. yield untested run and path
+
+    >>> import sample_app.application
+    >>> import checkmate.runs
+    >>> import checkmate.runtime._pyzmq
+    >>> import checkmate.runtime._runtime
+    >>> import checkmate.nose_plugin.suite as su
+    >>> com = checkmate.runtime._pyzmq.Communication
+    >>> app = sample_app.application.TestData
+    >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
+    >>> r.setup_environment(['C2'])
+    >>> r.start_test()
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> runs = app.run_collection()
+    >>> def run():
+    ...     for _test, _path in su.generate_test_from_exchange(origin_exchanges, r.application):
+    ...         su.transform_state(r, _path)
+    ...         print(str(runs.index(_test)))
+    ...         r.execute(_test)
+    ...
+    >>> run()
+    0
+    2
+    1
+    3
+    >>> r.stop_test()
+    """
+    history_runs = []
+    untested_runs = []
+    yield_run_index = -1
+    import numpy  # for random mode
+    application.reliable_matrix = numpy.matrix([])
+    while True:
+        yield_path = []
+        next_runs = []
+        # step1
+        next_exchanges = checkmate.runs.find_next_exchanges(application,
+                                                            exchanges,
+                                                            yield_run_index)
+        for exchange in next_exchanges:
+            sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                application)
+            assert sandbox([exchange])
+            next_runs.append(sandbox.blocks)
+        new_untested_runs = [_run for _run in next_runs\
+                             if _run not in history_runs]
+        # step2
+        if len(new_untested_runs) > 0:
+            untested_runs.extend([_run for _run in new_untested_runs\
+                                  if _run not in untested_runs])
+            yield_run = new_untested_runs[0]
+            if yield_run in untested_runs:
+                untested_runs.remove(yield_run)
+        # step3
+        else:
+            yield_run, yield_path =\
+                checkmate.pathfinder.find_untested_path(application, next_runs,
+                                                        untested_runs,
+                                                        history_runs, exchanges)
+            if yield_run is None:
+                return
+            untested_runs.remove(yield_run)
+        # step4
+        yield_run_index += 1
+        history_runs.append(yield_run)
+        yield yield_run, yield_path
