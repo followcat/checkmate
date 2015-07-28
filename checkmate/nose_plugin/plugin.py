@@ -131,10 +131,10 @@ class Checkmate(nose.plugins.Plugin):
         """
         TestRunner.plugin_config = dict(self.__dict__)
         TestRunner.plugin_config['generator_test_info'] =\
-            {'is_random': self.randomized_run,
+            {'random': self.randomized_run,
              'history_runs': [],
              'history_track': [],
-             'has_tested': False}
+             'tested': False}
 
     def wantClass(self, cls):
         """Select only subclass is checkmate.runs.Run"""
