@@ -59,16 +59,30 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         runtime = config_as_dict['runtime']
         runs = runtime.application.run_collection()
         if isinstance(self.test, list):
-            for _test, _path in \
-                    generate_test_from_exchange(self.test,
-                                                runtime.application):
+            gen = self.runTest_gen(config_as_dict['generator_test_info'],\
+                                   runtime)
+            for _test, _path in gen:
                 transform_state(runtime, _path)
-                setattr(_test, '__name__', _test.root.name+str(runs.index(_test)))
+                setattr(_test, '__name__', \
+                        _test.root.name+str(runs.index(_test)))
                 _FunctionTestCase = FunctionTestCase(_test,
                                                      config=self.config)
                 _FunctionTestCase(self.proxyResult)
         else:
             runtime.execute(self.test, transform=True)
+
+    def runTest_gen(self, generator_test_info, runtime):
+        if generator_test_info['tested'] and generator_test_info['random']:
+            pass
+        elif generator_test_info['tested'] and not generator_test_info['random']:
+            def gen(x):
+                for _run, _path in x:
+                    yield _run, _path
+            return gen(generator_test_info['history_track'])
+        else:
+            generator_test_info['tested'] = True
+            return generate_test_from_exchange(self.test, runtime.application,
+                                               generator_test_info['history_track'])
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
@@ -125,7 +139,7 @@ def transform_state(runtime, path):
         runtime.execute(_run)
 
 
-def generate_test_from_exchange(exchanges, application):
+def generate_test_from_exchange(exchanges, application, history_track):
     """
     in charge of the runnable test yielding
     step1. find current application what exchange we can run
@@ -196,4 +210,5 @@ def generate_test_from_exchange(exchanges, application):
         # step4
         yield_run_index += 1
         history_runs.append(yield_run)
+        history_track.append((yield_run, yield_path))
         yield yield_run, yield_path
