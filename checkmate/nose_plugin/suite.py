@@ -73,7 +73,9 @@ class FunctionTestCase(nose.case.FunctionTestCase):
 
     def runTest_gen(self, generator_test_info, runtime):
         if generator_test_info['tested'] and generator_test_info['random']:
-            pass
+            return random_generator(generator_test_info['history_runs'],
+                             runtime.application,
+                             self.test)
         elif generator_test_info['tested'] and not generator_test_info['random']:
             def gen(x):
                 for _run, _path in x:
@@ -82,7 +84,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         else:
             generator_test_info['tested'] = True
             return generate_test_from_exchange(self.test, runtime.application,
-                                               generator_test_info['history_track'])
+                                       generator_test_info['history_track'],
+                                       generator_test_info['history_runs'])
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
@@ -139,7 +142,8 @@ def transform_state(runtime, path):
         runtime.execute(_run)
 
 
-def generate_test_from_exchange(exchanges, application, history_track):
+def generate_test_from_exchange(exchanges, application,
+                                history_track, history_runs):
     """
     in charge of the runnable test yielding
     step1. find current application what exchange we can run
@@ -160,7 +164,7 @@ def generate_test_from_exchange(exchanges, application, history_track):
     >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
     >>> runs = app.run_collection()
     >>> def run():
-    ...     for _test, _path in su.generate_test_from_exchange(origin_exchanges, r.application):
+    ...     for _test, _path in su.generate_test_from_exchange(origin_exchanges, r.application,[],[]):
     ...         su.transform_state(r, _path)
     ...         print(str(runs.index(_test)))
     ...         r.execute(_test)
@@ -172,7 +176,6 @@ def generate_test_from_exchange(exchanges, application, history_track):
     3
     >>> r.stop_test()
     """
-    history_runs = []
     untested_runs = []
     yield_run_index = -1
     import numpy  # for random mode
@@ -212,3 +215,29 @@ def generate_test_from_exchange(exchanges, application, history_track):
         history_runs.append(yield_run)
         history_track.append((yield_run, yield_path))
         yield yield_run, yield_path
+
+
+def random_generator(history_runs, application, origin_exchanges):
+    """
+    generate run by random sequence,and transform application is necessary.
+
+    
+    """
+    randomed_runs = random.sample(history_runs, len(history_runs))
+    for _run in randomed_runs:
+        next_exchanges = checkmate.runs.find_next_exchanges(application,
+                                                    origin_exchanges,
+                                                    -1)
+        next_runs = []
+        for exchange in next_exchanges:
+            sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                application)
+            assert sandbox([exchange])
+            next_runs.append(sandbox.blocks)
+        if _run in next_runs:
+            yield _run, []
+        else:
+            _run, _path = checkmate.pathfinder.find_untested_path(application,
+                                              next_runs, [_run], history_runs,
+                                              origin_exchanges)
+            yield _run, _path
