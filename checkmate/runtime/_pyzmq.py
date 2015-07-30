@@ -15,6 +15,10 @@ import checkmate.runtime._zmq_wrapper
 import checkmate.runtime.communication
 
 
+class Message():
+    broadcast = False
+            
+
 class Device(checkmate.runtime._threading.Thread):
     """
         >>> import zmq
@@ -101,6 +105,13 @@ class Device(checkmate.runtime._threading.Thread):
             if self.socket_sub:
                 self.poller.register(self.socket_sub)
             self.poller.register(self.socket_dealer_in)
+        @checkmate.timeout_manager.WaitOnException(timeout=10)
+        def check():
+            self.socket_dealer_out.send_pyobj((self._name.encode(), Message()))
+            socks = self.poller.poll_with_timeout()
+            for _s in socks:
+                assert isinstance(_s.recv_pyobj(), Message)
+        check()
         super().start()
 
     def run(self):
