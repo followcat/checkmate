@@ -97,6 +97,23 @@ class Tree(object):
         return_list = re_walk(self)
         return return_list
 
+    def __eq__(self, other):
+        """
+            >>> t = Tree('peasant', [])
+            >>> t.add_node(Tree('spearman', []))
+            >>> t.add_node(Tree('bowman', []))
+            >>> t2 = Tree('peasant', [])
+            >>> t2.add_node(Tree('spearman', []))
+            >>> t2.add_node(Tree('bowman', []))
+            >>> t == t2
+            True
+            >>> _tmp = t2.nodes.pop()
+            >>> t == t2
+            False
+        """
+        assert isinstance(other, Tree)
+        return set(self.walk()) == set(other.walk())
+
     def breadthWalk(self):
         """
         >>> t = Tree('archer', [Tree('captain', [Tree('marshal', [])]), Tree('hero', [Tree('champion', [])])])
