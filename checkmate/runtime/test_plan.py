@@ -148,9 +148,9 @@ def TestProcedureRunsGenerator(application_class):
         >>> runs[0].root.incoming[0].code
         'PBAC'
         >>> runs[1].root.incoming[0].code
-        'PBAC'
-        >>> runs[2].root.incoming[0].code
         'PBRL'
+        >>> runs[2].root.incoming[0].code
+        'PBAC'
         >>> runs[3].root.incoming[0].code
         'PBPP'
         >>> com = checkmate.runtime._pyzmq.Communication

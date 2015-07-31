@@ -101,7 +101,7 @@ class Sandbox(object):
             >>> runs = box.application.run_collection()
             >>> box(runs[0].exchanges)
             True
-            >>> box(runs[2].exchanges)
+            >>> box(runs[1].exchanges)
             True
             >>> c1.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...

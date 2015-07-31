@@ -7,7 +7,7 @@ should do a "deepcopy" to list value
     >>> box = checkmate.sandbox.Sandbox(cls)
     >>> box(runs[0].exchanges)
     True
-    >>> box(runs[2].exchanges)
+    >>> box(runs[1].exchanges)
     True
     >>> box(runs[3].exchanges)
     True
