@@ -188,7 +188,7 @@ def get_runs_from_application(_class):
     runs = []
     application = _class()
     application.start(default_state_value=False)
-    origin_exchanges = get_origin_exchanges(application)
+    origin_exchanges = get_origin_exchanges(_class)
     sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
     for _ex in origin_exchanges:
         for _c in application.components.values():
@@ -284,19 +284,20 @@ def get_origin_transitions(application):
     return origin_transitions
 
 
-def get_origin_exchanges(application):
+def get_origin_exchanges(application_class):
     """
         >>> import sample_app.application
         >>> import checkmate.runs
-        >>> app = sample_app.application.TestData()
-        >>> app.start()
-        >>> exchanges = checkmate.runs.get_origin_exchanges(app)
+        >>> cls = sample_app.application.TestData
+        >>> exchanges = checkmate.runs.get_origin_exchanges(cls)
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
     incomings = []
     outgoings = []
     origin_exchanges = []
+    application = application_class()
+    application.start()
     for _component in application.components.values():
         for _block in _component.engine.blocks:
             incomings.extend(_block.incoming)
