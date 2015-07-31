@@ -256,6 +256,12 @@ class Application(object):
             local_copy += [_s for _s in _component.states]
         return local_copy
 
+    def copy_states(self):
+        copy_states= []
+        for _component in list(self.components.values()):
+            copy_states.extend(_component.copy_states())
+        return copy_states
+
     def validated_incoming_list(self):
         incoming_list = []
         for _component in list(self.components.values()):
