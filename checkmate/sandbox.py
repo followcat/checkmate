@@ -101,7 +101,7 @@ class Sandbox(object):
             >>> runs = box.application.run_collection()
             >>> box(runs[0].exchanges)
             True
-            >>> box(runs[2].exchanges)
+            >>> box(runs[1].exchanges)
             True
             >>> c1.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
@@ -157,10 +157,13 @@ class Sandbox(object):
                 _c = self.application.components[_d]
                 blocks = _c.get_blocks_by_input([_exchange])
                 _outgoings = _c.process([_exchange])
+                exchange = type(_exchange)()
+                exchange.carbon_copy(_exchange)
+                exchange.origin_destination(_exchange.origin, [_d])
                 states = _c.copy_states()
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(blocks[0], [],
-                                states=states, exchanges=[_exchange]))
+                                states=states, exchanges=[exchange]))
                 tree.add_node(tmp_run)
         return tree
 

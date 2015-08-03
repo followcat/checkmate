@@ -197,22 +197,29 @@ class Run(checkmate._tree.Tree):
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
-@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
+@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst', failed=4)
 def get_runs_from_application(_class):
     runs = []
     application = _class()
-    application.start(default_state_value=False)
-    origin_exchanges = get_origin_exchanges(application)
-    sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
-    for _ex in origin_exchanges:
-        for _c in application.components.values():
-            blocks = _c.get_blocks_by_input([_ex])
-            for _b in blocks:
-                run = Run(_b, states=_c.states, exchanges=[_ex])
-                sandbox.restart()
-                for _run in sandbox(run):
-                    runs.append(_run)
+    application.start()
+    origin_exchanges = get_origin_exchanges(_class)
+    generate_run(application, runs, [], origin_exchanges)
     return runs
+
+
+def generate_run(application, runs, exchange_states, exchanges):
+    entrances = []
+    for _ex in exchanges:
+        if (_ex, application.state_list()) in exchange_states:
+            continue
+        box = checkmate.sandbox.Sandbox(type(application), application)
+        states = application.copy_states()
+        exchange_states.append((_ex, states))
+        if box([_ex]) and box.blocks not in runs:
+            runs.append(box.blocks)
+            entrances.append(box)
+    for box in entrances:
+        generate_run(box.application, runs, exchange_states, exchanges) 
 
 
 @checkmate.fix_issue('checkmate/issues/get_followed_runs.rst')
@@ -298,19 +305,20 @@ def get_origin_transitions(application):
     return origin_transitions
 
 
-def get_origin_exchanges(application):
+def get_origin_exchanges(application_class):
     """
         >>> import sample_app.application
         >>> import checkmate.runs
-        >>> app = sample_app.application.TestData()
-        >>> app.start()
-        >>> exchanges = checkmate.runs.get_origin_exchanges(app)
+        >>> cls = sample_app.application.TestData
+        >>> exchanges = checkmate.runs.get_origin_exchanges(cls)
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
     incomings = []
     outgoings = []
     origin_exchanges = []
+    application = application_class()
+    application.start()
     for _component in application.components.values():
         for _block in _component.engine.blocks:
             incomings.extend(_block.incoming)

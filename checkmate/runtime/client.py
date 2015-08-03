@@ -30,8 +30,6 @@ class Client(object):
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
         >>> items = ((are,), tuple(rc2.context.states))
-        >>> are_t = [_t for _t in rc2.context.engine.blocks
-        ...     if _t.incoming[0].code == 'ARE'][0]
         >>> items in rc2.context.validation_dict.collected_items
         True
         >>> rc2.reset()
@@ -42,14 +40,9 @@ class Client(object):
         True
         >>> rc1.client.send(pa)
         >>> time.sleep(0.5)
-        >>> import time; time.sleep(1)
-        >>> pa_t = [_t for _t in rc2.context.engine.blocks
-        ...     if _t.incoming[0].code == 'PA'][0]
         >>> items = ((pa,), tuple(rc2.context.states))
         >>> items in rc2.context.validation_dict.collected_items
         True
-        >>> pa_t = [_t for _t in rc3.context.engine.blocks
-        ...     if _t.incoming[0].code == 'PA'][0]
         >>> items = ((pa,), tuple(rc3.context.states))
         >>> items in rc3.context.validation_dict.collected_items
         True

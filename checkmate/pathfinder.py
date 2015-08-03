@@ -57,7 +57,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     >>> app.start()
     >>> runs  = app.run_collection()
     >>> r0 = runs[3]
-    >>> nr = runs[1]
+    >>> nr = runs[2]
     >>> path_runs = []
     >>> checkmate.pathfinder.get_runs(path_runs, app, r0, nr)
     True
