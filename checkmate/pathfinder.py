@@ -133,25 +133,24 @@ def find_untested_path(application, next_runs, target_runs,
     >>> r.setup_environment(['C2'])
     >>> r.start_test()
     >>> runs = app.run_collection()
-    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(app)
     >>> r.execute(runs[0])
     >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,0) #doctest: +ELLIPSIS
     [<sample_app.exchanges.ExchangeButton ...
-    >>> r.execute(runs[2])
+    >>> r.execute(runs[1])
     >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,1) #doctest: +ELLIPSIS
     [<sample_app.exchanges.ExchangeButton object ...
-    >>> r.execute(runs[3])
+    >>> r.execute(runs[2])
     >>> checkmate.runs.find_next_exchanges(r.application,origin_exchanges,2) #doctest: +ELLIPSIS
     [<sample_app.exchanges.ExchangeButton object at ...
-    >>> untested_runs = [runs[1]]
-    >>> tested_runs = [runs[0],runs[2],runs[3]]
-    >>> run, path = pf.find_untested_path(r.application, [runs[0]], untested_runs, tested_runs, origin_exchanges)
+    >>> untested_runs = [runs[3]]
+    >>> tested_runs = [runs[0],runs[1],runs[2]]
+    >>> run, path = pf.find_untested_path(r.application, [runs[1]],
+    ...                         untested_runs, tested_runs, origin_exchanges)
     >>> runs.index(run)
-    1
+    3
     >>> runs.index(path[0])
-    0
-    >>> runs.index(path[1])
-    2
+    1
     >>> r.stop_test()
 
     """

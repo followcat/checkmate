@@ -14,18 +14,6 @@ import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
-    def __eq__(self, other):
-        try:
-            return set(self.walk()) == set(other.walk())
-        except AttributeError:
-            return False
-
-    def __ne__(self, other):
-        try:
-            return set(self.walk()) != set(other.walk())
-        except AttributeError:
-            raise TypeError('this 2 arguments are not comparable!')
-
     def __init__(self, block, nodes=None, states=None, exchanges=None):
         assert isinstance(block, checkmate.tymata.transition.Block)
         if nodes is None:
@@ -335,7 +323,7 @@ def get_origin_exchanges(application_class):
 
 def find_next_exchanges(application, exchanges, current_run_index=-1):
     """
-    find next exchanges from current run
+    find next exchanges from current run also update application matrix
 
     >>> import sample_app.application
     >>> import checkmate.runs
@@ -348,7 +336,7 @@ def find_next_exchanges(application, exchanges, current_run_index=-1):
     >>> r.setup_environment(['C2'])
     >>> r.start_test()
     >>> runs = app.run_collection()
-    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(app)
     >>> next_exchanges = checkmate.runs.find_next_exchanges(r.application,origin_exchanges,-1)
     >>> sandbox = checkmate.sandbox.Sandbox(type(r.application), r.application)
     >>> sandbox([next_exchanges[0]])
@@ -361,7 +349,7 @@ def find_next_exchanges(application, exchanges, current_run_index=-1):
     >>> sandbox([next_exchanges[0]])
     True
     >>> runs.index(sandbox.blocks)
-    2
+    1
     >>> r.application.reliable_matrix
     matrix([[0, 1, 0]])
     >>> r.stop_test()

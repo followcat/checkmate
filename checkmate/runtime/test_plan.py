@@ -169,8 +169,7 @@ def TestProcedureExchangesGenerator(application_class):
     >>> import sample_app.application
     >>> import checkmate.runtime.test_plan
     >>> app = sample_app.application.TestData
-    >>> exchanges_gen = \
-    ...     checkmate.runtime.test_plan.TestProcedureExchangesGenerator(app)
+    >>> exchanges_gen = checkmate.runtime.test_plan.TestProcedureExchangesGenerator(app)
     >>> exchanges = next(exchanges_gen)
     >>> exchanges[0].value
     'PBAC'

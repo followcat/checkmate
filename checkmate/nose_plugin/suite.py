@@ -162,19 +162,21 @@ def generate_test_from_exchange(exchanges, application,
     >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
     >>> r.setup_environment(['C2'])
     >>> r.start_test()
-    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(r.application)
+    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(app)
     >>> runs = app.run_collection()
     >>> def run():
-    ...     for _test, _path in su.generate_test_from_exchange(origin_exchanges, r.application,[],[]):
+    ...     for _test, _path in su.generate_test_from_exchange(
+    ...                             origin_exchanges, r.application,[],[]):
     ...         su.transform_state(r, _path)
-    ...         print(str(runs.index(_test)))
+    ...         print('run:', str(runs.index(_test)),
+    ...               'path:', [runs.index(i) for i in _path])
     ...         r.execute(_test)
     ...
     >>> run()
-    0
-    2
-    1
-    3
+    run: 0 path: []
+    run: 1 path: []
+    run: 2 path: []
+    run: 3 path: [1]
     >>> r.stop_test()
     """
     untested_runs = []
