@@ -325,7 +325,7 @@ def get_origin_exchanges(application):
                 origin_exchanges.append(_e)
     return origin_exchanges
 
-def find_next_exchanges(application, exchanges, current_run_index):
+def find_next_exchanges(application, exchanges, current_run_index=-1):
     """
     find next exchanges from current run
 
@@ -356,20 +356,24 @@ def find_next_exchanges(application, exchanges, current_run_index):
     2
     >>> r.application.reliable_matrix
     matrix([[0, 1, 0]])
+    >>> r.stop_test()
     """
     return_exchanges = []
+    # unknown current run
     if current_run_index == -1:
         for exchange in exchanges:
             sandbox = checkmate.sandbox.Sandbox(type(application),
                                                 application)
             if sandbox([exchange]):
                 return_exchanges.append(exchange)
+    # search history next exchanges
     elif len(application.reliable_matrix) > current_run_index and\
             len(application.reliable_matrix) != 1:
         for index in\
                 application.reliable_matrix[
                     current_run_index].nonzero()[1].tolist()[0]:
             return_exchanges.append(exchanges[index])
+    # testing and update matrix
     else:
         row = [0]*len(exchanges)
         for index, exchange in enumerate(exchanges):

@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import sys
+import numpy
 import random
 import unittest
 import collections
@@ -147,7 +148,7 @@ def generate_test_from_exchange(exchanges, application,
     """
     in charge of the runnable test yielding
     step1. find current application what exchange we can run
-    step2. choose the untested one yield,if no untested runs go step3
+    step2. choose the untested one yield,if no untested runs go step3 else go step4
     step3. find untested run and return a path
     step4. yield untested run and path
 
@@ -178,7 +179,6 @@ def generate_test_from_exchange(exchanges, application,
     """
     untested_runs = []
     yield_run_index = -1
-    import numpy  # for random mode
     application.reliable_matrix = numpy.matrix([])
     while True:
         yield_path = []

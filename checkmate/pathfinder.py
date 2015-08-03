@@ -117,7 +117,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     return False
 
 
-def find_untested_path(application, next_runs, untested_runs,
+def find_untested_path(application, next_runs, target_runs,
                        history_runs, origin_exchanges):
     """
     find path of nearest untested run.
@@ -155,7 +155,7 @@ def find_untested_path(application, next_runs, untested_runs,
     >>> r.stop_test()
 
     """
-    if len(untested_runs) == 0:
+    if len(target_runs) == 0:
         return None, None
     paths = []
     for next_run in next_runs:
@@ -171,7 +171,7 @@ def find_untested_path(application, next_runs, untested_runs,
                     end_index].nonzero()[1].tolist()[0]:
             sandbox = checkmate.sandbox.Sandbox(type(application), path['application'])
             if sandbox([origin_exchanges[next_exchange_index]]):
-                if sandbox.blocks in untested_runs:
+                if sandbox.blocks in target_runs:
                     return sandbox.blocks, path['path']
                 else:
                     new_path = {'path': [], 'application': sandbox.application}
