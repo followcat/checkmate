@@ -168,12 +168,13 @@ def find_untested_path(application, next_runs, target_runs,
         for next_exchange_index in\
                 application.reliable_matrix[
                     end_index].nonzero()[1].tolist()[0]:
-            sandbox = checkmate.sandbox.Sandbox(type(application), path['application'])
+            sandbox = checkmate.sandbox.Sandbox(type(application),
+                                                path['application'])
             if sandbox([origin_exchanges[next_exchange_index]]):
                 if sandbox.blocks in target_runs:
                     return sandbox.blocks, path['path']
                 else:
-                    new_path = {'path': [], 'application': sandbox.application}
-                    new_path['path'].extend(path['path'])
+                    new_path = {'path': path['path'][:],
+                                'application': sandbox.application}
                     new_path['path'].append(sandbox.blocks)
                     paths.append(new_path)

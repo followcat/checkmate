@@ -65,10 +65,13 @@ class FunctionTestCase(nose.case.FunctionTestCase):
             for _test, _path in gen:
                 transform_state(runtime, _path)
                 setattr(_test, '__name__', \
-                        _test.root.name+str(runs.index(_test)))
+                        _test.root.name+str(runs.index(_test))+\
+                        ' path:'+str([runs.index(i) for i in _path]))
                 _FunctionTestCase = FunctionTestCase(_test,
                                                      config=self.config)
                 _FunctionTestCase(self.proxyResult)
+        elif hasattr(self.test, '__name__'):
+            runtime.execute(self.test, transform=False)
         else:
             runtime.execute(self.test, transform=True)
 
@@ -140,7 +143,7 @@ def transform_state(runtime, path):
     transform the state of application
     """
     for _run in path:
-        runtime.execute(_run)
+        runtime.execute(_run, transform=False)
 
 
 def generate_test_from_exchange(exchanges, application,
@@ -226,10 +229,10 @@ def random_generator(history_runs, application, origin_exchanges):
     
     """
     randomed_runs = random.sample(history_runs, len(history_runs))
+    next_exchanges = checkmate.runs.find_next_exchanges(application,
+                                                        origin_exchanges,
+                                                        -1)
     for _run in randomed_runs:
-        next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                    origin_exchanges,
-                                                    -1)
         next_runs = []
         for exchange in next_exchanges:
             sandbox = checkmate.sandbox.Sandbox(type(application),
@@ -243,3 +246,6 @@ def random_generator(history_runs, application, origin_exchanges):
                                               next_runs, [_run], history_runs,
                                               origin_exchanges)
             yield _run, _path
+        next_exchanges = checkmate.runs.find_next_exchanges(application,
+                                                    origin_exchanges,
+                                                    history_runs.index(_run))
