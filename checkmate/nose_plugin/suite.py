@@ -183,15 +183,13 @@ def generate_test_from_exchange(exchanges, application,
     >>> r.stop_test()
     """
     untested_runs = []
-    yield_run_index = -1
     application.reliable_matrix = numpy.matrix([])
     while True:
         yield_path = []
         next_runs = []
         # step1
         next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                            exchanges,
-                                                            yield_run_index)
+                                                            exchanges)
         for exchange in next_exchanges:
             sandbox = checkmate.sandbox.Sandbox(type(application),
                                                 application)
@@ -220,7 +218,6 @@ def generate_test_from_exchange(exchanges, application,
                 return
             untested_runs.remove(yield_run)
         # step4
-        yield_run_index += 1
         history_runs.append(yield_run)
         history_track.append((yield_run, yield_path))
         yield yield_run, yield_path
