@@ -212,10 +212,10 @@ def generate_test_from_exchange(exchanges, application,
                 untested_runs.remove(yield_run)
         # step3
         else:
-            yield_run, yield_path =\
-                checkmate.pathfinder.find_untested_path(application, next_runs,
-                                                        untested_runs,
-                                                        history_runs, exchanges)
+            yield_run, yield_path = \
+                checkmate.pathfinder.find_path_to_nearest_target(application,
+                                                                 next_runs,
+                                                                 untested_runs)
             if yield_run is None:
                 return
             untested_runs.remove(yield_run)
@@ -244,12 +244,20 @@ def random_generator(history_runs, application, origin_exchanges):
             assert sandbox([exchange])
             next_runs.append(sandbox.blocks)
         if _run in next_runs:
-            yield _run, []
+            yield next_runs[next_runs.index(_run)], []
         else:
-            _run, _path = checkmate.pathfinder.find_untested_path(application,
-                                              next_runs, [_run], history_runs,
-                                              origin_exchanges)
-            yield _run, _path
+            _run, _path = checkmate.pathfinder.find_path_to_nearest_target(application,
+                                                                           next_runs,
+                                                                           [_run])
+            # synchronize application and yield proper run
+            box = checkmate.sandbox.Sandbox(type(application), application)
+            ret_path = []
+            for item in _path:
+                assert box(item.exchanges)
+                ret_path.append(box.blocks)
+            assert box(_run.exchanges)
+            ret_run = box.blocks
+            yield ret_run, ret_path
         next_exchanges = checkmate.runs.find_next_exchanges(application,
                                                     origin_exchanges,
                                                     history_runs.index(_run))

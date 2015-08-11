@@ -178,3 +178,48 @@ def find_untested_path(application, next_runs, target_runs,
                                 'application': sandbox.application}
                     new_path['path'].append(sandbox.blocks)
                     paths.append(new_path)
+
+def find_path_to_nearest_target(application, next_runs, target_runs):
+    """
+    find nearest untested run from current runtime state.
+    this is used in condition of no run matches current runtime
+    state.and we need to find a way to transform our runtime.
+    it can also find the path to specified target.
+
+    >>> import sample_app.application
+    >>> import checkmate.pathfinder
+    >>> app = sample_app.application.TestData()
+    >>> runs = app.run_collection()
+    >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
+    >>> app.update_matrix([runs[1]], runs[0])
+    >>> app.update_matrix([runs[2], runs[3]], runs[1])
+    >>> app.update_matrix([runs[1]], runs[2])
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(app, [runs[1]], [runs[3]])
+    >>> runs.index(run)
+    3
+    >>> path #doctest: +ELLIPSIS
+    [<checkmate.runs.Run ...
+    >>> runs.index(path[0])
+    1
+    """
+    matrix = application.run_matrix
+    target_runs_indexes = [application.run_matrix_index.index(item) \
+                           for item in target_runs]
+    current_run_row = [application.run_matrix_index.index(item) \
+                       for item in next_runs]
+    length = len(matrix.tolist())
+    paths = [[item] for item in current_run_row]
+    while len(paths) != 0:
+        path = paths.pop(0)
+        end = path[-1]
+        children = matrix[end].nonzero()[1].tolist()[0]
+        for child in children:
+            if child in target_runs_indexes:
+                return application.run_matrix_index[child], \
+                       [application.run_matrix_index[i] for i in path]
+            elif len(path)+1 == length:  # cannot find path
+                return None, None
+            else:
+                new_path = path[:]
+                new_path.append(child)
+                paths.append(new_path)
