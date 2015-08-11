@@ -199,6 +199,10 @@ def generate_test_from_exchange(exchanges, application,
             next_runs.append(sandbox.blocks)
         new_untested_runs = [_run for _run in next_runs\
                              if _run not in history_runs]
+        if len(history_runs) == 1:
+            application.run_matrix_index.append(yield_run)
+        if len(history_runs) >= 1:
+            application.update_matrix(next_runs, yield_run)
         # step2
         if len(new_untested_runs) > 0:
             untested_runs.extend([_run for _run in new_untested_runs\

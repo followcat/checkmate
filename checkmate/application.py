@@ -129,6 +129,8 @@ class Application(object):
     _run_collection_attribute = '_collected_runs'
     path_finder_depth = 10
     reliable_matrix = None
+    run_matrix = None
+    run_matrix_index = []
 
     @classmethod
     def run_collection(cls):
@@ -206,6 +208,8 @@ class Application(object):
         self.matrix = None
         self.runs_found = None
         self.reliable_matrix = numpy.matrix([])
+        self.run_matrix = numpy.matrix([])
+        self.run_matrix_index = []
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
             for component in _class_definition['instances']:
@@ -214,6 +218,7 @@ class Application(object):
                     _class(_name, self.service_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
+        self.run_matrix_tag = [0]
 
     def start(self, default_state_value=True):
         """
@@ -279,3 +284,58 @@ class Application(object):
                 cls_name = type(_s).__name__
                 state_dict[_c][cls_name] = _s._dump()
         return state_dict
+
+    def update_matrix(self, next_runs, current_run):
+        """
+        notice:update run_matrix_index first then update matrix
+
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> runs = app.run_collection()
+        >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
+        >>> app.update_matrix([runs[1]], runs[0])
+        >>> app.run_matrix
+        matrix([[0, 1],
+                [0, 0]])
+        >>> app.update_matrix([runs[2], runs[3]], runs[1])
+        >>> app.run_matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]])
+        >>> app.update_matrix([runs[1]], runs[2])
+        >>> app.run_matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 1, 0, 0],
+                [0, 0, 0, 0]])
+        >>> app.update_matrix([runs[0]], runs[3])
+        >>> app.run_matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 1, 0, 0],
+                [1, 0, 0, 0]])
+        """
+        new_runs = [_run for _run in next_runs \
+                    if _run not in self.run_matrix_index]
+        current_index = self.run_matrix_index.index(current_run)
+        extra_length = len(new_runs)
+        # extend matrix
+        if extra_length > 0:
+            if self.run_matrix.size == 0:
+                self.run_matrix = \
+                    numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
+            else:
+                _temp = self.run_matrix.tolist()
+                for item in _temp:
+                    item.extend([0]*extra_length)
+                _temp.extend([[0]*len(_temp[0])]*extra_length)
+                self.run_matrix = numpy.matrix(_temp)
+            self.run_matrix_index.extend(new_runs)
+        # update matrix row
+        row = len(self.run_matrix)*[0]
+        for _run in next_runs:
+            row[self.run_matrix_index.index(_run)] = 1
+        self.run_matrix[current_index] = row
+        self.run_matrix_tag[current_index] = 1
+        self.run_matrix_tag.extend([0]*extra_length)
