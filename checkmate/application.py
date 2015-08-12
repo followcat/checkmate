@@ -128,8 +128,9 @@ class Application(object):
     _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
     path_finder_depth = 10
-    run_matrix = None
+    run_matrix = numpy.matrix([])
     run_matrix_index = []
+    run_matrix_tag = [0]
 
     @classmethod
     def run_collection(cls):
@@ -206,8 +207,6 @@ class Application(object):
         self.service_registry = checkmate.service_registry.ServiceRegistry()
         self.matrix = None
         self.runs_found = None
-        self.run_matrix = numpy.matrix([])
-        self.run_matrix_index = []
         for _class_definition in self.component_classes:
             _class = _class_definition['class']
             for component in _class_definition['instances']:
@@ -283,7 +282,8 @@ class Application(object):
                 state_dict[_c][cls_name] = _s._dump()
         return state_dict
 
-    def update_matrix(self, next_runs, current_run):
+    @classmethod
+    def update_matrix(cls, next_runs, current_run):
         """
         notice:update run_matrix_index first then update matrix
 
@@ -315,25 +315,25 @@ class Application(object):
                 [1, 0, 0, 0]])
         """
         new_runs = [_run for _run in next_runs \
-                    if _run not in self.run_matrix_index]
-        current_index = self.run_matrix_index.index(current_run)
+                    if _run not in cls.run_matrix_index]
+        current_index = cls.run_matrix_index.index(current_run)
         extra_length = len(new_runs)
         # extend matrix
         if extra_length > 0:
-            if self.run_matrix.size == 0:
-                self.run_matrix = \
+            if cls.run_matrix.size == 0:
+                cls.run_matrix = \
                     numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
             else:
-                _temp = self.run_matrix.tolist()
+                _temp = cls.run_matrix.tolist()
                 for item in _temp:
                     item.extend([0]*extra_length)
                 _temp.extend([[0]*len(_temp[0])]*extra_length)
-                self.run_matrix = numpy.matrix(_temp)
-            self.run_matrix_index.extend(new_runs)
+                cls.run_matrix = numpy.matrix(_temp)
+            cls.run_matrix_index.extend(new_runs)
         # update matrix row
-        row = len(self.run_matrix)*[0]
+        row = len(cls.run_matrix)*[0]
         for _run in next_runs:
-            row[self.run_matrix_index.index(_run)] = 1
-        self.run_matrix[current_index] = row
-        self.run_matrix_tag[current_index] = 1
-        self.run_matrix_tag.extend([0]*extra_length)
+            row[cls.run_matrix_index.index(_run)] = 1
+        cls.run_matrix[current_index] = row
+        cls.run_matrix_tag[current_index] = 1
+        cls.run_matrix_tag.extend([0]*extra_length)
