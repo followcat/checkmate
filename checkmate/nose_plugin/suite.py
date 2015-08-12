@@ -202,8 +202,9 @@ def generate_test_from_exchange(exchanges, application,
         else:
             yield_run, yield_path = \
                 checkmate.pathfinder.find_path_to_nearest_target(application,
-                                                                 next_runs,
-                                                                 untested_runs)
+                                                                 untested_runs,
+                                                                 exchanges,
+                                                                 yield_run)
             if yield_run is None:
                 return
             untested_runs.remove(yield_run)
@@ -230,9 +231,11 @@ def random_generator(history_runs, application, origin_exchanges):
             ret_run = box.blocks
             ret_path = []
         else:
-            _run, _path = checkmate.pathfinder.find_path_to_nearest_target(application,
-                                                                           next_runs,
-                                                                           [_run])
+            _run, _path = \
+                checkmate.pathfinder.find_path_to_nearest_target(application,
+                                                                 [_run],
+                                                                 origin_exchanges,
+                                                                 ret_run)
             # synchronize application and yield proper run
             box = checkmate.sandbox.Sandbox(type(application), application)
             ret_path = []

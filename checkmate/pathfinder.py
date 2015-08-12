@@ -117,7 +117,7 @@ def get_runs(runs, app, ori_run, nr, diff_set=None, depth=0):
     return False
 
 
-def find_path_to_nearest_target(application, next_runs, target_runs):
+def find_path_to_nearest_target(application, target_runs, exchanges, current_run=None):
     """
     find nearest untested run from current runtime state.
     this is used in condition of no run matches current runtime
@@ -126,13 +126,15 @@ def find_path_to_nearest_target(application, next_runs, target_runs):
 
     >>> import sample_app.application
     >>> import checkmate.pathfinder
+    >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
     >>> runs = app.run_collection()
+    >>> exchanges = checkmate.runs.get_origin_exchanges(sample_app.application.TestData)
     >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
     >>> app.update_matrix([runs[1]], runs[0])
     >>> app.update_matrix([runs[2], runs[3]], runs[1])
     >>> app.update_matrix([runs[1]], runs[2])
-    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(app, [runs[1]], [runs[3]])
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(app, [runs[3]], exchanges, runs[2])
     >>> runs.index(run)
     3
     >>> path #doctest: +ELLIPSIS
@@ -143,8 +145,15 @@ def find_path_to_nearest_target(application, next_runs, target_runs):
     matrix = application.run_matrix
     target_runs_indexes = [application.run_matrix_index.index(item) \
                            for item in target_runs]
-    current_run_row = [application.run_matrix_index.index(item) \
-                       for item in next_runs]
+    if current_run is None:
+        next_runs = []
+        for exchange in exchanges:
+            box = checkmate.sandbox.Sandbox(type(application), application)
+            if box([exchange]):
+                next_runs.append(box.blocks)
+        current_run_row = [application.run_matrix_index.index(item) for item in next_runs]
+    else:
+        current_run_row = matrix[application.run_matrix_index.index(current_run)].nonzero()[1].tolist()[0]
     length = len(matrix.tolist())
     paths = [[item] for item in current_run_row]
     while len(paths) != 0:
