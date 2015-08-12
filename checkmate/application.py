@@ -215,7 +215,6 @@ class Application(object):
                     _class(_name, self.service_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
-        self.run_matrix_tag = [0]
 
     def start(self, default_state_value=True):
         """
