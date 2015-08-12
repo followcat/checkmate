@@ -231,8 +231,7 @@ def random_generator(history_runs, application, origin_exchanges):
     """
     randomed_runs = random.sample(history_runs, len(history_runs))
     next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                        origin_exchanges,
-                                                        -1)
+                                                        origin_exchanges)
     for _run in randomed_runs:
         next_runs = []
         for exchange in next_exchanges:
@@ -256,5 +255,4 @@ def random_generator(history_runs, application, origin_exchanges):
             ret_run = box.blocks
             yield ret_run, ret_path
         next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                    origin_exchanges,
-                                                    history_runs.index(_run))
+                                                    origin_exchanges)
