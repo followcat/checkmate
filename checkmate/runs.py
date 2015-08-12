@@ -321,44 +321,6 @@ def get_origin_exchanges(application_class):
                 origin_exchanges.append(_e)
     return origin_exchanges
 
-def find_next_exchanges(application, exchanges):
-    """
-    find next exchanges from current run also update application matrix
-
-    >>> import sample_app.application
-    >>> import checkmate.runs
-    >>> import checkmate.runtime._pyzmq
-    >>> import checkmate.runtime._runtime
-    >>> import checkmate.sandbox
-    >>> com = checkmate.runtime._pyzmq.Communication
-    >>> app = sample_app.application.TestData
-    >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
-    >>> r.setup_environment(['C2'])
-    >>> r.start_test()
-    >>> runs = app.run_collection()
-    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(app)
-    >>> next_exchanges = checkmate.runs.find_next_exchanges(r.application,origin_exchanges)
-    >>> sandbox = checkmate.sandbox.Sandbox(type(r.application), r.application)
-    >>> sandbox([next_exchanges[0]])
-    True
-    >>> runs.index(sandbox.blocks)
-    0
-    >>> r.execute(sandbox.blocks)
-    >>> next_exchanges = checkmate.runs.find_next_exchanges(r.application,origin_exchanges)
-    >>> sandbox = checkmate.sandbox.Sandbox(type(r.application), r.application)
-    >>> sandbox([next_exchanges[0]])
-    True
-    >>> runs.index(sandbox.blocks)
-    1
-    >>> r.stop_test()
-    """
-    return_exchanges = []
-    for exchange in exchanges:
-        sandbox = checkmate.sandbox.Sandbox(type(application),
-                                            application)
-        if sandbox([exchange]):
-            return_exchanges.append(exchange)
-    return return_exchanges
 
 def find_next_runs(application, origin_exchanges, current_run=None):
     """

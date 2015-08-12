@@ -184,23 +184,13 @@ def generate_test_from_exchange(exchanges, application,
     """
     untested_runs = []
     application.reliable_matrix = numpy.matrix([])
+    yield_run = None
     while True:
         yield_path = []
         next_runs = []
-        # step1
-        next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                            exchanges)
-        for exchange in next_exchanges:
-            sandbox = checkmate.sandbox.Sandbox(type(application),
-                                                application)
-            assert sandbox([exchange])
-            next_runs.append(sandbox.blocks)
+        next_runs = checkmate.runs.find_next_runs(application, exchanges, yield_run)
         new_untested_runs = [_run for _run in next_runs\
                              if _run not in history_runs]
-        if len(history_runs) == 1:
-            application.run_matrix_index.append(yield_run)
-        if len(history_runs) >= 1:
-            application.update_matrix(next_runs, yield_run)
         # step2
         if len(new_untested_runs) > 0:
             untested_runs.extend([_run for _run in new_untested_runs\
@@ -226,21 +216,19 @@ def generate_test_from_exchange(exchanges, application,
 def random_generator(history_runs, application, origin_exchanges):
     """
     generate run by random sequence,and transform application is necessary.
-
     
     """
     randomed_runs = random.sample(history_runs, len(history_runs))
-    next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                        origin_exchanges)
+    ret_run = None
+    ret_path = None
     for _run in randomed_runs:
-        next_runs = []
-        for exchange in next_exchanges:
-            sandbox = checkmate.sandbox.Sandbox(type(application),
-                                                application)
-            assert sandbox([exchange])
-            next_runs.append(sandbox.blocks)
+        next_runs = checkmate.runs.find_next_runs(application,
+                                                  origin_exchanges, ret_run)
         if _run in next_runs:
-            yield next_runs[next_runs.index(_run)], []
+            box = checkmate.sandbox.Sandbox(type(application), application)
+            assert box(_run.exchanges)
+            ret_run = box.blocks
+            ret_path = []
         else:
             _run, _path = checkmate.pathfinder.find_path_to_nearest_target(application,
                                                                            next_runs,
@@ -253,6 +241,4 @@ def random_generator(history_runs, application, origin_exchanges):
                 ret_path.append(box.blocks)
             assert box(_run.exchanges)
             ret_run = box.blocks
-            yield ret_run, ret_path
-        next_exchanges = checkmate.runs.find_next_exchanges(application,
-                                                    origin_exchanges)
+        yield ret_run, ret_path
