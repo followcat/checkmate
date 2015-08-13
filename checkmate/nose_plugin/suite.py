@@ -115,9 +115,26 @@ class ContextSuite(nose.suite.ContextSuite):
                       "generator, so iteration may not be repeatable.")
 
     def run(self, result):
+        """
+        let exchanges_generator the first one in test
+        and random test if in random mode.
+        """
+        _list = list(self._tests)
+        found = False
+        if len(_list) > 0 and isinstance(_list[0], ContextSuite):
+            for index, item in enumerate(_list):
+                if len(item._precache) > 0 and\
+                    "ExchangesGenerator" in str(item._precache[0]):
+                    _list = [item] + _list[:index] + _list[index+1:]
+                    found = True
+                    break
         if self.randomized_run:
-            _list = list(self._tests)
-            self._tests = random.sample(_list, len(_list))
+            if found:
+                self._tests = [_list[0]] + random.sample(_list[1:], len(_list)-1)
+            else:
+                self._tests = random.sample(_list, len(_list))
+        else:
+            self._tests = _list
         super(ContextSuite, self).run(result)
 
 
