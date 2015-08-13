@@ -63,8 +63,8 @@ class App(checkmate.application.Application):
     exchange_module = checkmate.exchange
     def __init__(self):
         super().__init__()
-        self.components = {'a': Comp('a', self.service_registry),
-             'b': Comp('b', self.service_registry)}
+        self.components = {'a': Comp('a', self.component_registry),
+             'b': Comp('b', self.component_registry)}
         self.components['a'].connecting_components = ['b']
         self.components['b'].connecting_components = ['a']
 

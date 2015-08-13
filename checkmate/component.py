@@ -75,7 +75,7 @@ class ComponentMeta(type):
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
 class Component(object):
-    def __init__(self, name, service_registry):
+    def __init__(self, name, component_registry=None):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
@@ -89,7 +89,7 @@ class Component(object):
         self.states = []
         self.name = name
         self.validation_dict = checkmate._validation.ValidationDict()
-        self.service_registry = service_registry
+        self.component_registry = component_registry
         self.pending_incoming = []
         self.pending_outgoing = []
         self.default_state_value = True
@@ -125,9 +125,6 @@ class Component(object):
         >>> a = sample_app.application.TestData()
         >>> c = a.components['C1']
         >>> c.start()
-        >>> for service in c.service_classes:
-        ...    print(c.service_registry._registry[service])
-        ['C1']
         >>> _t = c.engine.blocks[0]
         >>> r_tm = _t.outgoing[0].factory()
         >>> c.get_blocks_by_output([r_tm]) == _t
@@ -161,7 +158,6 @@ class Component(object):
             except KeyError:
                 pass
             self.states.append(cls.start(default=default_state_value, kws=_kws))
-        self.service_registry.register(self, self.service_classes)
         self.default_state_value = default_state_value
         outgoing = []
         for block in self.engine.blocks:
@@ -251,11 +247,11 @@ class Component(object):
             raise checkmate.exception.NoBlockFound(
                 "No block for incoming %s " % exchange[0])
         output = []
-        for _o in outgoing:
-            for _e in self.service_registry.server_exchanges(_o, self.name):
-                if isinstance(_e, exchange[0].return_type):
-                    _e._return_code = True
-                output.append(_e)
+        for _outgoing in outgoing:
+            for new_exchange in self.exchange_destination(_outgoing):
+                if isinstance(new_exchange, exchange[0].return_type):
+                    new_exchange._return_code = True
+                output.append(new_exchange)
         _states = self.copy_states()
         self.validation_dict.record(tuple([tuple(exchange), tuple(_states)]))
         if exchange[0].data_returned:
@@ -283,10 +279,11 @@ class Component(object):
             >>> exchange = sample_app.exchanges.Action('AC')
             >>> block = c2.get_blocks_by_output([exchange])
 
-        We can't simulate a block when no destination for outgoing
-        is registered:
-            >>> c2.simulate(block)
-            []
+        Now no matter destination component started or not,we can always
+        simulate a transition and get the destination.
+            >>> out = c2.simulate(block)
+            >>> out[0].value == 'AC'
+            True
 
         Registration is done when the destination component is started:
             >>> a.components['C1'].start()
@@ -297,9 +294,8 @@ class Component(object):
         output = []
         for _outgoing in self.engine.simulate(block, self.states,
                                               self.default_state_value):
-            for _e in self.service_registry.server_exchanges(_outgoing,
-                                                             self.name):
-                output.append(_e)
+            for new_exchange in self.exchange_destination(_outgoing):
+                output.append(new_exchange)
         return output
 
     def validate(self, items):
@@ -320,3 +316,34 @@ class Component(object):
             False
         """
         return self.validation_dict.check(items)
+
+    def exchange_destination(self, exchange):
+            """
+            >>> import sample_app.application
+            >>> app = sample_app.application.TestData()
+            >>> app.start()
+            >>> c1 = app.components['C1']
+            >>> ac = sample_app.exchanges.Action('AC')
+            >>> ac.destination
+            ['']
+            >>> exchanges = []
+            >>> for ex in c1.exchange_destination(ac):
+            ...     exchanges.append(ex)
+            >>> len(exchanges)
+            1
+            >>> exchanges[0].destination
+            ['C1']
+            >>> exchanges[0] == ac
+            True
+            """
+            _destinations = []
+            for _class_dest in exchange.class_destination:
+                _destinations.extend(self.component_registry[_class_dest])
+            if exchange.broadcast:
+                _destinations = [_destinations]
+            for _d in _destinations:
+                new_exchange = \
+                    exchange.partition_storage.partition_class(exchange)
+                new_exchange.carbon_copy(exchange)
+                new_exchange.origin_destination(self.name, _d)
+                yield new_exchange

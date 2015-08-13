@@ -4,6 +4,8 @@ data:
   - Definition and accessibility: 'Action(R:ActionRequest)'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_1
     Value partitions:
     - [X-ACTION-01, AC(), 'AC', 'Comment AC action']
     - [X-ACTION-02, AP(R), 'AP', 'Comment AP action']
@@ -12,6 +14,8 @@ data:
   - Definition and accessibility: 'Reaction'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_3
     Value partitions:
     - [X-REACTION-01, RE(), 'RE', 'Comment']
     - [X-REACTION-02, RL(), 'RL', 'Comment']
@@ -19,24 +23,33 @@ data:
   - Definition and accessibility: 'AnotherReaction'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_2
     Value partitions:
     - [X-ANOREACT-01, ARE(), 'ARE', 'Comment']
 
   - Definition and accessibility: 'ThirdReaction'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_2
     Value partitions:
     - [X-THRDREACT-01, DR(), 'DR', 'Comment']
 
   - Definition and accessibility: 'Pause'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_2
+      - Component_3
     Value partitions:
     - [X-PAUSE-01, PA(), 'PA', 'Comment']
 
   - Definition and accessibility: 'ThirdAction'
     Attributes:
       communication: pytango
+      class_destination:
+      - Component_2
     Type of data: "Description"
     Exchange: [component 1,component 2,third action]
     Value partitions:

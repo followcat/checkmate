@@ -246,7 +246,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
             if _c.get_blocks_by_output([_exchange]) is not None:
                 _origin = _c.name
                 break
-        for _e in _c.service_registry.server_exchanges(_exchange, _origin):
+        for _e in _c.exchange_destination(_exchange):
             exchanges.append(_e)
     transition_run = Run(transition, exchanges=exchanges)
     if itp_transition:
@@ -307,7 +307,6 @@ def get_origin_exchanges(application):
                 break
         else:
             _i = _incoming.factory(**_incoming.resolve())
-            for _e in _component.service_registry.server_exchanges(_i):
+            for _e in _component.exchange_destination(_i):
                 origin_exchanges.append(_e)
     return origin_exchanges
-

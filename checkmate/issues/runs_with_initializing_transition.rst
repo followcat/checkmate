@@ -15,7 +15,7 @@ other runs
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
         ...    'full_description': None,
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> exchange_definition2 = {
@@ -24,7 +24,7 @@ other runs
         ...    'codes_list': ['INTAC()'],
         ...    'values_list': ['INTAC'],
         ...    'full_description': None,
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_2']},
         ...    'define_attributes': {}
         ... }
         >>> app = sample_app.application.TestData()
