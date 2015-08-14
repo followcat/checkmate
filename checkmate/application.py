@@ -127,6 +127,7 @@ class Application(object):
     feature_definition_path = None
     _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
+    _origin_exchanges_attribute = '_origin_exchanges'
     path_finder_depth = 10
     run_matrix = numpy.matrix([])
     run_matrix_index = []
@@ -147,6 +148,20 @@ class Application(object):
             cls._runs_found = [False]*length
             setattr(cls, cls._run_collection_attribute, collection)
         return getattr(cls, cls._run_collection_attribute)
+
+    @classmethod
+    def origin_exchanges(cls):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> exchanges = a.origin_exchanges()
+        >>> [ex.value for ex in exchanges]
+        ['PBAC', 'PBRL', 'PBPP']
+        """
+        if not hasattr(cls, cls._origin_exchanges_attribute):
+            exchanges = checkmate.runs.get_origin_exchanges(cls)
+            setattr(cls, cls._origin_exchanges_attribute, exchanges)
+        return getattr(cls, cls._origin_exchanges_attribute)
 
     @classmethod
     def define_exchange(cls, definition=None):
