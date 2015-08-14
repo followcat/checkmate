@@ -41,4 +41,6 @@ revert..
     >>> _e = C2_cls.instance_engines.pop('C4')
     >>> application_class = sample_app.application.TestData
     >>> delattr(application_class,
+    ...     application_class._origin_exchanges_attribute)
+    >>> delattr(application_class,
     ...     application_class._run_collection_attribute)

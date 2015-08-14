@@ -174,6 +174,5 @@ def TestProcedureExchangesGenerator(application_class):
     >>> exchanges[0].value
     'PBAC'
     """
-    exchanges = checkmate.runs.get_origin_exchanges(application_class)
-    yield exchanges
+    yield application_class.origin_exchanges()
 

@@ -65,5 +65,7 @@ Should not get Runs when simulate has no outgoing.
         >>> del sample_app.exchanges.ForthAction
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
+        ...     application_class._origin_exchanges_attribute)
+        >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
         >>> os.remove(class_file)

@@ -129,7 +129,7 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
     >>> runs = app.run_collection()
-    >>> exchanges = checkmate.runs.get_origin_exchanges(sample_app.application.TestData)
+    >>> exchanges = app.origin_exchanges()
     >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
     >>> app.update_matrix([runs[1]], runs[0])
     >>> app.update_matrix([runs[2], runs[3]], runs[1])

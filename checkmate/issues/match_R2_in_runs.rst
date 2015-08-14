@@ -40,5 +40,7 @@ We can match R with R2 when we do collect runs
         >>> component_2.instance_engines['C2'].blocks[2] = copy_t2
         >>> application_class = sample_app.application.TestData
         >>> delattr(application_class,
+        ...     application_class._origin_exchanges_attribute)
+        >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
 

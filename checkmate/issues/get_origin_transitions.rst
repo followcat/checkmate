@@ -45,5 +45,7 @@
     >>> c2.instance_engines['C2'].blocks[0] = t_copy
     >>> application_class = sample_app.application.TestData
     >>> delattr(application_class,
+    ...     application_class._origin_exchanges_attribute)
+    >>> delattr(application_class,
     ...     application_class._run_collection_attribute)
 

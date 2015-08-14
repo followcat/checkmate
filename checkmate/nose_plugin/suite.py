@@ -173,7 +173,6 @@ def generate_test_from_exchange(exchanges, application,
     step4. yield untested run and path
 
     >>> import sample_app.application
-    >>> import checkmate.runs
     >>> import checkmate.runtime._pyzmq
     >>> import checkmate.runtime._runtime
     >>> import checkmate.nose_plugin.suite as su
@@ -182,7 +181,7 @@ def generate_test_from_exchange(exchanges, application,
     >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
     >>> r.setup_environment(['C2'])
     >>> r.start_test()
-    >>> origin_exchanges = checkmate.runs.get_origin_exchanges(app)
+    >>> origin_exchanges = app.origin_exchanges()
     >>> runs = app.run_collection()
     >>> def run():
     ...     for _test, _path in su.generate_test_from_exchange(

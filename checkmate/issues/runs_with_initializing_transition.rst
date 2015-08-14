@@ -9,6 +9,7 @@ other runs
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
+        >>> application_class = sample_app.application.TestData
         >>> exchange_definition = {
         ...    'partition_type': 'exchanges',
         ...    'signature': 'ForthAction',
@@ -27,6 +28,10 @@ other runs
         ...    'attributes': {},
         ...    'define_attributes': {}
         ... }
+        >>> if hasattr(application_class,
+        ...     application_class._origin_exchanges_attribute):
+        ...     delattr(application_class,
+        ...         application_class._origin_exchanges_attribute)
         >>> app = sample_app.application.TestData()
         >>> app.define_exchange(exchange_definition)
         >>> app.define_exchange(exchange_definition2)
@@ -99,7 +104,8 @@ other runs
         ...     sample_app.exchanges.ForthAction)
         >>> state1.instance_engines['C1'].blocks.remove(t_in)
         >>> state2.instance_engines['C2'].blocks.remove(t_out)
-        >>> application_class = sample_app.application.TestData
+        >>> delattr(application_class,
+        ...     application_class._origin_exchanges_attribute)
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
         >>> delattr(application_class,

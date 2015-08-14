@@ -190,7 +190,7 @@ def get_runs_from_application(_class):
     runs = []
     application = _class()
     application.start()
-    origin_exchanges = get_origin_exchanges(_class)
+    origin_exchanges = _class.origin_exchanges()
     generate_run(application, runs, [], origin_exchanges)
     return runs
 
@@ -337,7 +337,7 @@ def find_next_runs(application, origin_exchanges, current_run=None):
     >>> import checkmate.sandbox
     >>> com = checkmate.runtime._pyzmq.Communication
     >>> app = sample_app.application.TestData
-    >>> exchanges = checkmate.runs.get_origin_exchanges(app)
+    >>> exchanges = app.origin_exchanges()
     >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
     >>> r.setup_environment(['C2'])
     >>> r.start_test()
