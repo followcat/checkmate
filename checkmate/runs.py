@@ -322,7 +322,7 @@ def get_origin_exchanges(application_class):
     return origin_exchanges
 
 
-def find_next_runs(application, origin_exchanges, current_run=None):
+def find_next_runs(application, exchanges, current_run=None):
     """
     3 conditions:
         1. current_run is None, find next runs by application
@@ -354,7 +354,7 @@ def find_next_runs(application, origin_exchanges, current_run=None):
     # condition 1
     if current_run is None:
         next_runs = []
-        for _exchange in origin_exchanges:
+        for _exchange in exchanges:
             box = checkmate.sandbox.Sandbox(type(application), application)
             if box([_exchange]):
                 next_runs.append(box.blocks)
@@ -369,9 +369,10 @@ def find_next_runs(application, origin_exchanges, current_run=None):
     if len(application.run_matrix_index) == 0:
         application.run_matrix_index.append(current_run)
     next_runs = []
-    for _exchange in origin_exchanges:
+    for _exchange in exchanges:
         box = checkmate.sandbox.Sandbox(type(application), application)
         if box([_exchange]):
             next_runs.append(box.blocks)
     application.update_matrix(next_runs, current_run)
     return next_runs
+
