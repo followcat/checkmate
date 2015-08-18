@@ -119,22 +119,19 @@ class ContextSuite(nose.suite.ContextSuite):
         let exchanges_generator the first one in test
         and random test if in random mode.
         """
-        _list = list(self._tests)
-        found = False
-        if len(_list) > 0 and isinstance(_list[0], ContextSuite):
-            for index, item in enumerate(_list):
-                if len(item._precache) > 0 and\
-                    "ExchangesGenerator" in str(item._precache[0]):
-                    _list = [item] + _list[:index] + _list[index+1:]
-                    found = True
-                    break
+        _tests = list(self._tests)
+        run_first_item = None
+        for index, item in enumerate(_tests):
+            if not isinstance(item, ContextSuite):
+                continue
+            if item.context in [checkmate, FunctionTestCase]:
+                run_first_item = _tests.pop(index)
+                break
         if self.randomized_run:
-            if found:
-                self._tests = [_list[0]] + random.sample(_list[1:], len(_list)-1)
-            else:
-                self._tests = random.sample(_list, len(_list))
-        else:
-            self._tests = _list
+            _tests = random.sample(_tests, len(_tests))
+        if run_first_item is not None:
+            _tests = [run_first_item] + _tests
+        self._tests = _tests
         super(ContextSuite, self).run(result)
 
 
