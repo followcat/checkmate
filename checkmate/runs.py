@@ -325,54 +325,44 @@ def get_origin_exchanges(application_class):
 def find_next_runs(application, exchanges, current_run=None):
     """
     3 conditions:
-        1. current_run is None, find next runs by application
-        2. we find in matrix
-        3. cannot find in matrix need to use sandbox,also need to update matrix
-        (ignore the condition of cannot find in matrix AND don't need to update matrix)
-
+        1. we find next runs by matrix
+        2. current_run is None, find next runs by exchanges
+        3. find next runs by exchanges and update matrix
     >>> import sample_app.application
     >>> import checkmate.runs
-    >>> import checkmate.runtime._pyzmq
-    >>> import checkmate.runtime._runtime
     >>> import checkmate.sandbox
-    >>> com = checkmate.runtime._pyzmq.Communication
     >>> app = sample_app.application.TestData
     >>> exchanges = app.origin_exchanges()
-    >>> r = checkmate.runtime._runtime.Runtime(app, com, True)
-    >>> r.setup_environment(['C2'])
-    >>> r.start_test()
-    >>> runs = sample_app.application.TestData.run_collection()
-    >>> next_runs = checkmate.runs.find_next_runs(r.application, exchanges, None)
+    >>> box = checkmate.sandbox.Sandbox(app)
+    >>> runs = app.run_collection()
+    >>> next_runs = checkmate.runs.find_next_runs(box.application,
+    ...     exchanges, None)
     >>> next_runs[0].validate_items[0][0].value
     'PBAC'
-    >>> r.execute(next_runs[0])
-    >>> next_runs = checkmate.runs.find_next_runs(r.application, exchanges, next_runs[0])
+    >>> box(next_runs[0].exchanges)
+    True
+    >>> next_runs = checkmate.runs.find_next_runs(box.application,
+    ...     exchanges, next_runs[0])
     >>> next_runs[0].validate_items[0][0].value
     'PBRL'
-    >>> r.stop_test()
     """
-    # condition 1
-    if current_run is None:
-        next_runs = []
-        for _exchange in exchanges:
-            box = checkmate.sandbox.Sandbox(type(application), application)
-            if box([_exchange]):
-                next_runs.append(box.blocks)
-        return next_runs
-    # condition 2
-    if current_run in application.run_matrix_index and\
-                    application.run_matrix_tag[application.run_matrix_index.index(current_run)] == 1:
-        current_run_index = application.run_matrix_index.index(current_run)
-        row = application.run_matrix[current_run_index].nonzero()[1].tolist()[0]
-        return [application.run_matrix_index[_index] for _index in row]
-    # condition 3
-    if len(application.run_matrix_index) == 0:
-        application.run_matrix_index.append(current_run)
+    _class = type(application)
+    runs = application.run_matrix_index
     next_runs = []
+    if current_run is not None and current_run in runs:
+        _index = runs.index(current_run)
+        if application.run_matrix_tag[_index]:
+            return [runs[i] for i in
+                application.run_matrix[_index].nonzero()[1].tolist()[0]]
     for _exchange in exchanges:
-        box = checkmate.sandbox.Sandbox(type(application), application)
+        box = checkmate.sandbox.Sandbox(_class, application)
         if box([_exchange]):
-            next_runs.append(box.blocks)
+            _run = box.blocks
+            next_runs.append(_run)
+    if current_run is None:
+        return next_runs
+    if len(runs) == 0:
+        runs.append(current_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
 
