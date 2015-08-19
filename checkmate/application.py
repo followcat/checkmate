@@ -131,7 +131,7 @@ class Application(object):
     path_finder_depth = 10
     run_matrix = numpy.matrix([])
     run_matrix_index = []
-    run_matrix_tag = [0]
+    run_matrix_tag = [False]
 
     @classmethod
     def run_collection(cls):
@@ -349,5 +349,6 @@ class Application(object):
         for _run in next_runs:
             row[cls.run_matrix_index.index(_run)] = 1
         cls.run_matrix[current_index] = row
-        cls.run_matrix_tag[current_index] = 1
-        cls.run_matrix_tag.extend([0]*extra_length)
+        cls.run_matrix_tag[current_index] = True
+        cls.run_matrix_tag.extend([False]*extra_length)
+
