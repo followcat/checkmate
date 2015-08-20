@@ -64,6 +64,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             >>> r.setup_environment(['C1'])
             >>> r.start_test()
             >>> test_procedure = sample_app.runtime.test_procedure
+            >>> _run = test_procedure.TestProcedureRun1Threaded(app)
             >>> run = test_procedure.TestProcedureRun2Threaded(app)
             >>> run.root.incoming[0].code
             'PBRL'
@@ -71,6 +72,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
             'RL'
             >>> run.nodes[0].nodes[0].root.incoming[0].code
             'DR'
+            >>> r.execute(_run, transform=True)
             >>> r.execute(run, transform=True)
             >>> r.stop_test()
         """
