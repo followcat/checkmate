@@ -361,7 +361,7 @@ def find_next_runs(application, exchanges, current_run=None):
             next_runs.append(_run)
     if current_run is None:
         return next_runs
-    if len(runs) == 0:
+    if current_run not in runs:
         runs.append(current_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
