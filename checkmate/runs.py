@@ -27,6 +27,7 @@ class Run(checkmate._tree.Tree):
         self._initial = None
         self._final = None
         self.itp_run = None
+        self.itp_final = []
         self.change_states = []
         self.validate_items = (tuple(exchanges), tuple(states))
         self.collected_run = None
@@ -68,13 +69,17 @@ class Run(checkmate._tree.Tree):
                     final_dict[_final.partition_class] = _final
             self._initial = set(initial_dict.values())
             self._final = set(final_dict.values())
-            if self.itp_run is not None:
-                self._final = set(self.itp_run.root.final)
+            if len(self.itp_final):
+                self._final = set(self.itp_final)
 
     def compare_initial(self, application):
         """"""
         box = checkmate.sandbox.Sandbox(type(application), application)
-        return box(self.exchanges) and \
+        if self.collected_run is not None:
+            exchanges = self.collected_run.exchanges
+        else:
+            exchanges = self.exchanges
+        return box(exchanges) and \
                 set(self.walk()).issubset(set(box.blocks.walk()))
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
@@ -246,31 +251,30 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     runs = []
     exchanges = []
     _class = type(application)
-    application = _class()
-    application.start(default_state_value=False)
-    for _i in transition.incoming:
-        _exchange = _i.factory()
-        _origin = ''
-        for _c in application.components.values():
-            if _c.get_blocks_by_output([_exchange]) is not None:
-                _origin = _c.name
-                break
-        for _e in _c.service_registry.server_exchanges(_exchange, _origin):
-            exchanges.append(_e)
-    transition_run = Run(transition, exchanges=exchanges)
+    box = checkmate.sandbox.Sandbox(_class, application, [transition])
+    _incoming = transition.generic_incoming(box.application.state_list())
+    origin = ''
+    destination = []
+    for _c in box.application.components.values():
+        if _c.get_blocks_by_output(_incoming) is not None:
+            origin = _c.name
+        if len(_c.get_blocks_by_input(_incoming)) > 0:
+            if _c.name not in destination:
+                destination.append(_c.name)
+    for _exchange in _incoming: 
+        _exchange.origin_destination(origin, destination)
+        exchanges.append(_exchange)
+    assert box(exchanges)
+    _run = box.blocks
+    initial = checkmate.sandbox.Sandbox(_class, application, [transition])
+    for _r in box.application.run_collection():
+        if (_r.compare_initial(initial.application) and
+                set(_run.walk()).issubset(set(_r.walk()))):
+            _run.collected_run = _r
+            break
     if itp_transition:
-        sandbox = checkmate.sandbox.CollectionSandbox(
-                    _class, application, transition_run.walk())
-    else:
-        sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
-    initial = checkmate.sandbox.Sandbox(_class, sandbox.application)
-    for _run in sandbox(transition_run, itp_run=itp_transition):
-        for _r in sandbox.application.run_collection():
-            if (_r.compare_initial(initial.application) and
-                    set(_run.walk()).issubset(set(_r.walk()))):
-                _run.collected_run = _r
-                break
-        runs.append(_run)
+        _run.itp_final = transition.final
+    runs.append(_run)
     return runs
 
 

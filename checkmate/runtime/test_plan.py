@@ -100,9 +100,6 @@ def TestProcedureFeaturesGenerator(application_class):
         'AC'
         >>> box = checkmate.sandbox.Sandbox(type(a), a,
         ...         run_list[1].walk())
-        >>> c1_state = box.application.components['C1'].states[0]
-        >>> c1_state.value == run_list[1].itp_run.root.initial[0].value
-        True
         >>> run_list[1].compare_initial(box.application)
         True
         >>> box(run_list[1].exchanges)
