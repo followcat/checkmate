@@ -12,10 +12,11 @@ Should not get Runs when simulate has no outgoing.
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['DummyComponent']},
         ...    'define_attributes': {}
         ... }
         >>> app = sample_app.application.TestData()
+        >>> app.component_registry.update({'DummyComponent':[]})
         >>> app.define_exchange(data_source)
 
         >>> class_name = 'DummyComponent'
@@ -68,4 +69,5 @@ Should not get Runs when simulate has no outgoing.
         ...     application_class._origin_exchanges_attribute)
         >>> delattr(application_class,
         ...     application_class._run_collection_attribute)
+        >>> _tmp = app.component_registry.pop('DummyComponent')
         >>> os.remove(class_file)

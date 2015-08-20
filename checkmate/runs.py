@@ -321,7 +321,7 @@ def get_origin_exchanges(application_class):
                 break
         else:
             _i = _incoming.factory(**_incoming.resolve())
-            for _e in _component.service_registry.server_exchanges(_i):
+            for _e in _component.exchange_destination(_i):
                 origin_exchanges.append(_e)
     return origin_exchanges
 

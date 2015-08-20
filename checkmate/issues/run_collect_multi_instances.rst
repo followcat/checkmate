@@ -19,6 +19,7 @@ collected from application should be increased.
     ...                C2_cls.component_definition)
 
     >>> app = sample_app.application.TestData()
+    >>> app.component_registry['Component_2']=['C2', 'C4']
     >>> app.start()
     >>> c4 = app.components['C4']
     >>> c4.states[0].R.C.value
@@ -36,6 +37,7 @@ No run should contain more than 1 'AP'
 
 revert..
     >>> _v = C2_cls.instance_attributes.pop('C4')
+    >>> app.component_registry['Component_2']=['C2']
     >>> C2['instances'].remove({'name': 'C4',
     ...     'attributes': {'request': {'C': 'AT2', 'P': 'HIGH'}}})
     >>> _e = C2_cls.instance_engines.pop('C4')
