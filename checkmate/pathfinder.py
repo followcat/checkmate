@@ -19,8 +19,9 @@ def _find_runs(application, target, origin):
         target = target.collected_run
     if origin.collected_run is not None:
         origin = origin.collected_run
-    used_runs = []
-    checkmate.pathfinder.get_runs(used_runs, application, origin, target)
+    exchanges = application.origin_exchanges()
+    run, used_runs = find_path_to_nearest_target(application, [target], 
+            exchanges, origin)
     return used_runs
 
 
@@ -142,6 +143,7 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     >>> runs.index(path[0])
     1
     """
+    run_list = []
     matrix = application.run_matrix
     target_runs_indexes = [application.run_matrix_index.index(item) \
                            for item in target_runs]
@@ -151,9 +153,11 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
             box = checkmate.sandbox.Sandbox(type(application), application)
             if box([exchange]):
                 next_runs.append(box.blocks)
-        current_run_row = [application.run_matrix_index.index(item) for item in next_runs]
+        current_run_row = [application.run_matrix_index.index(item)
+                             for item in next_runs]
     else:
-        current_run_row = matrix[application.run_matrix_index.index(current_run)].nonzero()[1].tolist()[0]
+        current_run_row = matrix[application.run_matrix_index.\
+                            index(current_run)].nonzero()[1].tolist()[0]
     length = len(matrix.tolist())
     paths = [[item] for item in current_run_row]
     while len(paths) != 0:
