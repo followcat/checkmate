@@ -114,7 +114,6 @@ class Procedure(object):
             if component.validate(node.validate_items):
                 break
         else:
-            import ipdb;ipdb.set_trace()
             raise Exception("No exchange '%s' received by component '%s'"
                     % (node.exchanges[0].value, _d))
         for _next in node.nodes:
