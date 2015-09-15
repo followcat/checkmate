@@ -209,7 +209,7 @@ class Application(object):
             return run
 
     @classmethod
-    def origin_runs_gen(cls, app):
+    def origin_runs_gen(cls, app, current_run=None):
         """
             >>> import sample_app.application
             >>> cls = sample_app.application.TestData
@@ -226,7 +226,6 @@ class Application(object):
         cls.run_matrix_index = []
         cls.run_matrix_tag = [False]
         exchanges = app.origin_exchanges()
-        current_run = None
         yielded_runs = []
         unyielded_runs = []
         box = checkmate.sandbox.Sandbox(cls, app)
@@ -243,15 +242,16 @@ class Application(object):
             else:
                 current_run, _path = \
                     checkmate.pathfinder.\
-                        find_path_to_nearest_target(app, unyielded_runs,
-                                                    exchanges, current_run)
+                        find_path_to_nearest_target(box.application,
+                            unyielded_runs, exchanges, current_run)
                 if current_run is None:
                     return
             if current_run in unyielded_runs:
                 unyielded_runs.remove(current_run)
-            yielded_runs.append(current_run)
             for _r in _path + [current_run]:
                 box(_r.exchanges)
+            current_run = box.blocks
+            yielded_runs.append(current_run)
             yield current_run
 
 
