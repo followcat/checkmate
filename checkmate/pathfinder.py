@@ -147,12 +147,10 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     matrix = application.run_matrix
     target_runs_indexes = [application.run_matrix_index.index(item) \
                            for item in target_runs]
+    box = checkmate.sandbox.Sandbox(type(application), application)
     if current_run is None:
         next_runs = []
-        for exchange in exchanges:
-            box = checkmate.sandbox.Sandbox(type(application), application)
-            if box([exchange]):
-                next_runs.append(box.blocks)
+        next_runs = checkmate.runs.find_next_runs(application, exchanges)
         current_run_row = [application.run_matrix_index.index(item)
                              for item in next_runs]
     else:
@@ -166,10 +164,13 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
         children = matrix[end].nonzero()[1].tolist()[0]
         for child in children:
             if child in target_runs_indexes:
-                return application.run_matrix_index[child], \
-                       [application.run_matrix_index[i] for i in path]
+                ret_path = []
+                for _index in path:
+                    assert box(application.run_matrix_index[_index].exchanges)
+                    ret_path.append(box.blocks)
+                return application.run_matrix_index[child], ret_path
             elif len(path)+1 == length:  # cannot find path
-                return None, None
+                return None, []
             else:
                 new_path = path[:]
                 new_path.append(child)
