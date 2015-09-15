@@ -13,6 +13,7 @@ import checkmate.runs
 import checkmate._module
 import checkmate.sandbox
 import checkmate.component
+import checkmate.pathfinder
 import checkmate.service_registry
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
@@ -206,6 +207,50 @@ class Application(object):
                 run = cls.run_collection()[-1]
             setattr(cls, cls._starting_run_attribute, run)
             return run
+
+    @classmethod
+    def origin_runs_gen(cls, app):
+        """
+            >>> import sample_app.application
+            >>> cls = sample_app.application.TestData
+            >>> app = cls()
+            >>> app.start()
+            >>> origin_runs = [_r for _r in cls.origin_runs_gen(app)]
+            >>> len(origin_runs)
+            4
+            >>> cls.run_matrix = numpy.matrix([])
+            >>> cls.run_matrix_index = []
+            >>> cls.run_matrix_tag = [False]
+        """
+        exchanges = app.origin_exchanges()
+        current_run = None
+        yielded_runs = []
+        unyielded_runs = []
+        box = checkmate.sandbox.Sandbox(cls, app)
+        while True:
+            _path = []
+            next_runs = checkmate.runs.find_next_runs(box.application,
+                            exchanges, current_run)
+            new_next_runs = [_run for _run in next_runs
+                                 if _run not in yielded_runs]
+            if len(new_next_runs) > 0:
+                unyielded_runs.extend([_run for _run in new_next_runs
+                                            if _run not in unyielded_runs])
+                current_run = new_next_runs[0]
+            else:
+                current_run, _path = \
+                    checkmate.pathfinder.\
+                        find_path_to_nearest_target(app, unyielded_runs,
+                                                    exchanges, current_run)
+                if current_run is None:
+                    return
+            if current_run in unyielded_runs:
+                unyielded_runs.remove(current_run)
+            yielded_runs.append(current_run)
+            for _r in _path + [current_run]:
+                box(_r.exchanges)
+            yield current_run
+
 
     def __init__(self):
         """
