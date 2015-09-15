@@ -170,8 +170,15 @@ class Runtime(object):
         if not run.compare_initial(self.application):
             if previous_run is None:
                 previous_run = self.active_run
-            run_list = checkmate.pathfinder._find_runs(
-                            self.application, run, origin=previous_run)
+            try:
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
+            except ValueError:
+                runs = [_r for _r in
+                    self.application_class.origin_runs_gen(self.application,
+                                                             previous_run)]
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")
