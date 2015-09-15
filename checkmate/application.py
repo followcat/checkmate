@@ -222,6 +222,9 @@ class Application(object):
             >>> cls.run_matrix_index = []
             >>> cls.run_matrix_tag = [False]
         """
+        cls.run_matrix = numpy.matrix([])
+        cls.run_matrix_index = []
+        cls.run_matrix_tag = [False]
         exchanges = app.origin_exchanges()
         current_run = None
         yielded_runs = []
