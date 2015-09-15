@@ -129,19 +129,28 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     >>> import checkmate.pathfinder
     >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
-    >>> runs = app.run_collection()
+    >>> runs = [_r for _r in app.origin_runs_gen(app)]
     >>> exchanges = app.origin_exchanges()
-    >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
-    >>> app.update_matrix([runs[1]], runs[0])
-    >>> app.update_matrix([runs[2], runs[3]], runs[1])
-    >>> app.update_matrix([runs[1]], runs[2])
-    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(app, [runs[3]], exchanges, runs[2])
-    >>> runs.index(run)
-    3
-    >>> path #doctest: +ELLIPSIS
-    [<checkmate.runs.Run ...
-    >>> runs.index(path[0])
+    >>> target = [_r for _r in runs
+    ...     if _r.exchanges[0].value == 'PBPP'][0]
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(
+    ...     app, [target], exchanges)
+    >>> run.exchanges[0].value
+    'PBPP'
+    >>> len(path)
+    2
+    >>> (path[0].exchanges[0].value, path[1].exchanges[0].value)
+    ('PBAC', 'PBRL')
+    >>> target2 = [_r for _r in runs
+    ...     if _r.exchanges[0].value == 'PBRL'][0]
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(
+    ...     app, [target, target2], exchanges)
+    >>> run.exchanges[0].value
+    'PBRL'
+    >>> len(path)
     1
+    >>> path[0].exchanges[0].value
+    'PBAC'
     """
     run_list = []
     matrix = application.run_matrix
