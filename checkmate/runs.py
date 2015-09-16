@@ -31,13 +31,23 @@ class Run(checkmate._tree.Tree):
         self.itp_final = []
         self.change_states = []
         self.validate_items = (tuple(exchanges), tuple(states))
-        self.collected_run = None
+        self._collected_run = None
         for f in block.final:
             for s in states:
                 if isinstance(s, f.partition_class):
                     self.change_states.append((type(s).__name__, s._dump()))
                     break
 
+    @property
+    def collected_run(self):
+        if self._collected_box is not None:
+            for _r in self._collected_box.application.run_collection():
+                if _r.compare_initial(self._collected_box.application) and \
+                    set(self.walk()).issubset(set(_r.walk())):
+                    self._collected_run = _r
+                    break
+        return self._collected_run
+ 
     @checkmate.fix_issue(
         'checkmate/issues/sandbox_call_notfound_transition.rst')
     def get_block_by_input_states(self, exchanges, component):
@@ -268,11 +278,6 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     assert box(exchanges)
     _run = box.blocks
     initial = checkmate.sandbox.Sandbox(_class, application, [transition])
-    for _r in box.application.run_collection():
-        if (_r.compare_initial(initial.application) and
-                set(_run.walk()).issubset(set(_r.walk()))):
-            _run.collected_run = _r
-            break
     if itp_transition:
         _run.itp_final = transition.final
         _run._collected_box = initial
