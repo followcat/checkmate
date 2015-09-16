@@ -149,8 +149,22 @@ class Runtime(object):
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
     @checkmate.report_issue(
-        "checkmate/issues/runs_with_initializing_transition.rst", failed=1)
+        "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True, previous_run=None):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> ac = sample_app.application.TestData
+            >>> cc = checkmate.runtime._pyzmq.Communication
+            >>> r = checkmate.runtime._runtime.Runtime(ac, cc, True)
+            >>> r.setup_environment(['C3'])
+            >>> r.start_test()
+            >>> target = [_r for _r in ac.run_collection()
+            ...     if _r.exchanges[0].value == 'PBPP'][0]
+            >>> r.execute(target)
+            >>> r.stop_test()
+        """
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
             checkmate.runtime.procedure._compatible_skip_test(
@@ -170,8 +184,15 @@ class Runtime(object):
         if not run.compare_initial(self.application):
             if previous_run is None:
                 previous_run = self.active_run
-            run_list = checkmate.pathfinder._find_runs(
-                            self.application, run, origin=previous_run)
+            try:
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
+            except ValueError:
+                runs = [_r for _r in
+                    self.application_class.origin_runs_gen(self.application,
+                                                             previous_run)]
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")

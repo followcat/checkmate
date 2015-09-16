@@ -19,8 +19,9 @@ def _find_runs(application, target, origin):
         target = target.collected_run
     if origin.collected_run is not None:
         origin = origin.collected_run
-    used_runs = []
-    checkmate.pathfinder.get_runs(used_runs, application, origin, target)
+    exchanges = application.origin_exchanges()
+    run, used_runs = find_path_to_nearest_target(application, [target], 
+            exchanges, origin)
     return used_runs
 
 
@@ -128,32 +129,42 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     >>> import checkmate.pathfinder
     >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
-    >>> runs = app.run_collection()
+    >>> runs = [_r for _r in app.origin_runs_gen(app)]
     >>> exchanges = app.origin_exchanges()
-    >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
-    >>> app.update_matrix([runs[1]], runs[0])
-    >>> app.update_matrix([runs[2], runs[3]], runs[1])
-    >>> app.update_matrix([runs[1]], runs[2])
-    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(app, [runs[3]], exchanges, runs[2])
-    >>> runs.index(run)
-    3
-    >>> path #doctest: +ELLIPSIS
-    [<checkmate.runs.Run ...
-    >>> runs.index(path[0])
+    >>> target = [_r for _r in runs
+    ...     if _r.exchanges[0].value == 'PBPP'][0]
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(
+    ...     app, [target], exchanges)
+    >>> run.exchanges[0].value
+    'PBPP'
+    >>> len(path)
+    2
+    >>> (path[0].exchanges[0].value, path[1].exchanges[0].value)
+    ('PBAC', 'PBRL')
+    >>> target2 = [_r for _r in runs
+    ...     if _r.exchanges[0].value == 'PBRL'][0]
+    >>> run, path = checkmate.pathfinder.find_path_to_nearest_target(
+    ...     app, [target, target2], exchanges)
+    >>> run.exchanges[0].value
+    'PBRL'
+    >>> len(path)
     1
+    >>> path[0].exchanges[0].value
+    'PBAC'
     """
+    run_list = []
     matrix = application.run_matrix
     target_runs_indexes = [application.run_matrix_index.index(item) \
                            for item in target_runs]
+    box = checkmate.sandbox.Sandbox(type(application), application)
     if current_run is None:
         next_runs = []
-        for exchange in exchanges:
-            box = checkmate.sandbox.Sandbox(type(application), application)
-            if box([exchange]):
-                next_runs.append(box.blocks)
-        current_run_row = [application.run_matrix_index.index(item) for item in next_runs]
+        next_runs = checkmate.runs.find_next_runs(application, exchanges)
+        current_run_row = [application.run_matrix_index.index(item)
+                             for item in next_runs]
     else:
-        current_run_row = matrix[application.run_matrix_index.index(current_run)].nonzero()[1].tolist()[0]
+        current_run_row = matrix[application.run_matrix_index.\
+                            index(current_run)].nonzero()[1].tolist()[0]
     length = len(matrix.tolist())
     paths = [[item] for item in current_run_row]
     while len(paths) != 0:
@@ -162,10 +173,13 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
         children = matrix[end].nonzero()[1].tolist()[0]
         for child in children:
             if child in target_runs_indexes:
-                return application.run_matrix_index[child], \
-                       [application.run_matrix_index[i] for i in path]
+                ret_path = []
+                for _index in path:
+                    assert box(application.run_matrix_index[_index].exchanges)
+                    ret_path.append(box.blocks)
+                return application.run_matrix_index[child], ret_path
             elif len(path)+1 == length:  # cannot find path
-                return None, None
+                return None, []
             else:
                 new_path = path[:]
                 new_path.append(child)
