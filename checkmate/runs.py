@@ -27,6 +27,7 @@ class Run(checkmate._tree.Tree):
         self._initial = None
         self._final = None
         self.itp_run = None
+        self._collected_box = None
         self.itp_final = []
         self.change_states = []
         self.validate_items = (tuple(exchanges), tuple(states))
@@ -274,6 +275,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
             break
     if itp_transition:
         _run.itp_final = transition.final
+        _run._collected_box = initial
     runs.append(_run)
     return runs
 
