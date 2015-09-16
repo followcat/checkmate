@@ -40,7 +40,7 @@ class Run(checkmate._tree.Tree):
 
     @property
     def collected_run(self):
-        if self._collected_box is not None:
+        if self._collected_run is None and self._collected_box is not None:
             for _r in self._collected_box.application.run_collection():
                 if _r.compare_initial(self._collected_box.application) and \
                     set(self.walk()).issubset(set(_r.walk())):
