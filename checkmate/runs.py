@@ -360,20 +360,19 @@ def find_next_runs(application, exchanges, current_run=None):
     _class = type(application)
     runs = application.run_matrix_index
     next_runs = []
-    if current_run is not None and current_run in runs:
-        _index = runs.index(current_run)
-        if application.run_matrix_tag[_index]:
-            return [runs[i] for i in
-                application.run_matrix[_index].nonzero()[1].tolist()[0]]
+    if current_run is not None:
+        if current_run in runs:
+            _index = runs.index(current_run)
+            if application.run_matrix_tag[_index]:
+                return [runs[i] for i in
+                    application.run_matrix[_index].nonzero()[1].tolist()[0]]
+        else:
+            runs.append(current_run)
     for _exchange in exchanges:
         box = checkmate.sandbox.Sandbox(_class, application)
         if box([_exchange]):
             _run = box.blocks
             next_runs.append(_run)
-    if current_run is None:
-        return next_runs
-    if current_run not in runs:
-        runs.append(current_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
 

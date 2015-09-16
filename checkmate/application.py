@@ -387,7 +387,6 @@ class Application(object):
         """
         new_runs = [_run for _run in next_runs \
                     if _run not in cls.run_matrix_index]
-        current_index = cls.run_matrix_index.index(current_run)
         extra_length = len(new_runs)
         # extend matrix
         if extra_length > 0:
@@ -401,11 +400,13 @@ class Application(object):
                 _temp.extend([[0]*len(_temp[0])]*extra_length)
                 cls.run_matrix = numpy.matrix(_temp)
             cls.run_matrix_index.extend(new_runs)
+            cls.run_matrix_tag.extend([False]*extra_length)
         # update matrix row
-        row = len(cls.run_matrix)*[0]
-        for _run in next_runs:
-            row[cls.run_matrix_index.index(_run)] = 1
-        cls.run_matrix[current_index] = row
-        cls.run_matrix_tag[current_index] = True
-        cls.run_matrix_tag.extend([False]*extra_length)
+        if current_run is not None:
+            current_index = cls.run_matrix_index.index(current_run)
+            row = len(cls.run_matrix)*[0]
+            for _run in next_runs:
+                row[cls.run_matrix_index.index(_run)] = 1
+            cls.run_matrix[current_index] = row
+            cls.run_matrix_tag[current_index] = True
 
