@@ -218,28 +218,28 @@ class Application(object):
             setattr(cls, cls._starting_run_attribute, run)
             return run
 
-    @classmethod
-    def origin_runs_gen(cls, app):
+    def origin_runs_gen(self):
         """
             >>> import sample_app.application
             >>> cls = sample_app.application.TestData
             >>> app = cls()
             >>> app.start()
-            >>> origin_runs = [_r for _r in cls.origin_runs_gen(app)]
+            >>> origin_runs = [_r for _r in app.origin_runs_gen()]
             >>> len(origin_runs)
             4
             >>> cls.run_matrix = numpy.matrix([])
             >>> cls.run_matrix_index = []
             >>> cls.run_matrix_tag = [False]
         """
+        cls = type(self)
         cls.run_matrix = numpy.matrix([])
         cls.run_matrix_index = []
         cls.run_matrix_tag = [False]
-        exchanges = app.origin_exchanges()
+        exchanges = self.origin_exchanges()
         current_run=None
         yielded_runs = []
         unyielded_runs = []
-        box = checkmate.sandbox.Sandbox(cls, app)
+        box = checkmate.sandbox.Sandbox(cls, self)
         while True:
             _path = []
             next_runs = checkmate.runs.find_next_runs(box.application,
