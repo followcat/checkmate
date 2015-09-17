@@ -250,12 +250,12 @@ class Application(object):
                                             if _run not in unyielded_runs])
                 current_run = new_next_runs[0]
             else:
+                if len(unyielded_runs) == 0:
+                    break
                 current_run, _path = \
                     checkmate.pathfinder.\
                         find_path_to_nearest_target(box.application,
                             unyielded_runs, exchanges, current_run)
-                if current_run is None:
-                    return
             if current_run in unyielded_runs:
                 unyielded_runs.remove(current_run)
             for _r in _path + [current_run]:
