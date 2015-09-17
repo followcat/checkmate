@@ -57,7 +57,7 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         if isinstance(self.test, list):
             for _test in runtime.application.origin_runs_gen():
                 setattr(_test, '__name__', 
-                            str(_test) + '(' + _test.exchanges[0].value +', )')
+                            str(self) + '(' + _test.exchanges[0].value +', )')
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
                 _FunctionTestCase(self.proxyResult)
         else:
@@ -66,6 +66,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def shortDescription(self):
         if hasattr(self.test, 'description'):
             return self.test.description
+        if hasattr(self.test, '__name__'):
+            return self.test.__name__
         return str(self)
 
 
