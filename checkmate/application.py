@@ -243,9 +243,12 @@ class Application(object):
             4
         """
         cls = type(self)
-        cls.run_matrix = numpy.matrix([])
-        cls.run_matrix_index = []
-        cls.run_matrix_tag = [False]
+        if hasattr(cls, cls._run_collection_attribute):
+            runs = getattr(cls, cls._run_collection_attribute)
+            for _r in runs:
+                yield _r
+            return
+        cls.reset()
         exchanges = self.origin_exchanges()
         current_run=None
         yielded_runs = []
