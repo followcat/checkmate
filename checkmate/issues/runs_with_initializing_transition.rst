@@ -10,6 +10,7 @@ other runs
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
         >>> application_class = sample_app.application.TestData
+        >>> application_class.reset()
         >>> exchange_definition = {
         ...    'partition_type': 'exchanges',
         ...    'signature': 'ForthAction',
