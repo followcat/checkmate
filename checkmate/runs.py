@@ -201,7 +201,7 @@ class Run(checkmate._tree.Tree):
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
-@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst', failed=4)
+@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst', failed=3)
 def get_runs_from_application(_class):
     runs = []
     application = _class()

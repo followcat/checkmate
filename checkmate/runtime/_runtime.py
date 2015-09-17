@@ -128,7 +128,6 @@ class Runtime(object):
             _component = self.runtime_components[name]
             _component.start()
         self.runs_log.info(['State', self.application.visual_dump_states()])
-        self.active_run = self.application.starting_run()
 
     def stop_test(self):
         # Stop stubs last
@@ -183,6 +182,8 @@ class Runtime(object):
     def transform_to_initial(self, run, previous_run=None):
         if not run.compare_initial(self.application):
             if previous_run is None:
+                if self.active_run is None:
+                    self.active_run = self.application.starting_run()
                 previous_run = self.active_run
             try:
                 run_list = checkmate.pathfinder._find_runs(
