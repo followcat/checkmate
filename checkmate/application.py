@@ -140,6 +140,18 @@ class Application(object):
     run_matrix_tag = [False]
 
     @classmethod
+    def reset(cls):
+        cls.run_matrix = numpy.matrix([])
+        cls.run_matrix_index = []
+        cls.run_matrix_tag = [False]
+        if hasattr(cls, cls._run_collection_attribute):
+            delattr(cls, cls._run_collection_attribute)
+        if hasattr(cls, cls._origin_exchanges_attribute):
+            delattr(cls, cls._origin_exchanges_attribute)
+        if hasattr(cls, cls._starting_run_attribute):
+            delattr(cls, cls._starting_run_attribute)
+
+    @classmethod
     def run_collection(cls):
         """
         >>> import sample_app.application
@@ -147,9 +159,6 @@ class Application(object):
         >>> cls = sample_app.application.TestData
         >>> a.run_collection() #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
-        >>> cls.run_matrix = numpy.matrix([])
-        >>> cls.run_matrix_index = []
-        >>> cls.run_matrix_tag = [False]
         """
         if not hasattr(cls, cls._run_collection_attribute):
             app = cls()
@@ -232,9 +241,6 @@ class Application(object):
             >>> origin_runs = [_r for _r in app.origin_runs_gen()]
             >>> len(origin_runs)
             4
-            >>> cls.run_matrix = numpy.matrix([])
-            >>> cls.run_matrix_index = []
-            >>> cls.run_matrix_tag = [False]
         """
         cls = type(self)
         cls.run_matrix = numpy.matrix([])
@@ -367,6 +373,7 @@ class Application(object):
         >>> import sample_app.application
         >>> app = sample_app.application.TestData()
         >>> runs = app.run_collection()
+        >>> app.reset()
         >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
         >>> app.update_matrix([runs[1]], runs[0])
         >>> app.run_matrix

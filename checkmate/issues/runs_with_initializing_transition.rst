@@ -104,10 +104,5 @@ other runs
         ...     sample_app.exchanges.ForthAction)
         >>> state1.instance_engines['C1'].blocks.remove(t_in)
         >>> state2.instance_engines['C2'].blocks.remove(t_out)
-        >>> delattr(application_class,
-        ...     application_class._origin_exchanges_attribute)
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
-        >>> delattr(application_class,
-        ...     application_class._starting_run_attribute)
+        >>> application_class.reset()
 

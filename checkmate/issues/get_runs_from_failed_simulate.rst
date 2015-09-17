@@ -64,10 +64,6 @@ Should not get Runs when simulate has no outgoing.
         >>> C1.instance_engines['C1'].blocks.remove(t_out)
         >>> del sample_app.component.dummycomponent
         >>> del sample_app.exchanges.ForthAction
-        >>> application_class = sample_app.application.TestData
-        >>> delattr(application_class,
-        ...     application_class._origin_exchanges_attribute)
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
+        >>> sample_app.application.TestData.reset()
         >>> _tmp = app.component_registry.pop('DummyComponent')
         >>> os.remove(class_file)
