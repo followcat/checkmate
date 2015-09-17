@@ -17,7 +17,7 @@ def _find_runs(application, target, origin):
     """"""
     if target.collected_run is not None:
         target = target.collected_run
-    if origin.collected_run is not None:
+    if origin is not None and origin.collected_run is not None:
         origin = origin.collected_run
     exchanges = application.origin_exchanges()
     run, used_runs = find_path_to_nearest_target(application, [target], 

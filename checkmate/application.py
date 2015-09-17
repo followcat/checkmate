@@ -131,7 +131,6 @@ class Application(object):
     communication_list = {}
     component_registry = {}
     feature_definition_path = None
-    _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
     _origin_exchanges_attribute = '_origin_exchanges'
     path_finder_depth = 10
@@ -148,8 +147,6 @@ class Application(object):
             delattr(cls, cls._run_collection_attribute)
         if hasattr(cls, cls._origin_exchanges_attribute):
             delattr(cls, cls._origin_exchanges_attribute)
-        if hasattr(cls, cls._starting_run_attribute):
-            delattr(cls, cls._starting_run_attribute)
 
     @classmethod
     def run_collection(cls):
@@ -217,20 +214,6 @@ class Application(object):
             cls._runs_found = []
         except AttributeError:
             pass
-
-    @classmethod
-    def starting_run(cls):
-        try:
-            return getattr(cls, cls._starting_run_attribute)
-        except AttributeError:
-            try:
-                for run in cls.run_collection():
-                    if run.root.name == cls.starting_run_name:
-                        break
-            except AttributeError:
-                run = cls.run_collection()[-1]
-            setattr(cls, cls._starting_run_attribute, run)
-            return run
 
     def origin_runs_gen(self):
         """

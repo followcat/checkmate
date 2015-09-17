@@ -182,8 +182,6 @@ class Runtime(object):
     def transform_to_initial(self, run, previous_run=None):
         if not run.compare_initial(self.application):
             if previous_run is None:
-                if self.active_run is None:
-                    self.active_run = self.application.starting_run()
                 previous_run = self.active_run
             try:
                 run_list = checkmate.pathfinder._find_runs(
