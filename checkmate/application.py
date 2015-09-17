@@ -144,11 +144,16 @@ class Application(object):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
+        >>> cls = sample_app.application.TestData
         >>> a.run_collection() #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
+        >>> cls.run_matrix = numpy.matrix([])
+        >>> cls.run_matrix_index = []
+        >>> cls.run_matrix_tag = [False]
         """
         if not hasattr(cls, cls._run_collection_attribute):
-            collection = checkmate.runs.get_runs_from_application(cls)
+            app = cls()
+            collection = [_run for _run in app.origin_runs_gen()]
             length = len(collection)
             cls._matrix = numpy.matrix(numpy.zeros((length, length), dtype=int))
             cls._runs_found = [False]*length

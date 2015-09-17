@@ -129,7 +129,7 @@ def find_path_to_nearest_target(application, target_runs, exchanges, current_run
     >>> import checkmate.pathfinder
     >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
-    >>> runs = [_r for _r in app.origin_runs_gen()]
+    >>> runs = app.run_collection()
     >>> exchanges = app.origin_exchanges()
     >>> target = [_r for _r in runs
     ...     if _r.exchanges[0].value == 'PBPP'][0]

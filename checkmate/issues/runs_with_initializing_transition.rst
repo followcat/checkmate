@@ -68,7 +68,6 @@ other runs
         >>> r.start_test()
         >>> time.sleep(1)
         >>> app = r.application
-        >>> runs = [_r for _r in app.origin_runs_gen()]
         >>> initializing_run = [r for r in app.run_collection()
         ...      if r.root.outgoing[0].code=='AF'][0]
         >>> initializing_run # doctest: +ELLIPSIS

@@ -188,8 +188,7 @@ class Runtime(object):
                 run_list = checkmate.pathfinder._find_runs(
                                 self.application, run, origin=previous_run)
             except ValueError:
-                runs = [_r for _r in
-                    self.application.origin_runs_gen()]
+                runs = self.application.run_collection()
                 run_list = checkmate.pathfinder._find_runs(
                                 self.application, run, origin=previous_run)
             if len(run_list) == 0:
