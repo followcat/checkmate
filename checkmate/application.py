@@ -219,7 +219,7 @@ class Application(object):
             return run
 
     @classmethod
-    def origin_runs_gen(cls, app, current_run=None):
+    def origin_runs_gen(cls, app):
         """
             >>> import sample_app.application
             >>> cls = sample_app.application.TestData
@@ -236,6 +236,7 @@ class Application(object):
         cls.run_matrix_index = []
         cls.run_matrix_tag = [False]
         exchanges = app.origin_exchanges()
+        current_run=None
         yielded_runs = []
         unyielded_runs = []
         box = checkmate.sandbox.Sandbox(cls, app)
