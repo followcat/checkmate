@@ -12,7 +12,6 @@ import numpy
 import checkmate.runs
 import checkmate._module
 import checkmate.component
-import checkmate.pathfinder
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
@@ -155,7 +154,8 @@ class Application(object):
         """
         if not hasattr(cls, cls._run_collection_attribute):
             app = cls()
-            collection = [_run for _run in app.origin_runs_gen()]
+            collection = [_run for _run in 
+                checkmate.runs.origin_runs_generator(app)]
             setattr(cls, cls._run_collection_attribute, collection)
         return getattr(cls, cls._run_collection_attribute)
 
@@ -207,57 +207,6 @@ class Application(object):
             cls._runs_found = []
         except AttributeError:
             pass
-
-    @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
-    @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
-    @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
-    @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
-                                failed=3)
-    def origin_runs_gen(self):
-        """
-            >>> import sample_app.application
-            >>> cls = sample_app.application.TestData
-            >>> app = cls()
-            >>> app.start()
-            >>> origin_runs = [_r for _r in app.origin_runs_gen()]
-            >>> len(origin_runs)
-            4
-        """
-        cls = type(self)
-        if hasattr(cls, cls._run_collection_attribute):
-            runs = getattr(cls, cls._run_collection_attribute)
-            for _r in runs:
-                yield _r
-            return
-        cls.reset()
-        exchanges = self.origin_exchanges()
-        current_run=None
-        yielded_runs = []
-        unyielded_runs = []
-        box = checkmate.sandbox.Sandbox(cls, self)
-        while True:
-            _path = []
-            next_runs = checkmate.runs.followed_runs(box.application,
-                            exchanges, current_run)
-            new_next_runs = [_run for _run in next_runs
-                                 if _run not in yielded_runs]
-            if len(new_next_runs) > 0:
-                unyielded_runs.extend([_run for _run in new_next_runs
-                                            if _run not in unyielded_runs])
-                current_run = new_next_runs[0]
-            else:
-                if len(unyielded_runs) == 0:
-                    break
-                current_run, _path = checkmate.pathfinder.find_path(\
-                    box.application, unyielded_runs, exchanges, current_run)
-            if current_run in unyielded_runs:
-                unyielded_runs.remove(current_run)
-            for _r in _path + [current_run]:
-                box(_r.exchanges)
-            current_run = box.blocks
-            yielded_runs.append(current_run)
-            yield current_run
-        setattr(cls, cls._run_collection_attribute, cls._matrix_runs)
 
 
     def __init__(self):

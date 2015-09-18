@@ -54,8 +54,9 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
+        app = runtime.application
         if isinstance(self.test, list):
-            for _test in runtime.application.origin_runs_gen():
+            for _test in checkmate.runs.origin_runs_generator(app):
                 setattr(_test, '__name__', 
                             str(self) + '(' + _test.exchanges[0].value +', )')
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)

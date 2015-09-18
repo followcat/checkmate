@@ -10,6 +10,7 @@ import checkmate._tree
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
+import checkmate.pathfinder
 import checkmate.tymata.transition
 
 
@@ -286,4 +287,46 @@ def followed_runs(application, exchanges, current_run=None):
             next_runs.append(_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
+
+
+@checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
+@checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
+@checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
+@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
+                            failed=3)
+def origin_runs_generator(application):
+    """
+        >>> import checkmate.runs
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> origin_runs = [_r for _r in
+        ...     checkmate.runs.origin_runs_generator(app)]
+        >>> len(origin_runs)
+        4
+    """
+    exchanges = application.origin_exchanges()
+    current_run=None
+    yielded_runs = []
+    unyielded_runs = []
+    box = checkmate.sandbox.Sandbox(type(application), application)
+    while True:
+        _path = []
+        next_runs = followed_runs(box.application, exchanges, current_run)
+        new_next_runs = [_r for _r in next_runs if _r not in yielded_runs]
+        if len(new_next_runs) > 0:
+            unyielded_runs.extend([_r for _r in new_next_runs
+                                        if _r not in unyielded_runs])
+            current_run = new_next_runs[0]
+        else:
+            if len(unyielded_runs) == 0:
+                break
+            current_run, _path = checkmate.pathfinder.find_path(\
+                box.application, unyielded_runs, exchanges, current_run)
+        if current_run in unyielded_runs:
+            unyielded_runs.remove(current_run)
+        for _r in _path + [current_run]:
+            box(_r.exchanges)
+        current_run = box.blocks
+        yielded_runs.append(current_run)
+        yield current_run
 
