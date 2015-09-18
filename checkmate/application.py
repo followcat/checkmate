@@ -11,7 +11,6 @@ import numpy
 
 import checkmate.runs
 import checkmate._module
-import checkmate.sandbox
 import checkmate.component
 import checkmate.pathfinder
 import checkmate.parser.yaml_visitor
@@ -125,24 +124,21 @@ class ApplicationMeta(type):
 
 
 class Application(object):
-    _matrix = None
-    _runs_found = []
+    _matrix = numpy.matrix([])
+    _matrix_runs = []
+    _runs_found = [False]
     component_classes = []
     communication_list = {}
     component_registry = {}
     feature_definition_path = None
     _run_collection_attribute = '_collected_runs'
     _origin_exchanges_attribute = '_origin_exchanges'
-    path_finder_depth = 10
-    run_matrix = numpy.matrix([])
-    run_matrix_index = []
-    run_matrix_tag = [False]
 
     @classmethod
     def reset(cls):
-        cls.run_matrix = numpy.matrix([])
-        cls.run_matrix_index = []
-        cls.run_matrix_tag = [False]
+        cls._matrix = numpy.matrix([])
+        cls._matrix_runs = []
+        cls._runs_found = [False]
         if hasattr(cls, cls._run_collection_attribute):
             delattr(cls, cls._run_collection_attribute)
         if hasattr(cls, cls._origin_exchanges_attribute):
@@ -160,9 +156,6 @@ class Application(object):
         if not hasattr(cls, cls._run_collection_attribute):
             app = cls()
             collection = [_run for _run in app.origin_runs_gen()]
-            length = len(collection)
-            cls._matrix = numpy.matrix(numpy.zeros((length, length), dtype=int))
-            cls._runs_found = [False]*length
             setattr(cls, cls._run_collection_attribute, collection)
         return getattr(cls, cls._run_collection_attribute)
 
@@ -215,6 +208,11 @@ class Application(object):
         except AttributeError:
             pass
 
+    @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
+    @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
+    @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
+    @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
+                                failed=3)
     def origin_runs_gen(self):
         """
             >>> import sample_app.application
@@ -239,7 +237,7 @@ class Application(object):
         box = checkmate.sandbox.Sandbox(cls, self)
         while True:
             _path = []
-            next_runs = checkmate.runs.find_next_runs(box.application,
+            next_runs = checkmate.runs.followed_runs(box.application,
                             exchanges, current_run)
             new_next_runs = [_run for _run in next_runs
                                  if _run not in yielded_runs]
@@ -250,10 +248,8 @@ class Application(object):
             else:
                 if len(unyielded_runs) == 0:
                     break
-                current_run, _path = \
-                    checkmate.pathfinder.\
-                        find_path_to_nearest_target(box.application,
-                            unyielded_runs, exchanges, current_run)
+                current_run, _path = checkmate.pathfinder.find_path(\
+                    box.application, unyielded_runs, exchanges, current_run)
             if current_run in unyielded_runs:
                 unyielded_runs.remove(current_run)
             for _r in _path + [current_run]:
@@ -261,6 +257,7 @@ class Application(object):
             current_run = box.blocks
             yielded_runs.append(current_run)
             yield current_run
+        setattr(cls, cls._run_collection_attribute, cls._matrix_runs)
 
 
     def __init__(self):
@@ -354,58 +351,58 @@ class Application(object):
     @classmethod
     def update_matrix(cls, next_runs, current_run):
         """
-        notice:update run_matrix_index first then update matrix
+        notice:update _matrix_runs first then update matrix
 
         >>> import sample_app.application
         >>> app = sample_app.application.TestData()
         >>> runs = app.run_collection()
         >>> app.reset()
-        >>> app.run_matrix_index.append(runs[0])  # update run_matrix_index
+        >>> app._matrix_runs.append(runs[0])  # update _matrix_runs
         >>> app.update_matrix([runs[1]], runs[0])
-        >>> app.run_matrix
+        >>> app._matrix
         matrix([[0, 1],
                 [0, 0]])
         >>> app.update_matrix([runs[2], runs[3]], runs[1])
-        >>> app.run_matrix
+        >>> app._matrix
         matrix([[0, 1, 0, 0],
                 [0, 0, 1, 1],
                 [0, 0, 0, 0],
                 [0, 0, 0, 0]])
         >>> app.update_matrix([runs[1]], runs[2])
-        >>> app.run_matrix
+        >>> app._matrix
         matrix([[0, 1, 0, 0],
                 [0, 0, 1, 1],
                 [0, 1, 0, 0],
                 [0, 0, 0, 0]])
         >>> app.update_matrix([runs[0]], runs[3])
-        >>> app.run_matrix
+        >>> app._matrix
         matrix([[0, 1, 0, 0],
                 [0, 0, 1, 1],
                 [0, 1, 0, 0],
                 [1, 0, 0, 0]])
         """
         new_runs = [_run for _run in next_runs \
-                    if _run not in cls.run_matrix_index]
+                    if _run not in cls._matrix_runs]
         extra_length = len(new_runs)
         # extend matrix
         if extra_length > 0:
-            if cls.run_matrix.size == 0:
-                cls.run_matrix = \
+            if cls._matrix.size == 0:
+                cls._matrix = \
                     numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
             else:
-                _temp = cls.run_matrix.tolist()
+                _temp = cls._matrix.tolist()
                 for item in _temp:
                     item.extend([0]*extra_length)
                 _temp.extend([[0]*len(_temp[0])]*extra_length)
-                cls.run_matrix = numpy.matrix(_temp)
-            cls.run_matrix_index.extend(new_runs)
-            cls.run_matrix_tag.extend([False]*extra_length)
+                cls._matrix = numpy.matrix(_temp)
+            cls._matrix_runs.extend(new_runs)
+            cls._runs_found.extend([False]*extra_length)
         # update matrix row
         if current_run is not None:
-            current_index = cls.run_matrix_index.index(current_run)
-            row = len(cls.run_matrix)*[0]
+            current_index = cls._matrix_runs.index(current_run)
+            row = len(cls._matrix)*[0]
             for _run in next_runs:
-                row[cls.run_matrix_index.index(_run)] = 1
-            cls.run_matrix[current_index] = row
-            cls.run_matrix_tag[current_index] = True
+                row[cls._matrix_runs.index(_run)] = 1
+            cls._matrix[current_index] = row
+            cls._runs_found[current_index] = True
 

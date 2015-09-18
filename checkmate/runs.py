@@ -128,8 +128,7 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData)
+            >>> src = sample_app.application.TestData.run_collection()
             >>> states = src[0].visual_dump_initial()
             >>> states['C1']['State']['value']
             True
@@ -151,8 +150,7 @@ class Run(checkmate._tree.Tree):
         """
             >>> import checkmate.runs
             >>> import sample_app.application
-            >>> src = checkmate.runs.get_runs_from_application(
-            ...         sample_app.application.TestData)
+            >>> src = sample_app.application.TestData.run_collection()
             >>> states = src[0].visual_dump_final()
             >>> states['C1']['State']['value']
             False
@@ -188,74 +186,6 @@ class Run(checkmate._tree.Tree):
         self.get_states()
         return self._final
 
-    def final_alike(self):
-        final_alike = set()
-        for _f in self.final:
-            alike = _f.partition_class.alike(_f, self.initial)
-            if alike is not None:
-                final_alike.add(alike)
-        return final_alike
-
-
-@checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
-@checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
-@checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
-@checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
-@checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst', failed=3)
-def get_runs_from_application(_class):
-    runs = []
-    application = _class()
-    application.start()
-    origin_exchanges = _class.origin_exchanges()
-    generate_run(application, runs, [], origin_exchanges)
-    return runs
-
-
-def generate_run(application, runs, exchange_states, exchanges):
-    entrances = []
-    for _ex in exchanges:
-        if (_ex, application.state_list()) in exchange_states:
-            continue
-        box = checkmate.sandbox.Sandbox(type(application), application)
-        states = application.copy_states()
-        exchange_states.append((_ex, states))
-        if box([_ex]) and box.blocks not in runs:
-            runs.append(box.blocks)
-            entrances.append(box)
-    for box in entrances:
-        generate_run(box.application, runs, exchange_states, exchanges) 
-
-
-@checkmate.fix_issue('checkmate/issues/get_followed_runs.rst')
-def followed_runs(application, run):
-    runs = application.run_collection()
-    length = len(runs)
-    run_index = runs.index(run)
-    followed_runs = []
-    if application._runs_found[run_index]:
-        followed_runs = [runs[i] for i in application._matrix[run_index]
-                         .nonzero()[1].tolist()[0]]
-        return followed_runs
-    row = [0] * length
-    alike_set = set()
-    partition_class_set = set()
-    for _f in run.final:
-        alike = _f.partition_class.alike(_f, run.initial)
-        if alike is not None:
-            alike_set.add(alike)
-            partition_class_set.add(_f.partition_class)
-    for index, another_run in enumerate(runs):
-        select_parititon = set()
-        for _i in another_run.initial:
-            if _i.partition_class in partition_class_set:
-                select_parititon.add(_i)
-        if select_parititon.issubset(alike_set):
-            followed_runs.append(another_run)
-            row[index] = 1
-    application._matrix[run_index] = row
-    application._runs_found[run_index] = True
-    return followed_runs
-
 
 @checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
 def get_runs_from_transition(application, transition, itp_transition=False):
@@ -283,25 +213,6 @@ def get_runs_from_transition(application, transition, itp_transition=False):
         _run._collected_box = initial
     runs.append(_run)
     return runs
-
-
-@checkmate.fix_issue('checkmate/issues/get_origin_transitions.rst')
-def get_origin_transitions(application):
-    origin_transitions = []
-    for _component in application.components.values():
-        for _transition in _component.engine.blocks:
-            if not len(_transition.incoming):
-                origin_transitions.append(_transition)
-            else:
-                _incoming = _transition.generic_incoming(_component.states)
-                for _c in application.components.values():
-                    if _c == _component:
-                        continue
-                    if _c.get_blocks_by_output(_incoming) is not None:
-                        break
-                else:
-                    origin_transitions.append(_transition)
-    return origin_transitions
 
 
 def get_origin_exchanges(application_class):
@@ -333,7 +244,7 @@ def get_origin_exchanges(application_class):
     return origin_exchanges
 
 
-def find_next_runs(application, exchanges, current_run=None):
+def followed_runs(application, exchanges, current_run=None):
     """
     3 conditions:
         1. we find next runs by matrix
@@ -346,26 +257,26 @@ def find_next_runs(application, exchanges, current_run=None):
     >>> exchanges = app.origin_exchanges()
     >>> box = checkmate.sandbox.Sandbox(app)
     >>> runs = app.run_collection()
-    >>> next_runs = checkmate.runs.find_next_runs(box.application,
+    >>> next_runs = checkmate.runs.followed_runs(box.application,
     ...     exchanges, None)
     >>> next_runs[0].validate_items[0][0].value
     'PBAC'
     >>> box(next_runs[0].exchanges)
     True
-    >>> next_runs = checkmate.runs.find_next_runs(box.application,
+    >>> next_runs = checkmate.runs.followed_runs(box.application,
     ...     exchanges, next_runs[0])
     >>> next_runs[0].validate_items[0][0].value
     'PBRL'
     """
     _class = type(application)
-    runs = application.run_matrix_index
+    runs = application._matrix_runs
     next_runs = []
     if current_run is not None:
         if current_run in runs:
             _index = runs.index(current_run)
-            if application.run_matrix_tag[_index]:
+            if application._runs_found[_index]:
                 return [runs[i] for i in
-                    application.run_matrix[_index].nonzero()[1].tolist()[0]]
+                    application._matrix[_index].nonzero()[1].tolist()[0]]
         else:
             runs.append(current_run)
     for _exchange in exchanges:

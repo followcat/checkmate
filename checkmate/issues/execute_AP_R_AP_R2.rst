@@ -35,6 +35,7 @@ We can match R with R2 when we do collect runs
         >>> out = c2.engine.blocks[2].outgoing[0]
         >>> (out.code, out.resolved_arguments)
         ('AP', {})
+        >>> sample_app.application.TestData.reset()
         >>> runs = a.run_collection()
         >>> len(runs)
         4
