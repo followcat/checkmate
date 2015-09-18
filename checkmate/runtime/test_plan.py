@@ -140,8 +140,9 @@ def TestProcedureRunsGenerator(application_class):
         >>> runs = []
         >>> app = sample_app.application.TestData
         >>> test_plan = checkmate.runtime.test_plan
-        >>> runs = [run[0] for run in
-        ...        test_plan.TestProcedureRunsGenerator(app)]
+        >>> func = [_f for _f in
+        ...        test_plan.TestProcedureRunsGenerator(app)][0]
+        >>> runs = [_r for _r in func(app())]
         >>> runs[0].root.incoming[0].code
         'PBAC'
         >>> runs[1].root.incoming[0].code
@@ -157,19 +158,5 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.execute(runs[0], transform=False)
         >>> r.stop_test()
     """
-    for _run in application_class().run_collection():
-        yield _run, _run.root.name
-
-
-def TestProcedureExchangesGenerator(application_class):
-    """
-    >>> import sample_app.application
-    >>> import checkmate.runtime.test_plan
-    >>> app = sample_app.application.TestData
-    >>> exchanges_gen = checkmate.runtime.test_plan.TestProcedureExchangesGenerator(app)
-    >>> exchanges = next(exchanges_gen)
-    >>> exchanges[0].value
-    'PBAC'
-    """
-    yield application_class.origin_exchanges()
+    yield checkmate.runs.origin_runs_generator
 

@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import sys
+import types
 import random
 import unittest
 
@@ -39,7 +40,7 @@ class TestCase(nose.case.Test):
                 result.addError(self, err)
             result.stopTest(self)
         else:
-            if isinstance(test.test, list):
+            if isinstance(test.test, types.FunctionType):
                 setattr(test, 'proxyResult', result.result)
                 test()
             else:
@@ -54,9 +55,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
-        app = runtime.application
-        if isinstance(self.test, list):
-            for _test in checkmate.runs.origin_runs_generator(app):
+        if isinstance(self.test, types.FunctionType):
+            for _test in self.test(runtime.application):
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
                 setattr(_FunctionTestCase, '__name__', 
                             str(self) + '(' + _test.exchanges[0].value +', )')
@@ -91,7 +91,7 @@ class ContextSuite(nose.suite.ContextSuite):
 
     def run(self, result):
         """
-        let exchanges_generator the first one in test
+        let origin runs the first one in test
         and random test if in random mode.
         """
         _tests = list(self._tests)
@@ -99,9 +99,13 @@ class ContextSuite(nose.suite.ContextSuite):
         for index, item in enumerate(_tests):
             if not isinstance(item, ContextSuite):
                 continue
-            if item.context in [checkmate, FunctionTestCase]:
-                run_first_item = _tests.pop(index)
-                break
+            try:
+                if item.context in [checkmate] or\
+                    'TestProcedureRunsGenerator' in str(list(item._tests)[0]):
+                    run_first_item = _tests.pop(index)
+                    break
+            except IndexError:
+                pass
         if self.randomized_run:
             _tests = random.sample(_tests, len(_tests))
         if run_first_item is not None:
