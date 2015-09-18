@@ -57,9 +57,9 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         app = runtime.application
         if isinstance(self.test, list):
             for _test in checkmate.runs.origin_runs_generator(app):
-                setattr(_test, '__name__', 
-                            str(self) + '(' + _test.exchanges[0].value +', )')
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
+                setattr(_FunctionTestCase, '__name__', 
+                            str(self) + '(' + _test.exchanges[0].value +', )')
                 _FunctionTestCase(self.proxyResult)
         else:
             runtime.execute(self.test, transform=True)
@@ -67,8 +67,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
     def shortDescription(self):
         if hasattr(self.test, 'description'):
             return self.test.description
-        if hasattr(self.test, '__name__'):
-            return self.test.__name__
+        if hasattr(self, '__name__'):
+            return self.__name__
         return str(self)
 
 
