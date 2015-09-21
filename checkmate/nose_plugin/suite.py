@@ -56,7 +56,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
         if isinstance(self.test, types.FunctionType):
-            for _test in self.test(runtime.application):
+            for _test in self.test(runtime.application,
+                            self.config.defined_config['random']):
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
                 setattr(_FunctionTestCase, '__name__', 
                             str(self) + '(' + _test.exchanges[0].value +', )')
