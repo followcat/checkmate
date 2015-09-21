@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import numpy
+import random
 
 import checkmate._tree
 import checkmate._visual
@@ -294,7 +295,7 @@ def followed_runs(application, exchanges, current_run=None):
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
                             failed=3)
-def origin_runs_generator(application):
+def origin_runs_generator(application, randomized=False):
     """
         >>> import checkmate.runs
         >>> import sample_app.application
@@ -304,11 +305,19 @@ def origin_runs_generator(application):
         >>> len(origin_runs)
         4
     """
+    _cls = type(application)
+    if hasattr(_cls, _cls._run_collection_attribute):
+        runs = _cls.run_collection()
+        if randomized:
+            runs = random.sample(runs, len(runs))
+        for _r in runs:
+            yield _r
+        return
     exchanges = application.origin_exchanges()
     current_run=None
     yielded_runs = []
     unyielded_runs = []
-    box = checkmate.sandbox.Sandbox(type(application), application)
+    box = checkmate.sandbox.Sandbox(_cls, application)
     while True:
         _path = []
         next_runs = followed_runs(box.application, exchanges, current_run)
