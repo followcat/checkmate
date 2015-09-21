@@ -96,16 +96,18 @@ class ContextSuite(nose.suite.ContextSuite):
         """
         _tests = list(self._tests)
         run_first_item = None
-        for index, item in enumerate(_tests):
-            if not isinstance(item, ContextSuite):
-                continue
-            try:
-                if item.context in [checkmate] or\
-                    'TestProcedureRunsGenerator' in str(list(item._tests)[0]):
-                    run_first_item = _tests.pop(index)
-                    break
-            except IndexError:
-                pass
+        if self.config.defined_config['_loop'] == 0:
+            for index, item in enumerate(_tests):
+                if not isinstance(item, ContextSuite):
+                    continue
+                try:
+                    if item.context in [checkmate] or\
+                        'TestProcedureRunsGenerator' in\
+                            str(list(item._tests)[0]):
+                        run_first_item = _tests.pop(index)
+                        break
+                except IndexError:
+                    pass
         if self.randomized_run:
             _tests = random.sample(_tests, len(_tests))
         if run_first_item is not None:
