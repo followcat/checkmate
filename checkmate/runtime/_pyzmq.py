@@ -15,6 +15,10 @@ import checkmate.runtime._zmq_wrapper
 import checkmate.runtime.communication
 
 
+class Message():
+    broadcast = False
+            
+
 class Device(checkmate.runtime._threading.Thread):
     """
         >>> import zmq
@@ -101,6 +105,13 @@ class Device(checkmate.runtime._threading.Thread):
             if self.socket_sub:
                 self.poller.register(self.socket_sub)
             self.poller.register(self.socket_dealer_in)
+        @checkmate.timeout_manager.WaitOnException(timeout=10)
+        def check():
+            self.socket_dealer_out.send_pyobj((self._name.encode(), Message()))
+            socks = self.poller.poll_with_timeout()
+            for _s in socks:
+                assert isinstance(_s.recv_pyobj(), Message)
+        check()
         super().start()
 
     def run(self):
@@ -108,6 +119,10 @@ class Device(checkmate.runtime._threading.Thread):
         self.logger.debug("%s startup" % self)
         while True:
             if self.check_for_stop():
+                if self.is_reading:
+                    if self.socket_sub:
+                        self.poller.unregister(self.socket_sub)
+                    self.poller.unregister(self.socket_dealer_in)
                 self.socket_sub.close()
                 self.socket_dealer_in.close()
                 self.socket_dealer_out.close()
@@ -166,6 +181,8 @@ class Router(checkmate.runtime._threading.Thread):
         """"""
         while True:
             if self.check_for_stop():
+                self.poller.unregister(self.router)
+                self.poller.unregister(self.broadcast_router)
                 break
             socks = self.poller.poll_with_timeout()
             for sock in iter(socks):
@@ -204,14 +221,15 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> c2_stub = r.runtime_components['C2']
         >>> c1_stub = r.runtime_components['C1']
         >>> c2 = r.application.components['C2']
-        >>> simulated_transition = c2.state_machine.transitions[0]
-        >>> o = c2_stub.simulate(simulated_transition)
-        >>> t = c1_stub.context.state_machine.transitions[0]
-        >>> t.is_matching_incoming(o, c1_stub.context.states)
-        True
-        >>> c1_stub.validate(t)
-        True
+        >>> inc = c2_stub.context.engine.blocks[0].incoming[0]
+        >>> exchange = inc.factory(**inc.resolve())
+        >>> exchange.origin_destination('', ['C2'])
+        >>> simulated_exchanges = [exchange]
+        >>> o = c2_stub.simulate(simulated_exchanges)
         >>> time.sleep(1)
+        >>> items = (tuple(o), tuple(c2_stub.context.states))
+        >>> c2_stub.validate(items)
+        True
         >>> r.stop_test()
     """
     connector_class = Connector

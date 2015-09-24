@@ -4,14 +4,13 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import os
 import yaml
 import collections
 
 import checkmate._yaml
 
+
 class Visitor():
-    exchanges_kind_list = ["Exchange", "Transitions", "Procedures"]
     definition_kind_list = ["Definition and accessibility", "Definition"]
 
     def __init__(self, define_content):
@@ -37,7 +36,6 @@ class Visitor():
         self._state_partitions = []
         self._data_structure_partitions = []
         self._exchange_partitions = []
-        self._transitions = []
 
         self.full_description = collections.OrderedDict()
         self._classname = ''
@@ -45,7 +43,6 @@ class Visitor():
         self.values_list = []
         self.attributes = {}
         self.define_attributes = {}
-        self.tran_items = []
 
         define_content = self.pre_process(define_content)
         self.read_document(define_content)
@@ -64,7 +61,6 @@ class Visitor():
                 '!!python/object/apply:checkmate.parser.yaml_visitor.')
             lines[index] = line
         return '\n'.join(lines)
-            
 
     def read_document(self, define_content):
         for each in yaml.load_all(define_content,
@@ -106,13 +102,6 @@ class Visitor():
             >>> visitor.parser_chunk(list(yaml.load_all(c3))[0])
             >>> len(visitor._state_partitions)
             2
-            >>> len(visitor._transitions)
-            0
-            >>> list(yaml.load_all(c3))[1]['title']
-            'State machine'
-            >>> visitor.parser_chunk(list(yaml.load_all(c3))[1])
-            >>> len(visitor._transitions)
-            4
         """
         title = chunk['title']
         chunk_data = chunk['data']
@@ -120,24 +109,19 @@ class Visitor():
             for inside_title in _d:
                 if inside_title in self.definition_kind_list:
                     self.definition_and_accessibility(_d[inside_title])
-
-            if title == "State machine" or title == "Test procedure":
-                self.state_machine_or_test_procedure(_d)
-                self._transitions.extend(self.tran_items)
-            else:
-                self.partition_identification(_d)
-                _partitions = {'signature': self._classname,
-                               'codes_list': self.codes_list,
-                               'values_list': self.values_list,
-                               'full_description': self.full_description,
-                               'attributes': self.attributes,
-                               'define_attributes': self.define_attributes}
-                if title == "State identification":
-                    self._state_partitions.append(_partitions)
-                elif title == "Data structure":
-                    self._data_structure_partitions.append(_partitions)
-                elif title == "Exchange identification":
-                    self._exchange_partitions.append(_partitions)
+            self.partition_identification(_d)
+            _partitions = {'signature': self._classname,
+                           'codes_list': self.codes_list,
+                           'values_list': self.values_list,
+                           'full_description': self.full_description,
+                           'attributes': self.attributes,
+                           'define_attributes': self.define_attributes}
+            if title == "State identification":
+                self._state_partitions.append(_partitions)
+            elif title == "Data structure":
+                self._data_structure_partitions.append(_partitions)
+            elif title == "Exchange identification":
+                self._exchange_partitions.append(_partitions)
 
             self.full_description = collections.OrderedDict()
             self._classname = ''
@@ -145,7 +129,6 @@ class Visitor():
             self.values_list = []
             self.attributes = {}
             self.define_attributes = {}
-            self.tran_items = []
 
     def partition_identification(self, content):
         for _k, _v in content.items():
@@ -157,11 +140,6 @@ class Visitor():
                 self.attributes = _v
             elif _k in ["Definition name", "Definition from"]:
                 self.define_attributes[_k] = _v
-
-    def state_machine_or_test_procedure(self, content):
-        for _k, _v in content.items():
-            if _k in self.exchanges_kind_list:
-                self.tran_items.extend(_v)
 
     def definition_and_accessibility(self, data):
         self._classname = data
@@ -199,21 +177,12 @@ def call_visitor(define_content):
         1
         >>> len(output['exchanges'])
         2
-        >>> input_file = os.getenv("CHECKMATE_HOME") +\
-                             '/checkmate/parser/state_machine.yaml'
-        >>> f1 = open(input_file,'r')
-        >>> c = f1.read()
-        >>> f1.close()
-        >>> output = checkmate.parser.yaml_visitor.call_visitor(c)
-        >>> len(output['states'])
-        2
     """
     visitor = Visitor(define_content)
     return collections.OrderedDict([
         ('data_structure', visitor._data_structure_partitions),
         ('states', visitor._state_partitions),
-        ('exchanges', visitor._exchange_partitions),
-        ('transitions', visitor._transitions)])
+        ('exchanges', visitor._exchange_partitions)])
 
 
 def from_attribute(classname, *attributes):
@@ -222,7 +191,7 @@ def from_attribute(classname, *attributes):
         kwargs = item.split('=')
         if len(kwargs) == 2:
             kw_attributes[kwargs[0].strip()] = kwargs[1].strip()
-    return {'Definition and accessibility':classname,
+    return {'Definition and accessibility': classname,
             'Definition name': kw_attributes,
             'Definition from': 'attribute'}
 
@@ -245,27 +214,4 @@ class DataVisitor(collections.OrderedDict):
 
 def call_data_visitor(stream):
     return DataVisitor(stream)
-
-def data_from_files(application):
-    """"""
-    state_modules = []
-    for name in list(application.components.keys()):
-        state_modules.append(application.components[name].state_module)
-    paths = application.itp_definition
-    if type(paths) != list:
-        paths = [paths]
-    array_list = []
-    try:
-        matrix = ''
-        for path in paths:
-            if not os.path.isdir(path):
-                continue
-            with open(os.sep.join([path, "itp.yaml"]), 'r') as _file:
-                matrix += _file.read()
-    except FileNotFoundError:
-        return []
-    _output = checkmate.parser.yaml_visitor.call_visitor(matrix)
-    for data in _output['transitions']:
-        array_list.append(data)
-    return array_list
 

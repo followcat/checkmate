@@ -9,7 +9,7 @@ In checkmate this object is a 'InternalStorage'.
     >>> import sample_app.application
     >>> import sample_app.component.component_1 
     >>> c1 = sample_app.component.component_1.Component_1('C1')
-    >>> transition = c1.state_machine.transitions[0] 
+    >>> transition = c1.engine.blocks[0] 
     >>> type(transition.incoming[0])
     <class 'checkmate._storage.InternalStorage'>
     >>> type(transition.final[0])
@@ -66,7 +66,7 @@ Let's set up a component for the test
 
 The last transition of component 1 has a function attribute that is a real function.
 
-    >>> t = c1.state_machine.transitions[-1]
+    >>> t = c1.engine.blocks[-1]
     >>> t.final[0].function
     <class 'sample_app.component.component_1_state.State'>
     >>> t.final[1].function
@@ -86,7 +86,7 @@ Still after the transition is executed, the final state is not empty. The final 
 
 Let's have a look to the second transition of component C1:
 
-    >>> t = c1.state_machine.transitions[1]
+    >>> t = c1.engine.blocks[1]
 
 The function attribute of the final storage is also a function. It has a keyword argument that will be taken as default value.
 

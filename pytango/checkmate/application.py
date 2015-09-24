@@ -18,7 +18,7 @@ class Application(checkmate.application.Application,
         >>> import pytango.checkmate.application
         >>> a = pytango.checkmate.application.Application()
         >>> c1 = a.components['C1']
-        >>> c1.state_machine.transitions[-1].outgoing[0].code
+        >>> c1.engine.blocks[-1].outgoing[0].code
         'PA'
     """
     itp_definition = ['pytango/checkmate']

@@ -5,9 +5,112 @@
 # version 3 of the License, or (at your option) any later version.
 
 import checkmate
+import checkmate._storage
 
 
-class Transition(object):
+def name_to_class(name, modules):
+    for _m in modules:
+        if hasattr(_m, name):
+            partition_class = getattr(_m, name)
+            break
+    else:
+        raise AttributeError(
+            _m.__name__ + ' has no class defined:' + name)
+    return partition_class
+
+
+def make_transition(items, exchanges=[], state_modules=[]):
+    """
+    >>> import checkmate._module
+    >>> import checkmate.application
+    >>> import checkmate.data_structure
+    >>> import checkmate.partition_declarator
+    >>> state_module = checkmate._module.get_module(
+    ...                    'checkmate.application', 'states')
+    >>> exchange_module = checkmate._module.get_module(
+    ...                       'checkmate.application', 'exchanges')
+    >>> data_structure_module = checkmate._module.get_module(
+    ...                             'checkmate.application', 'data')
+    >>> de = checkmate.partition_declarator.Declarator(
+    ...         data_structure_module,
+    ...         exchange_module,
+    ...         state_module=state_module)
+    >>> items = {
+    ...     'partition_type': 'data_structure',
+    ...     'signature': 'TestActionRequest',
+    ...     'codes_list': ['TestActionRequestNORM'],
+    ...     'values_list': ['NORM'],
+    ...     }
+    >>> de.new_partition(items)
+    >>> items = {
+    ...     'partition_type': 'states',
+    ...     'signature': 'TestState',
+    ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
+    ...     'values_list': [True, False],
+    ...     }
+    >>> de.new_partition(items)
+    >>> items = {
+    ...     'partition_type': 'exchanges',
+    ...     'signature': 'TestReturn()',
+    ...     'codes_list': ['DA()'],
+    ...     'values_list': ['DA']
+    ...     }
+    >>> de.new_partition(items)
+    >>> item = {'name': 'Toggle TestState tran01',
+    ...         'initial': [{'TestState': 'TestStateTrue'}],
+    ...         'outgoing': [{'TestReturn': 'DA()'}],
+    ...         'incoming': [{'TestAction': 'AP(R)'}],
+    ...         'final': [{'TestState': 'TestStateFalse'}]}
+    >>> checkmate.tymata.transition.make_transition(item,
+    ...     [exchange_module],
+    ...     [state_module]) # doctest: +ELLIPSIS
+    <checkmate.tymata.transition.Transition object at ...
+    """
+    module_dict = {'states': state_modules,
+                   'exchanges': exchanges}
+    tran_dict = {
+        'name': '',
+        'initializing': False,
+        'final': [],
+        'initial': [],
+        'incoming': [],
+        'outgoing': [],
+        'returned': [],
+    }
+    for _k, _v in items.items():
+        if _k in ['initial', 'final']:
+            module_type = 'states'
+        elif _k in ['incoming', 'outgoing', 'returned']:
+            module_type = 'exchanges'
+        elif _k == 'initializing' and _v is True or _k == 'name':
+            tran_dict[_k] = _v
+            continue
+        for each_item in _v:
+            for _name, _data in each_item.items():
+                code = checkmate._exec_tools.get_method_basename(_data)
+                define_class = name_to_class(_name, module_dict[module_type])
+                arguments = checkmate._exec_tools.get_signature_arguments(
+                                _data, define_class)
+                generate_storage = checkmate._storage.InternalStorage(
+                    define_class, _data, None, arguments=arguments)
+                if _k == 'final':
+                    generate_storage.function = define_class.__init__
+                for _s in define_class.partition_storage.storage:
+                    if _s.code == code:
+                        generate_storage.value = _s.value
+                        break
+                else:
+                    if hasattr(define_class, code):
+                        generate_storage.function = getattr(define_class, code)
+                tran_dict[_k].append(generate_storage)
+    return checkmate.tymata.transition.Transition(**tran_dict)
+
+
+class Block(object):
+    """"""
+
+
+class Transition(Block):
     """Driving a change of state inside a state machine
     """
     def __init__(self, **argc):
@@ -15,7 +118,7 @@ class Transition(object):
         self.owner = ''
         self.initializing = argc['initializing']
         try:
-            self.name = argc['tran_name']
+            self.name = argc['name']
         except KeyError:
             self.name = 'unknown'
         finally:
@@ -43,7 +146,6 @@ class Transition(object):
                 local_copy.remove(match_item)
         return match_list
 
-
     def is_matching_incoming(self, exchange_list, state_list):
         """Check if the transition incoming list is matching a list of
         exchange.
@@ -54,20 +156,20 @@ class Transition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
-            >>> c.state_machine.transitions[0].name
+            >>> c.engine.blocks[0].name
             'Toggle state tran01'
-            >>> c.state_machine.transitions[0].initializing
+            >>> c.engine.blocks[0].initializing
             False
-            >>> i = c.state_machine.transitions[0].incoming[0].factory()
+            >>> i = c.engine.blocks[0].incoming[0].factory()
             >>> i.value
             'AC'
             >>> s = c.states
-            >>> c.state_machine.transitions[0].is_matching_incoming([i], s)
+            >>> c.engine.blocks[0].is_matching_incoming([i], s)
             True
-            >>> c.state_machine.transitions[2].is_matching_incoming([i], s)
+            >>> c.engine.blocks[2].is_matching_incoming([i], s)
             False
 
-            >>> i = c.state_machine.transitions[1].incoming[0].factory()
+            >>> i = c.engine.blocks[1].incoming[0].factory()
         """
         keys = {}
         if len(exchange_list) > 0:
@@ -92,7 +194,7 @@ class Transition(object):
 
     def is_matching_outgoing(self, exchange_list):
         """Check if the transition outgoing list is matching a list of
-        exchange. 
+        exchange.
 
         The exchange_list can contain only a subset of the transition
         outgoing to match. All item in exchange_list must be matched
@@ -101,12 +203,12 @@ class Transition(object):
             >>> import sample_app.application
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C2']
-            >>> i = c.state_machine.transitions[0].outgoing[0].factory()
+            >>> i = c.engine.blocks[0].outgoing[0].factory()
             >>> i.value
             'AC'
-            >>> c.state_machine.transitions[0].is_matching_outgoing([i])
+            >>> c.engine.blocks[0].is_matching_outgoing([i])
             True
-            >>> c.state_machine.transitions[1].is_matching_outgoing([i])
+            >>> c.engine.blocks[1].is_matching_outgoing([i])
             False
         """
         match_list = self.matching_list(self.outgoing, exchange_list)
@@ -118,15 +220,15 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> a.start()
-            >>> sm = c.state_machine
-            >>> sm.transitions[0].is_matching_initial(c.states)
+            >>> engine = c.engine
+            >>> engine.blocks[0].is_matching_initial(c.states)
             True
-            >>> sm.transitions[2].is_matching_initial(c.states)
+            >>> engine.blocks[2].is_matching_initial(c.states)
             False
 
             >>> c3 = a.components['C3']
             >>> c3.states[0].value = True
-            >>> t3 = c3.state_machine.transitions[2]
+            >>> t3 = c3.engine.blocks[2]
             >>> t3.is_matching_initial(c3.states)
             False
             >>> a.start()
@@ -147,7 +249,6 @@ class Transition(object):
             incoming_exchanges.append(
                 incoming.factory(incoming.value, default=False, **arguments))
         return incoming_exchanges
-            
 
     @checkmate.report_issue("checkmate/issues/exchange_with_attribute.rst")
     @checkmate.fix_issue("checkmate/issues/process_AP_R2.rst")
@@ -157,7 +258,7 @@ class Transition(object):
             >>> a = sample_app.application.TestData()
             >>> c = a.components['C1']
             >>> c.start()
-            >>> ts = c.state_machine.transitions
+            >>> ts = c.engine.blocks
             >>> i = ts[0].incoming[0].factory()
             >>> ts[0].process(c.states, [i]) # doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...

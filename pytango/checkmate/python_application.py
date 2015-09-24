@@ -29,11 +29,11 @@ class FullPython(checkmate.application.Application,
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> simulated_transition =
-        ...     c2.context.get_transition_by_output(
+        ...     c2.context.get_blocks_by_output(
         ...         [pytango.checkmate.exchanges.AC()])
         >>> o = c2.simulate(simulated_transition)
         >>> time.sleep(1)
-        >>> _t = c1.context.state_machine.transitions[0]
+        >>> _t = c1.context.engine.blocks[0]
         >>> _t.is_matching_incoming(o)
         >>> c1.validate(_t)
         True

@@ -8,7 +8,8 @@ import os.path
 
 import checkmate.runs
 import checkmate.sandbox
-import checkmate.parser.yaml_visitor
+import checkmate.tymata.visitor
+import checkmate.tymata.transition
 import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
@@ -18,7 +19,7 @@ def get_runs_from_test(data, application):
         >>> import checkmate.runtime.test_plan
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
-        >>> data = checkmate.parser.yaml_visitor.data_from_files(a)
+        >>> data = checkmate.tymata.visitor.data_from_files(a)
         >>> checkmate.runtime.test_plan.get_runs_from_test(
         ...     data, a) #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
@@ -32,7 +33,7 @@ def get_runs_from_test(data, application):
     exchange_module = application.exchange_module
 
     for array_items in data:
-        transition = checkmate.partition_declarator.make_transition(
+        transition = checkmate.tymata.transition.make_transition(
                         array_items, [exchange_module], state_modules)
         gen_runs = checkmate.runs.get_runs_from_transition(application,
                         transition, itp_transition=True)
@@ -55,10 +56,15 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c1 = r.runtime_components['C1']
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
-        >>> transition = c2.context.state_machine.transitions[0]
+        >>> transition = c2.context.engine.blocks[0]
         >>> previous_run = checkmate.runs.get_runs_from_transition(
         ...                     r.application, transition)[0]
-        >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
+        >>> inc = transition.incoming[0]
+        >>> exchange = inc.factory(**inc.resolve())
+        >>> exchange.origin_destination('', ['C2'])
+        >>> simulated_exchanges = [exchange]
+
+        >>> o = c2.simulate(simulated_exchanges)
         >>> time.sleep(1)
         >>> c1.context.states[0].value
         False
@@ -74,7 +80,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
 
     """
     _application = application_class()
-    data = checkmate.parser.yaml_visitor.data_from_files(_application)
+    data = checkmate.tymata.visitor.data_from_files(_application)
     for _run in get_runs_from_test(data, _application):
         yield _run, _run.root.name
 
@@ -90,18 +96,15 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> test_plan = checkmate.runtime.test_plan
         >>> run_list = test_plan.get_runs_from_test(data, a)
         >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
-        >>> run_list[2].root.incoming[0].code
-        'PBAC'
+        >>> run_list[1].root.incoming[0].code
+        'AC'
         >>> box = checkmate.sandbox.Sandbox(type(a), a,
-        ...         run_list[2].walk())
-        >>> c1_state = box.application.components['C1'].states[0]
-        >>> c1_state.value == run_list[2].itp_run.root.initial[0].value
+        ...         run_list[1].walk())
+        >>> run_list[1].compare_initial(box.application)
         True
-        >>> run_list[2].compare_initial(box.application)
+        >>> box(run_list[1].exchanges)
         True
-        >>> box(run_list[2])
-        True
-        >>> len(run_list[2].initial)
+        >>> len(run_list[1].initial)
         4
 
         >>> import checkmate.runtime._pyzmq
@@ -137,14 +140,15 @@ def TestProcedureRunsGenerator(application_class):
         >>> runs = []
         >>> app = sample_app.application.TestData
         >>> test_plan = checkmate.runtime.test_plan
-        >>> runs = [run[0] for run in
-        ...        test_plan.TestProcedureRunsGenerator(app)]
+        >>> func = [_f for _f in
+        ...        test_plan.TestProcedureRunsGenerator(app)][0]
+        >>> runs = [_r for _r in func(app())]
         >>> runs[0].root.incoming[0].code
         'PBAC'
         >>> runs[1].root.incoming[0].code
-        'PBAC'
-        >>> runs[2].root.incoming[0].code
         'PBRL'
+        >>> runs[2].root.incoming[0].code
+        'PBAC'
         >>> runs[3].root.incoming[0].code
         'PBPP'
         >>> com = checkmate.runtime._pyzmq.Communication
@@ -154,6 +158,5 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.execute(runs[0], transform=False)
         >>> r.stop_test()
     """
-    for _run in application_class().run_collection():
-        yield _run, _run.root.name
+    yield checkmate.runs.origin_runs_generator
 

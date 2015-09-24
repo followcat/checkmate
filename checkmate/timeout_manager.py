@@ -16,6 +16,7 @@ PYTANGO_REGISTRY_SEC = 1
 
 CHECK_COMPARE_STATES_SEC = 0.01
 VALIDATE_SEC = 0.1
+SUT_COMMUNICATE_DELAY = 0.002
 
 POLLING_TIMEOUT_MILLSEC = 1000
 
@@ -46,7 +47,7 @@ import logging
 import checkmate.exchange
 import checkmate.component
 import checkmate.application
-import checkmate.state_machine
+import checkmate.tymata.engine
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
 import checkmate.runtime.component
@@ -54,7 +55,7 @@ import checkmate.runtime.component
 class Comp(checkmate.component.Component):
     name = ''
     service_classes = []
-    state_machine = checkmate.state_machine.StateMachine()
+    engine = checkmate.tymata.engine.StateMachine()
     connector_list = (checkmate.runtime._pyzmq.Connector,)
 
 class App(checkmate.application.Application):

@@ -42,19 +42,13 @@ Should be able to set component state with component instance's attribute
         >>> _num = _file.write(class_content)
         >>> _file.close()
         >>> _dict = sample_app.application.TestData.communication_list
-        >>> communication_list = _dict.keys()
-        >>> instance_attributes = collections.defaultdict(dict)
-        >>> instance_transitions = collections.defaultdict(dict)
 
     set component instance attribute "ID" to 1
-        >>> instance_attributes['D1'] = {'ID': 1}
         >>> d = {'exchange_module': exchange_module,
         ...  'data_structure_module': data_structure_module,
         ...  '__module__': component_module.__name__,
         ...  'component_definition': class_file,
-        ...  'instance_attributes': instance_attributes,
-        ...  'instance_transitions': instance_transitions,
-        ...  'communication_list': communication_list}
+        ...  'instances': [{'name': 'D1', 'attributes': {'ID': 1}}]}
 
         >>> _class = checkmate.component.ComponentMeta(class_name,
         ...             (checkmate.component.Component,), d)

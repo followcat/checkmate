@@ -13,9 +13,9 @@
         >>> rl_run = [r for r in runs if r.root.incoming[0].code == 'PBRL'][0]
 
         >>> box = checkmate.sandbox.Sandbox(type(a))
-        >>> box(ac_run)
+        >>> box(ac_run.exchanges)
         True
-        >>> box(rl_run)
+        >>> box(rl_run.exchanges)
         True
         >>> runs = []
         >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime.communication.Communication)
@@ -24,6 +24,6 @@
         ...     
 
         >>> runs[0].root.outgoing[0].code
-        'AC'
+        'RE'
         >>> len(checkmate.pathfinder._find_runs(box.application, runs[0], rl_run))
         1

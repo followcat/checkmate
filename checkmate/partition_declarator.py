@@ -11,17 +11,6 @@ import checkmate._exec_tools
 import checkmate.parser.yaml_visitor
 
 
-def make_transition(items, exchanges, state_modules):
-    module_dict = {'states': state_modules,
-                   'exchanges': exchanges}
-    try:
-        tran_name = items['name']
-    except KeyError:
-        tran_name = 'unknown'
-    ts = checkmate._storage.TransitionStorage(items, module_dict)
-    return ts.factory()
-
-
 def make_partition(module,
                    items,
                    attributes={},
@@ -58,7 +47,7 @@ class Declarator(object):
     data_value = {}
 
     def __init__(self, data_module, exchange_module,
-                 state_module=None, transition_module=None, data_value=None):
+                 state_module=None, data_value=None):
         self.module = {}
         self.module['data_structure'] = data_module
         self.module['states'] = state_module
@@ -69,8 +58,7 @@ class Declarator(object):
         self.output = {
             'data_structure': [],
             'states': [],
-            'exchanges': [],
-            'transitions': []}
+            'exchanges': []}
 
     @checkmate.fix_issue("checkmate/issues/new_partition_in_doctest.rst")
     def new_partition(self, items, attributes={}, define_attributes={}):
@@ -143,56 +131,6 @@ class Declarator(object):
                 self.__class__.data_value,
                 define_attributes))
 
-    def new_transition(self, items):
-        """
-        >>> import checkmate._module
-        >>> import checkmate.application
-        >>> import checkmate.data_structure
-        >>> import checkmate.partition_declarator
-        >>> state_module = checkmate._module.get_module(
-        ...                    'checkmate.application', 'states')
-        >>> exchange_module = checkmate._module.get_module(
-        ...                       'checkmate.application', 'exchanges')
-        >>> data_structure_module = checkmate._module.get_module(
-        ...                             'checkmate.application', 'data')
-        >>> de = checkmate.partition_declarator.Declarator(
-        ...         data_structure_module,
-        ...         exchange_module,
-        ...         state_module=state_module)
-        >>> items = {
-        ...     'partition_type': 'data_structure',
-        ...     'signature': 'TestActionRequest',
-        ...     'codes_list': ['TestActionRequestNORM'],
-        ...     'values_list': ['NORM'],
-        ...     }
-        >>> de.new_partition(items)
-        >>> items = {
-        ...     'partition_type': 'states',
-        ...     'signature': 'TestState',
-        ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],
-        ...     'values_list': [True, False],
-        ...     }
-        >>> de.new_partition(items)
-        >>> items = {
-        ...     'partition_type': 'exchanges',
-        ...     'signature': 'TestReturn()',
-        ...     'codes_list': ['DA()'],
-        ...     'values_list': ['DA']
-        ...     }
-        >>> de.new_partition(items)
-        >>> item = {'name': 'Toggle TestState tran01',
-        ...         'initial': [{'TestState': 'TestStateTrue'}],
-        ...         'outgoing': [{'TestReturn': 'DA()'}],
-        ...         'incoming': [{'TestAction': 'AP(R)'}],
-        ...         'final': [{'TestState': 'TestStateFalse'}]}
-        >>> de.new_transition(item)
-        >>> de.get_output()['transitions'] # doctest: +ELLIPSIS
-        [<checkmate.transition.Transition object at ...
-        """
-        self.output['transitions'].append(
-            make_transition(items, [self.module['exchanges']],
-            [self.module['states']]))
-
     def new_definitions(self, data_source):
         """
         >>> import collections
@@ -241,17 +179,12 @@ class Declarator(object):
         <class 'checkmate.states.TestState'>
         >>> output['exchanges'][0].partition_class
         <class 'checkmate.exchanges.TestAction'>
-        >>> output['transitions']
-        []
         """
         for partition_type, chunk in data_source.items():
             for data in chunk:
-                if partition_type == 'transitions':
-                    self.new_transition(data)
-                else:
-                    data['partition_type'] = partition_type
-                    self.new_partition(data, data['attributes'],
-                        data['define_attributes'])
+                data['partition_type'] = partition_type
+                self.new_partition(data, data['attributes'],
+                    data['define_attributes'])
 
     def get_output(self):
         return self.output

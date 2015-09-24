@@ -12,16 +12,14 @@ We should be able to use python default types when defining exchanges:
     ...     }
     >>> app.define_exchange(items)
 
-    >>> import checkmate._storage
-    >>> import checkmate.transition
+    >>> import checkmate.tymata.transition
     >>> import sample_app.application
     >>> item_out = {'name': 'Toggle TestState tran01',
     ...             'incoming': [{'ThirdAction': 'AL()'}],
     ...             'outgoing': [{'BO': 'B1(True)'}]}
 
-    >>> module_dict = {'exchanges':[sample_app.exchanges]}
-
-    >>> ts = checkmate._storage.TransitionStorage(item_out, module_dict)
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item_out, [sample_app.exchanges])
 
     >>> delattr(sample_app.exchanges, 'BO')
 

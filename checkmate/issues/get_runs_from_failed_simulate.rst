@@ -2,8 +2,8 @@ Should not get Runs when simulate has no outgoing.
 
         >>> import os
         >>> import checkmate._module
-        >>> import checkmate._storage
         >>> import checkmate.component
+        >>> import checkmate.tymata.transition
         >>> import sample_app.application
         >>> import sample_app.component.component_1
 
@@ -35,7 +35,7 @@ Should not get Runs when simulate has no outgoing.
         ...     'data_structure_module': data_structure_module,
         ...     '__module__': component_module.__name__,
         ...     'component_definition': class_file,
-        ...     'instance_transitions': {},
+        ...     'instances': [{'name': 'DUMMY'}],
         ...     'communication_list': communication_list.keys()}
         >>> _file = open(class_file, 'w')
         >>> _file.close()
@@ -48,27 +48,22 @@ Should not get Runs when simulate has no outgoing.
         >>> item_in = {
         ...     'name': 'Toggle TestState tran02',
         ...     'incoming': [{'ForthAction': 'AF()'}]}
-        >>> module_dict = {'exchanges':[sample_app.exchanges]}
-        >>> ts = checkmate._storage.TransitionStorage(item_out,
-        ...         module_dict)
-        >>> t_out = ts.factory()
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges])
         >>> C1 = sample_app.component.component_1.Component_1
-        >>> C1.state_machine.transitions.append(t_out)
-        >>> ts = checkmate._storage.TransitionStorage(item_in,
-        ...         module_dict)
-        >>> t_in = ts.factory()
+        >>> C1.instance_engines['C1'].blocks.append(t_out)
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges])
         >>> Dummy = sample_app.component.dummycomponent.DummyComponent 
-        >>> Dummy.state_machine.transitions.append(t_in)
+        >>> Dummy.instance_engines['DUMMY'].blocks.append(t_in)
         >>> a = sample_app.application.TestData() 
         >>> len(a.run_collection())
         4
 
     Revert changes for further use in doctest:
-        >>> C1.state_machine.transitions.remove(t_out)
+        >>> C1.instance_engines['C1'].blocks.remove(t_out)
         >>> del sample_app.component.dummycomponent
         >>> del sample_app.exchanges.ForthAction
-        >>> application_class = sample_app.application.TestData
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
+        >>> sample_app.application.TestData.reset()
         >>> _tmp = app.component_registry.pop('DummyComponent')
         >>> os.remove(class_file)

@@ -51,9 +51,9 @@ class Launcher(object):
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
 
-    def simulate(self, transition):
+    def simulate(self, exchanges):
         if self.threaded:
-            return self.runtime_component.simulate(transition)
+            return self.runtime_component.simulate(exchanges)
 
     def start(self):
         if self.threaded:

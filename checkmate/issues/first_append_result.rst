@@ -27,18 +27,16 @@ Setup:
 Send 'AC' for append default 'R':
 
     >>> run = [_r for _r in runs if len(_r.root.incoming) > 0 and
-    ...        _r.root.incoming[0].code == 'PBAC'][0]
+    ...        _r.root.incoming[0].code == 'AC'][0]
     >>> import checkmate.sandbox
-    >>> saved = checkmate.sandbox.Sandbox(type(r.application),
-    ...             r.application)
     >>> r.execute([_r for _r in runs if len(_r.root.incoming) > 0 and
-    ...            _r.root.incoming[0].code == 'PBAC'][0])
+    ...            _r.root.incoming[0].code == 'AC'][0])
     >>> r.application.components['C1'].states[1].R #doctest: +ELLIPSIS
     <sample_app.data_structure.ActionRequest object at ...
 
 Result from compare_states():
 
-    >>> run.compare_final(r.application, saved.application)
+    >>> run.compare_final(r.application)
     True
     >>> 
     >>> r.stop_test()

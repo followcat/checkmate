@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import copy
+import time
 import queue
 import logging
 import threading
@@ -83,26 +84,21 @@ class Component(object):
             >>> pp = sample_app.exchanges.Action('PP')
             >>> outgoing = c1.process([pp])
             >>> time.sleep(checkmate.timeout_manager.VALIDATE_SEC)
-            >>> c1_t = [ _t for _t in c1.context.state_machine.transitions
-            ...        if _t.incoming[0].code == 'PP'][0]
-            >>> c1.context.validation_dict.collected_items[c1_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Action object at ...
-            >>> c2_t = [ _t for _t in c2.context.state_machine.transitions
-            ...        if _t.incoming[0].code == 'PA'][0]
-            >>> c2.context.validation_dict.collected_items[c2_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Pause object at ...
-            >>> c3_t = [ _t for _t in c3.context.state_machine.transitions
-            ...        if _t.incoming[0].code == 'PA'][0]
-            >>> c3.context.validation_dict.collected_items[c3_t][0]
-            ...         # doctest: +ELLIPSIS
-            <sample_app.exchanges.Pause object at ...
+            >>> items_c1 = ((pp,), tuple(c1.context.states))
+            >>> items_c1 in c1.context.validation_dict.collected_items
+            True
+            >>> pa = [ _o for _o in outgoing if _o.value == 'PA'][0]
+            >>> items_c2 = ((pa,), tuple(c2.context.states))
+            >>> items_c2 in c2.context.validation_dict.collected_items
+            True
+            >>> items_c3 = ((pa,), tuple(c3.context.states))
+            >>> items_c3 in c3.context.validation_dict.collected_items
+            True
             >>> r.stop_test()
         """
         try:
             output = self.context.process(exchanges)
-        except checkmate.exception.NoTransitionFound:
+        except checkmate.exception.NoBlockFound:
             output = []
         self.logger.info("%s process exchange %s" %
             (self.context.name, exchanges[0].value))
@@ -112,16 +108,15 @@ class Component(object):
                 (self.context.name, _o.value, _o.destination))
         return output
 
-    def simulate(self, transition):
-        output = self.context.simulate(transition)
-        for _o in output:
-            self.client.send(_o)
-            self.logger.info("%s simulate transition and output %s to %s" %
-                (self.context.name, _o.value, _o.destination))
-        return output
+    def simulate(self, exchanges):
+        for ex in exchanges:
+            self.exchange_queue.put(ex)
+            self.logger.info("%s simulate exchange %s to %s" %
+                (self.context.name, ex.value, ex.destination))
+        return exchanges
 
-    def validate(self, transition):
-        return self.context.validate(transition)
+    def validate(self, block):
+        return self.context.validate(block)
 
 
 @zope.interface.implementer(checkmate.runtime.interfaces.ISut)
@@ -196,9 +191,9 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
 
     @checkmate.timeout_manager.WaitOnFalse(
         checkmate.timeout_manager.VALIDATE_SEC, 100)
-    def validate(self, transition):
+    def validate(self, block):
         with self.validation_lock:
-            return super().validate(transition)
+            return super().validate(block)
 
 
 @zope.component.adapter(checkmate.interfaces.IComponent)
@@ -218,6 +213,7 @@ class ThreadedSut(ThreadedComponent, Sut):
             self._launched_in_thread = True
 
     def setup(self, runtime):
+        self.communication_delay = runtime.communication_delay
         super().setup(runtime)
         if not self._launched_in_thread:
             for _name in self.context.communication_list:
@@ -245,11 +241,15 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 
-    def simulate(self, transition):
+    def simulate(self, exchanges):
         if self._launched_in_thread:
-            self.launcher.simulate(transition)
-            return super().simulate(transition)
+            self.launcher.simulate(exchanges)
+            return super().simulate(exchanges)
         raise ValueError("Launcher SUT can't simulate")
+
+    def validate(self, block):
+        time.sleep(self.communication_delay)
+        return super().validate(block)
 
     def start(self):
         self.launcher.start()
@@ -265,10 +265,44 @@ class ThreadedSut(ThreadedComponent, Sut):
 class ThreadedStub(ThreadedComponent, Stub):
     """"""
     using_internal_client = True
-    reading_internal_client = False
+    reading_internal_client = True
     using_external_client = True
     reading_external_client = True
 
     def __init__(self, component):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
+        self.received_exchanges = []
+        self.received_internal_exchanges = []
+        self.internal_queue = multiprocessing.Queue()
+
+    def setup(self, runtime):
+        super(ThreadedStub, self).setup(runtime)
+        self.client.internal_connector.queue = self.internal_queue
+
+    def receive(self):
+        if len(self.received_exchanges) > 0:
+            exchange = self.received_exchanges.pop(0)
+        else:
+            exchange = self.exchange_queue.get(timeout=self.timeout_value)
+        while True:
+            if exchange in self.received_internal_exchanges:
+                self.received_internal_exchanges.remove(exchange)
+                return exchange
+            try:
+                self.received_internal_exchanges.append(
+                    self.internal_queue.get(timeout=self.timeout_value))
+            except queue.Empty as e:
+                self.received_exchanges.insert(0, exchange)
+                raise e
+
+    def reset(self):
+        self.received_exchanges.clear()
+        self.received_internal_exchanges.clear()
+        super(ThreadedStub, self).reset()
+
+    def simulate(self, exchanges):
+        for ex in exchanges:
+            self.internal_queue.put(ex)
+        return super().simulate(exchanges)
+

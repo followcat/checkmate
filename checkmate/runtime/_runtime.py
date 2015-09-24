@@ -32,6 +32,11 @@ class Runtime(object):
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
         for _k, _c in self.application.communication_list.items():
+            if type(_c) == tuple:
+                _c, self.communication_delay = _c
+            else:
+                self.communication_delay = \
+                    checkmate.timeout_manager.SUT_COMMUNICATE_DELAY
             self.communication_list[_k] = _c()
 
         if self.threaded:
@@ -102,15 +107,16 @@ class Runtime(object):
             >>> c2_stub = r.runtime_components['C2']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c2_stub)
             True
-            >>> a = r.application
-            >>> simulated_transition = a.components['C2'].state_machine.\
-                                        transitions[0]
-            >>> o = c2_stub.simulate(simulated_transition) # doctest: +ELLIPSIS
+            >>> inc = c2_stub.context.engine.blocks[0].incoming[0]
+            >>> exchange = inc.factory(**inc.resolve())
+            >>> exchange.origin_destination('', ['C2'])
+            >>> simulated_exchanges = [exchange]
+            >>> o = c2_stub.simulate(simulated_exchanges) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c1)
             False
-            >>> c1.process(o) # doctest: +ELLIPSIS
-            [<sample_app.exchanges.Reaction object at ...
+            >>> c2_stub.process(o) # doctest: +ELLIPSIS
+            [<sample_app.exchanges.Action object at ...
             >>> r.stop_test()
         """
         for communication in self.communication_list.values():
@@ -122,7 +128,6 @@ class Runtime(object):
             _component = self.runtime_components[name]
             _component.start()
         self.runs_log.info(['State', self.application.visual_dump_states()])
-        self.active_run = self.application.starting_run()
 
     def stop_test(self):
         # Stop stubs last
@@ -143,8 +148,22 @@ class Runtime(object):
                                 checkmate.timeout_manager.THREAD_STOP_SEC)
 
     @checkmate.report_issue(
-        "checkmate/issues/runs_with_initializing_transition.rst", failed=1)
+        "checkmate/issues/runs_with_initializing_transition.rst", failed=2)
     def execute(self, run, result=None, transform=True, previous_run=None):
+        """
+            >>> import sample_app.application
+            >>> import checkmate.runtime._pyzmq
+            >>> import checkmate.runtime._runtime
+            >>> ac = sample_app.application.TestData
+            >>> cc = checkmate.runtime._pyzmq.Communication
+            >>> r = checkmate.runtime._runtime.Runtime(ac, cc, True)
+            >>> r.setup_environment(['C3'])
+            >>> r.start_test()
+            >>> target = [_r for _r in ac.run_collection()
+            ...     if _r.exchanges[0].value == 'PBPP'][0]
+            >>> r.execute(target)
+            >>> r.stop_test()
+        """
         if (transform is True and
                 not self.transform_to_initial(run, previous_run)):
             checkmate.runtime.procedure._compatible_skip_test(
@@ -156,7 +175,7 @@ class Runtime(object):
         else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
             checkmate.runtime.procedure._compatible_skip_test(
-                "Non-threaded SUT do not simulate")
+                "Non-threaded SUT do not process from startpoint")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 
@@ -164,8 +183,13 @@ class Runtime(object):
         if not run.compare_initial(self.application):
             if previous_run is None:
                 previous_run = self.active_run
-            run_list = checkmate.pathfinder._find_runs(
-                            self.application, run, origin=previous_run)
+            try:
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
+            except ValueError:
+                runs = self.application.run_collection()
+                run_list = checkmate.pathfinder._find_runs(
+                                self.application, run, origin=previous_run)
             if len(run_list) == 0:
                 checkmate.runtime.procedure._compatible_skip_test(
                     "Can't find a path to initial state")

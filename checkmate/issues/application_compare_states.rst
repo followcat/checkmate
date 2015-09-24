@@ -9,10 +9,12 @@ still be ok.
     >>> c1 = app.components['C1']
     >>> c1.states[0].value
     True
-    >>> t = c1.state_machine.transitions[0]
+    >>> t = c1.engine.blocks[0]
     >>> t.initial[0].value
     True
-    >>> run = checkmate.runs.Run(t)
+    >>> inc = t.incoming[0]
+    >>> ex = inc.factory(**inc.resolve())
+    >>> run = checkmate.runs.Run(t, exchanges=[ex])
     >>> run.compare_initial(app)
     True
     >>> target = t.initial + t.initial

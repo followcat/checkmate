@@ -71,7 +71,7 @@ This mapping between the table and the transition can be found in the transition
     >>> import sample_app.application
     >>> import sample_app.component.component_1
     >>> c1 = sample_app.component.component_1.Component_1('C1')
-    >>> transition = c1.state_machine.transitions[0]
+    >>> transition = c1.engine.blocks[0]
 
 The initial and final states for this transition are:
     >>> transition.initial[0].arguments
@@ -90,7 +90,7 @@ The incoming and the two outgoing exchanges for this transition are:
 If the component current state is matching the initial state of the transition:
     >>> c1 = sample_app.component.component_1.Component_1('C1')
     >>> c1.start()
-    >>> transition = c1.state_machine.transitions[0]
+    >>> transition = c1.engine.blocks[0]
     >>> transition.is_matching_initial(c1.states)
     True
 

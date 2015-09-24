@@ -2,6 +2,7 @@ Add one Component_2's instance with request=R2, runs
 collected from application should be increased.
 
     >>> import sample_app.application
+    >>> import checkmate.tymata.engine
     >>> C2_cls = sample_app.component.component_2.Component_2
     >>> classes = sample_app.application.TestData.component_classes
     >>> C2 = [c for c in classes if c['class'] == C2_cls][0]
@@ -12,6 +13,10 @@ collected from application should be increased.
 
     >>> C2_cls.instance_attributes['C4'] = {'request':
     ...      {'P': 'HIGH', 'C': 'AT2'}}
+
+    >>> C2_cls.instance_engines['C4'] = checkmate.tymata.engine.AutoMata(
+    ...                C2_cls.exchange_module, C2_cls.state_module,
+    ...                C2_cls.component_definition)
 
     >>> app = sample_app.application.TestData()
     >>> app.component_registry['Component_2']=['C2', 'C4']
@@ -35,5 +40,9 @@ revert..
     >>> app.component_registry['Component_2']=['C2']
     >>> C2['instances'].remove({'name': 'C4',
     ...     'attributes': {'request': {'C': 'AT2', 'P': 'HIGH'}}})
-    >>> delattr(sample_app.application.TestData,
-    ...     sample_app.application.TestData._run_collection_attribute)
+    >>> _e = C2_cls.instance_engines.pop('C4')
+    >>> application_class = sample_app.application.TestData
+    >>> delattr(application_class,
+    ...     application_class._origin_exchanges_attribute)
+    >>> delattr(application_class,
+    ...     application_class._run_collection_attribute)
