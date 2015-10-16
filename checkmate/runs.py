@@ -297,17 +297,20 @@ def followed_runs(application, exchanges, current_run=None):
                 next_runs.append(_run)
                 application.update_matrix([_run], current_run)
                 return_path = transform_path(application, _run)
+                _unsafe_runs = []
                 if current_run is None or\
                     current_run not in _class._unsafe_runs:
                     if return_path is not None:
                         if (_run, return_path) not in _class._safe_runs:
                             _class._safe_runs.append((_run, return_path))
                     else:
-                        _class._unsafe_runs.append(_run)
+                        _unsafe_runs.append(_run)
                 else:
-                    _class._unsafe_runs.append(_run)
+                    _unsafe_runs.append(_run)
                     if return_path is not None:
-                        _class._unsafe_runs.extend(return_path)
+                        _unsafe_runs.extend(return_path)
+                _class._unsafe_runs.extend([_r for _r in _unsafe_runs
+                    if _r not in _class._unsafe_runs])
                 if return_path is not None:
                     _current_run = _run
                     for _r in return_path:
