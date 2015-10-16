@@ -250,6 +250,7 @@ def get_origin_exchanges(application_class):
     return origin_exchanges
 
 
+@checkmate.fix_issue('checkmate/issues/pathfinding_from_safe_runs.rst')
 def followed_runs(application, exchanges, current_run=None):
     """
     3 conditions:
