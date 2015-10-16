@@ -290,7 +290,7 @@ def followed_runs(application, exchanges, current_run=None):
             _run = box.blocks
             if _run not in next_runs:
                 next_runs.append(_run)
-    application.update_matrix(next_runs, current_run)
+                application.update_matrix([_run], current_run)
     return next_runs
 
 

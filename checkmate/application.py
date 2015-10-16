@@ -353,7 +353,7 @@ class Application(object):
         # update matrix row
         if current_run is not None:
             current_index = cls._matrix_runs.index(current_run)
-            row = len(cls._matrix)*[0]
+            row = cls._matrix[current_index].tolist()[0]
             for _run in next_runs:
                 row[cls._matrix_runs.index(_run)] = 1
             cls._matrix[current_index] = row
