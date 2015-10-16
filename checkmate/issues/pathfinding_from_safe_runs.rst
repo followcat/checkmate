@@ -6,6 +6,7 @@ will be all initial followed runs' previous run
 >>> import checkmate.pathfinder
 >>> import sample_app.application
 >>> app = sample_app.application.TestData()
+>>> app.reset()
 >>> box = checkmate.sandbox.Sandbox(type(app), app)
 >>> exchanges = app.origin_exchanges()
 >>> pbac = sample_app.exchanges.ExchangeButton('PBAC')
