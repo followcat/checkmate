@@ -125,7 +125,7 @@ class ApplicationMeta(type):
 class Application(object):
     _matrix = numpy.matrix([])
     _matrix_runs = []
-    _runs_found = [False]
+    _runs_found = []
     component_classes = []
     communication_list = {}
     component_registry = {}
@@ -137,7 +137,7 @@ class Application(object):
     def reset(cls):
         cls._matrix = numpy.matrix([])
         cls._matrix_runs = []
-        cls._runs_found = [False]
+        cls._runs_found = []
         if hasattr(cls, cls._run_collection_attribute):
             delattr(cls, cls._run_collection_attribute)
         if hasattr(cls, cls._origin_exchanges_attribute):
@@ -336,18 +336,17 @@ class Application(object):
         # extend matrix
         if extra_length > 0:
             if cls._matrix.size == 0:
-                init_length = extra_length
                 if current_run is not None:
+                    extra_length += 1
                     if current_run not in cls._matrix_runs:
                         cls._matrix_runs.append(current_run)
-                    init_length = extra_length + 1
-                cls._matrix = numpy.matrix([[0]*(init_length)]*(init_length))
+                _temp = [[0]*(extra_length)]*(extra_length)
             else:
                 _temp = cls._matrix.tolist()
                 for item in _temp:
                     item.extend([0]*extra_length)
                 _temp.extend([[0]*len(_temp[0])]*extra_length)
-                cls._matrix = numpy.matrix(_temp)
+            cls._matrix = numpy.matrix(_temp)
             cls._matrix_runs.extend(new_runs)
             cls._runs_found.extend([False]*extra_length)
         # update matrix row
