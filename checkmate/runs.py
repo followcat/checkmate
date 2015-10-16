@@ -233,14 +233,18 @@ def get_origin_exchanges(application_class):
     application.start()
     for _component in application.components.values():
         for _block in _component.engine.blocks:
-            incomings.extend(_block.incoming)
-            outgoings.extend(_block.outgoing)
+            incomings.extend([_i for _i in _block.incoming
+                                if _i not in incomings])
+            outgoings.extend([_o for _o in _block.outgoing
+                                if _o not in outgoings])
     for _incoming in incomings:
         for _o in outgoings:
             if _incoming.partition_class == _o.partition_class:
                 break
         else:
             _i = _incoming.factory(**_incoming.resolve())
+            if _i in origin_exchanges:
+                continue
             for _e in _component.exchange_destination(_i):
                 origin_exchanges.append(_e)
     return origin_exchanges
@@ -281,11 +285,13 @@ def followed_runs(application, exchanges, current_run=None):
                     application._matrix[_index].nonzero()[1].tolist()[0]]
         else:
             runs.append(current_run)
+    box = checkmate.sandbox.Sandbox(_class, application)
     for _exchange in exchanges:
-        box = checkmate.sandbox.Sandbox(_class, application)
+        box.restart()
         if box([_exchange]):
             _run = box.blocks
-            next_runs.append(_run)
+            if _run not in next_runs:
+                next_runs.append(_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
 
