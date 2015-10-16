@@ -126,6 +126,8 @@ class Application(object):
     _matrix = numpy.matrix([])
     _matrix_runs = []
     _runs_found = []
+    _unsafe_runs = []
+    _safe_runs = []
     component_classes = []
     communication_list = {}
     component_registry = {}
@@ -138,6 +140,8 @@ class Application(object):
         cls._matrix = numpy.matrix([])
         cls._matrix_runs = []
         cls._runs_found = []
+        cls._unsafe_runs = []
+        cls._safe_runs = []
         if hasattr(cls, cls._run_collection_attribute):
             delattr(cls, cls._run_collection_attribute)
         if hasattr(cls, cls._origin_exchanges_attribute):
