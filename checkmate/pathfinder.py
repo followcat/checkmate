@@ -25,7 +25,8 @@ def _find_runs(application, target, origin):
     return used_runs
 
 
-def find_path(application, target_runs, exchanges, current_run=None):
+def find_path(application, target_runs, exchanges, current_run=None,
+                skip_unsafe_run=False):
     """
     find nearest untested run from current runtime state.
     this is used in condition of no run matches current runtime
@@ -87,9 +88,16 @@ def find_path(application, target_runs, exchanges, current_run=None):
                     ret_path.append(box.blocks)
                 return application._matrix_runs[child], ret_path
             elif len(path)+1 == length:  # cannot find path
-                return None, []
+                break
             else:
                 new_path = path[:]
                 new_path.append(child)
                 paths.append(new_path)
+    return None, []
+
+
+def skip_unsafe_runs(application, indexes):
+    for index in indexes:
+        if application._matrix_runs[index] in application._unsafe_runs:
+            indexes.remove(index)
 
