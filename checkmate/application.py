@@ -336,8 +336,12 @@ class Application(object):
         # extend matrix
         if extra_length > 0:
             if cls._matrix.size == 0:
-                cls._matrix = \
-                    numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
+                init_length = extra_length
+                if current_run is not None:
+                    if current_run not in cls._matrix_runs:
+                        cls._matrix_runs.append(current_run)
+                    init_length = extra_length + 1
+                cls._matrix = numpy.matrix([[0]*(init_length)]*(init_length))
             else:
                 _temp = cls._matrix.tolist()
                 for item in _temp:

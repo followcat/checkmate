@@ -283,8 +283,6 @@ def followed_runs(application, exchanges, current_run=None):
             if application._runs_found[_index]:
                 return [runs[i] for i in
                     application._matrix[_index].nonzero()[1].tolist()[0]]
-        else:
-            runs.append(current_run)
     box = checkmate.sandbox.Sandbox(_class, application)
     for _exchange in exchanges:
         box.restart()
