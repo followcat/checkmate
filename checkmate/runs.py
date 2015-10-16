@@ -262,7 +262,6 @@ def followed_runs(application, exchanges, current_run=None):
     >>> app = sample_app.application.TestData
     >>> exchanges = app.origin_exchanges()
     >>> box = checkmate.sandbox.Sandbox(app)
-    >>> runs = app.run_collection()
     >>> next_runs = checkmate.runs.followed_runs(box.application,
     ...     exchanges, None)
     >>> next_runs[0].validate_items[0][0].value
@@ -291,7 +290,67 @@ def followed_runs(application, exchanges, current_run=None):
             if _run not in next_runs:
                 next_runs.append(_run)
                 application.update_matrix([_run], current_run)
+                if not safe_run(application, _run) and \
+                    _run not in _class._unsafe_runs:
+                    _class._unsafe_runs.append(_run) 
     return next_runs
+
+
+def safe_run(application, run):
+    """
+    run are safe only when there is one-step way found
+    that can use to transform to initial states
+        >>> import checkmate.runs
+        >>> import checkmate.sandbox
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> box = checkmate.sandbox.Sandbox(type(app), app)
+        >>> box2 = checkmate.sandbox.Sandbox(type(app), app)
+        >>> exchanges = app.origin_exchanges()
+        >>> pbac = [ex for ex in exchanges if ex.value == 'PBAC'][0]
+        >>> pbrl = [ex for ex in exchanges if ex.value == 'PBRL'][0]
+        >>> box([pbac]), box2([pbac])
+        (True, True)
+        >>> box2([pbrl])
+        True
+        >>> run_pbac_ok = box.blocks
+        >>> run_pbrl = box2.blocks
+        >>> checkmate.runs.safe_run(box.application, run_pbac_ok)
+        False
+        >>> checkmate.runs.safe_run(box.application, run_pbrl)
+        True
+        >>> box([pbrl]), box2([pbac])
+        (True, True)
+        >>> run_pbac_er = box2.blocks
+        >>> run_pbac_er.compare_initial(box.application)
+        True
+        >>> checkmate.runs.safe_run(box.application, run_pbac_er)
+        True
+    """
+    transform_path = None
+    if run.compare_initial(application):
+        _cls = type(application)
+        box = checkmate.sandbox.Sandbox(_cls, application)
+        _states0 = application.copy_states()
+        box(run.exchanges)
+        _states1 = box.application.copy_states()
+        if _states0 == _states1:
+            transform_path = []
+        else:
+            exchanges = box.application.origin_exchanges()
+            for _ex in exchanges[:]:
+                sandbox = checkmate.sandbox.Sandbox(_cls, box.application)
+                if sandbox([_ex]):
+                    tmp_run = sandbox.blocks
+                    _states2 = sandbox.application.copy_states()
+                    if  _states0 == _states2:
+                        transform_path = [tmp_run]
+                        break
+        if transform_path is not None:
+            if (run, transform_path) not in _cls._safe_runs:
+                _cls._safe_runs.append((run, transform_path))
+            return True
+    return False
 
 
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
