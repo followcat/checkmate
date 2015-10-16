@@ -308,8 +308,8 @@ def followed_runs(application, exchanges, current_run=None):
                         application.update_matrix([_r], _current_run)
                         _current_run = _r
                     transform_runs.append(_current_run)
-                    for _r in transform_runs:
-                        application.update_matrix(next_runs, _r)
+                for _r in transform_runs:
+                    application.update_matrix(next_runs, _r)
                 yield _run
 
 
