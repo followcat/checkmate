@@ -66,7 +66,8 @@ def find_path(application, target_runs, exchanges, current_run=None):
     box = checkmate.sandbox.Sandbox(type(application), application)
     if current_run is None:
         next_runs = []
-        next_runs = checkmate.runs.followed_runs(application, exchanges)
+        next_runs = [r for r in \
+                        checkmate.runs.followed_runs(application, exchanges)]
         current_run_row = [application._matrix_runs.index(item)
                              for item in next_runs]
     else:

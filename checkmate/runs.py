@@ -262,14 +262,14 @@ def followed_runs(application, exchanges, current_run=None):
     >>> app = sample_app.application.TestData
     >>> exchanges = app.origin_exchanges()
     >>> box = checkmate.sandbox.Sandbox(app)
-    >>> next_runs = checkmate.runs.followed_runs(box.application,
-    ...     exchanges, None)
+    >>> next_runs = [_r for _r in checkmate.runs.followed_runs(
+    ...     box.application, exchanges, None)]
     >>> next_runs[0].validate_items[0][0].value
     'PBAC'
     >>> box(next_runs[0].exchanges)
     True
-    >>> next_runs = checkmate.runs.followed_runs(box.application,
-    ...     exchanges, next_runs[0])
+    >>> next_runs = [_r for _r in checkmate.runs.followed_runs(
+    ...     box.application, exchanges, next_runs[0])]
     >>> next_runs[0].validate_items[0][0].value
     'PBRL'
     """
@@ -280,10 +280,14 @@ def followed_runs(application, exchanges, current_run=None):
         if current_run in runs:
             _index = runs.index(current_run)
             if application._runs_found[_index]:
-                return [runs[i] for i in
-                    application._matrix[_index].nonzero()[1].tolist()[0]]
+                for i in application._matrix[_index].nonzero()[1].tolist()[0]:
+                    if runs[i] not in next_runs:
+                        next_runs.append(runs[i])
+                    yield runs[i]
     box = checkmate.sandbox.Sandbox(_class, application)
     for _exchange in exchanges:
+        if _exchange in [_r.exchanges[0] for _r in next_runs]:
+            continue
         box.restart()
         if box([_exchange]):
             _run = box.blocks
@@ -293,7 +297,7 @@ def followed_runs(application, exchanges, current_run=None):
                 if not safe_run(application, _run) and \
                     _run not in _class._unsafe_runs:
                     _class._unsafe_runs.append(_run) 
-    return next_runs
+                yield _run
 
 
 def safe_run(application, run):
@@ -383,7 +387,8 @@ def origin_runs_generator(application, randomized=False):
     box = checkmate.sandbox.Sandbox(_cls, application)
     while True:
         _path = []
-        next_runs = followed_runs(box.application, exchanges, current_run)
+        gen = followed_runs(box.application, exchanges, current_run)
+        next_runs = [r for r in gen]
         new_next_runs = [_r for _r in next_runs if _r not in yielded_runs]
         if len(new_next_runs) > 0:
             unyielded_runs.extend([_r for _r in new_next_runs
