@@ -176,9 +176,11 @@ class Application(object):
             pass
 
     @classmethod
+    @checkmate.report_issue("checkmate/issues/starting_run_no_collection.rst",
+        failed=2)
     def starting_run(cls):
         try:
-            return getattr(cls, cls._starting_run_attribute)
+            run = getattr(cls, cls._starting_run_attribute)
         except AttributeError:
             try:
                 for run in cls.run_collection():
@@ -187,6 +189,7 @@ class Application(object):
             except AttributeError:
                 run = cls.run_collection()[-1]
             setattr(cls, cls._starting_run_attribute, run)
+        finally:
             return run
 
     def __init__(self):
