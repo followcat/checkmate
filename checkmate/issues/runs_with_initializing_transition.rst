@@ -18,10 +18,21 @@ other runs
         ...    'attributes': {},
         ...    'define_attributes': {}
         ... }
+        >>> exchange_definition2 = {
+        ...    'partition_type': 'exchanges',
+        ...    'signature': 'InitAction',
+        ...    'codes_list': ['INTAC()'],
+        ...    'values_list': ['INTAC'],
+        ...    'full_description': None,
+        ...    'attributes': {},
+        ...    'define_attributes': {}
+        ... }
         >>> app = sample_app.application.TestData()
         >>> app.define_exchange(exchange_definition)
+        >>> app.define_exchange(exchange_definition2)
         >>> item_out = {'name': 'Initializing tran01',
         ...             'initializing': True,
+        ...             'incoming': [{'InitAction': 'INIAC()'}],
         ...             'outgoing': [{'ForthAction': 'AF()'}]}
         >>> item_in = {'name': 'TestState tran02',
         ... 'incoming': [{'ForthAction': 'AF()'}],

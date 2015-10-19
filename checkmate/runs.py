@@ -194,19 +194,22 @@ class Run(checkmate._tree.Tree):
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
 @checkmate.fix_issue('checkmate/issues/match_R2_in_runs.rst')
 @checkmate.fix_issue('checkmate/issues/sandbox_runcollection.rst')
-@checkmate.report_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
+@checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst')
 def get_runs_from_application(_class):
     runs = []
     application = _class()
     application.start(default_state_value=False)
-    origin_transitions = get_origin_transitions(application)
+    origin_exchanges = get_origin_exchanges(application)
     sandbox = checkmate.sandbox.CollectionSandbox(_class, application)
-    for _o in origin_transitions:
-        run = Run(_o)
-        sandbox.restart()
-        for _run in sandbox(run):
-            runs.append(_run)
+    for _ex in origin_exchanges:
+        for _c in application.components.values():
+            blocks = _c.get_blocks_by_input([_ex])
+            for _b in blocks:
+                run = Run(_b)
+                sandbox.restart()
+                for _run in sandbox(run):
+                    runs.append(_run)
     return runs
 
 
@@ -281,4 +284,28 @@ def get_origin_transitions(application):
                 else:
                     origin_transitions.append(_transition)
     return origin_transitions
+
+
+def get_origin_exchanges(application):
+    """
+        >>> import sample_app.application
+        >>> import checkmate.runs
+        >>> app = sample_app.application.TestData()
+        >>> app.start(default_state_value=False)
+        >>> exchanges = checkmate.runs.get_origin_exchanges(app)
+        >>> [_e.value for _e in exchanges]
+        ['PBAC', 'PBRL', 'PBPP']
+    """
+    origin_exchanges = []
+    for _component in application.components.values():
+        for _block in _component.engine.blocks:
+            _incoming = _block.generic_incoming(_component.states)
+            for _c in application.components.values():
+                if _c == _component:
+                    continue
+                if _c.get_blocks_by_output(_incoming) is not None:
+                    break
+            else:
+                origin_exchanges.extend(_incoming)
+    return origin_exchanges
 
