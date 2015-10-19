@@ -299,13 +299,17 @@ def get_origin_exchanges(application):
     origin_exchanges = []
     for _component in application.components.values():
         for _block in _component.engine.blocks:
-            _incoming = _block.generic_incoming(_component.states)
-            for _c in application.components.values():
-                if _c == _component:
-                    continue
-                if _c.get_blocks_by_output(_incoming) is not None:
-                    break
+            if not len(_block.incoming):
+                if not len(_block.final):
+                    origin_exchanges.extend(_component.simulate(_block))
             else:
-                origin_exchanges.extend(_incoming)
+                _incoming = _block.generic_incoming(_component.states)
+                for _c in application.components.values():
+                    if _c == _component:
+                        continue
+                    if _c.get_blocks_by_output(_incoming) is not None:
+                        break
+                else:
+                    origin_exchanges.extend(_incoming)
     return origin_exchanges
 
