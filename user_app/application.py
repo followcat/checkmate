@@ -42,8 +42,16 @@ class TestData(checkmate.application.Application,
     def __init__(self):
         """
             >>> import user_app.application
+            >>> import checkmate.parser.feature_visitor
             >>> a = user_app.application.TestData()
             >>> a.start()
+            >>> state_modules = []
+            >>> for name, component in a.components.items():
+            ...     state_modules.append(component.state_module)
+            >>> visitor = checkmate.parser.feature_visitor
+            >>> data = visitor.data_from_files(a)
+            >>> len(data)
+            6
         """
         super(TestData, self).__init__()
 
