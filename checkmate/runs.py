@@ -393,38 +393,40 @@ def origin_runs_generator(application, randomized=False):
         >>> len(origin_runs)
         4
     """
-    _cls = type(application)
-    if hasattr(_cls, _cls._run_collection_attribute):
-        runs = _cls.run_collection()
+    if hasattr(application, application._run_collection_attribute):
+        runs = getattr(application, application._run_collection_attribute)
         if randomized:
             runs = random.sample(runs, len(runs))
         for _r in runs:
             yield _r
         return
-    exchanges = application.origin_exchanges()
     current_run=None
     yielded_runs = []
     unyielded_runs = []
-    box = checkmate.sandbox.Sandbox(_cls, application)
+    exchanges = application.origin_exchanges()
+    box = checkmate.sandbox.Sandbox(type(application), application)
+    def execute(sandbox, targets, current):
+        current_run, _path = checkmate.pathfinder.find_path(\
+            sandbox.application, targets, exchanges, current)
+        for _run in _path + [current_run]:
+            sandbox(_run.exchanges)
+        return sandbox.blocks
     while True:
-        _path = []
-        gen = followed_runs(box.application, exchanges, current_run)
-        next_runs = [r for r in gen]
-        new_next_runs = [_r for _r in next_runs if _r not in yielded_runs]
-        if len(new_next_runs) > 0:
-            unyielded_runs.extend([_r for _r in new_next_runs
-                                        if _r not in unyielded_runs])
-            current_run = new_next_runs[0]
-        else:
-            if len(unyielded_runs) == 0:
-                break
-            current_run, _path = checkmate.pathfinder.find_path(\
-                box.application, unyielded_runs, exchanges, current_run)
+        next_runs = []
+        for _r in followed_runs(box.application, exchanges, current_run):
+            if _r in yielded_runs:
+                continue
+            if _r in [_tmp[0] for _tmp in box.application._safe_runs]:
+                current_run = execute(box, [_r], current_run)
+                yielded_runs.append(current_run)
+                yield current_run
+            elif _r not in unyielded_runs:
+                unyielded_runs.append(_r)
+        if len(unyielded_runs) == 0:
+            break
+        current_run = execute(box, unyielded_runs, current_run)
+        yielded_runs.append(current_run)
         if current_run in unyielded_runs:
             unyielded_runs.remove(current_run)
-        for _r in _path + [current_run]:
-            box(_r.exchanges)
-        current_run = box.blocks
-        yielded_runs.append(current_run)
         yield current_run
 
