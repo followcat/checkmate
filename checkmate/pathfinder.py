@@ -62,15 +62,15 @@ def find_path(application, target_runs, exchanges, current_run=None,
     """
     run_list = []
     matrix = application._matrix
+    for item in target_runs:
+        if item.compare_initial(application):
+            return item, []
     target_runs_indexes = [application._matrix_runs.index(item) \
                            for item in target_runs]
     box = checkmate.sandbox.Sandbox(type(application), application)
     if current_run is None:
-        next_runs = []
-        next_runs = [r for r in \
+        current_run_row = [application._matrix_runs.index(r) for r in \
                         checkmate.runs.followed_runs(application, exchanges)]
-        current_run_row = [application._matrix_runs.index(item)
-                             for item in next_runs]
     else:
         current_run_row = matrix[application._matrix_runs.\
                             index(current_run)].nonzero()[1].tolist()[0]
