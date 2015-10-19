@@ -39,6 +39,8 @@ class TestData(checkmate.application.Application,
     communication_list = {'': checkmate.runtime._pyzmq.Communication}
 
 
+    @checkmate.report_issue("user_app/issues/empty_user_collection.rst",
+        failed=2)
     def __init__(self):
         """
             >>> import user_app.application
