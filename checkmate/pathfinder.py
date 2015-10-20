@@ -6,7 +6,6 @@
 
 import time
 
-import checkmate.runs
 import checkmate.sandbox
 
 
@@ -35,7 +34,6 @@ def find_path(application, target_runs, exchanges, current_run=None,
 
     >>> import sample_app.application
     >>> import checkmate.pathfinder
-    >>> import checkmate.runs
     >>> app = sample_app.application.TestData()
     >>> runs = app.run_collection()
     >>> exchanges = app.origin_exchanges()
@@ -74,7 +72,7 @@ def find_path(application, target_runs, exchanges, current_run=None,
     box = checkmate.sandbox.Sandbox(type(application), application)
     if current_run is None:
         current_run_row = [application._matrix_runs.index(r) for r in \
-                        checkmate.runs.followed_runs(application, exchanges)]
+                        followed_runs(application, exchanges)]
     else:
         current_run_row = matrix[application._matrix_runs.\
                             index(current_run)].nonzero()[1].tolist()[0]
@@ -108,4 +106,133 @@ def skip_unsafe_runs(application, indexes):
     for index in indexes:
         if application._matrix_runs[index] in application._unsafe_runs:
             indexes.remove(index)
+
+@checkmate.fix_issue('checkmate/issues/pathfinding_from_safe_runs.rst')
+def followed_runs(application, exchanges, current_run=None):
+    """
+    3 conditions:
+        1. we find next runs by matrix
+        2. current_run is None, find next runs by exchanges
+        3. find next runs by exchanges and update matrix
+    >>> import sample_app.application
+    >>> import checkmate.sandbox
+    >>> app = sample_app.application.TestData
+    >>> exchanges = app.origin_exchanges()
+    >>> box = checkmate.sandbox.Sandbox(app)
+    >>> next_runs = [_r for _r in checkmate.pathfinder.followed_runs(
+    ...     box.application, exchanges, None)]
+    >>> next_runs[0].validate_items[0][0].value
+    'PBAC'
+    >>> box(next_runs[0].exchanges)
+    True
+    >>> next_runs = [_r for _r in checkmate.pathfinder.followed_runs(
+    ...     box.application, exchanges, next_runs[0])]
+    >>> next_runs[0].validate_items[0][0].value
+    'PBRL'
+    """
+    _class = type(application)
+    runs = application._matrix_runs
+    next_runs = []
+    if current_run is not None:
+        if current_run in runs:
+            _index = runs.index(current_run)
+            if application._runs_found[_index]:
+                for i in application._matrix[_index].nonzero()[1].tolist()[0]:
+                    if runs[i] not in next_runs:
+                        next_runs.append(runs[i])
+                    yield runs[i]
+    box = checkmate.sandbox.Sandbox(_class, application)
+    transform_runs = []
+    for _exchange in exchanges:
+        if _exchange in [_r.exchanges[0] for _r in next_runs]:
+            continue
+        box.restart()
+        if box([_exchange]):
+            _run = box.blocks
+            if _run not in next_runs:
+                next_runs.append(_run)
+                application.update_matrix([_run], current_run)
+                return_path = transform_path(application, _run)
+                _unsafe_runs = []
+                if current_run is None or\
+                    current_run not in _class._unsafe_runs:
+                    if return_path is not None:
+                        if (_run, return_path) not in _class._safe_runs:
+                            _class._safe_runs.append((_run, return_path))
+                    else:
+                        _unsafe_runs.append(_run)
+                else:
+                    _unsafe_runs.append(_run)
+                    if return_path is not None:
+                        _unsafe_runs.extend(return_path)
+                _class._unsafe_runs.extend([_r for _r in _unsafe_runs
+                    if _r not in _class._unsafe_runs])
+                if return_path is not None:
+                    _current_run = _run
+                    for _r in return_path:
+                        application.update_matrix([_r], _current_run)
+                        _current_run = _r
+                    transform_runs.append(_current_run)
+                for _r in transform_runs:
+                    application.update_matrix(next_runs, _r)
+                yield _run
+
+
+def transform_path(application, run):
+    """
+    run are safe only when there is one-step way found
+    that can use to transform to initial states
+        >>> import checkmate.sandbox
+        >>> import checkmate.pathfinder
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> box = checkmate.sandbox.Sandbox(type(app), app)
+        >>> box2 = checkmate.sandbox.Sandbox(type(app), app)
+        >>> exchanges = app.origin_exchanges()
+        >>> pbac = [ex for ex in exchanges if ex.value == 'PBAC'][0]
+        >>> pbrl = [ex for ex in exchanges if ex.value == 'PBRL'][0]
+        >>> box([pbac]), box2([pbac])
+        (True, True)
+        >>> box2([pbrl])
+        True
+        >>> run_pbac_ok = box.blocks
+        >>> run_pbrl = box2.blocks
+        >>> path = checkmate.pathfinder.transform_path(box.application,
+        ...     run_pbac_ok)
+        >>> path is not None
+        False
+        >>> path = checkmate.pathfinder.transform_path(box.application,
+        ...     run_pbrl)
+        >>> path is not None
+        True
+        >>> box([pbrl]), box2([pbac])
+        (True, True)
+        >>> run_pbac_er = box2.blocks
+        >>> run_pbac_er.compare_initial(box.application)
+        True
+        >>> path = checkmate.pathfinder.transform_path(box.application,
+        ...     run_pbac_er)
+        >>> path is not None
+        True
+    """
+    return_path = None
+    if run.compare_initial(application):
+        _cls = type(application)
+        box = checkmate.sandbox.Sandbox(_cls, application)
+        _states0 = application.copy_states()
+        box(run.exchanges)
+        _states1 = box.application.copy_states()
+        if _states0 == _states1:
+            return_path = []
+        else:
+            exchanges = box.application.origin_exchanges()
+            for _ex in exchanges[:]:
+                sandbox = checkmate.sandbox.Sandbox(_cls, box.application)
+                if sandbox([_ex]):
+                    tmp_run = sandbox.blocks
+                    _states2 = sandbox.application.copy_states()
+                    if  _states0 == _states2:
+                        return_path = [tmp_run]
+                        break
+    return return_path
 

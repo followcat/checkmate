@@ -1,7 +1,6 @@
 the run transform application components' states to back to initial
 will be all initial followed runs' previous run
 
->>> import checkmate.runs
 >>> import checkmate.sandbox
 >>> import checkmate.pathfinder
 >>> import sample_app.application
@@ -20,7 +19,7 @@ False
 >>> box([pbrl])
 True
 >>> run_pbrl = box.blocks
->>> gen = checkmate.runs.followed_runs(box.application, exchanges)
+>>> gen = checkmate.pathfinder.followed_runs(box.application, exchanges)
 >>> runs = [_r for _r in gen] 
 >>> len(runs)
 2
