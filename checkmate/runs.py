@@ -287,8 +287,11 @@ def origin_runs_generator(application, randomized=False):
         next_runs = []
         for _r in checkmate.pathfinder.followed_runs(box.application,
                     exchanges, current_run):
+            next_runs.append(_r)
             if _r in yielded_runs:
                 continue
+            checkmate.pathfinder.filter_run(box.application, _r, current_run)
+            checkmate.pathfinder.update_matrix(box.application, _r, next_runs)
             if _r in [_tmp[0] for _tmp in box.application._safe_runs]:
                 current_run = execute(box, [_r], current_run)
                 yielded_runs.append(current_run)

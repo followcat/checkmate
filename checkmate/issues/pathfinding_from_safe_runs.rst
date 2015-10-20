@@ -19,8 +19,14 @@ False
 >>> box([pbrl])
 True
 >>> run_pbrl = box.blocks
+>>> runs =[]
 >>> gen = checkmate.pathfinder.followed_runs(box.application, exchanges)
->>> runs = [_r for _r in gen] 
+>>> runs.append(next(gen))
+>>> checkmate.pathfinder.filter_run(box.application, runs[0])
+>>> checkmate.pathfinder.update_matrix(box.application, runs[0], runs)
+>>> runs.append(next(gen))
+>>> checkmate.pathfinder.filter_run(box.application, runs[1])
+>>> checkmate.pathfinder.update_matrix(box.application, runs[1], runs)
 >>> len(runs)
 2
 >>> run_ac_er = [_r for _r in runs if _r.exchanges[0].value == 'PBAC'][0]
