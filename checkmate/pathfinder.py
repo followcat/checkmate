@@ -42,6 +42,10 @@ def find_path(application, target_runs, exchanges, current_run=None,
     >>> target = [_r for _r in runs
     ...     if _r.exchanges[0].value == 'PBPP'][0]
     >>> run, path = checkmate.pathfinder.find_path(
+    ...     app, [target], exchanges, skip_unsafe_run=True)
+    >>> len(path)
+    0
+    >>> run, path = checkmate.pathfinder.find_path(
     ...     app, [target], exchanges)
     >>> run.exchanges[0].value
     'PBPP'
@@ -74,12 +78,16 @@ def find_path(application, target_runs, exchanges, current_run=None,
     else:
         current_run_row = matrix[application._matrix_runs.\
                             index(current_run)].nonzero()[1].tolist()[0]
+    if skip_unsafe_run:
+        skip_unsafe_runs(application, current_run_row)
     length = len(matrix.tolist())
     paths = [[item] for item in current_run_row]
     while len(paths) != 0:
         path = paths.pop(0)
         end = path[-1]
         children = matrix[end].nonzero()[1].tolist()[0]
+        if skip_unsafe_run:
+            skip_unsafe_runs(application, children)
         for child in children:
             if child in target_runs_indexes:
                 ret_path = []
