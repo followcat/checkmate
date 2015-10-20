@@ -104,7 +104,8 @@ def find_path(application, target_runs, exchanges, current_run=None,
 
 def skip_unsafe_runs(application, indexes):
     for index in indexes:
-        if application._matrix_runs[index] in application._unsafe_runs:
+        if application._matrix_runs[index] in [_tmp[0] for _tmp in \
+            application._unsafe_runs]:
             indexes.remove(index)
 
 @checkmate.fix_issue('checkmate/issues/pathfinding_from_safe_runs.rst')
@@ -191,23 +192,22 @@ def filter_run(application, run, previous_run=None):
         >>> checkmate.pathfinder.filter_run(app, run, None)
         >>> len(app._unsafe_runs)
         1
-        >>> run in app._unsafe_runs
+        >>> run in [tmp[0] for tmp in app._unsafe_runs]
         True
     """
     path = return_path(application, run)
     _unsafe_runs = []
-    if previous_run is None or previous_run not in application._unsafe_runs:
+    if previous_run is None or previous_run not in \
+        [_tmp[0] for _tmp in application._unsafe_runs]:
         if path is not None:
             if (run, path) not in application._safe_runs:
                 application._safe_runs.append((run, path))
         else:
-            _unsafe_runs.append(run)
+            _unsafe_runs.append((run, path))
     else:
-        _unsafe_runs.append(run)
-        if path is not None:
-            _unsafe_runs.extend(path)
-    application._unsafe_runs.extend([_r for _r in _unsafe_runs
-        if _r not in application._unsafe_runs])
+        _unsafe_runs.append((run, path))
+    application._unsafe_runs.extend([_tmp for _tmp in _unsafe_runs
+        if _tmp not in application._unsafe_runs])
 
     
 def return_path(application, run):
