@@ -152,24 +152,24 @@ def followed_runs(application, exchanges, current_run=None):
             if _run not in next_runs:
                 next_runs.append(_run)
                 application.update_matrix([_run], current_run)
-                return_path = transform_path(application, _run)
+                path = return_path(application, _run)
                 _unsafe_runs = []
                 if current_run is None or\
                     current_run not in _class._unsafe_runs:
-                    if return_path is not None:
-                        if (_run, return_path) not in _class._safe_runs:
-                            _class._safe_runs.append((_run, return_path))
+                    if path is not None:
+                        if (_run, path) not in _class._safe_runs:
+                            _class._safe_runs.append((_run, path))
                     else:
                         _unsafe_runs.append(_run)
                 else:
                     _unsafe_runs.append(_run)
-                    if return_path is not None:
-                        _unsafe_runs.extend(return_path)
+                    if path is not None:
+                        _unsafe_runs.extend(path)
                 _class._unsafe_runs.extend([_r for _r in _unsafe_runs
                     if _r not in _class._unsafe_runs])
-                if return_path is not None:
+                if path is not None:
                     _current_run = _run
-                    for _r in return_path:
+                    for _r in path:
                         application.update_matrix([_r], _current_run)
                         _current_run = _r
                     transform_runs.append(_current_run)
@@ -178,7 +178,7 @@ def followed_runs(application, exchanges, current_run=None):
                 yield _run
 
 
-def transform_path(application, run):
+def return_path(application, run):
     """
     run are safe only when there is one-step way found
     that can use to transform to initial states
@@ -197,11 +197,11 @@ def transform_path(application, run):
         True
         >>> run_pbac_ok = box.blocks
         >>> run_pbrl = box2.blocks
-        >>> path = checkmate.pathfinder.transform_path(box.application,
+        >>> path = checkmate.pathfinder.return_path(box.application,
         ...     run_pbac_ok)
         >>> path is not None
         False
-        >>> path = checkmate.pathfinder.transform_path(box.application,
+        >>> path = checkmate.pathfinder.return_path(box.application,
         ...     run_pbrl)
         >>> path is not None
         True
@@ -210,12 +210,12 @@ def transform_path(application, run):
         >>> run_pbac_er = box2.blocks
         >>> run_pbac_er.compare_initial(box.application)
         True
-        >>> path = checkmate.pathfinder.transform_path(box.application,
+        >>> path = checkmate.pathfinder.return_path(box.application,
         ...     run_pbac_er)
         >>> path is not None
         True
     """
-    return_path = None
+    path = None
     if run.compare_initial(application):
         _cls = type(application)
         box = checkmate.sandbox.Sandbox(_cls, application)
@@ -223,7 +223,7 @@ def transform_path(application, run):
         box(run.exchanges)
         _states1 = box.application.copy_states()
         if _states0 == _states1:
-            return_path = []
+            path = []
         else:
             exchanges = box.application.origin_exchanges()
             for _ex in exchanges[:]:
@@ -232,7 +232,7 @@ def transform_path(application, run):
                     tmp_run = sandbox.blocks
                     _states2 = sandbox.application.copy_states()
                     if  _states0 == _states2:
-                        return_path = [tmp_run]
+                        path = [tmp_run]
                         break
-    return return_path
+    return path
 
