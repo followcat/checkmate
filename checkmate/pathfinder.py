@@ -142,7 +142,6 @@ def followed_runs(application, exchanges, current_run=None):
                         next_runs.append(runs[i])
                     yield runs[i]
     box = checkmate.sandbox.Sandbox(_class, application)
-    transform_runs = []
     for _exchange in exchanges:
         if _exchange in [_r.exchanges[0] for _r in next_runs]:
             continue
@@ -152,32 +151,65 @@ def followed_runs(application, exchanges, current_run=None):
             if _run not in next_runs:
                 next_runs.append(_run)
                 application.update_matrix([_run], current_run)
-                path = return_path(application, _run)
-                _unsafe_runs = []
-                if current_run is None or\
-                    current_run not in _class._unsafe_runs:
-                    if path is not None:
-                        if (_run, path) not in _class._safe_runs:
-                            _class._safe_runs.append((_run, path))
-                    else:
-                        _unsafe_runs.append(_run)
-                else:
-                    _unsafe_runs.append(_run)
-                    if path is not None:
-                        _unsafe_runs.extend(path)
-                _class._unsafe_runs.extend([_r for _r in _unsafe_runs
-                    if _r not in _class._unsafe_runs])
-                if path is not None:
-                    _current_run = _run
-                    for _r in path:
-                        application.update_matrix([_r], _current_run)
-                        _current_run = _r
-                    transform_runs.append(_current_run)
-                for _r in transform_runs:
-                    application.update_matrix(next_runs, _r)
                 yield _run
 
 
+def update_matrix(application, run, next_runs):
+    path = None
+    transform_runs = []
+    for _run, _path in application._safe_runs:
+        if run == _run:
+            path = _path
+        if _run in next_runs:
+            if len(_path) > 0:
+                transform_runs.append(_path[-1])
+            else:
+                transform_runs.append(_run)
+    if path is not None:
+        _current_run = run
+        for _r in path:
+            application.update_matrix([_r], _current_run)
+            _current_run = _r
+    for _r in transform_runs:
+        application.update_matrix(next_runs, _r)
+   
+
+def filter_run(application, run, previous_run=None):
+    """
+        >>> import checkmate.pathfinder
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> app.reset()
+        >>> app.start()
+        >>> len(app._unsafe_runs)
+        0
+        >>> exchanges = app.origin_exchanges()
+        >>> box = checkmate.sandbox.Sandbox(type(app), app)
+        >>> box([ex for ex in exchanges if ex.value == 'PBAC'])
+        True
+        >>> run = box.blocks
+        >>> checkmate.pathfinder.filter_run(app, run, None)
+        >>> len(app._unsafe_runs)
+        1
+        >>> run in app._unsafe_runs
+        True
+    """
+    path = return_path(application, run)
+    _unsafe_runs = []
+    if previous_run is None or previous_run not in application._unsafe_runs:
+        if path is not None:
+            if (run, path) not in application._safe_runs:
+                application._safe_runs.append((run, path))
+        else:
+            _unsafe_runs.append(run)
+    else:
+        _unsafe_runs.append(run)
+        if path is not None:
+            _unsafe_runs.extend(path)
+    application._unsafe_runs.extend([_r for _r in _unsafe_runs
+        if _r not in application._unsafe_runs])
+
+    
 def return_path(application, run):
     """
     run are safe only when there is one-step way found
