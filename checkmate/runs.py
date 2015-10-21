@@ -275,14 +275,9 @@ def origin_runs_generator(application, randomized=False):
     current_run=None
     yielded_runs = []
     unyielded_runs = []
+    path_runs = []
     exchanges = application.origin_exchanges()
     box = checkmate.sandbox.Sandbox(type(application), application)
-    def execute(sandbox, targets, current):
-        current_run, _path = checkmate.pathfinder.find_path(\
-            sandbox.application, targets, exchanges, current)
-        for _run in _path + [current_run]:
-            sandbox(_run.exchanges)
-        return sandbox.blocks
     while True:
         next_runs = []
         for _r in checkmate.pathfinder.followed_runs(box.application,
@@ -292,17 +287,38 @@ def origin_runs_generator(application, randomized=False):
                 continue
             checkmate.pathfinder.filter_run(box.application, _r, current_run)
             checkmate.pathfinder.update_matrix(box.application, _r, next_runs)
-            if _r in [_tmp[0] for _tmp in box.application._safe_runs]:
-                current_run = execute(box, [_r], current_run)
-                yielded_runs.append(current_run)
-                yield current_run
-            elif _r not in unyielded_runs:
-                unyielded_runs.append(_r)
+            for _run, _path in box.application._safe_runs:
+                if _r == _run:
+                    for run in [_run] + _path:
+                        box(run.exchanges)
+                        if run not in yielded_runs:
+                            yielded_runs.append(run)
+                            yield run
+                    path_runs.extend(_path)
+                    break
+            else:
+                if _r not in unyielded_runs:
+                    unyielded_runs.append(_r)
+        current_run = box.blocks
+        if len(path_runs) > 0:
+            _run, _path = checkmate.pathfinder.find_path(\
+                box.application, path_runs, exchanges, current_run)
+            for _r in _path:
+                box(_r.exchanges)
+            path_runs.remove(_run)
+            current_run = box.blocks
+            continue
         if len(unyielded_runs) == 0:
             break
-        current_run = execute(box, unyielded_runs, current_run)
-        yielded_runs.append(current_run)
-        if current_run in unyielded_runs:
-            unyielded_runs.remove(current_run)
-        yield current_run
+        _run, _path = checkmate.pathfinder.find_path(box.application,
+                        unyielded_runs, exchanges, current_run)
+        for _r in _path + [_run]:
+            box(_r.exchanges)
+            run = box.blocks
+            if run in unyielded_runs:
+                unyielded_runs.remove(run)
+            if run not in yielded_runs:
+                yielded_runs.append(run)
+                yield run
+            current_run = box.blocks
 
