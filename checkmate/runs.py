@@ -283,42 +283,37 @@ def origin_runs_generator(application, randomized=False):
         for _r in checkmate.pathfinder.followed_runs(box.application,
                     exchanges, current_run):
             next_runs.append(_r)
-            if _r in yielded_runs:
-                continue
             checkmate.pathfinder.filter_run(box.application, _r, current_run)
             checkmate.pathfinder.update_matrix(box.application, _r, next_runs)
             for _run, _path in box.application._safe_runs:
                 if _r == _run:
+                    if len(_path) > 0 and _run not in path_runs + yielded_runs:
+                        path_runs.append(_run)
                     for run in [_run] + _path:
                         box(run.exchanges)
                         if run not in yielded_runs:
                             yielded_runs.append(run)
                             yield run
-                    path_runs.extend(_path)
                     break
             else:
-                if _r not in unyielded_runs:
+                if _r not in yielded_runs and _r not in unyielded_runs:
                     unyielded_runs.append(_r)
         current_run = box.blocks
         if len(path_runs) > 0:
-            _run, _path = checkmate.pathfinder.find_path(\
-                box.application, path_runs, exchanges, current_run)
-            for _r in _path:
-                box(_r.exchanges)
-            path_runs.remove(_run)
-            current_run = box.blocks
-            continue
-        if len(unyielded_runs) == 0:
+            entrances = path_runs
+        elif len(unyielded_runs) > 0:
+            entrances = unyielded_runs
+        else:
             break
         _run, _path = checkmate.pathfinder.find_path(box.application,
-                        unyielded_runs, exchanges, current_run)
+                        entrances, exchanges, current_run)
         for _r in _path + [_run]:
             box(_r.exchanges)
             run = box.blocks
-            if run in unyielded_runs:
-                unyielded_runs.remove(run)
+            if run in entrances:
+                entrances.remove(run)
             if run not in yielded_runs:
                 yielded_runs.append(run)
                 yield run
-            current_run = box.blocks
+        current_run = box.blocks
 
