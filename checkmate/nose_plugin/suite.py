@@ -59,8 +59,8 @@ class FunctionTestCase(nose.case.FunctionTestCase):
             for _test in self.test(runtime.application,
                             self.config.defined_config['random']):
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
-                setattr(_FunctionTestCase, '__name__', 
-                            str(self) + '(' + _test.exchanges[0].value +', )')
+                setattr(_FunctionTestCase, '__name__', str(self) + '(' + \
+                    str(_test.exchanges[0].value) +', )')
                 _FunctionTestCase(self.proxyResult)
         else:
             runtime.execute(self.test, transform=True)
