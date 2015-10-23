@@ -209,6 +209,8 @@ class Application(object):
             pass
 
 
+    @checkmate.report_issue("checkmate/issues/no_data_application_sut.rst",
+        failed=2)
     def __init__(self):
         """
         >>> import sample_app.application
