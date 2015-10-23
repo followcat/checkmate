@@ -283,12 +283,6 @@ class Application(object):
             copy_states.extend(_component.copy_states())
         return copy_states
 
-    def validated_incoming_list(self):
-        incoming_list = []
-        for _component in list(self.components.values()):
-            incoming_list += _component.get_all_validated_incoming()
-        return incoming_list
-
     def visual_dump_states(self):
         state_dict = {}
         for _c, _v in self.components.items():
