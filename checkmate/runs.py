@@ -255,7 +255,7 @@ def get_origin_exchanges(application_class):
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
                             failed=3)
-def origin_runs_generator(application, randomized=False):
+def origin_runs_generator(application, randomized=False, no_duplicate=True):
     """
         >>> import checkmate.runs
         >>> import sample_app.application
@@ -272,11 +272,20 @@ def origin_runs_generator(application, randomized=False):
         for _r in runs:
             yield _r
         return
+    runs = []
+    exchanges = application.origin_exchanges()
+    for _run in runs_generator(application, exchanges):
+        if _run in runs and no_duplicate:
+            continue
+        runs.append(_run)
+        yield _run
+
+
+def runs_generator(application, exchanges):
     current_run=None
     yielded_runs = []
     unyielded_runs = []
     path_runs = []
-    exchanges = application.origin_exchanges()
     box = checkmate.sandbox.Sandbox(type(application), application)
     while True:
         next_runs = []
@@ -293,7 +302,7 @@ def origin_runs_generator(application, randomized=False):
                         box(run.exchanges)
                         if run not in yielded_runs:
                             yielded_runs.append(run)
-                            yield run
+                        yield run
                     break
             else:
                 if _r not in yielded_runs and _r not in unyielded_runs:
@@ -314,6 +323,6 @@ def origin_runs_generator(application, randomized=False):
                 entrances.remove(run)
             if run not in yielded_runs:
                 yielded_runs.append(run)
-                yield run
+            yield run
         current_run = box.blocks
 
