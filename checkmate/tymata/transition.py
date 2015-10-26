@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import checkmate
+import checkmate.block
 import checkmate._storage
 
 
@@ -106,11 +107,7 @@ def make_transition(items, exchanges=[], state_modules=[]):
     return checkmate.tymata.transition.Transition(**tran_dict)
 
 
-class Block(object):
-    """"""
-
-
-class Transition(Block):
+class Transition(checkmate.block.Block):
     """Driving a change of state inside a state machine
     """
     def __init__(self, **argc):

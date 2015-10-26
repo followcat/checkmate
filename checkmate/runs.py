@@ -7,16 +7,16 @@
 import random
 
 import checkmate._tree
+import checkmate.block
 import checkmate._visual
 import checkmate.sandbox
 import checkmate.exception
 import checkmate.pathfinder
-import checkmate.tymata.transition
 
 
 class Run(checkmate._tree.Tree):
     def __init__(self, block, nodes=None, states=None, exchanges=None):
-        assert isinstance(block, checkmate.tymata.transition.Block)
+        assert isinstance(block, checkmate.block.Block)
         if nodes is None:
             nodes = []
         if states is None:
