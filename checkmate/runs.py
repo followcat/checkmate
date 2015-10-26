@@ -4,7 +4,6 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import numpy
 import random
 
 import checkmate._tree
