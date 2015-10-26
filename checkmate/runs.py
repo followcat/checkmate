@@ -189,34 +189,6 @@ class Run(checkmate._tree.Tree):
         return self._final
 
 
-@checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
-def get_runs_from_transition(application, transition, itp_transition=False):
-    runs = []
-    exchanges = []
-    _class = type(application)
-    box = checkmate.sandbox.Sandbox(_class, application, [transition])
-    _incoming = transition.generic_incoming(box.application.state_list())
-    origin = ''
-    destination = []
-    for _c in box.application.components.values():
-        if _c.get_blocks_by_output(_incoming) is not None:
-            origin = _c.name
-        if len(_c.get_blocks_by_input(_incoming)) > 0:
-            if _c.name not in destination:
-                destination.append(_c.name)
-    for _exchange in _incoming: 
-        _exchange.origin_destination(origin, destination)
-        exchanges.append(_exchange)
-    assert box(exchanges)
-    _run = box.blocks
-    initial = checkmate.sandbox.Sandbox(_class, application, [transition])
-    if itp_transition:
-        _run.itp_final = transition.final
-        _run._collected_box = initial
-    runs.append(_run)
-    return runs
-
-
 def get_origin_exchanges(application_class):
     """
         >>> import sample_app.application
