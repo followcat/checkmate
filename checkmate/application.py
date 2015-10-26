@@ -16,6 +16,23 @@ import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
+def get_definition_data(definitions):
+    definition_data = ''
+    if type(definitions) != list:
+        definitions = [definitions]
+    for _d in definitions:
+        if os.path.isfile(_d):
+            with open(_d, 'r') as _file:
+                definition_data += _file.read()
+        elif os.path.isdir(_d):
+            for filename in os.listdir(_d):
+                if filename.endswith(".yaml"):
+                    _fullname = os.path.join(_d, filename)
+                    with open(_fullname, 'r') as _file:
+                        definition_data += _file.read()
+    return definition_data
+
+
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
@@ -45,21 +62,7 @@ class ApplicationMeta(type):
         if 'itp_definition' not in namespace:
             namespace['itp_definition'] = \
                 os.sep.join(namespace['__module__'].split('.')[0:-1])
-        def get_definition_data(definitions):
-            definition_data = ''
-            if type(definitions) != list:
-                definitions = [definitions]
-            for _d in definitions:
-                if os.path.isfile(_d):
-                    with open(_d, 'r') as _file:
-                        definition_data += _file.read()
-                elif os.path.isdir(_d):
-                    for filename in os.listdir(_d):
-                        if filename.endswith(".yaml"):
-                            _fullname = os.path.join(_d, filename)
-                            with open(_fullname, 'r') as _file:
-                                definition_data += _file.read()
-            return definition_data
+
         define_data = get_definition_data(namespace['exchange_definition'])
         if 'data_structure_definition' in namespace:
             define_data += \
