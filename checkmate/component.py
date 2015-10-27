@@ -27,12 +27,11 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
-        _tmp_list = namespace['class'].split('/')
-        name = _tmp_list[-1].split('.')[0].capitalize()
-        alternative_package = _tmp_list[-2]
+        (package_name, file_name) = namespace['class'].split('/')[-2:]
+        name = file_name.split('.')[0].capitalize()
         component_module = \
             checkmate._module.get_module(namespace['root_module'],
-                name.lower(), alternative_package)
+                name.lower(), package_name)
         namespace['__module__'] = component_module.__name__
         _component_registry = namespace['component_registry']
         _component_registry[name] = []
