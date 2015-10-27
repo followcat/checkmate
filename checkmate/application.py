@@ -106,33 +106,19 @@ class ApplicationMeta(type):
 
         _component_classes = _application_definition['component_classes']
         namespace['component_classes'] = _component_classes
-        for index, _definition in enumerate(_component_classes):
-            _tmp_dict = collections.defaultdict(dict)
-            _tmp_dict.update(_definition)
-            _component_classes[index] = _tmp_dict
         _component_registry = {}
         for class_definition in _component_classes:
-            class_dict = class_definition['attributes']
-            _tmp_list = class_definition['class'].split('/')
-            class_name = _tmp_list[-1].split('.')[0].capitalize()
-            alternative_package = _tmp_list[-2]
-            component_module = \
-                checkmate._module.get_module(namespace['__module__'],
-                    class_name.lower(), alternative_package)
-            _component_registry[class_name] = []
-            for _instance in class_definition['instances']:
-                _component_registry[class_name].append(_instance['name'])
-            d = {'exchange_module': exchange_module,
-                 'data_structure_module': data_structure_module,
-                 'component_definition': class_definition['class'],
-                 '__module__': component_module.__name__,
-                 'communication_list': namespace['communication_list'].keys(),
-                 'instances': class_definition['instances']
-                }
-            d.update(class_dict)
-            _class = checkmate.component.ComponentMeta(class_name,
-                        (checkmate.component.Component,), d)
-            setattr(component_module, class_name, _class)
+            component_namespace = collections.defaultdict(dict)
+            component_namespace.update(class_definition)
+            component_namespace.update({
+                'root_module': namespace['__module__'],
+                'component_registry': _component_registry,
+                'exchange_module': exchange_module,
+                'data_structure_module': data_structure_module,
+                'communication_list': namespace['communication_list'].keys(),
+                })
+            _class = checkmate.component.ComponentMeta('_filled_later',
+                        (checkmate.component.Component,), component_namespace)
             class_definition['class'] = _class
 
         namespace['component_registry'] = _component_registry

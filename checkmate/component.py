@@ -27,6 +27,18 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
+        _tmp_list = namespace['class'].split('/')
+        name = _tmp_list[-1].split('.')[0].capitalize()
+        alternative_package = _tmp_list[-2]
+        component_module = \
+            checkmate._module.get_module(namespace['root_module'],
+                name.lower(), alternative_package)
+        namespace['__module__'] = component_module.__name__
+        _component_registry = namespace['component_registry']
+        _component_registry[name] = []
+        for _instance in namespace['instances']:
+            _component_registry[name].append(_instance['name'])
+
         exchange_module = namespace['exchange_module']
         data_structure_module = namespace['data_structure_module']
         state_module = checkmate._module.get_module(namespace['__module__'],
@@ -40,7 +52,8 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
 
-        class_file = namespace['component_definition']
+        class_file = namespace['class']
+        namespace['component_definition'] = class_file
         with open(class_file, 'r') as _file:
             define_data = _file.read()
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
@@ -70,6 +83,7 @@ class ComponentMeta(type):
                 raise e
             namespace['instance_engines'][_instance['name']] = engine
         result = type.__new__(cls, name, bases, dict(namespace))
+        setattr(component_module, name, result)
         return result
 
 
