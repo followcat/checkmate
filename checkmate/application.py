@@ -42,7 +42,7 @@ class ApplicationMeta(type):
         <module 'sample_app.exchanges' from ...
         >>> a.data_structure_module #doctest: +ELLIPSIS
         <module 'sample_app.data_structure' from ...
-        >>> a.exchange_definition
+        >>> a.application_definition['exchange_definition']
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
@@ -56,20 +56,33 @@ class ApplicationMeta(type):
                 'data_structure')
         namespace['data_structure_module'] = data_structure_module
 
-        if 'exchange_definition' not in namespace:
-            namespace['exchange_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1])
-        if 'itp_definition' not in namespace:
+        _application_definition = namespace['application_definition']
+        try:
+            namespace['itp_definition'] = _application_definition['itp_definition']
+        except KeyError:
             namespace['itp_definition'] = \
                 os.sep.join(namespace['__module__'].split('.')[0:-1])
+        try:
+            namespace['feature_definition_path'] =\
+                _application_definition['feature_definition_path']
+        except KeyError:
+            pass
 
-        define_data = get_definition_data(namespace['exchange_definition'])
-        if 'data_structure_definition' in namespace:
+        try:
+            namespace['exchange_definition'] =\
+                _application_definition['exchange_definition']
+        except KeyError:
+            namespace['exchange_definition'] = \
+                os.sep.join(namespace['__module__'].split('.')[0:-1])
+        finally:
+            define_data = get_definition_data(namespace['exchange_definition'])
+
+        if 'data_structure_definition' in _application_definition:
             define_data += \
-                get_definition_data(namespace['data_structure_definition'])
+                get_definition_data(_application_definition['data_structure_definition'])
         data_value = {}
         try:
-            value_data = get_definition_data(namespace['test_data_definition'])
+            value_data = get_definition_data(_application_definition['test_data_definition'])
             value_source = \
                 checkmate.parser.yaml_visitor.call_data_visitor(value_data)
             for code, structure in value_source.items():
@@ -77,6 +90,7 @@ class ApplicationMeta(type):
             namespace['data_value'] = data_value
         except KeyError:
             pass
+
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(
@@ -90,7 +104,8 @@ class ApplicationMeta(type):
         finally:
             pass
 
-        _component_classes = namespace['component_classes']
+        _component_classes = _application_definition['component_classes']
+        namespace['component_classes'] = _component_classes
         for index, _definition in enumerate(_component_classes):
             _tmp_dict = collections.defaultdict(dict)
             _tmp_dict.update(_definition)

@@ -40,14 +40,14 @@ class FullPython(checkmate.application.Application,
         >>> r.stop_test()
 
     """
-    itp_definition = 'pytango/checkmate'
-    feature_definition_path = 'sample_app/itp'
-    data_structure_definition = ['pytango/checkmate/data_structures']
-    exchange_definition = ['pytango/checkmate/exchanges']
-    test_data_definition = ['pytango/checkmate/test_data.yaml']
-
-    component_classes = yaml.load(
+    application_definition = yaml.load(
         """
+        itp_definition: pytango/checkmate
+        feature_definition_path: sample_app/itp
+        exchange_definition: pytango/checkmate/exchanges
+        test_data_definition: pytango/checkmate/test_data.yaml
+        data_structure_definition: pytango/checkmate/data_structures
+        component_classes:
         - class: pytango/checkmate/component/component_1.yaml
           attributes:
             launch_command: "python ./pytango/component/component_1.py
