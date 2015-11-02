@@ -50,6 +50,8 @@ other runs
         >>> state1.instance_engines['C1'].blocks.append(t_in)
         >>> state1.instance_engines['C1'].service_classes.append(
         ...     sample_app.exchanges.ForthAction)
+        >>> state2.instance_engines['C2'].service_classes.append(
+        ...     sample_app.exchanges.InitAction)
         >>> r = checkmate.runtime._runtime.Runtime(
         ...         sample_app.application.TestData,
         ...         checkmate.runtime._pyzmq.Communication,
