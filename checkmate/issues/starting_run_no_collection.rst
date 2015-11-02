@@ -8,3 +8,5 @@ is handling the case right:
     >>> checkmate.runs.followed_runs(app, run)
     []
 
+Revert class attribute after test done
+    >>> delattr(type(app), type(app)._run_collection_attribute)
