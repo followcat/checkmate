@@ -90,8 +90,6 @@ class Procedure(object):
 
     def _run_from_startpoint(self):
         _application = self.runtime.application
-        if self.result is not None:
-            self.result.startTest(self)
         stub = self.runtime.runtime_components[self.blocks.root.owner]
         stub.simulate(self.blocks.root)
         self._follow_up(self.blocks)
