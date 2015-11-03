@@ -272,15 +272,19 @@ class ThreadedStub(ThreadedComponent, Stub):
     def __init__(self, component):
         #Call ThreadedStub first ancestor: ThreadedComponent expected
         super(ThreadedStub, self).__init__(component)
+        self.received_exchanges = []
         self.received_internal_exchanges = []
+        self.internal_queue = multiprocessing.Queue()
 
     def setup(self, runtime):
-        self.internal_queue = multiprocessing.Queue()
         super(ThreadedStub, self).setup(runtime)
         self.client.internal_connector.queue = self.internal_queue
 
     def receive(self):
-        exchange = self.exchange_queue.get(timeout=self.timeout_value)        
+        if len(self.received_exchanges) > 0:
+            exchange = self.received_exchanges.pop(0)
+        else:
+            exchange = self.exchange_queue.get(timeout=self.timeout_value)
         while True:
             if exchange in self.received_internal_exchanges:
                 self.received_internal_exchanges.remove(exchange)
@@ -288,10 +292,12 @@ class ThreadedStub(ThreadedComponent, Stub):
             try:
                 self.received_internal_exchanges.append(
                     self.internal_queue.get(timeout=self.timeout_value))
-            except queue.Empty:
-                pass
+            except queue.Empty as e:
+                self.received_exchanges.insert(0, exchange)
+                raise e
 
     def reset(self):
+        self.received_exchanges.clear()
         self.received_internal_exchanges.clear()
         super(ThreadedStub, self).reset()
 

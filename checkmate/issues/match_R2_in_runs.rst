@@ -38,7 +38,5 @@ We can match R with R2 when we do collect runs
     Revert changes in Component class definition for further use in doctest:
         >>> component_1.instance_engines['C1'].blocks[1] = copy_t1
         >>> component_2.instance_engines['C2'].blocks[2] = copy_t2
-        >>> application_class = sample_app.application.TestData
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
+        >>> sample_app.application.TestData.reset()
 

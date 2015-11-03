@@ -130,6 +130,9 @@ class Checkmate(nose.plugins.Plugin):
         """Replace test runner with TestRunner.
         """
         TestRunner.plugin_config = dict(self.__dict__)
+        TestRunner.plugin_config['defined_config'] =\
+            {'random': self.randomized_run,
+             '_loop': 0}
 
     def wantClass(self, cls):
         """Select only subclass is checkmate.runs.Run"""
@@ -210,10 +213,12 @@ class TestRunner(nose.core.TextTestRunner):
             runtime.start_test()
             time.sleep(3)
             setattr(test.config, 'runtime', runtime)
+            setattr(test.config, 'defined_config', self.plugin_config['defined_config'])
             if len(components) > 1:
                 #do some dirty print
                 result.stream.writeln('sut=' + ','.join(_sut) + ':')
             for _loop in range(self.plugin_config['loop_runs']):
+                self.plugin_config['defined_config']['_loop'] = _loop
                 test(result)
             runtime.stop_test()
             if index < len(components)-1:

@@ -40,7 +40,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
                     c2.engine.blocks[0])
         super().__init__(runs[0].root, runs[0].nodes, 
                             states=c2.states, exchanges=runs[0].exchanges)
-        self.collected_run = runs[0].collected_run
+        self._collected_run = runs[0].collected_run
 
     def __call__(self):
         pass
@@ -87,7 +87,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         _states = box.application.components['C2'].states
         super().__init__(run_pbrl.root, run_pbrl.nodes,
                             states=_states, exchanges=run_pbrl.exchanges)
-        self.collected_run = run_pbrl.collected_run
+        self._collected_run = run_pbrl.collected_run
 
     def __call__(self):
         pass

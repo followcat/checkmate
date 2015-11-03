@@ -100,9 +100,6 @@ def TestProcedureFeaturesGenerator(application_class):
         'AC'
         >>> box = checkmate.sandbox.Sandbox(type(a), a,
         ...         run_list[1].walk())
-        >>> c1_state = box.application.components['C1'].states[0]
-        >>> c1_state.value == run_list[1].itp_run.root.initial[0].value
-        True
         >>> run_list[1].compare_initial(box.application)
         True
         >>> box(run_list[1].exchanges)
@@ -143,14 +140,15 @@ def TestProcedureRunsGenerator(application_class):
         >>> runs = []
         >>> app = sample_app.application.TestData
         >>> test_plan = checkmate.runtime.test_plan
-        >>> runs = [run[0] for run in
-        ...        test_plan.TestProcedureRunsGenerator(app)]
+        >>> func = [_f for _f in
+        ...        test_plan.TestProcedureRunsGenerator(app)][0]
+        >>> runs = [_r for _r in func(app())]
         >>> runs[0].root.incoming[0].code
         'PBAC'
         >>> runs[1].root.incoming[0].code
-        'PBAC'
-        >>> runs[2].root.incoming[0].code
         'PBRL'
+        >>> runs[2].root.incoming[0].code
+        'PBAC'
         >>> runs[3].root.incoming[0].code
         'PBPP'
         >>> com = checkmate.runtime._pyzmq.Communication
@@ -160,6 +158,5 @@ def TestProcedureRunsGenerator(application_class):
         >>> r.execute(runs[0], transform=False)
         >>> r.stop_test()
     """
-    for _run in application_class().run_collection():
-        yield _run, _run.root.name
+    yield checkmate.runs.origin_runs_generator
 

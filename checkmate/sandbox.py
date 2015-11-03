@@ -101,7 +101,7 @@ class Sandbox(object):
             >>> runs = box.application.run_collection()
             >>> box(runs[0].exchanges)
             True
-            >>> box(runs[2].exchanges)
+            >>> box(runs[1].exchanges)
             True
             >>> c1.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
@@ -157,82 +157,13 @@ class Sandbox(object):
                 _c = self.application.components[_d]
                 blocks = _c.get_blocks_by_input([_exchange])
                 _outgoings = _c.process([_exchange])
+                exchange = type(_exchange)()
+                exchange.carbon_copy(_exchange)
+                exchange.origin_destination(_exchange.origin, [_d])
                 states = _c.copy_states()
                 tmp_run = self.process(_outgoings,
                             checkmate.runs.Run(blocks[0], [],
-                                states=states, exchanges=[_exchange]))
+                                states=states, exchanges=[exchange]))
                 tree.add_node(tmp_run)
         return tree
-
-    def update_required_states(self, tree):
-        """
-        """
-        block = tree.root
-        for index, _initial in enumerate(block.initial):
-            if _initial.partition_class not in [_i.partition_class
-                                                for _i in self.initial]:
-                self.initial.append(_initial)
-                self.final.append(block.final[index])
-        for _node in tree.nodes:
-            self.update_required_states(_node)
-
-
-class CollectionSandbox(Sandbox):
-    def __call__(self, run, itp_run=False):
-        results = super(CollectionSandbox,
-                    self).__call__(run.exchanges, itp_run)
-        for _split, _run in results:
-            if itp_run is True:
-                _run.itp_run = run
-            yield _run
-
-    def run_process(self, outgoing, states, exchanges):
-        try:
-            tree = checkmate.runs.Run(self.blocks, [], states, exchanges)
-        except AssertionError:
-            return []
-        return self.process(self, outgoing, tree)
-
-    def process(self, sandbox, exchanges, tree=None):
-        split = False
-        for _e in exchanges:
-            for _d in _e.destination:
-                _exchange = _e.partition_storage.partition_class(_e)
-                _exchange.carbon_copy(_e)
-                _exchange.origin_destination(_e.origin, _d)
-                _c = sandbox.application.components[_d]
-                _blocks = _c.get_blocks_by_input([_exchange])
-                for _b in _blocks:
-                    if _b == tree.root:
-                        continue
-                    self.used = True
-                    _app = sandbox.application
-                    new_sandbox = Sandbox(type(_app), _app)
-                    _c = new_sandbox.application.components[_d]
-                    for index, _state in enumerate(_c.states):
-                        if _state.value is not None:
-                            continue
-                        for _final in _b.final:
-                            if not isinstance(_state, _final.partition_class):
-                                continue
-                            for _init in _b.initial:
-                                if isinstance(_state, _init.partition_class):
-                                    _state = _init.factory()
-                                    _c.states[index] = _state
-                                    break
-                            break
-                    _outgoings = _c.process([_exchange], _b)
-                    _run = checkmate.runs.Run(_b, [], states=_c.states,
-                                                exchanges=[_exchange])
-                    split_runs = self.process(new_sandbox, _outgoings, _run)
-                    for split, tmp_run in split_runs:
-                        if len(_blocks) > 1 or split:
-                            split = True
-                            new_run = tree.copy()
-                            new_run.add_node(tmp_run)
-                            yield (split, new_run)
-                        else:
-                            tree.add_node(tmp_run)
-        if split is False:
-            yield (split, tree)
 

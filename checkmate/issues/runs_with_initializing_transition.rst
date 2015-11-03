@@ -9,13 +9,15 @@ other runs
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
+        >>> application_class = sample_app.application.TestData
+        >>> application_class.reset()
         >>> exchange_definition = {
         ...    'partition_type': 'exchanges',
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
         ...    'full_description': None,
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> exchange_definition2 = {
@@ -24,9 +26,13 @@ other runs
         ...    'codes_list': ['INTAC()'],
         ...    'values_list': ['INTAC'],
         ...    'full_description': None,
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_2']},
         ...    'define_attributes': {}
         ... }
+        >>> if hasattr(application_class,
+        ...     application_class._origin_exchanges_attribute):
+        ...     delattr(application_class,
+        ...         application_class._origin_exchanges_attribute)
         >>> app = sample_app.application.TestData()
         >>> app.define_exchange(exchange_definition)
         >>> app.define_exchange(exchange_definition2)
@@ -69,7 +75,8 @@ other runs
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
         False
-        >>> run1 = app.run_collection()[-2]
+        >>> run1 = [r for r in app.run_collection()
+        ...     if r.root.incoming[0].code=='PBPP'][0]
         >>> run1.root.incoming[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS
@@ -98,9 +105,5 @@ other runs
         ...     sample_app.exchanges.ForthAction)
         >>> state1.instance_engines['C1'].blocks.remove(t_in)
         >>> state2.instance_engines['C2'].blocks.remove(t_out)
-        >>> application_class = sample_app.application.TestData
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
-        >>> delattr(application_class,
-        ...     application_class._starting_run_attribute)
+        >>> application_class.reset()
 
