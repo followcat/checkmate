@@ -40,11 +40,12 @@ class TestCase(nose.case.Test):
                 result.addError(self, err)
             result.stopTest(self)
         else:
-            if isinstance(test.test, types.FunctionType):
-                setattr(test, 'proxyResult', result.result)
-                test()
-            else:
-                test(result)
+            if hasattr(test, 'test'):
+                if isinstance(test.test, types.FunctionType):
+                    setattr(test, 'proxyResult', result.result)
+                    test()
+                else:
+                    test(result)
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
