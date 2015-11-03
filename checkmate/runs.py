@@ -217,6 +217,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     return runs
 
 
+@checkmate.report_issue("checkmate/issues/exchange_origin_destination.rst")
 def get_origin_exchanges(application_class):
     """
         >>> import sample_app.application
