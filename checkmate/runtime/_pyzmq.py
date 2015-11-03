@@ -204,11 +204,14 @@ class Communication(checkmate.runtime.communication.Communication):
         >>> c2_stub = r.runtime_components['C2']
         >>> c1_stub = r.runtime_components['C1']
         >>> c2 = r.application.components['C2']
-        >>> simulated_block = c2.engine.blocks[0]
-        >>> o = c2_stub.simulate(simulated_block)
+        >>> inc = c2_stub.context.engine.blocks[0].incoming[0]
+        >>> exchange = inc.factory(**inc.resolve())
+        >>> exchange.origin_destination('', ['C2'])
+        >>> simulated_exchanges = [exchange]
+        >>> o = c2_stub.simulate(simulated_exchanges)
         >>> time.sleep(1)
-        >>> items = (tuple(o), tuple(c1_stub.context.states))
-        >>> c1_stub.validate(items)
+        >>> items = (tuple(o), tuple(c2_stub.context.states))
+        >>> c2_stub.validate(items)
         True
         >>> r.stop_test()
     """

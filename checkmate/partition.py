@@ -200,9 +200,18 @@ class Partition(object):
         except AttributeError:
             return (None, None)
 
+    @checkmate.fix_issue("checkmate/issues/carbon_copy_list.rst")
     def carbon_copy(self, other):
         assert(type(self) == type(other))
-        self.value = other.value
+        if type(other.value) == list:
+            self.value = []
+            for _value in other.value:
+                if isinstance(_value, Partition):
+                    self.value.append(type(_value)(**_value._dump()))
+                else:
+                    self.value.append(_value)
+        else:
+            self.value = other.value
         for attr in self.partition_attribute:
             other_attr = getattr(other, attr)
             self_attr = getattr(self, attr)

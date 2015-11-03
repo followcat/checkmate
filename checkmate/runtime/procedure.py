@@ -44,7 +44,7 @@ class Procedure(object):
             >>> for run in gen:
             ...     runs.append(run[0])
 
-            >>> runs[0].root.outgoing[0].code
+            >>> runs[0].root.incoming[0].code
             'AC'
 
         And we create two different Runtime instances:
@@ -90,8 +90,9 @@ class Procedure(object):
 
     def _run_from_startpoint(self):
         _application = self.runtime.application
-        stub = self.runtime.runtime_components[self.blocks.root.owner]
-        stub.simulate(self.blocks.root)
+        for _d in self.blocks.exchanges[0].destination:
+            component = self.runtime.runtime_components[_d]
+            component.simulate(self.blocks.exchanges)
         self._follow_up(self.blocks)
 
         if hasattr(self.blocks, 'final'):
@@ -109,10 +110,14 @@ class Procedure(object):
 
     def _follow_up(self, node):
         for _next in node.nodes:
-            component = self.runtime.runtime_components[_next.root.owner]
-            if not component.validate(_next.validate_items):
+            for _d in _next.exchanges[0].destination:
+                component = self.runtime.runtime_components[_d]
+                if component.validate(_next.validate_items):
+                    break
+            else:
                 raise Exception("No exchange '%s' received by component '%s'"
-                            % (_next.root.incoming[0].code, _next.root.owner))
+                        % (_next.exchanges[0].value, _d))
+
         for _next in node.nodes:
             self._follow_up(_next)
 

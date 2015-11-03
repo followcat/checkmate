@@ -43,6 +43,16 @@ class Run(checkmate._tree.Tree):
                     _b.is_matching_initial(component.states)):
                 return _b
 
+    def get_validate_items_by_input(self, exchanges):
+        items = []
+        for run in self.breadthWalk():
+            for _e in exchanges:
+                if _e not in run.exchanges:
+                    break
+            else:
+                items.append(run.validate_items)
+        return items
+
     def get_states(self):
         if self._initial is None or self._final is None:
             initial_dict = dict()
@@ -75,39 +85,19 @@ class Run(checkmate._tree.Tree):
     @checkmate.fix_issue("checkmate/issues/application_compare_states.rst")
     def compare_final(self, application):
         """"""
-        final = []
-        def save_final(final, run):
-            try:
-                if len(final) == 0:
-                    final.extend(run.validate_items[1])
-                else:
-                    for state in run.validate_items[1]:
-                        added = False
-                        for index, _state in enumerate(final):
-                            if type(_state) == type(state):
-                                final[index] = state
-                                added = True
-                                break
-                        if not added:
-                            final.append(state)
-            except (TypeError, IndexError):
-                pass
-            for node in run.nodes:
-                save_final(final, node)
-
-        save_final(final, self)
+        final = {}
+        for run in self.breadthWalk():
+            for state in run.validate_items[1]:
+                final[type(state)] = state
         matched = 0
-        for state in final:
+        for state in final.values():
             for c in application.components.values():
-                for _state in c.states:
-                    if type(state) != type(_state):
-                        continue
-                    if _state != state:
-                        return False
+                if state in c.states:
                     matched += 1
-        if matched != len(final):
-            return False
-        return True
+                    break
+        if matched == len(final):
+            return True
+        return False
 
     def copy(self):
         _run = super().copy()

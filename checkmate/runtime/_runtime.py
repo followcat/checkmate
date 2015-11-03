@@ -32,6 +32,11 @@ class Runtime(object):
         self._registry = checkmate.runtime.registry.RuntimeGlobalRegistry()
 
         for _k, _c in self.application.communication_list.items():
+            if type(_c) == tuple:
+                _c, self.communication_delay = _c
+            else:
+                self.communication_delay = \
+                    checkmate.timeout_manager.SUT_COMMUNICATE_DELAY
             self.communication_list[_k] = _c()
 
         if self.threaded:
@@ -102,15 +107,16 @@ class Runtime(object):
             >>> c2_stub = r.runtime_components['C2']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c2_stub)
             True
-            >>> a = r.application
-            >>> simulated_block = a.components['C2'].engine.\
-                                        blocks[0]
-            >>> o = c2_stub.simulate(simulated_block) # doctest: +ELLIPSIS
+            >>> inc = c2_stub.context.engine.blocks[0].incoming[0]
+            >>> exchange = inc.factory(**inc.resolve())
+            >>> exchange.origin_destination('', ['C2'])
+            >>> simulated_exchanges = [exchange]
+            >>> o = c2_stub.simulate(simulated_exchanges) # doctest: +ELLIPSIS
             >>> c1 = r.runtime_components['C1']
             >>> checkmate.runtime.interfaces.IStub.providedBy(c1)
             False
-            >>> c1.process(o) # doctest: +ELLIPSIS
-            [<sample_app.exchanges.Reaction object at ...
+            >>> c2_stub.process(o) # doctest: +ELLIPSIS
+            [<sample_app.exchanges.Action object at ...
             >>> r.stop_test()
         """
         for communication in self.communication_list.values():
@@ -156,7 +162,7 @@ class Runtime(object):
         else:
             self.runs_log.info(['Exception', self.application.visual_dump_states()])
             checkmate.runtime.procedure._compatible_skip_test(
-                "Non-threaded SUT do not simulate")
+                "Non-threaded SUT do not process from startpoint")
         logging.getLogger('checkmate.runtime._runtime.Runtime').info(
             'Procedure done')
 

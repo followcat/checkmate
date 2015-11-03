@@ -18,11 +18,6 @@ Using compare_state() with transition's final InternalStorage as target does not
     >>> _run.nodes[0].compare_initial(r.application)
     True
 
-This is a class method not an instance method.
-Calling it would require to pass an instance as first argument.
-    >>> list(_run.nodes[0].final)[0].function  #doctest: +ELLIPSIS
-    <function State.append at ...
-
 This fails during the Procedure's compare_states(self.final), as the InternalStorage factory
 only pass args and kwargs but not an instance.
 This lead to a strange error ('str' object has no attribute 'value') showing that first argument

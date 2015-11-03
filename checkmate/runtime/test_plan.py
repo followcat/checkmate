@@ -59,7 +59,12 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> transition = c2.context.engine.blocks[0]
         >>> previous_run = checkmate.runs.get_runs_from_transition(
         ...                     r.application, transition)[0]
-        >>> o = c2.simulate(transition) # doctest: +ELLIPSIS
+        >>> inc = transition.incoming[0]
+        >>> exchange = inc.factory(**inc.resolve())
+        >>> exchange.origin_destination('', ['C2'])
+        >>> simulated_exchanges = [exchange]
+
+        >>> o = c2.simulate(simulated_exchanges)
         >>> time.sleep(1)
         >>> c1.context.states[0].value
         False
@@ -91,18 +96,18 @@ def TestProcedureFeaturesGenerator(application_class):
         >>> test_plan = checkmate.runtime.test_plan
         >>> run_list = test_plan.get_runs_from_test(data, a)
         >>> run_list.sort(key=lambda x:x.root.incoming[0].code)
-        >>> run_list[2].root.incoming[0].code
-        'PBAC'
+        >>> run_list[1].root.incoming[0].code
+        'AC'
         >>> box = checkmate.sandbox.Sandbox(type(a), a,
-        ...         run_list[2].walk())
+        ...         run_list[1].walk())
         >>> c1_state = box.application.components['C1'].states[0]
-        >>> c1_state.value == run_list[2].itp_run.root.initial[0].value
+        >>> c1_state.value == run_list[1].itp_run.root.initial[0].value
         True
-        >>> run_list[2].compare_initial(box.application)
+        >>> run_list[1].compare_initial(box.application)
         True
-        >>> box(run_list[2])
+        >>> box(run_list[1])
         True
-        >>> len(run_list[2].initial)
+        >>> len(run_list[1].initial)
         4
 
         >>> import checkmate.runtime._pyzmq

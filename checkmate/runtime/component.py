@@ -5,6 +5,7 @@
 # version 3 of the License, or (at your option) any later version.
 
 import copy
+import time
 import queue
 import logging
 import threading
@@ -107,13 +108,11 @@ class Component(object):
                 (self.context.name, _o.value, _o.destination))
         return output
 
-    def simulate(self, block):
-        output = self.context.simulate(block)
-        for _o in output:
-            self.client.send(_o)
-            self.logger.info("%s simulate block and output %s to %s" %
-                (self.context.name, _o.value, _o.destination))
-        return output
+    def simulate(self, exchanges):
+        for ex in exchanges:
+            self.exchange_queue.put(ex)
+        return exchanges
+
 
     def validate(self, block):
         return self.context.validate(block)
@@ -213,6 +212,7 @@ class ThreadedSut(ThreadedComponent, Sut):
             self._launched_in_thread = True
 
     def setup(self, runtime):
+        self.communication_delay = runtime.communication_delay
         super().setup(runtime)
         if not self._launched_in_thread:
             for _name in self.context.communication_list:
@@ -240,11 +240,15 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.launcher.initialize()
         super(ThreadedSut, self).initialize()
 
-    def simulate(self, block):
+    def simulate(self, exchanges):
         if self._launched_in_thread:
-            self.launcher.simulate(block)
-            return super().simulate(block)
+            self.launcher.simulate(exchanges)
+            return super().simulate(exchanges)
         raise ValueError("Launcher SUT can't simulate")
+
+    def validate(self, block):
+        time.sleep(self.communication_delay)
+        return super().validate(block)
 
     def start(self):
         self.launcher.start()

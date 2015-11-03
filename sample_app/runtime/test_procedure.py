@@ -37,7 +37,8 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
         c2 = application.components['C2']
         runs = checkmate.runs.get_runs_from_transition(application,
                     c2.engine.blocks[0])
-        super().__init__(runs[0].root, runs[0].nodes)
+        super().__init__(runs[0].root,
+            runs[0].nodes, exchanges=runs[0].exchanges)
         self.collected_run = runs[0].collected_run
 
     def __call__(self):
@@ -82,7 +83,8 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         run_pbrl = checkmate.runs.get_runs_from_transition(box.application,
                         transition_rl_index[0])[0]
-        super().__init__(run_pbrl.root, run_pbrl.nodes)
+        super().__init__(run_pbrl.root,
+            run_pbrl.nodes, exchanges=run_pbrl.exchanges)
         self.collected_run = run_pbrl.collected_run
 
     def __call__(self):
