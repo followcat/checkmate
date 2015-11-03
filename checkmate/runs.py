@@ -298,12 +298,13 @@ def get_origin_exchanges(application):
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
+    exchanges = []
     origin_exchanges = []
     for _component in application.components.values():
         for _block in _component.engine.blocks:
             if not len(_block.incoming):
                 if not len(_block.final):
-                    origin_exchanges.extend(_component.simulate(_block))
+                    exchanges.extend(_component.simulate(_block))
             else:
                 _incoming = _block.generic_incoming(_component.states)
                 for _c in application.components.values():
@@ -312,6 +313,10 @@ def get_origin_exchanges(application):
                     if _c.get_blocks_by_output(_incoming) is not None:
                         break
                 else:
-                    origin_exchanges.extend(_incoming)
+                    exchanges.extend(_incoming)
+    for exchange in exchanges:
+        for _e in _component.service_registry.server_exchanges( exchange, 
+            _component.name):
+            origin_exchanges.append(_e)
     return origin_exchanges
 
