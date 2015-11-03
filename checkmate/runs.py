@@ -217,7 +217,7 @@ def get_runs_from_transition(application, transition, itp_transition=False):
     return runs
 
 
-@checkmate.report_issue("checkmate/issues/exchange_origin_destination.rst")
+@checkmate.fix_issue("checkmate/issues/exchange_origin_destination.rst")
 def get_origin_exchanges(application_class):
     """
         >>> import sample_app.application
@@ -227,30 +227,37 @@ def get_origin_exchanges(application_class):
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
-    exchanges = []
     incomings = []
     outgoings = []
     origin_exchanges = []
     application = application_class()
-    application.start()
     for _component in application.components.values():
+        exchanges = []
         for _block in _component.engine.blocks:
             if not len(_block.incoming):
                 if not len(_block.final):
                     for _outgoing in _block.outgoing:
-                        exchanges.append(
-                            _outgoing.factory(**_outgoing.resolve()))
-            incomings.extend(_block.incoming)
-            outgoings.extend(_block.outgoing)
+                        exchange = _outgoing.factory(**_outgoing.resolve())
+                        if exchange not in exchanges:
+                            exchanges.append(exchange)
+            else:
+                incomings.extend(_block.incoming)
+                outgoings.extend(_block.outgoing)
+        for exchange in exchanges:
+            if exchange in origin_exchanges:
+                continue
+            for _e in _component.exchange_destination(exchange):
+                origin_exchanges.append(_e)
     for _incoming in incomings:
         for _o in outgoings:
             if _incoming.partition_class == _o.partition_class:
                 break
         else:
-            exchanges.append(_incoming.factory(**_incoming.resolve()))
-    for exchange in exchanges:
-        for _e in _component.exchange_destination(exchange):
-            origin_exchanges.append(_e)
+            exchange = _incoming.factory(**_incoming.resolve())
+            if exchange in origin_exchanges:
+                continue
+            for _e in _component.exchange_destination(exchange, origin=''):
+                origin_exchanges.append(_e)
     return origin_exchanges
 
 
