@@ -34,11 +34,12 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
             >>> r.stop_test()
         """
         application = application_class()
+        application.start()
         c2 = application.components['C2']
         runs = checkmate.runs.get_runs_from_transition(application,
                     c2.engine.blocks[0])
-        super().__init__(runs[0].root,
-            runs[0].nodes, exchanges=runs[0].exchanges)
+        super().__init__(runs[0].root, runs[0].nodes, 
+                            states=c2.states, exchanges=runs[0].exchanges)
         self.collected_run = runs[0].collected_run
 
     def __call__(self):
@@ -78,13 +79,14 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         run_pbac = checkmate.runs.get_runs_from_transition(application,
                         c2.engine.blocks[0])[0]
         box = checkmate.sandbox.Sandbox(application_class)
-        box(run_pbac)
+        box(run_pbac.exchanges)
         transition_rl_index = [_t for _t in c2.engine.blocks
                                if _t.outgoing and _t.outgoing[0].code == 'RL']
         run_pbrl = checkmate.runs.get_runs_from_transition(box.application,
                         transition_rl_index[0])[0]
-        super().__init__(run_pbrl.root,
-            run_pbrl.nodes, exchanges=run_pbrl.exchanges)
+        _states = box.application.components['C2'].states
+        super().__init__(run_pbrl.root, run_pbrl.nodes,
+                            states=_states, exchanges=run_pbrl.exchanges)
         self.collected_run = run_pbrl.collected_run
 
     def __call__(self):

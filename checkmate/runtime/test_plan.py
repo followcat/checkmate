@@ -105,7 +105,7 @@ def TestProcedureFeaturesGenerator(application_class):
         True
         >>> run_list[1].compare_initial(box.application)
         True
-        >>> box(run_list[1])
+        >>> box(run_list[1].exchanges)
         True
         >>> len(run_list[1].initial)
         4

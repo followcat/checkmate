@@ -5,11 +5,11 @@ should do a "deepcopy" to list value
     >>> cls = sample_app.application.TestData
     >>> runs = cls.run_collection()
     >>> box = checkmate.sandbox.Sandbox(cls)
-    >>> box(runs[0])
+    >>> box(runs[0].exchanges)
     True
-    >>> box(runs[2])
+    >>> box(runs[2].exchanges)
     True
-    >>> box(runs[3])
+    >>> box(runs[3].exchanges)
     True
     >>> new_box = checkmate.sandbox.Sandbox(cls, box.application)
     >>> box_c1 = box.application.components['C1']
@@ -18,7 +18,7 @@ should do a "deepcopy" to list value
     []
     >>> new_c1.states[1].value
     []
-    >>> new_box(runs[0])
+    >>> new_box(runs[0].exchanges)
     True
     >>> new_c1.states[1].value # doctest: +ELLIPSIS
     [{'R': <sample_app.data_structure.ActionRequest object at ...

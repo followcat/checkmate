@@ -71,13 +71,9 @@ class Run(checkmate._tree.Tree):
 
     def compare_initial(self, application):
         """"""
-        for initial in self.initial:
-            for component in application.components.values():
-                if initial.match(component.states):
-                    break
-            else:
-                return False
-        return True
+        box = checkmate.sandbox.Sandbox(type(application), application)
+        return box(self.exchanges) and \
+                set(self.walk()).issubset(set(box.blocks.walk()))
 
     @checkmate.fix_issue('checkmate/issues/compare_final.rst')
     @checkmate.fix_issue('checkmate/issues/sandbox_final.rst')
@@ -293,27 +289,30 @@ def get_origin_exchanges(application):
         >>> import sample_app.application
         >>> import checkmate.runs
         >>> app = sample_app.application.TestData()
-        >>> app.start(default_state_value=False)
+        >>> app.start()
         >>> exchanges = checkmate.runs.get_origin_exchanges(app)
         >>> [_e.value for _e in exchanges]
         ['PBAC', 'PBRL', 'PBPP']
     """
     exchanges = []
+    incomings = []
+    outgoings = []
     origin_exchanges = []
     for _component in application.components.values():
         for _block in _component.engine.blocks:
             if not len(_block.incoming):
                 if not len(_block.final):
-                    exchanges.extend(_component.simulate(_block))
-            else:
-                _incoming = _block.generic_incoming(_component.states)
-                for _c in application.components.values():
-                    if _c == _component:
-                        continue
-                    if _c.get_blocks_by_output(_incoming) is not None:
-                        break
-                else:
-                    exchanges.extend(_incoming)
+                    for _outgoing in _block.outgoing:
+                        exchanges.append(
+                            _outgoing.factory(**_outgoing.resolve()))
+            incomings.extend(_block.incoming)
+            outgoings.extend(_block.outgoing)
+    for _incoming in incomings:
+        for _o in outgoings:
+            if _incoming.partition_class == _o.partition_class:
+                break
+        else:
+            exchanges.append(_incoming.factory(**_incoming.resolve()))
     for exchange in exchanges:
         for _e in _component.service_registry.server_exchanges( exchange, 
             _component.name):
