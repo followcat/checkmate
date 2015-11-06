@@ -231,23 +231,18 @@ def get_origin_exchanges(application_class):
     outgoings = []
     origin_exchanges = []
     application = application_class()
+    application.start()
     for _component in application.components.values():
-        exchanges = []
         for _block in _component.engine.blocks:
             if not len(_block.incoming):
                 if not len(_block.final):
-                    for _outgoing in _block.outgoing:
-                        exchange = _outgoing.factory(**_outgoing.resolve())
-                        if exchange not in exchanges:
-                            exchanges.append(exchange)
+                    output = _component.simulate(_block)
+                    for _o in output:
+                        if _o not in origin_exchanges:
+                            origin_exchanges.append(_o)
             else:
                 incomings.extend(_block.incoming)
                 outgoings.extend(_block.outgoing)
-        for exchange in exchanges:
-            if exchange in origin_exchanges:
-                continue
-            for _e in _component.exchange_destination(exchange):
-                origin_exchanges.append(_e)
     for _incoming in incomings:
         for _o in outgoings:
             if _incoming.partition_class == _o.partition_class:
