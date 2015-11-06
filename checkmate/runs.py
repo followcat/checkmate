@@ -292,15 +292,17 @@ def followed_runs(application, exchanges, current_run=None):
         if current_run in runs:
             _index = runs.index(current_run)
             if application._runs_found[_index]:
-                return [runs[i] for i in
+                runs = [runs[i] for i in
                     application._matrix[_index].nonzero()[1].tolist()[0]]
-        else:
-            runs.append(current_run)
+                for _r in runs:
+                    if _r.compare_initial(application) and _r not in next_runs:
+                        next_runs.append(_r)
     for _exchange in exchanges:
         box = checkmate.sandbox.Sandbox(_class, application)
         if box([_exchange]):
             _run = box.blocks
-            next_runs.append(_run)
+            if _run not in next_runs:
+                next_runs.append(_run)
     application.update_matrix(next_runs, current_run)
     return next_runs
 
