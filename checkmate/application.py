@@ -49,48 +49,36 @@ class ApplicationMeta(type):
         """
         exchange_module = \
             checkmate._module.get_module(namespace['__module__'], 'exchanges')
-        namespace['exchange_module'] = exchange_module
-
         data_structure_module = \
             checkmate._module.get_module(namespace['__module__'],
                 'data_structure')
-        namespace['data_structure_module'] = data_structure_module
 
         _application_definition = namespace['application_definition']
-        try:
-            namespace['itp_definition'] = _application_definition['itp_definition']
-        except KeyError:
-            namespace['itp_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1])
-        try:
-            namespace['feature_definition_path'] =\
-                _application_definition['feature_definition_path']
-        except KeyError:
-            pass
+        for key in ('itp_definition', 'feature_definition_path',
+                        'exchange_definition'):
+            try:
+                namespace[key] = _application_definition[key]
+            except KeyError:
+                if key == 'feature_definition_path':
+                    pass
+                else:
+                    namespace[key] =\
+                        os.sep.join(namespace['__module__'].split('.')[0:-1])
 
-        try:
-            namespace['exchange_definition'] =\
-                _application_definition['exchange_definition']
-        except KeyError:
-            namespace['exchange_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1])
-        finally:
-            define_data = get_definition_data(namespace['exchange_definition'])
-
-        if 'data_structure_definition' in _application_definition:
-            define_data += \
-                get_definition_data(_application_definition['data_structure_definition'])
         data_value = {}
         try:
             value_data = get_definition_data(_application_definition['test_data_definition'])
             value_source = \
                 checkmate.parser.yaml_visitor.call_data_visitor(value_data)
-            for code, structure in value_source.items():
-                data_value.update({code: structure})
+            data_value.update(value_source)
             namespace['data_value'] = data_value
         except KeyError:
             pass
 
+        define_data = get_definition_data(namespace['exchange_definition'])
+        if 'data_structure_definition' in _application_definition:
+            define_data += \
+                get_definition_data(_application_definition['data_structure_definition'])
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         try:
             declarator = checkmate.partition_declarator.Declarator(
@@ -104,9 +92,8 @@ class ApplicationMeta(type):
         finally:
             pass
 
-        _component_classes = _application_definition['component_classes']
-        namespace['component_classes'] = _component_classes
         _component_registry = {}
+        _component_classes = _application_definition['component_classes']
         for class_definition in _component_classes:
             component_namespace = collections.defaultdict(dict)
             component_namespace.update(class_definition)
@@ -121,6 +108,9 @@ class ApplicationMeta(type):
                         (checkmate.component.Component,), component_namespace)
             class_definition['class'] = _class
 
+        namespace['exchange_module'] = exchange_module
+        namespace['data_structure_module'] = data_structure_module
+        namespace['component_classes'] = _component_classes
         namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
