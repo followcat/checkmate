@@ -55,7 +55,7 @@ class Partition(object):
         >>> import sample_app.application
         >>> state = sample_app.component.component_1_states.State
         >>> state.alike(sample_app.component.component_1.
-        ... Component_1.state_machine.transitions[0].initial[0]).code
+        ... Component_1.instance_engines['C1'].blocks[0].initial[0]).code
         'State1'
         """
         if init_storage_list is None:
@@ -200,9 +200,18 @@ class Partition(object):
         except AttributeError:
             return (None, None)
 
+    @checkmate.fix_issue("checkmate/issues/carbon_copy_list.rst")
     def carbon_copy(self, other):
         assert(type(self) == type(other))
-        self.value = other.value
+        if type(other.value) == list:
+            self.value = []
+            for _value in other.value:
+                if isinstance(_value, Partition):
+                    self.value.append(type(_value)(**_value._dump()))
+                else:
+                    self.value.append(_value)
+        else:
+            self.value = other.value
         for attr in self.partition_attribute:
             other_attr = getattr(other, attr)
             self_attr = getattr(self, attr)

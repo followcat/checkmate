@@ -1,4 +1,4 @@
-when component start, its initializing transition will be simulated.
+when component start, its initializing block will be simulated.
 
         >>> import time
         >>> import checkmate.sandbox
@@ -13,7 +13,7 @@ when component start, its initializing transition will be simulated.
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> app = sample_app.application.TestData()
@@ -24,18 +24,15 @@ when component start, its initializing transition will be simulated.
         ...             'outgoing': [{'ForthAction': 'AF()'}]}
         >>> item_in = {'name': 'TestState tran02',
         ... 'incoming': [{'ForthAction': 'AF()'}]}
-        >>> module_dict = {'exchanges':[sample_app.exchanges]}
-        >>> ts = checkmate._storage.TransitionStorage(item_out,
-        ...         module_dict)
-        >>> t_out = ts.factory()
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges])
         >>> state1 = sample_app.component.component_1.Component_1
         >>> state2 = sample_app.component.component_2.Component_2
-        >>> state2.state_machine.transitions.append(t_out)
-        >>> ts = checkmate._storage.TransitionStorage(item_in,
-        ...         module_dict)
-        >>> t_in = ts.factory()
-        >>> state1.state_machine.transitions.append(t_in)
-        >>> state1.service_classes.append(
+        >>> state2.instance_engines['C2'].blocks.append(t_out)
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges])
+        >>> state1.instance_engines['C1'].blocks.append(t_in)
+        >>> state1.instance_engines['C1'].service_classes.append(
         ...     sample_app.exchanges.ForthAction)
         >>> app = sample_app.application.TestData()
         >>> app.start()
@@ -51,7 +48,8 @@ when component start, its initializing transition will be simulated.
         >>> app_cls = sample_app.application.TestData
         >>> box = checkmate.sandbox.Sandbox(app_cls)
         >>> c1 = box.application.components['C1']
-        >>> c1.validate(t_in)
+        >>> items = tuple([tuple(outgoing), tuple(c1.states)])
+        >>> c1.validate(items)
         True
 
         >>> r = checkmate.runtime._runtime.Runtime(
@@ -61,7 +59,7 @@ when component start, its initializing transition will be simulated.
         >>> r.setup_environment(['C3'])
 
     send before starting the destination component of initializing
-    transition outgoing
+    block outgoing
         >>> r.application.stubs.sort()
         >>> r.application.stubs.reverse()
         >>> c1 = r.runtime_components['C1']
@@ -69,13 +67,14 @@ when component start, its initializing transition will be simulated.
         >>> c3 = r.runtime_components['C3']
         >>> r.start_test()
         >>> time.sleep(1)
-        >>> c1.validate(c1.context.state_machine.transitions[-1])
+        >>> items = tuple([tuple(outgoing), tuple(c1.context.states)])
+        >>> c1.validate(items)
         True
         >>> r.stop_test()
 
     Revert changes for further use in doctest:
-        >>> state1.service_classes.remove(
+        >>> state1.instance_engines['C1'].service_classes.remove(
         ...     sample_app.exchanges.ForthAction)
-        >>> state1.state_machine.transitions.remove(t_in)
-        >>> state2.state_machine.transitions.remove(t_out)
+        >>> state1.instance_engines['C1'].blocks.remove(t_in)
+        >>> state2.instance_engines['C2'].blocks.remove(t_out)
 

@@ -70,7 +70,7 @@ With some grunt analysis, we found out the problem lies in this code.
 ::
 
     def simulate(self, exchange):
-        _transition = self.get_transition_by_output([exchange])
+        _transition = self.get_blocks_by_output([exchange])
         if _transition is None:
             return []
         output = []
@@ -158,7 +158,7 @@ The nosetest tool allows to run doctest on a single module::
 
 As we are now having a test to check the fix we are ready to implement in the code, we can do our change::
 
-             _transition = self.get_transition_by_output([exchange])
+             _transition = self.get_blocks_by_output([exchange])
              if _transition is None:
                  return []
              output = []

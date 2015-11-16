@@ -29,7 +29,7 @@ nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot;
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>sample_app-doctest</childProjects>
+      <childProjects>sample_app-doctest, user_app-doctest</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>

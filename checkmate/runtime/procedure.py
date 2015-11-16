@@ -23,7 +23,7 @@ class Procedure(object):
         self.result = None
         self.test = test
         self.logger = logging.getLogger('checkmate.runtime.procedure')
-        self.transitions = run
+        self.blocks = run
         self.initial = run.initial
         self.final = run.final
 
@@ -44,7 +44,7 @@ class Procedure(object):
             >>> for run in gen:
             ...     runs.append(run[0])
 
-            >>> runs[0].root.outgoing[0].code
+            >>> runs[0].root.incoming[0].code
             'AC'
 
         And we create two different Runtime instances:
@@ -85,24 +85,26 @@ class Procedure(object):
         """
         self.result = result
         self.runtime = runtime
-        self.name = self.transitions.root.name
+        self.name = self.blocks.root.name
         self._run_from_startpoint()
 
     def _run_from_startpoint(self):
         _application = self.runtime.application
-        saved_initial = \
-            checkmate.sandbox.Sandbox(type(_application), _application)
-        stub = self.runtime.runtime_components[self.transitions.root.owner]
-        stub.simulate(self.transitions.root)
-        self._follow_up(self.transitions)
+        origin = self.blocks.exchanges[0].origin
+        if len(origin):
+            component = self.runtime.runtime_components[origin]
+            component.simulate(self.blocks.exchanges)
+        else:
+            for _d in self.blocks.exchanges[0].destination:
+                component = self.runtime.runtime_components[_d]
+                component.simulate(self.blocks.exchanges)
+        self._follow_up(self.blocks)
 
-        if hasattr(self.transitions, 'final'):
+        if hasattr(self.blocks, 'final'):
             @checkmate.timeout_manager.WaitOnFalse(
                 checkmate.timeout_manager.CHECK_COMPARE_STATES_SEC)
             def check_compare_states():
-                return self.transitions.compare_final(
-                            self.runtime.application,
-                            saved_initial.application)
+                return self.blocks.compare_final(self.runtime.application)
             if not check_compare_states():
                 self.logger.error(
                     'Procedure Failed: Final states are not as expected')
@@ -112,11 +114,13 @@ class Procedure(object):
             self.result.stopTest(self)
 
     def _follow_up(self, node):
-        for _next in node.nodes:
-            component = self.runtime.runtime_components[_next.root.owner]
-            if not component.validate(_next.root):
-                raise Exception("No exchange '%s' received by component '%s'"
-                            % (_next.root.incoming[0].code, _next.root.owner))
+        for _d in node.exchanges[0].destination:
+            component = self.runtime.runtime_components[_d]
+            if component.validate(node.validate_items):
+                break
+        else:
+            raise Exception("No exchange '%s' received by component '%s'"
+                    % (node.exchanges[0].value, _d))
         for _next in node.nodes:
             self._follow_up(_next)
 

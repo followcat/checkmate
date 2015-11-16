@@ -11,6 +11,6 @@ This is checking that an 'AP(R2)' Action matches 'AP(R)' filter:
     'AT2'
     >>> app.start()
     >>> c1 = app.components['C1']
-    >>> i = c1.state_machine.transitions[1].incoming[0]
+    >>> i = c1.engine.blocks[1].incoming[0]
     >>> i.match([ap]) #doctest: +ELLIPSIS
     <sample_app.exchanges.Action object at ...

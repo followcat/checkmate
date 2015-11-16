@@ -11,9 +11,7 @@ import numpy
 
 import checkmate.runs
 import checkmate._module
-import checkmate.sandbox
 import checkmate.component
-import checkmate.service_registry
 import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
@@ -94,6 +92,7 @@ class ApplicationMeta(type):
             _tmp_dict = collections.defaultdict(dict)
             _tmp_dict.update(_definition)
             _component_classes[index] = _tmp_dict
+        _component_registry = {}
         for class_definition in _component_classes:
             class_dict = class_definition['attributes']
             _tmp_list = class_definition['class'].split('/')
@@ -102,22 +101,15 @@ class ApplicationMeta(type):
             component_module = \
                 checkmate._module.get_module(namespace['__module__'],
                     class_name.lower(), alternative_package)
-            instance_attributes = collections.defaultdict(dict)
-            instance_transitions = collections.defaultdict(dict)
+            _component_registry[class_name] = []
             for _instance in class_definition['instances']:
-                if 'attributes' in _instance:
-                    instance_attributes[_instance['name']] = \
-                        _instance['attributes']
-                if 'transitions' in _instance:
-                    instance_transitions[_instance['name']] = \
-                        _instance['transitions']
+                _component_registry[class_name].append(_instance['name'])
             d = {'exchange_module': exchange_module,
                  'data_structure_module': data_structure_module,
                  'component_definition': class_definition['class'],
                  '__module__': component_module.__name__,
                  'communication_list': namespace['communication_list'].keys(),
-                 'instance_attributes': instance_attributes,
-                 'instance_transitions': instance_transitions
+                 'instances': class_definition['instances']
                 }
             d.update(class_dict)
             _class = checkmate.component.ComponentMeta(class_name,
@@ -125,35 +117,61 @@ class ApplicationMeta(type):
             setattr(component_module, class_name, _class)
             class_definition['class'] = _class
 
+        namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
 
 class Application(object):
-    _matrix = None
-    _runs_found = []
+    _matrix = numpy.matrix([])
+    _matrix_runs = []
+    _runs_found = [False]
     component_classes = []
     communication_list = {}
+    component_registry = {}
     feature_definition_path = None
-    _starting_run_attribute = '_starting_run'
     _run_collection_attribute = '_collected_runs'
-    path_finder_depth = 10
+    _origin_exchanges_attribute = '_origin_exchanges'
+
+    @classmethod
+    def reset(cls):
+        cls._matrix = numpy.matrix([])
+        cls._matrix_runs = []
+        cls._runs_found = [False]
+        if hasattr(cls, cls._run_collection_attribute):
+            delattr(cls, cls._run_collection_attribute)
+        if hasattr(cls, cls._origin_exchanges_attribute):
+            delattr(cls, cls._origin_exchanges_attribute)
 
     @classmethod
     def run_collection(cls):
         """
         >>> import sample_app.application
         >>> a = sample_app.application.TestData()
+        >>> cls = sample_app.application.TestData
         >>> a.run_collection() #doctest: +ELLIPSIS
         [<checkmate.runs.Run object at ...
         """
         if not hasattr(cls, cls._run_collection_attribute):
-            collection = checkmate.runs.get_runs_from_application(cls)
-            length = len(collection)
-            cls._matrix = numpy.matrix(numpy.zeros((length, length), dtype=int))
-            cls._runs_found = [False]*length
+            app = cls()
+            collection = [_run for _run in 
+                checkmate.runs.origin_runs_generator(app)]
             setattr(cls, cls._run_collection_attribute, collection)
         return getattr(cls, cls._run_collection_attribute)
+
+    @classmethod
+    def origin_exchanges(cls):
+        """
+        >>> import sample_app.application
+        >>> a = sample_app.application.TestData()
+        >>> exchanges = a.origin_exchanges()
+        >>> [ex.value for ex in exchanges]
+        ['PBAC', 'PBRL', 'PBPP']
+        """
+        if not hasattr(cls, cls._origin_exchanges_attribute):
+            exchanges = checkmate.runs.get_origin_exchanges(cls)
+            setattr(cls, cls._origin_exchanges_attribute, exchanges)
+        return getattr(cls, cls._origin_exchanges_attribute)
 
     @classmethod
     def define_exchange(cls, definition=None):
@@ -165,10 +183,12 @@ class Application(object):
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
         >>> app.define_exchange(data_source)
+        >>> app.exchange_module.ForthAction.class_destination
+        ['Component_1']
         >>> hasattr(app.exchange_module, 'ForthAction')
         True
         >>> delattr(app.exchange_module, 'ForthAction')
@@ -176,7 +196,10 @@ class Application(object):
         if definition is not None:
             declarator = checkmate.partition_declarator.Declarator(
                             cls.data_structure_module, cls.exchange_module)
-            declarator.new_partition(definition)
+            if 'attributes' in definition:
+                declarator.new_partition(definition, definition['attributes'])
+            else:
+                declarator.new_partition(definition)
         try:
             delattr(cls, cls._starting_run_attribute)
             delattr(cls, cls._run_collection_attribute)
@@ -185,19 +208,6 @@ class Application(object):
         except AttributeError:
             pass
 
-    @classmethod
-    def starting_run(cls):
-        try:
-            return getattr(cls, cls._starting_run_attribute)
-        except AttributeError:
-            try:
-                for run in cls.run_collection():
-                    if run.root.name == cls.starting_run_name:
-                        break
-            except AttributeError:
-                run = cls.run_collection()[-1]
-            setattr(cls, cls._starting_run_attribute, run)
-            return run
 
     def __init__(self):
         """
@@ -211,7 +221,6 @@ class Application(object):
         self.name = self.__module__.split('.')[-2]
         self._started = False
         self.components = collections.OrderedDict()
-        self.service_registry = checkmate.service_registry.ServiceRegistry()
         self.matrix = None
         self.runs_found = None
         for _class_definition in self.component_classes:
@@ -219,7 +228,7 @@ class Application(object):
             for component in _class_definition['instances']:
                 _name = component['name']
                 self.components[_name] = \
-                    _class(_name, self.service_registry)
+                    _class(_name, self.component_registry)
         self.default_state_value = True
         self.initializing_outgoing = []
 
@@ -266,6 +275,12 @@ class Application(object):
             local_copy += [_s for _s in _component.states]
         return local_copy
 
+    def copy_states(self):
+        copy_states= []
+        for _component in list(self.components.values()):
+            copy_states.extend(_component.copy_states())
+        return copy_states
+
     def validated_incoming_list(self):
         incoming_list = []
         for _component in list(self.components.values()):
@@ -281,3 +296,63 @@ class Application(object):
                 cls_name = type(_s).__name__
                 state_dict[_c][cls_name] = _s._dump()
         return state_dict
+
+    @classmethod
+    def update_matrix(cls, next_runs, current_run):
+        """
+        notice:update _matrix_runs first then update matrix
+
+        >>> import sample_app.application
+        >>> app = sample_app.application.TestData()
+        >>> runs = app.run_collection()
+        >>> app.reset()
+        >>> app._matrix_runs.append(runs[0])  # update _matrix_runs
+        >>> app.update_matrix([runs[1]], runs[0])
+        >>> app._matrix
+        matrix([[0, 1],
+                [0, 0]])
+        >>> app.update_matrix([runs[2], runs[3]], runs[1])
+        >>> app._matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]])
+        >>> app.update_matrix([runs[1]], runs[2])
+        >>> app._matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 1, 0, 0],
+                [0, 0, 0, 0]])
+        >>> app.update_matrix([runs[0]], runs[3])
+        >>> app._matrix
+        matrix([[0, 1, 0, 0],
+                [0, 0, 1, 1],
+                [0, 1, 0, 0],
+                [1, 0, 0, 0]])
+        """
+        new_runs = [_run for _run in next_runs \
+                    if _run not in cls._matrix_runs]
+        extra_length = len(new_runs)
+        # extend matrix
+        if extra_length > 0:
+            if cls._matrix.size == 0:
+                cls._matrix = \
+                    numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
+            else:
+                _temp = cls._matrix.tolist()
+                for item in _temp:
+                    item.extend([0]*extra_length)
+                _temp.extend([[0]*len(_temp[0])]*extra_length)
+                cls._matrix = numpy.matrix(_temp)
+            cls._matrix_runs.extend(new_runs)
+            cls._runs_found.extend([False]*extra_length)
+        # update matrix row
+        if current_run is not None:
+            current_index = cls._matrix_runs.index(current_run)
+            row = len(cls._matrix)*[0]
+            for _run in next_runs:
+                row[cls._matrix_runs.index(_run)] = 1
+            cls._matrix[current_index] = row
+            cls._runs_found[current_index] = True
+
+

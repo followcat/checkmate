@@ -29,10 +29,9 @@ class Client(object):
         >>> are._destination = ['C2']
         >>> rc1.client.send(are)
         >>> time.sleep(0.5)
-        >>> are_t = [_t for _t in rc2.context.state_machine.transitions
-        ...     if _t.incoming[0].code == 'ARE'][0]
-        >>> rc2.context.validation_dict.collected_items[are_t][0].value
-        'ARE'
+        >>> items = ((are,), tuple(rc2.context.states))
+        >>> items in rc2.context.validation_dict.collected_items
+        True
         >>> rc2.reset()
         >>> rc3.reset()
         >>> pa = sample_app.exchanges.Pause('PA')
@@ -41,15 +40,12 @@ class Client(object):
         True
         >>> rc1.client.send(pa)
         >>> time.sleep(0.5)
-        >>> import time; time.sleep(1)
-        >>> pa_t = [_t for _t in rc2.context.state_machine.transitions
-        ...     if _t.incoming[0].code == 'PA'][0]
-        >>> rc2.context.validation_dict.collected_items[pa_t][0].value
-        'PA'
-        >>> pa_t = [_t for _t in rc3.context.state_machine.transitions
-        ...     if _t.incoming[0].code == 'PA'][0]
-        >>> rc3.context.validation_dict.collected_items[pa_t][0].value
-        'PA'
+        >>> items = ((pa,), tuple(rc2.context.states))
+        >>> items in rc2.context.validation_dict.collected_items
+        True
+        >>> items = ((pa,), tuple(rc3.context.states))
+        >>> items in rc3.context.validation_dict.collected_items
+        True
         >>> r.stop_test()
     """
     def __init__(self, component, exchange_queue):

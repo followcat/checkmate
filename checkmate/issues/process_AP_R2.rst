@@ -1,5 +1,5 @@
-When using a transition defining AP(R) to process AP(R2),
-the component should be able to execute the transition:
+When using a block defining AP(R) to process AP(R2),
+the component should be able to execute the block:
 
     >>> import sample_app.application
     >>> app = sample_app.application.TestData()
@@ -10,16 +10,16 @@ the component should be able to execute the transition:
     >>> ap_r2 = sample_app.exchanges.Action('AP', R=r2)
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> t = c1.get_transitions_by_input([ap_r2])[0]
-    >>> t.is_matching_initial(c1.states)
+    >>> b = c1.get_blocks_by_input([ap_r2])[0]
+    >>> b.is_matching_initial(c1.states)
     True
     >>> sample_app.exchanges.ActionCode(True) in c1.process([ap_r2])
     True
 
 
-define a transition to to process AP(R2)
+define a block to to process AP(R2)
     >>> import sample_app.application
-    >>> import checkmate._storage
+    >>> import checkmate.tymata.transition
     >>> a = sample_app.application.TestData()
     >>> a.start()
     >>> r1 = action_request.storage_by_code('R1').factory()
@@ -30,17 +30,15 @@ define a transition to to process AP(R2)
     ('AT1', 'NORM')
     >>> ap_r2.R.C.value, ap_r2.R.P.value
     ('AT2', 'HIGH')
-    >>> c1_states = sample_app.component.component_1_states
     >>> c1 = a.components['C1']
-    >>> module_dict = {'states': [c1_states],
-    ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
     ...         'initial': [{'AnotherState': 'AnotherState1()'}],
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
     >>> t.is_matching_incoming([ap_r1], c1.states)
     False
     >>> t.is_matching_incoming([ap_r2], c1.states)
@@ -55,28 +53,25 @@ define a transition to to process AP(R2)
     ('AT2', 'HIGH')
 
 
-When using a transition defining AP(R2) to process AP(R, default=False),
-the component should be able to execute the transition:
+When using a block defining AP(R2) to process AP(R, default=False),
+the component should be able to execute the block:
 
 Setup:
     >>> import sample_app.application
-    >>> import checkmate._storage
-    >>> import checkmate.transition
+    >>> import checkmate.tymata.transition
     >>> app = sample_app.application.TestData()
     >>> app.start()
     >>> c1 = app.components['C1']
-    >>> c1_states = sample_app.component.component_1_states
-    >>> module_dict = {'states': [c1_states],
-    ...                'exchanges':[sample_app.exchanges]}
     >>> item = {'name': 'Toggle TestState tran01',
     ...         'initial': [{'AnotherState': 'AnotherState1()'}],
     ...         'outgoing': [{'ThirdAction': 'DA()'}],
     ...         'incoming': [{'Action': 'AP(R2)'}],
     ...         'final': [{'AnotherState': 'append(R2)'}]}
-    >>> ts = checkmate._storage.TransitionStorage(item, module_dict)
-    >>> t = ts.factory()
-    >>> saved_transition = c1.state_machine.transitions[1]
-    >>> c1.state_machine.transitions[1] = t
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item, [sample_app.exchanges],
+    ...         [sample_app.component.component_1_states])
+    >>> saved_block = c1.engine.blocks[1]
+    >>> c1.engine.blocks[1] = t
 
 Default behavior. The exchange AP(R2) can't be processed.
     >>> ap = sample_app.exchanges.Action('AP')
@@ -88,7 +83,7 @@ Default behavior. The exchange AP(R2) can't be processed.
     >>> res = c1.process([ap]) #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
-    checkmate.exception.NoTransitionFound:
+    checkmate.exception.NoBlockFound:
     >>> sample_app.exchanges.ActionCode(True) in res
     False
 
@@ -104,7 +99,7 @@ the expected final state is reached.
     >>> c1.states[1].R.C.value, c1.states[1].R.P.value
     ('AT2', 'HIGH')
 
-Restore original transition for further testing.
-    >>> c1.state_machine.transitions[1] = saved_transition
+Restore original block for further testing.
+    >>> c1.engine.blocks[1] = saved_block
     >>>
 

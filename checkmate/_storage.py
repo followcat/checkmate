@@ -5,19 +5,9 @@
 # version 3 of the License, or (at your option) any later version.
 
 import checkmate._module
-import checkmate.transition
 import checkmate._exec_tools
+import checkmate.tymata.transition
 
-
-def name_to_class(name, modules):
-    for _m in modules:
-        if hasattr(_m, name):
-            partition_class = getattr(_m, name)
-            break
-    else:
-        raise AttributeError(
-            _m.__name__ + ' has no class defined:' + name)
-    return partition_class
 
 class PartitionStorage(object):
     def __init__(self, partition_class, code_arguments,
@@ -48,7 +38,6 @@ class PartitionStorage(object):
         self.full_description = full_description
         self.partition_class = partition_class
         self.storage = []
-        #n items for PartitionStorage and 1 item for TransitionStorage
         for code, arguments in code_arguments.items():
             try:
                 code_description = self.full_description[code]
@@ -69,60 +58,6 @@ class PartitionStorage(object):
             if item == stored_item.factory():
                 return stored_item.description
         return (None, None)
-
-
-class TransitionStorage(object):
-    def __init__(self, items, module_dict):
-        """"""
-        super().__init__()
-        self.name = ''
-        self.initializing = False
-        self.final = []
-        self.initial = []
-        self.incoming = []
-        self.outgoing = []
-        self.returned = []
-
-        for _k, _v in items.items():
-            if _k == 'initial' or _k == 'final':
-                module_type = 'states'
-            elif _k == 'incoming' or _k == 'outgoing'or _k == 'returned':
-                module_type = 'exchanges'
-            elif _k == 'initializing' and _v == True:
-                self.initializing = True
-                continue
-            elif _k == 'name':
-                self.name = _v
-                continue
-            for each_item in _v:
-                for _name, _data in each_item.items():
-                    code = checkmate._exec_tools.get_method_basename(_data)
-                    define_class = \
-                        name_to_class(_name, module_dict[module_type])
-                    arguments = checkmate._exec_tools.get_signature_arguments(
-                                    _data, define_class)
-                    generate_storage = InternalStorage(define_class, _data,
-                                        None, arguments=arguments)
-                    if _k == 'final':
-                        generate_storage.function = define_class.__init__
-                    for _s in define_class.partition_storage.storage:
-                        if _s.code == code:
-                            generate_storage.value = _s.value
-                            break
-                    else:
-                        if hasattr(define_class, code):
-                            generate_storage.function = \
-                                getattr(define_class, code)
-                    getattr(self, _k).append(generate_storage)
-
-    def factory(self):
-        return checkmate.transition.Transition(tran_name=self.name,
-                                               initializing=self.initializing,
-                                               initial=self.initial,
-                                               incoming=self.incoming,
-                                               final=self.final,
-                                               outgoing=self.outgoing,
-                                               returned=self.returned)
 
 
 class InternalStorage(object):
@@ -180,7 +115,7 @@ class InternalStorage(object):
             [<sample_app.exchanges.Reaction object at ...
             >>> c.states[1].value # doctest: +ELLIPSIS
             [{'R': <sample_app.data_structure.ActionRequest object ...
-            >>> t = c.state_machine.transitions[2]
+            >>> t = c.engine.blocks[2]
             >>> i = t.incoming[0].factory(); i.value
             'PP'
             >>> t.final[1].function # doctest: +ELLIPSIS
@@ -213,9 +148,9 @@ class InternalStorage(object):
         """
             >>> import sample_app.application
             >>> import sample_app.exchanges
-            >>> import checkmate._storage
+            >>> import checkmate.tymata.transition
             >>> a = sample_app.application.TestData()
-            >>> t = a.components['C1'].state_machine.transitions[1]
+            >>> t = a.components['C1'].engine.blocks[1]
             >>> inc = t.incoming[0].factory()
             >>> states = [t.initial[0].factory()]
             >>> t.final[0].resolve(states, resolved_dict=t.resolve_dict)
@@ -235,15 +170,12 @@ class InternalStorage(object):
             >>> t.final[0].resolve(exchanges=[inc],
             ...     resolved_dict=t.resolve_dict) # doctest: +ELLIPSIS
             {'R': <sample_app.data_structure.ActionRequest object at ...
-            >>> module_dict = {
-            ...     'states': [sample_app.component.component_1_states],
-            ...     'exchanges':[sample_app.exchanges]}
             >>> item = {'name': 'Toggle TestState tran01',
             ...         'outgoing': [{'Action': 'AP(R2)'}],
             ...         'incoming': [{'AnotherReaction': 'ARE()'}]}
-            >>> ts = checkmate._storage.TransitionStorage(
-            ...         item, module_dict)
-            >>> t = ts.factory()
+            >>> t = checkmate.tymata.transition.make_transition(
+            ...         item, [sample_app.exchanges],
+            ...         [sample_app.component.component_1_states])
             >>> t.outgoing[0].resolved_arguments['R'].C.value
             'AT2'
             >>> t.outgoing[0].resolved_arguments['R'].P.value
@@ -253,7 +185,7 @@ class InternalStorage(object):
             >>> resolved_arguments = t.outgoing[0].resolve()
             >>> list(resolved_arguments.keys())
             ['R']
-            >>> resolved_arguments['R'].C.value 
+            >>> resolved_arguments['R'].C.value
             'AT2'
             >>> resolved_arguments['R'].P.value
             'HIGH'
@@ -304,7 +236,7 @@ class InternalStorage(object):
             >>> c1_states = sample_app.component.component_1_states
             >>> final = [_f for _f in run.final
             ...          if _f.partition_class == c1_states.State][0]
-            >>> t1 = c1.state_machine.transitions[0]
+            >>> t1 = c1.engine.blocks[0]
             >>> c1.simulate(t1) #doctest: +ELLIPSIS
             [<sample_app.exchanges.Reaction object at ...
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
@@ -313,7 +245,7 @@ class InternalStorage(object):
             >>> c3_states = sample_app.component.component_3_states
             >>> final = [_f for _f in run.final
             ...          if _f.partition_class == c3_states.Acknowledge][0]
-            >>> t3 = c3.state_machine.transitions[0]
+            >>> t3 = c3.engine.blocks[0]
             >>> c3.simulate(t3)
             []
             >>> final.match(app.state_list(), saved) #doctest: +ELLIPSIS
@@ -344,7 +276,7 @@ class InternalStorage(object):
             >>> state = sample_app.component.component_1_states.State
             >>> (state.partition_storage.storage[0] ==
             ... sample_app.component.component_1.Component_1.
-            ... state_machine.transitions[0].initial[0])
+            ... instance_engines['C1'].blocks[0].initial[0])
             True
         """
         assert type(other) == InternalStorage

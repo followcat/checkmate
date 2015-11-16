@@ -1,6 +1,6 @@
     >>> import checkmate.runs
-    >>> import checkmate._storage
     >>> import checkmate._module
+    >>> import checkmate.tymata.transition
     >>> import checkmate.partition_declarator
     >>> import sample_app.application
     >>> import sample_app.component.component_1
@@ -25,12 +25,11 @@
     >>> item_in = {'name': 'TestState tran02',
     ...            'incoming': [{'ForthAction': 'AF()'}],
     ...            'outgoing': [{'Action': 'AC()'}]}
-    >>> module_dict = {'exchanges':[sample_app.exchanges]}
-    >>> ts = checkmate._storage.TransitionStorage(item_in,
-    ...         module_dict)
+    >>> t = checkmate.tymata.transition.make_transition(
+    ...         item_in, [sample_app.exchanges])
     >>> c2 = sample_app.component.component_2.Component_2
-    >>> t_copy = c2.state_machine.transitions[0]
-    >>> c2.state_machine.transitions[0] = ts.factory()
+    >>> t_copy = c2.instance_engines['C2'].blocks[0]
+    >>> c2.instance_engines['C2'].blocks[0] = t
     >>> app = sample_app.application.TestData()
     >>> app.start(default_state_value=False)
     >>> transitions = checkmate.runs.get_origin_transitions(app)
@@ -43,4 +42,10 @@
     True
 
     Revert changes for further use in doctest:
-    >>> c2.state_machine.transitions[0] = t_copy
+    >>> c2.instance_engines['C2'].blocks[0] = t_copy
+    >>> application_class = sample_app.application.TestData
+    >>> delattr(application_class,
+    ...     application_class._origin_exchanges_attribute)
+    >>> delattr(application_class,
+    ...     application_class._run_collection_attribute)
+

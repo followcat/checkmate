@@ -11,13 +11,13 @@ Setting the procedure.final from the sandbox does not work.
     >>> c1 = r.runtime_components['C1']
     >>> _application = sample_app.application.TestData()
     >>> components = list(_application.components.keys())
-    >>> data = checkmate.parser.yaml_visitor.data_from_files(_application)
+    >>> data = checkmate.tymata.visitor.data_from_files(_application)
     >>> run_list = checkmate.runtime.test_plan.get_runs_from_test(data, _application)
     >>> _run = run_list[0]
-    >>> box = checkmate.sandbox.Sandbox(type(_application), initial_transitions=[_run.root])
-    >>> box(_run, itp_run=True)
+    >>> box = checkmate.sandbox.Sandbox(type(_application))
+    >>> box(_run.exchanges, itp_run=True)
     True
-    >>> run = box.transitions
+    >>> run = box.blocks
     >>> len(run.final)
     4
     >>> ff = [_f.function for _f in run.final]

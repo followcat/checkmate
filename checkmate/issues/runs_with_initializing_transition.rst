@@ -9,38 +9,55 @@ other runs
         >>> import sample_app.application
         >>> import sample_app.component.component_1
         >>> import sample_app.component.component_2
+        >>> application_class = sample_app.application.TestData
+        >>> application_class.reset()
         >>> exchange_definition = {
         ...    'partition_type': 'exchanges',
         ...    'signature': 'ForthAction',
         ...    'codes_list': ['AF()'],
         ...    'values_list': ['AF'],
         ...    'full_description': None,
-        ...    'attributes': {},
+        ...    'attributes': {'class_destination':['Component_1']},
         ...    'define_attributes': {}
         ... }
+        >>> exchange_definition2 = {
+        ...    'partition_type': 'exchanges',
+        ...    'signature': 'InitAction',
+        ...    'codes_list': ['INTAC()'],
+        ...    'values_list': ['INTAC'],
+        ...    'full_description': None,
+        ...    'attributes': {'class_destination':['Component_2']},
+        ...    'define_attributes': {}
+        ... }
+        >>> if hasattr(application_class,
+        ...     application_class._origin_exchanges_attribute):
+        ...     delattr(application_class,
+        ...         application_class._origin_exchanges_attribute)
         >>> app = sample_app.application.TestData()
         >>> app.define_exchange(exchange_definition)
+        >>> app.define_exchange(exchange_definition2)
         >>> item_out = {'name': 'Initializing tran01',
         ...             'initializing': True,
+        ...             'incoming': [{'InitAction': 'INIAC()'}],
         ...             'outgoing': [{'ForthAction': 'AF()'}]}
         >>> item_in = {'name': 'TestState tran02',
         ... 'incoming': [{'ForthAction': 'AF()'}],
         ... 'initial': [{'State': 'State1'}],
         ... 'final': [{'State': 'State2'}]}
-        >>> module_dict = {'exchanges':[sample_app.exchanges],
-        ...     'states':[sample_app.component.component_1_states]}
-        >>> ts = checkmate._storage.TransitionStorage(item_out,
-        ...         module_dict)
-        >>> t_out = ts.factory()
+        >>> t_out = checkmate.tymata.transition.make_transition(
+        ...         item_out, [sample_app.exchanges],
+        ...         [sample_app.component.component_1_states])
         >>> state1 = sample_app.component.component_1.Component_1
         >>> state2 = sample_app.component.component_2.Component_2
-        >>> state2.state_machine.transitions.append(t_out)
-        >>> ts = checkmate._storage.TransitionStorage(item_in,
-        ...         module_dict)
-        >>> t_in = ts.factory()
-        >>> state1.state_machine.transitions.append(t_in)
-        >>> state1.service_classes.append(
+        >>> state2.instance_engines['C2'].blocks.append(t_out)
+        >>> t_in = checkmate.tymata.transition.make_transition(
+        ...         item_in, [sample_app.exchanges],
+        ...         [sample_app.component.component_1_states])
+        >>> state1.instance_engines['C1'].blocks.append(t_in)
+        >>> state1.instance_engines['C1'].service_classes.append(
         ...     sample_app.exchanges.ForthAction)
+        >>> state2.instance_engines['C2'].service_classes.append(
+        ...     sample_app.exchanges.InitAction)
         >>> r = checkmate.runtime._runtime.Runtime(
         ...         sample_app.application.TestData,
         ...         checkmate.runtime._pyzmq.Communication,
@@ -58,7 +75,8 @@ other runs
         <checkmate.runs.Run object at ...
         >>> c1.context.states[0].value
         False
-        >>> run1 = app.run_collection()[-2]
+        >>> run1 = [r for r in app.run_collection()
+        ...     if r.root.incoming[0].code=='PBPP'][0]
         >>> run1.root.incoming[0].code
         'PBPP'
         >>> r.execute(run1) # doctest: +ELLIPSIS
@@ -83,13 +101,9 @@ other runs
         >>> r.stop_test()
 
     Revert changes for further use in doctest:
-        >>> state1.service_classes.remove(
+        >>> state1.instance_engines['C1'].service_classes.remove(
         ...     sample_app.exchanges.ForthAction)
-        >>> state1.state_machine.transitions.remove(t_in)
-        >>> state2.state_machine.transitions.remove(t_out)
-        >>> application_class = sample_app.application.TestData
-        >>> delattr(application_class,
-        ...     application_class._run_collection_attribute)
-        >>> delattr(application_class,
-        ...     application_class._starting_run_attribute)
+        >>> state1.instance_engines['C1'].blocks.remove(t_in)
+        >>> state2.instance_engines['C2'].blocks.remove(t_out)
+        >>> application_class.reset()
 

@@ -5,9 +5,9 @@
 # version 3 of the License, or (at your option) any later version.
 
 import sys
+import types
 import random
 import unittest
-import collections
 
 import nose.case
 import nose.suite
@@ -40,7 +40,12 @@ class TestCase(nose.case.Test):
                 result.addError(self, err)
             result.stopTest(self)
         else:
-            test(result)
+            if hasattr(test, 'test'):
+                if isinstance(test.test, types.FunctionType):
+                    setattr(test, 'proxyResult', result.result)
+                    test()
+                else:
+                    test(result)
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
@@ -51,11 +56,21 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         """"""
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
-        runtime.execute(self.test, transform=True)
+        if isinstance(self.test, types.FunctionType):
+            for _test in self.test(runtime.application,
+                            self.config.defined_config['random']):
+                _FunctionTestCase = FunctionTestCase(_test, config=self.config)
+                setattr(_FunctionTestCase, '__name__', 
+                    str(self) + '(' + str(_test.exchanges[0].value) +', )')
+                _FunctionTestCase(self.proxyResult)
+        else:
+            runtime.execute(self.test, transform=True)
 
     def shortDescription(self):
         if hasattr(self.test, 'description'):
             return self.test.description
+        if hasattr(self, '__name__'):
+            return self.__name__
         return str(self)
 
 
@@ -77,9 +92,29 @@ class ContextSuite(nose.suite.ContextSuite):
                       "generator, so iteration may not be repeatable.")
 
     def run(self, result):
+        """
+        let origin runs the first one in test
+        and random test if in random mode.
+        """
+        _tests = list(self._tests)
+        run_first_item = None
+        if self.config.defined_config['_loop'] == 0:
+            for index, item in enumerate(_tests):
+                if not isinstance(item, ContextSuite):
+                    continue
+                try:
+                    if item.context in [checkmate] or\
+                        'TestProcedureRunsGenerator' in\
+                            str(list(item._tests)[0]):
+                        run_first_item = _tests.pop(index)
+                        break
+                except IndexError:
+                    pass
         if self.randomized_run:
-            _list = list(self._tests)
-            self._tests = random.sample(_list, len(_list))
+            _tests = random.sample(_tests, len(_tests))
+        if run_first_item is not None:
+            _tests = [run_first_item] + _tests
+        self._tests = _tests
         super(ContextSuite, self).run(result)
 
 
