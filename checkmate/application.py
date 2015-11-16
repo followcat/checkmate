@@ -102,7 +102,7 @@ class ApplicationMeta(type):
                 'component_registry': _component_registry,
                 'exchange_module': exchange_module,
                 'data_structure_module': data_structure_module,
-                'communication_list': namespace['communication_list'].keys(),
+                'communication_list': namespace['communication_list']
                 })
             _class = checkmate.component.ComponentMeta('_filled_later',
                         (checkmate.component.Component,), component_namespace)
