@@ -32,6 +32,59 @@ def get_definition_data(definitions):
                         definition_data += _file.read()
     return definition_data
 
+def get_definition_update(root_module, definition):
+    """"""
+    definition_update = {}
+
+    try:
+        exchange_module = definition['exchange_module']
+    except KeyError:
+        exchange_module = \
+            checkmate._module.get_module(root_module, 'exchanges')
+        definition_update['exchange_module'] = exchange_module
+
+    try:
+        data_structure_module = definition['data_structure_module']
+    except KeyError:
+        data_structure_module = \
+            checkmate._module.get_module(root_module, 'data_structure')
+        definition_update['data_structure_module'] = data_structure_module
+
+    try:
+        exchange_definition = definition['exchange_definition']
+    except KeyError:
+        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
+        definition_update['exchange_definition'] = exchange_definition
+
+    data_value = {}
+    try:
+        value_data = get_definition_data(definition['test_data_definition'])
+        value_source = \
+            checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        data_value.update(value_source)
+        definition_update['data_value'] = data_value
+    except KeyError:
+        pass
+
+    define_data = get_definition_data(exchange_definition)
+    if 'data_structure_definition' in definition:
+        define_data += \
+            get_definition_data(definition['data_structure_definition'])
+    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+    try:
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module,
+                        data_value=data_value)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+
+        definition_update['data_structure'] = output['data_structure']
+        definition_update['exchanges'] = output['exchanges']
+    finally:
+        pass
+
+    return definition_update
+
 
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
@@ -47,69 +100,35 @@ class ApplicationMeta(type):
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
         """
-        exchange_module = \
-            checkmate._module.get_module(namespace['__module__'], 'exchanges')
-        data_structure_module = \
-            checkmate._module.get_module(namespace['__module__'],
-                'data_structure')
+        root_module = namespace['__module__']
+        definition = namespace['application_definition']
 
-        _application_definition = namespace['application_definition']
-        for key in ('itp_definition', 'feature_definition_path',
-                        'exchange_definition'):
-            try:
-                namespace[key] = _application_definition[key]
-            except KeyError:
+        definition_update = get_definition_update(root_module, definition)
+
+        for key in ('itp_definition', 'feature_definition_path'):
+            if key not in definition:
                 if key == 'feature_definition_path':
                     pass
                 else:
-                    namespace[key] =\
-                        os.sep.join(namespace['__module__'].split('.')[0:-1])
-
-        data_value = {}
-        try:
-            value_data = get_definition_data(_application_definition['test_data_definition'])
-            value_source = \
-                checkmate.parser.yaml_visitor.call_data_visitor(value_data)
-            data_value.update(value_source)
-            namespace['data_value'] = data_value
-        except KeyError:
-            pass
-
-        define_data = get_definition_data(namespace['exchange_definition'])
-        if 'data_structure_definition' in _application_definition:
-            define_data += \
-                get_definition_data(_application_definition['data_structure_definition'])
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        try:
-            declarator = checkmate.partition_declarator.Declarator(
-                            data_structure_module, exchange_module,
-                            data_value=data_value)
-            declarator.new_definitions(data_source)
-            output = declarator.get_output()
-
-            namespace['data_structure'] = output['data_structure']
-            namespace['exchanges'] = output['exchanges']
-        finally:
-            pass
+                    definition_update[key] =\
+                        os.sep.join(root_module.split('.')[0:-1])
 
         _component_registry = {}
-        _component_classes = _application_definition['component_classes']
+        _component_classes = definition['component_classes']
         for class_definition in _component_classes:
             component_namespace = collections.defaultdict(dict)
+            component_namespace.update(definition_update)
             component_namespace.update(class_definition)
             component_namespace.update({
-                'root_module': namespace['__module__'],
+                'root_module': root_module,
                 'component_registry': _component_registry,
-                'exchange_module': exchange_module,
-                'data_structure_module': data_structure_module,
                 'communication_list': namespace['communication_list']
                 })
             _class = checkmate.component.ComponentMeta('_filled_later',
                         (checkmate.component.Component,), component_namespace)
             class_definition['class_from_meta'] = _class
 
-        namespace['exchange_module'] = exchange_module
-        namespace['data_structure_module'] = data_structure_module
+        namespace.update(definition_update)
         namespace['component_classes'] = _component_classes
         namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
