@@ -16,76 +16,6 @@ import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
-def get_definition_data(definitions):
-    definition_data = ''
-    if type(definitions) != list:
-        definitions = [definitions]
-    for _d in definitions:
-        if os.path.isfile(_d):
-            with open(_d, 'r') as _file:
-                definition_data += _file.read()
-        elif os.path.isdir(_d):
-            for filename in os.listdir(_d):
-                if filename.endswith(".yaml"):
-                    _fullname = os.path.join(_d, filename)
-                    with open(_fullname, 'r') as _file:
-                        definition_data += _file.read()
-    return definition_data
-
-def get_definition_update(root_module, definition):
-    """"""
-    definition_update = {}
-
-    try:
-        exchange_module = definition['exchange_module']
-    except KeyError:
-        exchange_module = \
-            checkmate._module.get_module(root_module, 'exchanges')
-        definition_update['exchange_module'] = exchange_module
-
-    try:
-        data_structure_module = definition['data_structure_module']
-    except KeyError:
-        data_structure_module = \
-            checkmate._module.get_module(root_module, 'data_structure')
-        definition_update['data_structure_module'] = data_structure_module
-
-    try:
-        exchange_definition = definition['exchange_definition']
-    except KeyError:
-        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
-        definition_update['exchange_definition'] = exchange_definition
-
-    data_value = {}
-    try:
-        value_data = get_definition_data(definition['test_data_definition'])
-        value_source = \
-            checkmate.parser.yaml_visitor.call_data_visitor(value_data)
-        data_value.update(value_source)
-        definition_update['data_value'] = data_value
-    except KeyError:
-        pass
-
-    define_data = get_definition_data(exchange_definition)
-    if 'data_structure_definition' in definition:
-        define_data += \
-            get_definition_data(definition['data_structure_definition'])
-    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-    try:
-        declarator = checkmate.partition_declarator.Declarator(
-                        data_structure_module, exchange_module,
-                        data_value=data_value)
-        declarator.new_definitions(data_source)
-        output = declarator.get_output()
-
-        definition_update['data_structure'] = output['data_structure']
-        definition_update['exchanges'] = output['exchanges']
-    finally:
-        pass
-
-    return definition_update
-
-
 class ApplicationMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         """
@@ -103,7 +33,8 @@ class ApplicationMeta(type):
         root_module = namespace['__module__']
         definition = namespace['application_definition']
 
-        definition_update = get_definition_update(root_module, definition)
+        definition_update = checkmate.component.get_definition_update(
+                                root_module, definition)
 
         for key in ('itp_definition', 'feature_definition_path'):
             if key not in definition:
