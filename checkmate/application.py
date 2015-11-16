@@ -106,7 +106,7 @@ class ApplicationMeta(type):
                 })
             _class = checkmate.component.ComponentMeta('_filled_later',
                         (checkmate.component.Component,), component_namespace)
-            class_definition['class'] = _class
+            class_definition['class_from_meta'] = _class
 
         namespace['exchange_module'] = exchange_module
         namespace['data_structure_module'] = data_structure_module
@@ -224,7 +224,7 @@ class Application(object):
         self.matrix = None
         self.runs_found = None
         for _class_definition in self.component_classes:
-            _class = _class_definition['class']
+            _class = _class_definition['class_from_meta']
             for component in _class_definition['instances']:
                 _name = component['name']
                 self.components[_name] = \
