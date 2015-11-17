@@ -12,7 +12,6 @@ import numpy
 import checkmate.runs
 import checkmate._module
 import checkmate.component
-import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 

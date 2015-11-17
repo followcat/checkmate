@@ -14,6 +14,7 @@ import checkmate._validation
 import checkmate.exception
 import checkmate.interfaces
 import checkmate.tymata.engine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
