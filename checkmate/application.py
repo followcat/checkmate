@@ -31,7 +31,10 @@ class ApplicationMeta(type):
         3
         """
         root_module = namespace['__module__']
-        definition = namespace['application_definition']
+        try:
+            definition = namespace['application_definition']
+        except KeyError:
+            definition = {}
 
         definition_update = checkmate.component.get_definition_update(
                                 root_module, definition)
@@ -45,9 +48,13 @@ class ApplicationMeta(type):
                         os.sep.join(root_module.split('.')[0:-1])
 
         _component_registry = {}
-        _component_classes = definition['component_classes']
+        try:
+            _component_classes = definition['component_classes']
+        except KeyError:
+            _component_classes = {}
+
         for class_definition in _component_classes:
-            component_namespace = collections.defaultdict(dict)
+            component_namespace = {}
             component_namespace.update(definition_update)
             component_namespace.update(class_definition)
             component_namespace.update({

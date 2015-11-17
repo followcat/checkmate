@@ -36,6 +36,16 @@ def get_definition_data(definitions):
 def get_local_update(root_module, definition):
     """"""
     definition_update = {}
+    definition_update['class_states'] = []
+
+    try:
+        (package_name, file_name) =\
+            definition['component_definition'].split('/')[-2:]
+        name = file_name.split('.')[0].capitalize()
+        definition_update['name'] = name
+    except KeyError:
+        return definition_update
+
     exchange_module = definition['exchange_module']
     data_structure_module = definition['data_structure_module']
 
@@ -139,19 +149,30 @@ class ComponentMeta(type):
         <module 'sample_app.component.component_1_states' from ...
         """
         root_module = namespace['root_module']
-        namespace['component_definition'] = namespace['class']
+        # TODO: use 'definition' key in yaml
+        try:
+            namespace['component_definition'] = namespace['class']
+        except KeyError:
+            pass
         definition_update = checkmate.component.get_local_update(
                                 root_module, namespace)
 
         namespace.update(definition_update)
-        name = namespace['name']
+        try:
+            name = namespace['name']
+        except KeyError:
+            pass
 
         _component_registry = namespace['component_registry']
         _component_registry[name] = []
         instance_attributes = collections.defaultdict(dict)
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
-        for _instance in namespace['instances']:
+        try:
+            instance_list = namespace['instances']
+        except KeyError:
+            instance_list = []
+        for _instance in instance_list:
             _component_registry[name].append(_instance['name'])
 
             if 'attributes' in _instance:
@@ -179,7 +200,10 @@ class ComponentMeta(type):
             namespace['instance_engines'][_instance['name']] = engine
 
         result = type.__new__(cls, name, bases, dict(namespace))
-        setattr(namespace['component_module'], name, result)
+        try:
+            setattr(namespace['component_module'], name, result)
+        except KeyError:
+            pass
         return result
 
 
