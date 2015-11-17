@@ -33,6 +33,27 @@ def get_definition_data(definitions):
                         definition_data += _file.read()
     return definition_data
 
+def get_local_update(root_module, definition, local_module):
+    """"""
+    definition_update = {}
+    state_module = definition['state_module']
+    exchange_module = definition['exchange_module']
+    data_structure_module = definition['data_structure_module']
+
+    define_data = get_definition_data(definition['component_definition'])
+    try:
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module, state_module)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+        definition_update['class_states'] = output['states']
+    except:
+        pass
+
+    return definition_update
+
+
 def get_definition_update(root_module, definition):
     """"""
     definition_update = {}
@@ -104,39 +125,36 @@ class ComponentMeta(type):
             checkmate._module.get_module(namespace['root_module'],
                 name.lower(), package_name)
         namespace['__module__'] = component_module.__name__
-        _component_registry = namespace['component_registry']
-        _component_registry[name] = []
-        for _instance in namespace['instances']:
-            _component_registry[name].append(_instance['name'])
 
-        exchange_module = namespace['exchange_module']
-        data_structure_module = namespace['data_structure_module']
         state_module = checkmate._module.get_module(namespace['__module__'],
                             name.lower() + '_states')
         namespace['state_module'] = state_module
+
+        root_module = namespace['root_module']
+        local_module = namespace['__module__']
+        namespace['component_definition'] = namespace['class']
+        definition_update = checkmate.component.get_local_update(
+                                root_module, namespace, local_module)
+
+        namespace.update(definition_update)
+
+        _component_registry = namespace['component_registry']
+        _component_registry[name] = []
         instance_attributes = collections.defaultdict(dict)
+        namespace['instance_attributes'] = instance_attributes
+        namespace['instance_engines'] = collections.defaultdict(dict)
         for _instance in namespace['instances']:
+            _component_registry[name].append(_instance['name'])
+
             if 'attributes' in _instance:
                 instance_attributes[_instance['name']] = \
                     _instance['attributes']
-        namespace['instance_attributes'] = instance_attributes
-        namespace['instance_engines'] = collections.defaultdict(dict)
 
-        namespace['component_definition'] = namespace['class']
-        define_data = get_definition_data(namespace['component_definition'])
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        declarator = checkmate.partition_declarator.Declarator(
-            data_structure_module, exchange_module, state_module)
-        declarator.new_definitions(data_source)
-        output = declarator.get_output()
-        namespace['class_states'] = output['states']
-
-        for _instance in namespace['instances']:
             instance_dir = None
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
-                exchange_module, state_module,
+                namespace['exchange_module'], state_module,
                 namespace['component_definition'], instance_dir)
             engine.set_owner(_instance['name'])
             try:
@@ -151,6 +169,7 @@ class ComponentMeta(type):
             except Exception as e:
                 raise e
             namespace['instance_engines'][_instance['name']] = engine
+
         result = type.__new__(cls, name, bases, dict(namespace))
         setattr(component_module, name, result)
         return result
