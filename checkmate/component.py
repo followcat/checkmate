@@ -122,23 +122,22 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
 
-        class_file = namespace['class']
-        namespace['component_definition'] = class_file
-        with open(class_file, 'r') as _file:
-            define_data = _file.read()
+        namespace['component_definition'] = namespace['class']
+        define_data = get_definition_data(namespace['component_definition'])
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator = checkmate.partition_declarator.Declarator(
             data_structure_module, exchange_module, state_module)
         declarator.new_definitions(data_source)
         output = declarator.get_output()
         namespace['class_states'] = output['states']
+
         for _instance in namespace['instances']:
             instance_dir = None
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
                 exchange_module, state_module,
-                class_file, instance_dir)
+                namespace['component_definition'], instance_dir)
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:
