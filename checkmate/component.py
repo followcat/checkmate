@@ -115,10 +115,14 @@ def get_definition_update(root_module, definition):
         declarator.new_definitions(data_source)
         output = declarator.get_output()
 
-        definition_update['data_structure'] = output['data_structure']
-        definition_update['exchanges'] = output['exchanges']
+        exchanges = output['exchanges']
+        data_structure = output['data_structure']
+    except:
+        exchanges = {}
+        data_structure = {}
     finally:
-        pass
+        definition_update['exchanges'] = exchanges
+        definition_update['data_structure'] = data_structure
 
     return definition_update
 
