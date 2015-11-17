@@ -18,22 +18,6 @@ import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
-def get_definition_data(definitions):
-    definition_data = ''
-    if type(definitions) != list:
-        definitions = [definitions]
-    for _d in definitions:
-        if os.path.isfile(_d):
-            with open(_d, 'r') as _file:
-                definition_data += _file.read()
-        elif os.path.isdir(_d):
-            for filename in os.listdir(_d):
-                if filename.endswith(".yaml"):
-                    _fullname = os.path.join(_d, filename)
-                    with open(_fullname, 'r') as _file:
-                        definition_data += _file.read()
-    return definition_data
-
 def get_local_update(root_module, definition):
     """"""
     definition_update = {}
@@ -66,7 +50,8 @@ def get_local_update(root_module, definition):
                         name.lower() + '_states')
     definition_update['state_module'] = state_module
 
-    define_data = get_definition_data(definition['component_definition'])
+    define_data = checkmate.tymata.engine.get_definition_data(
+                    definition['component_definition'])
     try:
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator = checkmate.partition_declarator.Declarator(
@@ -106,7 +91,8 @@ def get_definition_update(root_module, definition):
 
     data_value = {}
     try:
-        value_data = get_definition_data(definition['test_data_definition'])
+        value_data = checkmate.tymata.engine.get_definition_data(
+                        definition['test_data_definition'])
         value_source = \
             checkmate.parser.yaml_visitor.call_data_visitor(value_data)
         data_value.update(value_source)
@@ -114,10 +100,10 @@ def get_definition_update(root_module, definition):
     except KeyError:
         pass
 
-    define_data = get_definition_data(exchange_definition)
+    define_data = checkmate.tymata.engine.get_definition_data(exchange_definition)
     if 'data_structure_definition' in definition:
-        define_data += \
-            get_definition_data(definition['data_structure_definition'])
+        define_data += checkmate.tymata.engine.get_definition_data(
+                            definition['data_structure_definition'])
     data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
     try:
         declarator = checkmate.partition_declarator.Declarator(
