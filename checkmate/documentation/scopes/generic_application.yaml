@@ -11,34 +11,38 @@ description: "Simplify application/component definition.
     "
 backlog:
     - feature: Make code in ApplicationMeta and ComponentMeta similar
-      description: "Improve code reuse between application and component meta.
+      description: "Application and component metaclasses share code.
 
         The two classes have similar functions:
             - creating modules
             - reading partition definitions
             - creating partition classes
-        The code is currently strongly coupled from data used by component is
-        preprocessed in application. The results from component metaclass are
-        passed to application metaclass for application creation.
 
         Both application and component metaclasses are given a dictionary for
-        initialization but the keys are different.  Extending code for all keys
-        to be possible for both would help code reuse.
+        initialization with common set of keys.
         "
       example: "
-            >>> import collections\n
             >>> import checkmate.component\n
             >>> import checkmate.application\n
             >>> import sample_app.application\n
-            >>> d = collections.defaultdict(dict)\n
+            >>> d = {}\n
             >>> d['__module__'] = 'sample_app.application'\n
             >>> app = checkmate.application.ApplicationMeta('GenericApp',\n
             ...         (checkmate.application.Application,), d)\n
-            >>> d = collections.defaultdict(dict)\n
+            >>> d = {}\n
             >>> d['__module__'] = 'sample_app.component'\n
+            >>> d['root_module'] = 'sample_app.application'\n
+            >>> d['component_registry'] = {}\n
             >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
             ...             (checkmate.component.Component,), d)\n
-            >>> assert app.communication_list == comp.communication_list\n
+        "
+
+    - feature: Define a simple default engine for component
+      description: "Define a default engine.
+
+        The default engine is used when a component that has no configuration
+        data about partition. The component must then define exchanges and
+        state in the format supported by the default engine.
         "
 
     - feature: Exchange definition in component
@@ -61,14 +65,6 @@ backlog:
             >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
             ...             (checkmate.component.Component,), d)\n
             >>> assert comp.exchanges\n
-        "
-
-    - feature: Define a simple default engine for component
-      description: "Define a default engine.
-
-        The default engine is used when a component that has no configuration
-        data about partition. The component must then define exchanges and
-        state in the format supported by the default engine.
         "
 
     - feature: Definition of new components inside component
