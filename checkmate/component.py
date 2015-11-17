@@ -33,12 +33,27 @@ def get_definition_data(definitions):
                         definition_data += _file.read()
     return definition_data
 
-def get_local_update(root_module, definition, local_module):
+def get_local_update(root_module, definition):
     """"""
     definition_update = {}
-    state_module = definition['state_module']
     exchange_module = definition['exchange_module']
     data_structure_module = definition['data_structure_module']
+
+    (package_name, file_name) =\
+         definition['component_definition'].split('/')[-2:]
+    name = file_name.split('.')[0].capitalize()
+    definition_update['name'] = name
+
+    component_module = \
+        checkmate._module.get_module(root_module,
+            name.lower(), package_name)
+    local_module = component_module.__name__
+    definition_update['__module__'] = local_module
+    definition_update['component_module'] = component_module
+
+    state_module = checkmate._module.get_module(local_module,
+                        name.lower() + '_states')
+    definition_update['state_module'] = state_module
 
     define_data = get_definition_data(definition['component_definition'])
     try:
@@ -119,24 +134,13 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
-        (package_name, file_name) = namespace['class'].split('/')[-2:]
-        name = file_name.split('.')[0].capitalize()
-        component_module = \
-            checkmate._module.get_module(namespace['root_module'],
-                name.lower(), package_name)
-        namespace['__module__'] = component_module.__name__
-
-        state_module = checkmate._module.get_module(namespace['__module__'],
-                            name.lower() + '_states')
-        namespace['state_module'] = state_module
-
         root_module = namespace['root_module']
-        local_module = namespace['__module__']
         namespace['component_definition'] = namespace['class']
         definition_update = checkmate.component.get_local_update(
-                                root_module, namespace, local_module)
+                                root_module, namespace)
 
         namespace.update(definition_update)
+        name = namespace['name']
 
         _component_registry = namespace['component_registry']
         _component_registry[name] = []
@@ -154,7 +158,7 @@ class ComponentMeta(type):
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
-                namespace['exchange_module'], state_module,
+                namespace['exchange_module'], namespace['state_module'],
                 namespace['component_definition'], instance_dir)
             engine.set_owner(_instance['name'])
             try:
@@ -171,7 +175,7 @@ class ComponentMeta(type):
             namespace['instance_engines'][_instance['name']] = engine
 
         result = type.__new__(cls, name, bases, dict(namespace))
-        setattr(component_module, name, result)
+        setattr(namespace['component_module'], name, result)
         return result
 
 
