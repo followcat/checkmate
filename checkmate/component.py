@@ -4,6 +4,7 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import os
 import collections
 
 import zope.interface
@@ -13,7 +14,114 @@ import checkmate._validation
 import checkmate.exception
 import checkmate.interfaces
 import checkmate.tymata.engine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
+
+
+def get_local_update(root_module, definition):
+    """"""
+    definition_update = {}
+    definition_update['class_states'] = []
+
+    try:
+        (package_name, file_name) =\
+            definition['component_definition'].split('/')[-2:]
+        name = file_name.split('.')[0].capitalize()
+        definition_update['name'] = name
+    except KeyError:
+        return definition_update
+
+    exchange_module = definition['exchange_module']
+    data_structure_module = definition['data_structure_module']
+
+    (package_name, file_name) =\
+         definition['component_definition'].split('/')[-2:]
+    name = file_name.split('.')[0].capitalize()
+    definition_update['name'] = name
+
+    component_module = \
+        checkmate._module.get_module(root_module,
+            name.lower(), package_name)
+    local_module = component_module.__name__
+    definition_update['__module__'] = local_module
+    definition_update['component_module'] = component_module
+
+    state_module = checkmate._module.get_module(local_module,
+                        name.lower() + '_states')
+    definition_update['state_module'] = state_module
+
+    define_data = checkmate.tymata.engine.get_definition_data(
+                    definition['component_definition'])
+    try:
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module, state_module)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+        definition_update['class_states'] = output['states']
+    except:
+        pass
+
+    return definition_update
+
+
+def get_definition_update(root_module, definition):
+    """"""
+    definition_update = {}
+
+    try:
+        exchange_module = definition['exchange_module']
+    except KeyError:
+        exchange_module = \
+            checkmate._module.get_module(root_module, 'exchanges')
+        definition_update['exchange_module'] = exchange_module
+
+    try:
+        data_structure_module = definition['data_structure_module']
+    except KeyError:
+        data_structure_module = \
+            checkmate._module.get_module(root_module, 'data_structure')
+        definition_update['data_structure_module'] = data_structure_module
+
+    try:
+        exchange_definition = definition['exchange_definition']
+    except KeyError:
+        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
+        definition_update['exchange_definition'] = exchange_definition
+
+    data_value = {}
+    try:
+        value_data = checkmate.tymata.engine.get_definition_data(
+                        definition['test_data_definition'])
+        value_source = \
+            checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        data_value.update(value_source)
+        definition_update['data_value'] = data_value
+    except KeyError:
+        pass
+
+    define_data = checkmate.tymata.engine.get_definition_data(exchange_definition)
+    if 'data_structure_definition' in definition:
+        define_data += checkmate.tymata.engine.get_definition_data(
+                            definition['data_structure_definition'])
+    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+    try:
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module,
+                        data_value=data_value)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+
+        exchanges = output['exchanges']
+        data_structure = output['data_structure']
+    except:
+        exchanges = {}
+        data_structure = {}
+    finally:
+        definition_update['exchanges'] = exchanges
+        definition_update['data_structure'] = data_structure
+
+    return definition_update
 
 
 class ComponentMeta(type):
@@ -27,35 +135,43 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
-        exchange_module = namespace['exchange_module']
-        data_structure_module = namespace['data_structure_module']
-        state_module = checkmate._module.get_module(namespace['__module__'],
-                            name.lower() + '_states')
-        namespace['state_module'] = state_module
+        root_module = namespace['root_module']
+        # TODO: use 'definition' key in yaml
+        try:
+            namespace['component_definition'] = namespace['class']
+        except KeyError:
+            pass
+        definition_update = checkmate.component.get_local_update(
+                                root_module, namespace)
+
+        namespace.update(definition_update)
+        try:
+            name = namespace['name']
+        except KeyError:
+            pass
+
+        _component_registry = namespace['component_registry']
+        _component_registry[name] = []
         instance_attributes = collections.defaultdict(dict)
-        for _instance in namespace['instances']:
+        namespace['instance_attributes'] = instance_attributes
+        namespace['instance_engines'] = collections.defaultdict(dict)
+        try:
+            instance_list = namespace['instances']
+        except KeyError:
+            instance_list = []
+        for _instance in instance_list:
+            _component_registry[name].append(_instance['name'])
+
             if 'attributes' in _instance:
                 instance_attributes[_instance['name']] = \
                     _instance['attributes']
-        namespace['instance_attributes'] = instance_attributes
-        namespace['instance_engines'] = collections.defaultdict(dict)
 
-        class_file = namespace['component_definition']
-        with open(class_file, 'r') as _file:
-            define_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        declarator = checkmate.partition_declarator.Declarator(
-            data_structure_module, exchange_module, state_module)
-        declarator.new_definitions(data_source)
-        output = declarator.get_output()
-        namespace['class_states'] = output['states']
-        for _instance in namespace['instances']:
             instance_dir = None
             if 'transitions' in _instance:
                 instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
-                exchange_module, state_module,
-                class_file, instance_dir)
+                namespace['exchange_module'], namespace['state_module'],
+                namespace['component_definition'], instance_dir)
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:
@@ -69,7 +185,12 @@ class ComponentMeta(type):
             except Exception as e:
                 raise e
             namespace['instance_engines'][_instance['name']] = engine
+
         result = type.__new__(cls, name, bases, dict(namespace))
+        try:
+            setattr(namespace['component_module'], name, result)
+        except KeyError:
+            pass
         return result
 
 

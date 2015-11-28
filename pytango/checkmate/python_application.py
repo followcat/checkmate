@@ -40,33 +40,33 @@ class FullPython(checkmate.application.Application,
         >>> r.stop_test()
 
     """
-    itp_definition = 'pytango/checkmate'
-    feature_definition_path = 'sample_app/itp'
-    data_structure_definition = ['pytango/checkmate/data_structures']
-    exchange_definition = ['pytango/checkmate/exchanges']
-    test_data_definition = ['pytango/checkmate/test_data.yaml']
-
-    component_classes = yaml.load(
+    application_definition = yaml.load(
         """
-        - class: pytango/checkmate/component/component_1.yaml
-          attributes:
-            launch_command: "python ./pytango/component/component_1.py
-                                {component.name}"
-          instances:
-            - name: C1
-              transitions: pytango/checkmate/component/component_1/C1
-        - class: pytango/checkmate/component/component_2.yaml
-          attributes:
-            launch_command: "python ./pytango/component/component_2.py
-                                {component.name}"
-          instances:
-            - name: C2
-        - class: pytango/checkmate/component/component_3.yaml
-          attributes:
-            launch_command: "python ./pytango/component/component_3.py
-                                {component.name}"
-          instances:
-            - name: C3
+        itp_definition: pytango/checkmate
+        feature_definition_path: sample_app/itp
+        exchange_definition: pytango/checkmate/exchanges
+        test_data_definition: pytango/checkmate/test_data.yaml
+        data_structure_definition: pytango/checkmate/data_structures
+        component_classes:
+          - class: pytango/checkmate/component/component_1.yaml
+            attributes:
+              launch_command: "python ./pytango/component/component_1.py
+                                  {component.name}"
+            instances:
+              - name: C1
+                transitions: pytango/checkmate/component/component_1/C1
+          - class: pytango/checkmate/component/component_2.yaml
+            attributes:
+              launch_command: "python ./pytango/component/component_2.py
+                                  {component.name}"
+            instances:
+              - name: C2
+          - class: pytango/checkmate/component/component_3.yaml
+            attributes:
+              launch_command: "python ./pytango/component/component_3.py
+                                  {component.name}"
+            instances:
+              - name: C3
         """)
 
     communication_list = {

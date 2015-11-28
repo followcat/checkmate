@@ -1,0 +1,80 @@
+branch: generic_application
+description: "Simplify application/component definition.
+
+    There is a need to be able to create new application more easily.
+    Support for easier application definition allow to create different
+    applications dedicated to particular purposes.
+
+    It is necessary to define new application that are not linked to
+    the partition definition machinery so that doctests using them are
+    less exposed to failure from side effect.
+    "
+backlog:
+    - feature: Make code in ApplicationMeta and ComponentMeta similar
+      description: "Application and component metaclasses share code.
+
+        The two classes have similar functions:
+            - creating modules
+            - reading partition definitions
+            - creating partition classes
+
+        Both application and component metaclasses are given a dictionary for
+        initialization with common set of keys.
+        "
+      example: "
+            >>> import checkmate.component\n
+            >>> import checkmate.application\n
+            >>> import sample_app.application\n
+            >>> d = {}\n
+            >>> d['__module__'] = 'sample_app.application'\n
+            >>> app = checkmate.application.ApplicationMeta('GenericApp',\n
+            ...         (checkmate.application.Application,), d)\n
+            >>> d = {}\n
+            >>> d['__module__'] = 'sample_app.component'\n
+            >>> d['root_module'] = 'sample_app.application'\n
+            >>> d['component_registry'] = {}\n
+            >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
+            ...             (checkmate.component.Component,), d)\n
+        "
+
+    - feature: Define a simple default engine for component
+      description: "Define a default engine.
+
+        The default engine is used when a component that has no configuration
+        data about partition. The component must then define exchanges and
+        state in the format supported by the default engine.
+        "
+
+    - feature: Exchange definition in component
+      description: "Move the exchange partition parsing into component.
+
+        The exchange partitions are needed for component initialization. The
+        exchanges are created in exchange module that is passed for each
+        component. As long as the definition is available, it does not matter
+        if the parsing is done in application or component metaclasses.
+        "
+      example: "
+            >>> import collections\n
+            >>> import checkmate.component\n
+            >>> d = collections.defaultdict(dict)\n
+            >>> d['__module__'] = 'sample_app.component'\n
+            >>> d['component_definition'] = yaml.load('\n
+            ...         exchange_definition: sample_app/exchanges.yaml\n
+            ...         test_data_definition: sample_app/test_data.yaml\n
+            ...         ')\n
+            >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
+            ...             (checkmate.component.Component,), d)\n
+            >>> assert comp.exchanges\n
+        "
+
+    - feature: Definition of new components inside component
+      description: "Comoonent definition inside component.
+
+        As the code of application and component metaclasses are more similar
+        the existing application should be split in two:
+            - the actions that can be done by component is moved to a new 
+                component. Each application is defining its own component.
+                This component is defining more components.
+            - the actions that are application specific are kept there.
+        "
+
