@@ -233,21 +233,61 @@ def get_origin_exchanges(application_class):
     application.start()
     for _component in application.components.values():
         for _block in _component.engine.blocks:
-            incomings.extend([_i for _i in _block.incoming
-                                if _i not in incomings])
-            outgoings.extend([_o for _o in _block.outgoing
-                                if _o not in outgoings])
+            incomings.extend(_block.incoming)
+            outgoings.extend(_block.outgoing)
     for _incoming in incomings:
         for _o in outgoings:
             if _incoming.partition_class == _o.partition_class:
                 break
         else:
             _i = _incoming.factory(**_incoming.resolve())
-            if _i in origin_exchanges:
-                continue
             for _e in _component.exchange_destination(_i):
                 origin_exchanges.append(_e)
     return origin_exchanges
+
+
+def followed_runs(application, exchanges, current_run=None):
+    """
+    3 conditions:
+        1. we find next runs by matrix
+        2. current_run is None, find next runs by exchanges
+        3. find next runs by exchanges and update matrix
+    >>> import sample_app.application
+    >>> import checkmate.runs
+    >>> import checkmate.sandbox
+    >>> app = sample_app.application.TestData
+    >>> exchanges = app.origin_exchanges()
+    >>> box = checkmate.sandbox.Sandbox(app)
+    >>> runs = app.run_collection()
+    >>> next_runs = checkmate.runs.followed_runs(box.application,
+    ...     exchanges, None)
+    >>> next_runs[0].validate_items[0][0].value
+    'PBAC'
+    >>> box(next_runs[0].exchanges)
+    True
+    >>> next_runs = checkmate.runs.followed_runs(box.application,
+    ...     exchanges, next_runs[0])
+    >>> next_runs[0].validate_items[0][0].value
+    'PBRL'
+    """
+    _class = type(application)
+    runs = application._matrix_runs
+    next_runs = []
+    if current_run is not None:
+        if current_run in runs:
+            _index = runs.index(current_run)
+            if application._runs_found[_index]:
+                return [runs[i] for i in
+                    application._matrix[_index].nonzero()[1].tolist()[0]]
+        else:
+            runs.append(current_run)
+    for _exchange in exchanges:
+        box = checkmate.sandbox.Sandbox(_class, application)
+        if box([_exchange]):
+            _run = box.blocks
+            next_runs.append(_run)
+    application.update_matrix(next_runs, current_run)
+    return next_runs
 
 
 @checkmate.report_issue('checkmate/issues/run_collect_multi_instances.rst')
@@ -255,7 +295,7 @@ def get_origin_exchanges(application_class):
 @checkmate.fix_issue('checkmate/issues/get_runs_from_failed_simulate.rst')
 @checkmate.report_issue('checkmate/issues/execute_AP_R_AP_R2.rst',
                             failed=3)
-def origin_runs_generator(application, randomized=False, no_duplicate=True):
+def origin_runs_generator(application, randomized=False):
     """
         >>> import checkmate.runs
         >>> import sample_app.application
@@ -265,64 +305,37 @@ def origin_runs_generator(application, randomized=False, no_duplicate=True):
         >>> len(origin_runs)
         4
     """
-    if hasattr(application, application._run_collection_attribute):
-        runs = getattr(application, application._run_collection_attribute)
+    _cls = type(application)
+    if hasattr(_cls, _cls._run_collection_attribute):
+        runs = _cls.run_collection()
         if randomized:
             runs = random.sample(runs, len(runs))
         for _r in runs:
             yield _r
         return
-    runs = []
     exchanges = application.origin_exchanges()
-    for _run in runs_generator(application, exchanges):
-        if _run in runs and no_duplicate:
-            continue
-        runs.append(_run)
-        yield _run
-
-
-def runs_generator(application, exchanges):
     current_run=None
     yielded_runs = []
     unyielded_runs = []
-    path_runs = []
-    box = checkmate.sandbox.Sandbox(type(application), application)
+    box = checkmate.sandbox.Sandbox(_cls, application)
     while True:
-        next_runs = []
-        for _r in checkmate.pathfinder.followed_runs(box.application,
-                    exchanges, current_run):
-            next_runs.append(_r)
-            checkmate.pathfinder.filter_run(box.application, _r, current_run)
-            checkmate.pathfinder.update_matrix(box.application, _r, next_runs)
-            for _run, _path in box.application._safe_runs:
-                if _r == _run:
-                    if len(_path) > 0 and _run not in path_runs + yielded_runs:
-                        path_runs.append(_run)
-                    for run in [_run] + _path:
-                        box(run.exchanges)
-                        if run not in yielded_runs:
-                            yielded_runs.append(run)
-                        yield run
-                    break
-            else:
-                if _r not in yielded_runs and _r not in unyielded_runs:
-                    unyielded_runs.append(_r)
-        current_run = box.blocks
-        if len(path_runs) > 0:
-            entrances = path_runs
-        elif len(unyielded_runs) > 0:
-            entrances = unyielded_runs
+        _path = []
+        next_runs = followed_runs(box.application, exchanges, current_run)
+        new_next_runs = [_r for _r in next_runs if _r not in yielded_runs]
+        if len(new_next_runs) > 0:
+            unyielded_runs.extend([_r for _r in new_next_runs
+                                        if _r not in unyielded_runs])
+            current_run = new_next_runs[0]
         else:
-            break
-        _run, _path = checkmate.pathfinder.find_path(box.application,
-                        entrances, exchanges, current_run)
-        for _r in _path + [_run]:
+            if len(unyielded_runs) == 0:
+                break
+            current_run, _path = checkmate.pathfinder.find_path(\
+                box.application, unyielded_runs, exchanges, current_run)
+        if current_run in unyielded_runs:
+            unyielded_runs.remove(current_run)
+        for _r in _path + [current_run]:
             box(_r.exchanges)
-            run = box.blocks
-            if run in entrances:
-                entrances.remove(run)
-            if run not in yielded_runs:
-                yielded_runs.append(run)
-            yield run
         current_run = box.blocks
+        yielded_runs.append(current_run)
+        yield current_run
 

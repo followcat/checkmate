@@ -34,10 +34,10 @@ class Runtime(object):
         for _k, _c in self.application.communication_list.items():
             if type(_c) == tuple:
                 _c, self.communication_delay = _c
-            self.communication_list[_k] = _c()
-        if not hasattr(self, 'communication_delay'):
-            self.communication_delay = \
+            else:
+                self.communication_delay = \
                     checkmate.timeout_manager.SUT_COMMUNICATE_DELAY
+            self.communication_list[_k] = _c()
 
         if self.threaded:
             self._registry.registerAdapter(

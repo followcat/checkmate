@@ -119,7 +119,6 @@ class Sandbox(object):
                 break
         else:
             return self.is_run
-        self.used = True
         _outgoing = component.process(exchanges)
         _states = component.copy_states()
         self.blocks = start_blocks[0]
