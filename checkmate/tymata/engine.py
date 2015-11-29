@@ -23,7 +23,7 @@ def get_definition_data(definitions):
                 for _file in filenames:
                     if _file.endswith(".yaml"):
                         with open(os.path.join(dirpath, _file), 'r') as _file:
-                            define_data += _file.read()
+                            definition_data += _file.read()
     return definition_data
 
 
