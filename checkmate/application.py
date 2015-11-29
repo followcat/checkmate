@@ -39,7 +39,9 @@ class ApplicationMeta(type):
                                 root_module, definition)
 
         for key in ('itp_definition', 'feature_definition_path'):
-            if key not in definition:
+            try:
+                definition_update[key] = definition[key]
+            except KeyError:
                 if key == 'feature_definition_path':
                     pass
                 else:
