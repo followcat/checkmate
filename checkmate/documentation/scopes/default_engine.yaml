@@ -1,0 +1,96 @@
+branch: default_engine
+description: "Define a default engine.
+
+    This branch is a sub-branch of generic_application, purpose to define a
+    default engine.
+
+    When a component has no configuration data, then no specific engine will
+    be created for it. But in some cases, the component may still need an
+    engine to process blocks, so a default engine will need to be created for
+    the component. The component's exchanges and states should be defined in
+    the format supported by the engine.
+
+    Currently, there is one specific engine named AutoMata defined, which is
+    taking too much responsibilities. The default engine however will be
+    lighter, and for the consistance, AutoMata should be simplified to take
+    the similar responsibilities.
+    "
+
+backlog:
+    - feature: Make AutoMata initialize with name and block list
+      description: "AutoMata should accept name and blocks to initialize.
+
+        Features now in AutoMata:
+            - define blocks from source datas
+            - collect attributes services, servic_class and communication_list
+            - map blocks
+            - simulate and process blocks
+
+        Blocks definition should move out from AutoMata, so __init__ function
+        will accept block list
+        "
+      example: "
+            >>> import checkmate.block\n
+            >>> import checkmate.tymata.engine\n
+            >>> blo = checkmate.block.Block()\n
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',\n
+            ...             blocks=[blo])\n
+            >>> assert blo in engine.blocks\n
+        "
+
+    - feature: Move extra attributes collection out of AutoMata
+      description: "Move services, service_classes and communication_list out.
+
+        Attributes like services, service_classes and communication_list
+        should be moved out from AutoMata, and should be handled according to
+        their purposes.
+            
+        Service_classes and services are supporting visualization, their
+        collection can move to ComponentMeta, and stored as component_instance
+        attributes.
+
+        Communication_list should be defined in component's configuration. For
+        the component has no configuration, communication_list should be
+        collected from given blocks incoming/outgoing.
+        "
+      example: "
+            >>> import checkmate.block\n
+            >>> import checkmate.tymata.engine\n
+            >>> blo = checkmate.block.Block()\n
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',\n
+            ...             blocks=[blo])\n
+            >>> assert (not hasattr(engine, 'services')\n
+            >>> assert (not hasattr(engine, 'service_classes')\n
+            >>> assert (not hasattr(engine, 'communication_list')\n
+        "
+
+    - feature: Create engine module with default engine class
+      description: "Create default engine class Engine in engine.py.
+
+        The default Engine class should:
+            - initialize with name and block list
+            - be capable to extend block list
+            - process block
+
+        These features are implemented in AutoMata, so the new Engine class
+        can be inherited by AutoMata's.
+        "
+      example: "
+            >>> import checkmate.block\n
+            >>> import checkmate.engine\n
+            >>> import sample_app.application\n
+            >>> app = sample_app.application.TestData()\n
+            >>> c = app.components['C1']\n
+            >>> blocks = c.engine.blocks\n
+            >>> engine = checkmate.engine.Engine(name='Default',\n
+            ...             blocks=blocks)\n
+            >>> blo = checkmate.block.Block()\n
+            >>> engine.add_block(blo)\n
+            >>> assert blo in engine.blocks\n
+
+            >>> app.start()\n
+            >>> exchanges = blocks[0].generic_incoming(c.states)\n
+            >>> outgoing = engine.process(exchanges, c.states, blocks[0])\n
+            >>> assert outgoing is not None\n
+        "
+
