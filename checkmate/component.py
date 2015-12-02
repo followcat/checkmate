@@ -100,7 +100,8 @@ def get_definition_update(root_module, definition):
     except KeyError:
         pass
 
-    define_data = checkmate.tymata.engine.get_definition_data(exchange_definition)
+    define_data = checkmate.tymata.engine.get_definition_data(
+                    exchange_definition)
     if 'data_structure_definition' in definition:
         define_data += checkmate.tymata.engine.get_definition_data(
                             definition['data_structure_definition'])
