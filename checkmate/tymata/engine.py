@@ -27,6 +27,16 @@ def get_definition_data(definitions):
     return definition_data
 
 
+def get_blocks_from_data(exchange_module, state_module, define_data):
+    items = checkmate.tymata.visitor.call_visitor(define_data)
+    blocks = []
+    for _item in items:
+        new_block = checkmate.tymata.transition.make_transition(_item,
+                        [exchange_module], [state_module])
+        blocks.append(new_block)
+    return blocks
+
+
 class AutoMata(object):
     # This is Transition Engine
     def __init__(self, exchange_module,
@@ -37,12 +47,8 @@ class AutoMata(object):
         if class_file:
             definitions.append(class_file)
         define_data = get_definition_data(definitions)
-        transitions = checkmate.tymata.visitor.call_visitor(define_data)
-        self.blocks = []
-        for data in transitions:
-            new_block = checkmate.tymata.transition.make_transition(
-                data, [exchange_module], [state_module])
-            self.blocks.append(new_block)
+        self.blocks = get_blocks_from_data(exchange_module,
+                        state_module, define_data)
         self.services = {}
         self.service_classes = []
         self.communication_list = set()
