@@ -39,16 +39,14 @@ def get_blocks_from_data(exchange_module, state_module, define_data):
 
 class AutoMata(object):
     # This is Transition Engine
-    def __init__(self, exchange_module,
-                 state_module, class_file, instance_dir=None):
-        definitions = []
-        if instance_dir:
-            definitions.append(instance_dir)
-        if class_file:
-            definitions.append(class_file)
-        define_data = get_definition_data(definitions)
-        self.blocks = get_blocks_from_data(exchange_module,
-                        state_module, define_data)
+    def __init__(self, name=None, blocks=None):
+        if blocks:
+            assert isinstance(blocks, list)
+            self.blocks = blocks
+        else:
+            self.blocks = []
+        if name:
+            self.set_owner(name)
         self.services = {}
         self.service_classes = []
         self.communication_list = set()

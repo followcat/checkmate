@@ -157,6 +157,10 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
         try:
+            block_definitions = [namespace['component_definition']]
+        except KeyError:
+             block_definitions = []
+        try:
             instance_list = namespace['instances']
         except KeyError:
             instance_list = []
@@ -167,13 +171,19 @@ class ComponentMeta(type):
                 instance_attributes[_instance['name']] = \
                     _instance['attributes']
 
-            instance_dir = None
             if 'transitions' in _instance:
-                instance_dir = _instance['transitions']
-            engine = checkmate.tymata.engine.AutoMata(
-                namespace['exchange_module'], namespace['state_module'],
-                namespace['component_definition'], instance_dir)
-            engine.set_owner(_instance['name'])
+                block_definitions.append(_instance['transitions'])
+            try:
+                _data = checkmate.tymata.engine.get_definition_data(
+                            block_definitions)
+                blocks = checkmate.tymata.engine.get_blocks_from_data(
+                            namespace['exchange_module'],
+                            namespace['state_module'],
+                            _data)
+            except KeyError:
+                blocks = []
+            engine = \
+                checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             try:
                 for _communication in engine.communication_list:
                     if (_communication not in namespace['communication_list']
