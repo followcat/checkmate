@@ -182,6 +182,19 @@ class ComponentMeta(type):
                             _data)
             except KeyError:
                 blocks = []
+            services = {}
+            service_classes = []
+            for _b in blocks:
+                for _i in _b.incoming:
+                    _ex = _i.factory()
+                    if _i.code not in services:
+                        services[_i.code] = _ex
+                    if _i.partition_class not in service_classes:
+                        service_classes.append(_i.partition_class)
+            instance_attributes[_instance['name']]['services'] = services
+            instance_attributes[_instance['name']]['service_classes'] = \
+                service_classes
+
             engine = \
                 checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             try:
@@ -227,8 +240,6 @@ class Component(object):
         self.default_state_value = True
         self.expected_return_code = None
         self.engine = self.instance_engines[name]
-        self.service_classes = self.engine.service_classes
-        self.services = self.engine.services
         self.communication_list = self.engine.communication_list
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)

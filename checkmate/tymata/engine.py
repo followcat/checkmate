@@ -47,16 +47,10 @@ class AutoMata(object):
             self.blocks = []
         if name:
             self.set_owner(name)
-        self.services = {}
-        self.service_classes = []
         self.communication_list = set()
         for _b in self.blocks:
             for _i in _b.incoming:
                 _ex = _i.factory()
-                if _i.code not in self.services:
-                    self.services[_i.code] = _ex
-                if _i.partition_class not in self.service_classes:
-                    self.service_classes.append(_i.partition_class)
                 self.communication_list.add(_ex.communication)
             for _o in _b.outgoing:
                 _ex = _o.factory()

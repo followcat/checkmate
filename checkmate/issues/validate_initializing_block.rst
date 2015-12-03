@@ -32,7 +32,7 @@ when component start, its initializing block will be simulated.
         >>> t_in = checkmate.tymata.transition.make_transition(
         ...         item_in, [sample_app.exchanges])
         >>> state1.instance_engines['C1'].blocks.append(t_in)
-        >>> state1.instance_engines['C1'].service_classes.append(
+        >>> state1.instance_attributes['C1']['service_classes'].append(
         ...     sample_app.exchanges.ForthAction)
         >>> app = sample_app.application.TestData()
         >>> app.start()
@@ -73,7 +73,7 @@ when component start, its initializing block will be simulated.
         >>> r.stop_test()
 
     Revert changes for further use in doctest:
-        >>> state1.instance_engines['C1'].service_classes.remove(
+        >>> state1.instance_attributes['C1']['service_classes'].remove(
         ...     sample_app.exchanges.ForthAction)
         >>> state1.instance_engines['C1'].blocks.remove(t_in)
         >>> state2.instance_engines['C2'].blocks.remove(t_out)
