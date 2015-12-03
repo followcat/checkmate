@@ -105,8 +105,8 @@ def get_definition_update(root_module, definition):
     if 'data_structure_definition' in definition:
         define_data += checkmate.tymata.engine.get_definition_data(
                             definition['data_structure_definition'])
-    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
     try:
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator = checkmate.partition_declarator.Declarator(
                         data_structure_module, exchange_module,
                         data_value=data_value)
