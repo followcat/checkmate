@@ -324,7 +324,7 @@ class Component(object):
         self.default_state_value = default_state_value
         outgoing = []
         for block in self.engine.blocks:
-            if block.initializing:
+            if hasattr(block, 'initializing') and block.initializing:
                 outgoing.extend(self.simulate(block))
         if len(outgoing) > 0:
             return outgoing
