@@ -162,9 +162,12 @@ class ComponentMeta(type):
         for _instance in instance_list:
             _component_registry[name].append(_instance['name'])
 
-            if 'attributes' in _instance:
+            if 'attributes' in namespace:
                 instance_attributes[_instance['name']] = \
-                    _instance['attributes']
+                    namespace['attributes']
+            if 'attributes' in _instance:
+                instance_attributes[_instance['name']].update(
+                    _instance['attributes'])
 
             instance_dir = None
             if 'transitions' in _instance:
