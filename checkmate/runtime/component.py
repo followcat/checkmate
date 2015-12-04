@@ -36,6 +36,7 @@ class Component(object):
             logging.getLogger('checkmate.runtime.component.Component')
 
     def setup(self, runtime):
+        self.context.setup()
         self.runtime = runtime
 
     def initialize(self):
@@ -159,7 +160,7 @@ class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
                     queue=self.exchange_queue,
                     is_reading=self.reading_internal_client)
         if self.using_external_client:
-            for _key in self.context.communication_list:
+            for _key in self.context.communications:
                 _communication = runtime.communication_list[_key]
                 self.client.external_connectors[_key] = \
                     _communication.connector_factory(self.context,
@@ -216,7 +217,7 @@ class ThreadedSut(ThreadedComponent, Sut):
         self.communication_delay = runtime.communication_delay
         super().setup(runtime)
         if not self._launched_in_thread:
-            for _name in self.context.communication_list:
+            for _name in self.context.communications:
                 runtime.application.communication_list[_name](self.context)
         else:
             self.launcher = checkmate.runtime.launcher.Launcher(

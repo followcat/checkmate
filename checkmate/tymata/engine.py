@@ -47,14 +47,6 @@ class AutoMata(object):
             self.blocks = []
         if name:
             self.set_owner(name)
-        self.communication_list = set()
-        for _b in self.blocks:
-            for _i in _b.incoming:
-                _ex = _i.factory()
-                self.communication_list.add(_ex.communication)
-            for _o in _b.outgoing:
-                _ex = _o.factory()
-                self.communication_list.add(_ex.communication)
 
     def block_by_name(self, name):
         for _b in self.blocks:
