@@ -59,9 +59,9 @@ backlog:
             >>> blo = checkmate.block.Block()\n
             >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',\n
             ...             blocks=[blo])\n
-            >>> assert (not hasattr(engine, 'services')\n
-            >>> assert (not hasattr(engine, 'service_classes')\n
-            >>> assert (not hasattr(engine, 'communication_list')\n
+            >>> assert (not hasattr(engine, 'services'))\n
+            >>> assert (not hasattr(engine, 'service_classes'))\n
+            >>> assert (not hasattr(engine, 'communication_list'))\n
         "
 
     - feature: Create engine module with default engine class
@@ -85,7 +85,7 @@ backlog:
             >>> engine = checkmate.engine.Engine(name='Default',\n
             ...             blocks=blocks)\n
             >>> blo = checkmate.block.Block()\n
-            >>> engine.add_block(blo)\n
+            >>> engine.add_blocks([blo])\n
             >>> assert blo in engine.blocks\n
 
             >>> app.start()\n
