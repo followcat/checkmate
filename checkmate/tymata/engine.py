@@ -6,6 +6,7 @@
 
 import os
 
+import checkmate.engine
 import checkmate.tymata.visitor
 import checkmate.tymata.transition
 
@@ -37,15 +38,11 @@ def get_blocks_from_data(exchange_module, state_module, define_data):
     return blocks
 
 
-class AutoMata(object):
+class AutoMata(checkmate.engine.Engine):
     # This is Transition Engine
     def __init__(self, name=None, blocks=None):
-        if blocks:
-            assert isinstance(blocks, list)
-            self.blocks = blocks
-        else:
-            self.blocks = []
-        if name:
+        super().__init__(name, blocks)
+        if self.name:
             self.set_owner(name)
 
     def block_by_name(self, name):
@@ -72,12 +69,13 @@ class AutoMata(object):
                 return _b
         return None
 
-    def process(self, exchange, states, default, block=None):
+    def process(self, exchanges, states, default, block=None):
         if block is None:
-            _block = self.get_blocks_by_input(exchange, states)[0]
+            _block = self.get_blocks_by_input(exchanges, states)[0]
         else:
             _block = block
-        return _block, _block.process(states, exchange, default=default)
+        outgoing  = super().process(exchanges, states, _block)
+        return _block, outgoing
 
     def simulate(self, block, states, default):
         _incoming = block.generic_incoming(states)
