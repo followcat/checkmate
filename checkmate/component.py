@@ -240,6 +240,8 @@ class Component(object):
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
     
+    @checkmate.report_issue(
+        "checkmate/issues/move_attributes_to_component_setup.rst", failed=2)
     def setup(self):
         """
             >>> import sample_app.application
