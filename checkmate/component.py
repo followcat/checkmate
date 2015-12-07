@@ -191,16 +191,7 @@ class ComponentMeta(type):
                 communications = set(_instance['communications'])
             except KeyError:
                 communications = set()
-            for _b in blocks:
-                for _i in _b.incoming:
-                    _ex = _i.factory()
-                    if _i.code not in services:
-                        services[_i.code] = _ex
-                    if _i.partition_class not in service_classes:
-                        service_classes.append(_i.partition_class)
             instance_attributes[_instance['name']].update({
-                'services': services,
-                'service_classes': service_classes,
                 'communications': communications})
 
             engine = \
@@ -240,8 +231,8 @@ class Component(object):
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
     
-    @checkmate.report_issue(
-        "checkmate/issues/move_attributes_to_component_setup.rst", failed=2)
+    @checkmate.fix_issue(
+        "checkmate/issues/move_attributes_to_component_setup.rst")
     def setup(self):
         """
             >>> import sample_app.application
@@ -253,7 +244,15 @@ class Component(object):
             >>> sorted(c2.communications)
             ['', 'interactive']
         """
+        self.services = {}
+        self.service_classes = []
         for _b in self.engine.blocks:
+            for _i in _b.incoming:
+                _ex = _i.factory()
+                if _i.code not in self.services:
+                    self.services[_i.code] = _ex
+                if _i.partition_class not in self.service_classes:
+                    self.service_classes.append(_i.partition_class)
             for _io in _b.incoming + _b.outgoing:
                 if hasattr(_io, 'partition_class'):
                     self.communications.add(_io.partition_class.communication)
