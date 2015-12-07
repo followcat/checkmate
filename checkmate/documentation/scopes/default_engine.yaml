@@ -78,19 +78,13 @@ backlog:
       example: "
             >>> import checkmate.block\n
             >>> import checkmate.engine\n
-            >>> import sample_app.application\n
-            >>> app = sample_app.application.TestData()\n
-            >>> c = app.components['C1']\n
-            >>> blocks = c.engine.blocks\n
-            >>> engine = checkmate.engine.Engine(name='Default',\n
-            ...             blocks=blocks)\n
+            >>> engine = checkmate.engine.Engine(name='Default')\n
+            >>> engine.blocks\n
+            []\n
             >>> blo = checkmate.block.Block()\n
             >>> engine.add_blocks([blo])\n
             >>> assert blo in engine.blocks\n
-
-            >>> app.start()\n
-            >>> exchanges = blocks[0].generic_incoming(c.states)\n
-            >>> outgoing = engine.process(exchanges, c.states, blocks[0])\n
-            >>> assert outgoing is not None\n
+            >>> exchanges, states = ([], [])\n
+            >>> result = engine.process(exchanges, states, blo)\n
         "
 
