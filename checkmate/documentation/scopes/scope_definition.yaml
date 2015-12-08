@@ -72,8 +72,8 @@ backlog:
         ...     definition = _f.read()
         >>> sco = checkmate._scope.Scope(definition)
         >>> runner = doctest.DocTestRunner()
-        >>> for f in itertools.islice(sco.backlog, 2):
-        ...     assert not sco.run_feature(f, runner, filename)
+        >>> for f in itertools.islice(sco.suite, 2):
+        ...     assert runner.run(f)
         "
 
     - feature: Create a scope definition from file
@@ -110,11 +110,11 @@ backlog:
         ...         branch: branch_name
         ...         backlog:
         ...             - feature: one
-        ...               reference: checkmate._scope.Scope.backlog
+        ...               reference: checkmate._scope.Scope.suite
         ...         ''')
         >>> runner = doctest.DocTestRunner()
-        >>> for f in sco.backlog:
-        ...     assert not sco.run_feature(f, runner, filename)
+        >>> for f in sco.suite:
+        ...     assert runner.run(f)
         "
 
     - feature: Support pasting feature example to python console

@@ -11,8 +11,8 @@ __all__ = ['check_backlog', 'check_feature']
 def check_backlog(filename):
     scope = Scope(filename=filename)
     runner = doctest.DocTestRunner()
-    for feature in scope.backlog:
-        scope.run_feature(feature, runner, filename)
+    for feature in scope.suite:
+        runner.run(feature)
 
 def check_feature(filename, feature_name, verbose=True):
     """
@@ -25,7 +25,7 @@ def check_feature(filename, feature_name, verbose=True):
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
             runner = doctest.DocTestRunner(verbose=verbose)
-            scope.run_feature(feature, runner, filename)
+            runner.run(scope.example(feature, filename))
             break
         assert not feature_name
 
@@ -51,6 +51,10 @@ class Scope(object):
 
     @property
     def backlog(self):
+        yield from self.definition['backlog']
+
+    @property
+    def suite(self):
         """
             >>> import os
             >>> import doctest
@@ -61,13 +65,15 @@ class Scope(object):
             ...     definition = _f.read()
             >>> sco = checkmate._scope.Scope(definition)
             >>> runner = doctest.DocTestRunner(verbose=False)
-            >>> for f in itertools.islice(sco.backlog, 2):
-            ...     assert not sco.run_feature(f, runner, name)
+            >>> for f in itertools.islice(sco.suite, 2):
+            ...     assert runner.run(f)
         """
-        yield from self.definition['backlog']
+        for feature in self.backlog:
+            example = self.example(feature)
+            if example:
+                yield example
 
-
-    def run_feature(self, feature, runner, filename):
+    def example(self, feature, filename=''):
         try:
             reference = feature['reference']
 
@@ -97,6 +103,6 @@ class Scope(object):
                 test = re.subn(" \.\.\. ", "\n ... ", test)[0]
             except KeyError:
                 return
-        runner.run(doctest.DocTestParser().get_doctest(test, locals(),
-                          filename, None, None))
+        return doctest.DocTestParser().get_doctest(test, locals(),
+                  filename, None, None)
 
