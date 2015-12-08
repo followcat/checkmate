@@ -15,5 +15,5 @@ class Scope(object):
 
     @property
     def backlog(self):
-        yield from self.definition.backlog
+        yield from self.definition['backlog']
 
