@@ -44,7 +44,7 @@ class Scope(object):
             >>> with open(name) as _f:
             ...     definition = _f.read()
             >>> sco = checkmate._scope.Scope(definition)
-            >>> runner = doctest.DocTestRunner()
+            >>> runner = doctest.DocTestRunner(verbose=False)
             >>> for f in itertools.islice(sco.backlog, 2):
             ...     assert not sco.run_feature(f, runner, name)
         """
