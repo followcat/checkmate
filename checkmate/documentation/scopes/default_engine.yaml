@@ -30,12 +30,12 @@ backlog:
         will accept block list
         "
       example: "
-            >>> import checkmate.block\n
-            >>> import checkmate.tymata.engine\n
-            >>> blo = checkmate.block.Block()\n
-            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',\n
-            ...             blocks=[blo])\n
-            >>> assert blo in engine.blocks\n
+            >>> import checkmate.block
+            >>> import checkmate.tymata.engine
+            >>> blo = checkmate.block.Block()
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',
+            ...             blocks=[blo])
+            >>> assert blo in engine.blocks
         "
 
     - feature: Move extra attributes collection out of AutoMata
@@ -54,14 +54,14 @@ backlog:
         collected from given blocks incoming/outgoing.
         "
       example: "
-            >>> import checkmate.block\n
-            >>> import checkmate.tymata.engine\n
-            >>> blo = checkmate.block.Block()\n
-            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',\n
-            ...             blocks=[blo])\n
-            >>> assert (not hasattr(engine, 'services'))\n
-            >>> assert (not hasattr(engine, 'service_classes'))\n
-            >>> assert (not hasattr(engine, 'communication_list'))\n
+            >>> import checkmate.block
+            >>> import checkmate.tymata.engine
+            >>> blo = checkmate.block.Block()
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',
+            ...             blocks=[blo])
+            >>> assert (not hasattr(engine, 'services'))
+            >>> assert (not hasattr(engine, 'service_classes'))
+            >>> assert (not hasattr(engine, 'communication_list'))
         "
 
     - feature: Create engine module with default engine class
@@ -76,15 +76,15 @@ backlog:
         can be inherited by AutoMata's.
         "
       example: "
-            >>> import checkmate.block\n
-            >>> import checkmate.engine\n
-            >>> engine = checkmate.engine.Engine(name='Default')\n
-            >>> engine.blocks\n
-            []\n
-            >>> blo = checkmate.block.Block()\n
-            >>> engine.add_blocks([blo])\n
-            >>> assert blo in engine.blocks\n
-            >>> exchanges, states = ([], [])\n
-            >>> result = engine.process(exchanges, states, blo)\n
+            >>> import checkmate.block
+            >>> import checkmate.engine
+            >>> engine = checkmate.engine.Engine(name='Default')
+            >>> engine.blocks
+            []
+            >>> blo = checkmate.block.Block()
+            >>> engine.add_blocks([blo])
+            >>> assert blo in engine.blocks
+            >>> exchanges, states = ([], [])
+            >>> result = engine.process(exchanges, states, blo)
         "
 
