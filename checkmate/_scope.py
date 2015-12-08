@@ -19,9 +19,21 @@ def test_scope_definition():
 def check_backlog(filename):
     scope = Scope(filename=filename)
     runner = doctest.DocTestRunner(verbose=False)
-    for example in scope.suite:
+    for feature in scope.backlog:
+        try:
+            failures = feature['failures']
+        except KeyError:
+            failures = 0
+        example = scope.example(feature, filename)
+        if not example:
+            continue
         result = runner.run(example)
-        assert not result.failed
+        if result.failed != failures:
+            runner.run(example)
+            if failures == 0:
+                print("Expected: success, got: %d failures" % result.failed)
+            else:
+                print("Expected: %d failures, got: %d" % (failures, result.failed))
 
 def check_feature(filename, feature_name, verbose=True):
     """
@@ -34,8 +46,20 @@ def check_feature(filename, feature_name, verbose=True):
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
             runner = doctest.DocTestRunner(verbose=verbose)
-            result = runner.run(scope.example(feature, filename))
-            assert not result.failed
+            try:
+                failures = feature['failures']
+            except KeyError:
+                failures = 0
+            example = scope.example(feature, filename)
+            if not example:
+                break
+            result = runner.run(example)
+            if result.failed != failures:
+                runner.run(example)
+                if failures == 0:
+                    print("Expected: success, got: %d failures" % result.failed)
+                else:
+                    print("Expected: %d failures, got: %d" % (failures, result.failed))
             break
         assert not feature_name
 

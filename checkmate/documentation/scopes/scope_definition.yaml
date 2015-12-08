@@ -129,3 +129,16 @@ backlog:
         The examples for all active scope definitions are run in an
         automatic way as part of the regression tests.
         Any unexpected failures is reported in test report."
+
+    - feature: Add failures attribute to feature
+      description: "The failure in feature example is supported.
+
+        In test driven development, failure of a test is a standard setting.
+        While a scope definition is under implementation, the given examples
+        are expected to fail until the implementation is done.
+        The failures attribute of a feature allows to specify the expected
+        number of failure in the corresponding example."
+      failures: 1
+      example: "
+        >>> print('Failed doctest')
+        "
