@@ -61,6 +61,7 @@ def check_feature(filename, feature_name, verbose=True):
                 else:
                     print("Expected: %d failures, got: %d" % (failures, result.failed))
             break
+    else:
         assert not feature_name
 
 
