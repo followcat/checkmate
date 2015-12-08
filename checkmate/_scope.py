@@ -1,6 +1,6 @@
-import os
 import re
 import yaml
+import os.path
 import doctest
 import importlib
 
@@ -8,11 +8,20 @@ import importlib
 __all__ = ['check_backlog', 'check_feature']
 
 
+def test_scope_definition():
+    scope_definition_path = "checkmate/documentation/scopes"
+    for root, dirs, files in os.walk(scope_definition_path):
+        for filename in [os.path.join(root, entry) for entry in files if
+                os.path.isfile(os.path.join(root, entry))]:
+            if os.path.splitext(filename)[-1] == '.yaml':
+                yield check_backlog, filename
+
 def check_backlog(filename):
     scope = Scope(filename=filename)
-    runner = doctest.DocTestRunner()
-    for feature in scope.suite:
-        runner.run(feature)
+    runner = doctest.DocTestRunner(verbose=False)
+    for example in scope.suite:
+        result = runner.run(example)
+        assert not result.failed
 
 def check_feature(filename, feature_name, verbose=True):
     """
@@ -25,7 +34,8 @@ def check_feature(filename, feature_name, verbose=True):
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
             runner = doctest.DocTestRunner(verbose=verbose)
-            runner.run(scope.example(feature, filename))
+            result = runner.run(scope.example(feature, filename))
+            assert not result.failed
             break
         assert not feature_name
 

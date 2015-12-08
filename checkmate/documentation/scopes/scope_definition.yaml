@@ -71,7 +71,7 @@ backlog:
         >>> with open(filename) as _f:
         ...     definition = _f.read()
         >>> sco = checkmate._scope.Scope(definition)
-        >>> runner = doctest.DocTestRunner()
+        >>> runner = doctest.DocTestRunner(verbose=False)
         >>> for f in itertools.islice(sco.suite, 2):
         ...     assert runner.run(f)
         "
@@ -112,7 +112,7 @@ backlog:
         ...             - feature: one
         ...               reference: checkmate._scope.Scope.suite
         ...         ''')
-        >>> runner = doctest.DocTestRunner()
+        >>> runner = doctest.DocTestRunner(verbose=False)
         >>> for f in sco.suite:
         ...     assert runner.run(f)
         "
@@ -123,3 +123,9 @@ backlog:
         The example is formated in a way that it can be pasted directly into
         console for easy manual checking."
 
+    - feature: Run scope definition example in test suite
+      description: "The feature examples are run as regression tests.
+
+        The examples for all active scope definitions are run in an
+        automatic way as part of the regression tests.
+        Any unexpected failures is reported in test report."
