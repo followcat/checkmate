@@ -90,9 +90,14 @@ class Procedure(object):
 
     def _run_from_startpoint(self):
         _application = self.runtime.application
-        for _d in self.blocks.exchanges[0].destination:
-            component = self.runtime.runtime_components[_d]
+        origin = self.blocks.exchanges[0].origin
+        if len(origin):
+            component = self.runtime.runtime_components[origin]
             component.simulate(self.blocks.exchanges)
+        else:
+            for _d in self.blocks.exchanges[0].destination:
+                component = self.runtime.runtime_components[_d]
+                component.simulate(self.blocks.exchanges)
         self._follow_up(self.blocks)
 
         if hasattr(self.blocks, 'final'):

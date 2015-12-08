@@ -317,7 +317,7 @@ class Component(object):
         """
         return self.validation_dict.check(items)
 
-    def exchange_destination(self, exchange):
+    def exchange_destination(self, exchange, origin=None):
             """
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
@@ -345,5 +345,8 @@ class Component(object):
                 new_exchange = \
                     exchange.partition_storage.partition_class(exchange)
                 new_exchange.carbon_copy(exchange)
-                new_exchange.origin_destination(self.name, _d)
+                if origin is None:
+                    new_exchange.origin_destination(self.name, _d)
+                else:
+                    new_exchange.origin_destination(origin, _d)
                 yield new_exchange
