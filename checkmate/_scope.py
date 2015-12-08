@@ -4,6 +4,8 @@ import os.path
 import doctest
 import importlib
 
+import checkmate._issue
+
 
 __all__ = ['check_backlog', 'check_feature']
 
@@ -18,7 +20,7 @@ def test_scope_definition():
 
 def check_backlog(filename):
     scope = Scope(filename=filename)
-    runner = doctest.DocTestRunner(verbose=False)
+    runner = checkmate._issue.Runner(verbose=False)
     for feature in scope.backlog:
         try:
             failures = feature['failures']
@@ -41,11 +43,16 @@ def check_feature(filename, feature_name, verbose=True):
         >>> feature = "Definition of scope using yaml"
         >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
         >>> checkmate._scope.check_feature(name, feature, verbose=False)
+
+        >>> import checkmate._scope
+        >>> feature = "Add failures attribute to feature"
+        >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
+        >>> checkmate._scope.check_feature(name, feature, verbose=False)
     """
     scope = Scope(filename=filename)
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
-            runner = doctest.DocTestRunner(verbose=verbose)
+            runner = checkmate._issue.Runner(verbose=verbose)
             try:
                 failures = feature['failures']
             except KeyError:
