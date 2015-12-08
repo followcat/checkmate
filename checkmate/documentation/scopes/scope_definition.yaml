@@ -1,5 +1,5 @@
 branch: scope_definition
-description: """Add scope definition to development branch.
+description: "Add scope definition to development branch.
 
     Development branches with long history are error prone.
     It is important that when opening a branch, the scope is clearly
@@ -7,11 +7,11 @@ description: """Add scope definition to development branch.
     also helps to avoid unrelated feature to be added in a branch.
     Unrelated feature should be avoided to keep the impacted set of
     files consistent, helping to prevent conflicts when concurrently
-    implementing features in different branches."""
+    implementing features in different branches."
 
 backlog:
-    - feature: definition of scope using yaml,
-      description: """Scope definition is done using yaml syntax.
+    - feature: definition of scope using yaml
+      description: "Scope definition is done using yaml syntax.
 
         It has a non testable description of the target of the development.
         If will highlight the benefit for the program to implement that
@@ -19,31 +19,56 @@ backlog:
         development branch is merged.
 
         If the branch is leading to the introduction of a new module, a valid
-        description could be seen as the module docstring."""
+        description could be seen as the module docstring."
 
-      example:
-        >>> import checkmate._scope
-        >>> sco = checkmate._scope.Scope("""
-        ...         branch: branch_name
-        ...         description:
-        ...             Scope definition is linked to a development branch.""")
-        >>> assert sco.description
+      example: "
+        >>> import checkmate._scope\n
+        >>> sco = checkmate._scope.Scope('''\n
+        ...         branch: branch_name\n
+        ...         description:\n
+        ...             Scope definition is linked to a development branch.''')\n
+        >>> assert sco.description"
 
 
-    - feature: scope should be defined as set list features,
-      description: """Features are breakdown of the branch target.
+    - feature: scope should be defined as set list features
+      description: "Features are breakdown of the branch target.
 
         The breakdown must be done so that each feature is independent
         from the ones that follow. Still each feature should be complete
-        and leave the code in a state that passes the regression tests."""
+        and leave the code in a state that passes the regression tests."
 
-      example:
-        >>> import itertools
-        >>> import checkmate._scope
-        >>> sco = checkmate._scope.Scope("""
-        ...         branch: branch_name
-        ...         backlog:
-        ...             - feature: one
-        ...             - feature: two""")
-        >>> assert len(itertools.tee(sco.backlog)) == 2
+      example: "
+        >>> import itertools\n
+        >>> import checkmate._scope\n
+        >>> sco = checkmate._scope.Scope('''\n
+        ...         branch: branch_name\n
+        ...         backlog:\n
+        ...             - feature: one\n
+        ...             - feature: two''')\n
+        >>> assert len(itertools.tee(sco.backlog)) == 2"
 
+    - feature: example given in feature is testable
+      description: "Feature are provided with testable example.
+
+        The doctest will be used to confirm that the feature is implemented as
+        intended and that the development can move to the next feature.
+
+        The example format is doctest. The doctest should be written as the
+        foreseable implementation during development planning. If the actual
+        implementation differs, the doctest will be updated accordingly.
+
+        When all feature doctests are runnable the development branch is ready
+        to merge in its parent branch."
+
+      example: "
+        >>> import os\n
+        >>> import doctest\n
+        >>> import itertools\n
+        >>> import checkmate._scope\n
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
+        >>> with open(filename) as _f:\n
+        ...     definition = _f.read()\n
+        >>> sco = checkmate._scope.Scope(definition)\n
+        >>> runner = doctest.DocTestRunner()\n
+        >>> for f in itertools.islice(sco.backlog, 2):\n
+        ...     sco.run_feature(f, runner, filename)"
