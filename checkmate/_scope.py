@@ -14,17 +14,17 @@ def check_backlog(filename):
     for feature in scope.backlog:
         scope.run_feature(feature, runner, filename)
 
-def check_feature(filename, feature_name):
+def check_feature(filename, feature_name, verbose=True):
     """
         >>> import checkmate._scope
         >>> feature = "Definition of scope using yaml"
         >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
-        >>> checkmate._scope.check_feature(name, feature)
+        >>> checkmate._scope.check_feature(name, feature, verbose=False)
     """
     scope = Scope(filename=filename)
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
-            runner = doctest.DocTestRunner()
+            runner = doctest.DocTestRunner(verbose=verbose)
             scope.run_feature(feature, runner, filename)
             break
         assert not feature_name
