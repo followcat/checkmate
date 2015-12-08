@@ -7,13 +7,7 @@ __all__ = ['check_backlog']
 
 
 def check_backlog(filename):
-    if os.path.isfile(filename):
-        _f = open(filename)
-    else:
-        _f = open(os.path.sep.join([os.getenv('CHECKMATE_HOME'), filename]))
-    definition = _f.read()
-    _f.close()
-    scope = Scope(definition)
+    scope = Scope(filename=filename)
     runner = doctest.DocTestRunner()
     for feature in scope.backlog:
         scope.run_feature(feature, runner, filename)
@@ -21,7 +15,14 @@ def check_backlog(filename):
 
 class Scope(object):
     """"""
-    def __init__(self, definition):
+    def __init__(self, definition=None, filename=None):
+        if filename:
+            if not os.path.isfile(filename):
+                filename = os.path.sep.join(
+                                [os.getenv('CHECKMATE_HOME'), filename])
+            with open(filename) as _f:
+                definition = _f.read()
+        assert definition
         self.definition = yaml.load(definition)
 
     @property
