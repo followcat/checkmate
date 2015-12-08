@@ -22,12 +22,12 @@ backlog:
         description could be seen as the module docstring."
 
       example: "
-        >>> import checkmate._scope\n
-        >>> sco = checkmate._scope.Scope('''\n
-        ...         branch: branch_name\n
-        ...         description:\n
-        ...             Scope definition is linked to a development branch.''')\n
-        >>> assert sco.description\n
+        >>> import checkmate._scope
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         description:
+        ...             Scope definition is linked to a development branch.''')
+        >>> assert sco.description
         "
 
 
@@ -39,14 +39,14 @@ backlog:
         and leave the code in a state that passes the regression tests."
 
       example: "
-        >>> import itertools\n
-        >>> import checkmate._scope\n
-        >>> sco = checkmate._scope.Scope('''\n
-        ...         branch: branch_name\n
-        ...         backlog:\n
-        ...             - feature: one\n
-        ...             - feature: two''')\n
-        >>> assert len(itertools.tee(sco.backlog)) == 2\n
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         backlog:
+        ...             - feature: one
+        ...             - feature: two''')
+        >>> assert len(itertools.tee(sco.backlog)) == 2
         "
 
     - feature: Example given in feature is testable
@@ -63,26 +63,26 @@ backlog:
         to merge in its parent branch."
 
       example: "
-        >>> import os\n
-        >>> import doctest\n
-        >>> import itertools\n
-        >>> import checkmate._scope\n
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
-        >>> with open(filename) as _f:\n
-        ...     definition = _f.read()\n
-        >>> sco = checkmate._scope.Scope(definition)\n
-        >>> runner = doctest.DocTestRunner()\n
-        >>> for f in itertools.islice(sco.backlog, 2):\n
-        ...     assert not sco.run_feature(f, runner, filename)\n
+        >>> import os
+        >>> import doctest
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> with open(filename) as _f:
+        ...     definition = _f.read()
+        >>> sco = checkmate._scope.Scope(definition)
+        >>> runner = doctest.DocTestRunner()
+        >>> for f in itertools.islice(sco.backlog, 2):
+        ...     assert not sco.run_feature(f, runner, filename)
         "
 
     - feature: Create a scope definition from file
       description: "Convenience function to create scope from file"
       example: "
-        >>> import checkmate._scope\n
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
-        >>> sco = checkmate._scope.Scope(filename=filename)\n
-        >>> assert sco\n
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> sco = checkmate._scope.Scope(filename=filename)
+        >>> assert sco
         "
 
     - feature: Verify a feature by name
@@ -102,17 +102,24 @@ backlog:
         it."
 
       example: "
-        >>> import doctest\n
-        >>> import itertools\n
-        >>> import checkmate._scope\n
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
-        >>> sco = checkmate._scope.Scope('''\n
-        ...         branch: branch_name\n
-        ...         backlog:\n
-        ...             - feature: one\n
-        ...               reference: checkmate._scope.Scope.backlog\n
-        ...         ''')\n
-        >>> runner = doctest.DocTestRunner()\n
-        >>> for f in sco.backlog:\n
-        ...     assert not sco.run_feature(f, runner, filename)\n
+        >>> import doctest
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         backlog:
+        ...             - feature: one
+        ...               reference: checkmate._scope.Scope.backlog
+        ...         ''')
+        >>> runner = doctest.DocTestRunner()
+        >>> for f in sco.backlog:
+        ...     assert not sco.run_feature(f, runner, filename)
         "
+
+    - feature: Support pasting feature example to python console
+      description: "The example for a feature is used in console.
+
+        The example is formated in a way that it can be pasted directly into
+        console for easy manual checking."
+

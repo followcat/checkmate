@@ -1,4 +1,5 @@
 import os
+import re
 import yaml
 import doctest
 import importlib
@@ -92,6 +93,8 @@ class Scope(object):
         except KeyError:
             try:
                 test = feature['example']
+                test = re.subn(" >>> ", "\n >>> ", test)[0]
+                test = re.subn(" \.\.\. ", "\n ... ", test)[0]
             except KeyError:
                 return
         runner.run(doctest.DocTestParser().get_doctest(test, locals(),
