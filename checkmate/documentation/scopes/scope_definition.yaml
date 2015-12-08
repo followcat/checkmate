@@ -108,7 +108,7 @@ backlog:
         ...         branch: branch_name\n
         ...         backlog:\n
         ...             - feature: one\n
-        ...               reference: checkmate._scope.Scope.backlog.__doc__\n
+        ...               reference: checkmate._scope.Scope.backlog\n
         ...         ''')\n
         >>> runner = doctest.DocTestRunner()\n
         >>> for f in sco.backlog:\n
