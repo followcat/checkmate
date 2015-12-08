@@ -10,7 +10,7 @@ description: "Add scope definition to development branch.
     implementing features in different branches."
 
 backlog:
-    - feature: definition of scope using yaml
+    - feature: Definition of scope using yaml
       description: "Scope definition is done using yaml syntax.
 
         It has a non testable description of the target of the development.
@@ -27,10 +27,11 @@ backlog:
         ...         branch: branch_name\n
         ...         description:\n
         ...             Scope definition is linked to a development branch.''')\n
-        >>> assert sco.description"
+        >>> assert sco.description\n
+        "
 
 
-    - feature: scope should be defined as set list features
+    - feature: Scope is defined as set list features
       description: "Features are breakdown of the branch target.
 
         The breakdown must be done so that each feature is independent
@@ -45,9 +46,10 @@ backlog:
         ...         backlog:\n
         ...             - feature: one\n
         ...             - feature: two''')\n
-        >>> assert len(itertools.tee(sco.backlog)) == 2"
+        >>> assert len(itertools.tee(sco.backlog)) == 2\n
+        "
 
-    - feature: example given in feature is testable
+    - feature: Example given in feature is testable
       description: "Feature are provided with testable example.
 
         The doctest will be used to confirm that the feature is implemented as
@@ -71,4 +73,44 @@ backlog:
         >>> sco = checkmate._scope.Scope(definition)\n
         >>> runner = doctest.DocTestRunner()\n
         >>> for f in itertools.islice(sco.backlog, 2):\n
-        ...     sco.run_feature(f, runner, filename)"
+        ...     assert not sco.run_feature(f, runner, filename)\n
+        "
+
+    - feature: Create a scope definition from file
+      description: "Covenience function to create scope from file"
+      example: "
+        >>> import checkmate._scope\n
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
+        >>> sco = checkmate._scope.Scope(filename=filename)\n
+        >>> assert sco\n
+        "
+
+    - feature: Verify a feature by name
+      description: "Allow to check a specific feature by provding its name.
+
+        This is helpful while writing or updating scope definition features
+        based on the latest implementation."
+
+    - feature: Reference a docstring for feature doctest
+      description: "Use a code docstring as reference for feature example.
+
+        As feature are implemented, the doctest for his feature is a good
+        candidate to act as a docstring. In this case, the feature example is
+        put in the docstring and the scope definition is making reference to
+        it."
+
+      example: "
+        >>> import doctest\n
+        >>> import itertools\n
+        >>> import checkmate._scope\n
+        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
+        >>> sco = checkmate._scope.Scope('''\n
+        ...         branch: branch_name\n
+        ...         backlog:\n
+        ...             - feature: one\n
+        ...               reference: checkmate._scope.Scope.backlog.__doc__\n
+        ...         ''')\n
+        >>> runner = doctest.DocTestRunner()\n
+        >>> for f in sco.backlog:\n
+        ...     assert not sco.run_feature(f, runner, filename)\n
+        "
