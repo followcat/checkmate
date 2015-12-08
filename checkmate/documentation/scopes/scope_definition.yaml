@@ -4,8 +4,8 @@ description: "Add scope definition to development branch.
     Development branches with long history are error prone.
     It is important that when opening a branch, the scope is clearly
     defined so that the life duration is under control. A clear scope
-    also helps to avoid unrelated feature to be added in a branch.
-    Unrelated feature should be avoided to keep the impacted set of
+    also helps to avoid unrelated features to be added in a branch.
+    Unrelated features should be avoided to keep the impacted set of
     files consistent, helping to prevent conflicts when concurrently
     implementing features in different branches."
 
@@ -77,7 +77,7 @@ backlog:
         "
 
     - feature: Create a scope definition from file
-      description: "Covenience function to create scope from file"
+      description: "Convenience function to create scope from file"
       example: "
         >>> import checkmate._scope\n
         >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'\n
@@ -86,7 +86,7 @@ backlog:
         "
 
     - feature: Verify a feature by name
-      description: "Allow to check a specific feature by provding its name.
+      description: "Allow to check a specific feature by providing its name.
 
         This is helpful while writing or updating scope definition features
         based on the latest implementation."
