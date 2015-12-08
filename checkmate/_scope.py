@@ -4,7 +4,7 @@ import doctest
 import importlib
 
 
-__all__ = ['check_backlog']
+__all__ = ['check_backlog', 'check_feature']
 
 
 def check_backlog(filename):
@@ -12,6 +12,21 @@ def check_backlog(filename):
     runner = doctest.DocTestRunner()
     for feature in scope.backlog:
         scope.run_feature(feature, runner, filename)
+
+def check_feature(filename, feature_name):
+    """
+        >>> import checkmate._scope
+        >>> feature = "Definition of scope using yaml"
+        >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
+        >>> checkmate._scope.check_feature(name, feature)
+    """
+    scope = Scope(filename=filename)
+    for feature in scope.backlog:
+        if feature['feature'] == feature_name:
+            runner = doctest.DocTestRunner()
+            scope.run_feature(feature, runner, filename)
+            break
+        assert not feature_name
 
 
 class Scope(object):
@@ -59,16 +74,19 @@ class Scope(object):
             last_index = 0
             max_index = len(reference.split('.'))
             while True:
-                assert index > last_index
-                name = '.'.join(reference.split('.', index)[:-1])
+                assert index > last_index and index <= max_index
+                if index < max_index:
+                    name = '.'.join(reference.split('.', index)[:-1])
+                else:
+                    name = '.'.join(reference.split('.', index))
                 try:
                     module = importlib.import_module(name)
                     last_index = index
                     index += 1
                 except ImportError:
                     obj = module
-                    for i in range(index, max_index+1):
-                        obj = getattr(obj, reference.split('.')[i-1])
+                    for i in range(index-1, max_index):
+                        obj = getattr(obj, reference.split('.')[i])
                     test = obj.__doc__
                     break
         except KeyError:

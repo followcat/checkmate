@@ -91,6 +91,8 @@ backlog:
         This is helpful while writing or updating scope definition features
         based on the latest implementation."
 
+      reference: checkmate._scope.check_feature
+
     - feature: Reference a docstring for feature doctest
       description: "Use a code docstring as reference for feature example.
 
