@@ -44,6 +44,14 @@ def make_transition(items, exchanges=[], state_modules=[]):
     ...     }
     >>> de.new_partition(items)
     >>> items = {
+    ...     'partition_type': 'exchanges',
+    ...     'signature': 'TestAction(R:TestActionRequest)',
+    ...     'codes_list': ['AP(R)'],
+    ...     'values_list': ['R'],
+    ...     }
+    >>> de.new_partition(items,
+    ...     attributes={'communication':'test_comm'})
+    >>> items = {
     ...     'partition_type': 'states',
     ...     'signature': 'TestState',
     ...     'codes_list': ['TestStateTrue()', 'TestStateFalse()'],

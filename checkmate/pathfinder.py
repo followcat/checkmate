@@ -61,17 +61,15 @@ def find_path(application, target_runs, exchanges, current_run=None):
     """
     run_list = []
     matrix = application._matrix
-    target_runs_indexes = [application._matrix_runs.index(item) \
-                           for item in target_runs]
-    box = checkmate.sandbox.Sandbox(type(application), application)
+    runs = application._matrix_runs
+    target_runs_indexes = [runs.index(item) for item in target_runs]
     if current_run is None:
         next_runs = []
         next_runs = checkmate.runs.followed_runs(application, exchanges)
-        current_run_row = [application._matrix_runs.index(item)
-                             for item in next_runs]
+        current_run_row = [runs.index(item) for item in next_runs]
     else:
-        current_run_row = matrix[application._matrix_runs.\
-                            index(current_run)].nonzero()[1].tolist()[0]
+        _index = runs.index(current_run)
+        current_run_row = matrix[_index].nonzero()[1].tolist()[0]
     length = len(matrix.tolist())
     paths = [[item] for item in current_run_row]
     while len(paths) != 0:
@@ -81,10 +79,14 @@ def find_path(application, target_runs, exchanges, current_run=None):
         for child in children:
             if child in target_runs_indexes:
                 ret_path = []
-                for _index in path:
-                    assert box(application._matrix_runs[_index].exchanges)
+                box = checkmate.sandbox.Sandbox(type(application), application)
+                for _index in path + [child]:
+                    if not runs[_index].compare_initial(box.application):
+                        break
+                    box(runs[_index].exchanges)
                     ret_path.append(box.blocks)
-                return application._matrix_runs[child], ret_path
+                else:
+                    return ret_path.pop(), ret_path
             elif len(path)+1 == length:  # cannot find path
                 return None, []
             else:
