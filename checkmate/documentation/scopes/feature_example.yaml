@@ -1,0 +1,144 @@
+branch: feature_example
+description: "Add scope definition to development branch.
+
+    Development branches with long history are error prone.
+    It is important that when opening a branch, the scope is clearly
+    defined so that the life duration is under control. A clear scope
+    also helps to avoid unrelated features to be added in a branch.
+    Unrelated features should be avoided to keep the impacted set of
+    files consistent, helping to prevent conflicts when concurrently
+    implementing features in different branches."
+
+backlog:
+    - feature: Definition of scope using yaml
+      description: "Scope definition is done using yaml syntax.
+
+        It has a non testable description of the target of the development.
+        If will highlight the benefit for the program to implement that
+        target. It is used for documentation of the code released after
+        development branch is merged.
+
+        If the branch is leading to the introduction of a new module, a valid
+        description could be seen as the module docstring."
+
+      example: "
+        >>> import checkmate._scope
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         description:
+        ...             Scope definition is linked to a development branch.''')
+        >>> assert sco.description
+        "
+
+
+    - feature: Scope is defined as set list features
+      description: "Features are breakdown of the branch target.
+
+        The breakdown must be done so that each feature is independent
+        from the ones that follow. Still each feature should be complete
+        and leave the code in a state that passes the regression tests."
+
+      example: "
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         backlog:
+        ...             - feature: one
+        ...             - feature: two''')
+        >>> assert len(itertools.tee(sco.backlog)) == 2
+        "
+
+    - feature: Example given in feature is testable
+      description: "Feature are provided with testable example.
+
+        The doctest will be used to confirm that the feature is implemented as
+        intended and that the development can move to the next feature.
+
+        The example format is doctest. The doctest should be written as the
+        foreseable implementation during development planning. If the actual
+        implementation differs, the doctest will be updated accordingly.
+
+        When all feature doctests are runnable the development branch is ready
+        to merge in its parent branch."
+
+      example: "
+        >>> import os
+        >>> import doctest
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
+        >>> with open(filename) as _f:
+        ...     definition = _f.read()
+        >>> sco = checkmate._scope.Scope(definition)
+        >>> runner = doctest.DocTestRunner(verbose=False)
+        >>> for f in itertools.islice(sco.suite, 2):
+        ...     assert runner.run(f)
+        "
+
+    - feature: Create a scope definition from file
+      description: "Convenience function to create scope from file"
+      example: "
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
+        >>> sco = checkmate._scope.Scope(filename=filename)
+        >>> assert sco
+        "
+
+    - feature: Verify a feature by name
+      description: "Allow to check a specific feature by providing its name.
+
+        This is helpful while writing or updating scope definition features
+        based on the latest implementation."
+
+      reference: checkmate._scope.check_feature
+
+    - feature: Reference a docstring for feature doctest
+      description: "Use a code docstring as reference for feature example.
+
+        As feature are implemented, the doctest for his feature is a good
+        candidate to act as a docstring. In this case, the feature example is
+        put in the docstring and the scope definition is making reference to
+        it."
+
+      example: "
+        >>> import doctest
+        >>> import itertools
+        >>> import checkmate._scope
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
+        >>> sco = checkmate._scope.Scope('''
+        ...         branch: branch_name
+        ...         backlog:
+        ...             - feature: one
+        ...               reference: checkmate._scope.Scope.suite
+        ...         ''')
+        >>> runner = doctest.DocTestRunner(verbose=False)
+        >>> for f in sco.suite:
+        ...     assert runner.run(f)
+        "
+
+    - feature: Support pasting feature example to python console
+      description: "The example for a feature is used in console.
+
+        The example is formated in a way that it can be pasted directly into
+        console for easy manual checking."
+
+    - feature: Run scope definition example in test suite
+      description: "The feature examples are run as regression tests.
+
+        The examples for all active scope definitions are run in an
+        automatic way as part of the regression tests.
+        Any unexpected failures is reported in test report."
+
+    - feature: Add failures attribute to feature
+      description: "The failure in feature example is supported.
+
+        In test driven development, failure of a test is a standard setting.
+        While a scope definition is under implementation, the given examples
+        are expected to fail until the implementation is done.
+        The failures attribute of a feature allows to specify the expected
+        number of failure in the corresponding example."
+      failures: 1
+      example: "
+        >>> print('Failed doctest')
+        "
