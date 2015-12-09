@@ -1,4 +1,4 @@
-branch: scope_definition
+branch: feature_example
 description: "Add scope definition to development branch.
 
     Development branches with long history are error prone.
@@ -67,7 +67,7 @@ backlog:
         >>> import doctest
         >>> import itertools
         >>> import checkmate._scope
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
         >>> with open(filename) as _f:
         ...     definition = _f.read()
         >>> sco = checkmate._scope.Scope(definition)
@@ -80,7 +80,7 @@ backlog:
       description: "Convenience function to create scope from file"
       example: "
         >>> import checkmate._scope
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
         >>> sco = checkmate._scope.Scope(filename=filename)
         >>> assert sco
         "
@@ -105,7 +105,7 @@ backlog:
         >>> import doctest
         >>> import itertools
         >>> import checkmate._scope
-        >>> filename = 'checkmate/documentation/scopes/scope_definition.yaml'
+        >>> filename = 'checkmate/documentation/scopes/feature_example.yaml'
         >>> sco = checkmate._scope.Scope('''
         ...         branch: branch_name
         ...         backlog:

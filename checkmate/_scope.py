@@ -41,12 +41,12 @@ def check_feature(filename, feature_name, verbose=True):
     """
         >>> import checkmate._scope
         >>> feature = "Definition of scope using yaml"
-        >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
+        >>> name = "checkmate/documentation/scopes/feature_example.yaml"
         >>> checkmate._scope.check_feature(name, feature, verbose=False)
 
         >>> import checkmate._scope
         >>> feature = "Add failures attribute to feature"
-        >>> name = "checkmate/documentation/scopes/scope_definition.yaml"
+        >>> name = "checkmate/documentation/scopes/feature_example.yaml"
         >>> checkmate._scope.check_feature(name, feature, verbose=False)
     """
     scope = Scope(filename=filename)
@@ -102,7 +102,7 @@ class Scope(object):
             >>> import doctest
             >>> import itertools
             >>> import checkmate._scope
-            >>> name = 'checkmate/documentation/scopes/scope_definition.yaml'
+            >>> name = 'checkmate/documentation/scopes/feature_example.yaml'
             >>> with open(name) as _f:
             ...     definition = _f.read()
             >>> sco = checkmate._scope.Scope(definition)
