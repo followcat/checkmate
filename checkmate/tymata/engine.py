@@ -74,7 +74,7 @@ class AutoMata(checkmate.engine.Engine):
             _block = self.get_blocks_by_input(exchanges, states)[0]
         else:
             _block = block
-        outgoing  = super().process(exchanges, states, _block)
+        outgoing  = super().process(_block, states, exchanges)
         return _block, outgoing
 
     def simulate(self, block, states, default):

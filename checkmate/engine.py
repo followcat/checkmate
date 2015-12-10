@@ -18,7 +18,7 @@ class Engine(object):
             if _b not in self.blocks:
                 self.blocks.append(_b)
     
-    def process(self, exchanges, states, block):
+    def process(self, block, states, exchanges):
         assert isinstance(block, checkmate.block.Block)
         return block.process(states, exchanges)
 
