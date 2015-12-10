@@ -45,13 +45,10 @@ backlog:
         should be moved out from AutoMata, and should be handled according to
         their purposes.
             
-        Service_classes and services are supporting visualization, their
-        collection can move to ComponentMeta, and stored as component_instance
-        attributes.
-
-        Communication_list should be defined in component's configuration. For
-        the component has no configuration, communication_list should be
-        collected from given blocks incoming/outgoing.
+        Service_classes, services and Communication_list are supporting
+        runtime communication, and they should have no related about how
+        engine organizing. They should be generated in component during runtime
+        communcation setup.
         "
       example: "
             >>> import checkmate.block
