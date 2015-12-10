@@ -69,7 +69,7 @@ class AutoMata(checkmate.engine.Engine):
                 return _b
         return None
 
-    def process(self, exchanges, states, default, block=None):
+    def process(self, block, states, exchanges, default):
         if block is None:
             _block = self.get_blocks_by_input(exchanges, states)[0]
         else:

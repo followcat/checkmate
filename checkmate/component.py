@@ -392,9 +392,9 @@ class Component(object):
     def _do_process(self, exchange, block=None):
         """"""
         try:
-            _block, outgoing = self.engine.process(exchange, self.states,
-                                                 self.default_state_value,
-                                                 block)
+            _block, outgoing = self.engine.process(block, self.states,
+                                                   exchange,
+                                                   self.default_state_value)
         except IndexError:
             if (exchange[0].return_code and
                     self.expected_return_code is not None and
