@@ -50,12 +50,9 @@ class ComponentMeta(type):
         output = declarator.get_output()
         namespace['class_states'] = output['states']
         for _instance in namespace['instances']:
-            instance_dir = None
-            if 'transitions' in _instance:
-                instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
                 exchange_module, state_module,
-                class_file, instance_dir)
+                class_file)
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:

@@ -13,15 +13,9 @@ import checkmate.tymata.transition
 class AutoMata(object):
     # This is Transition Engine
     def __init__(self, exchange_module,
-                 state_module, class_file, instance_dir=None):
+                 state_module, class_file):
         with open(class_file, 'r') as _file:
             define_data = _file.read()
-        if instance_dir is not None:
-            for (dirpath, dirnames, filenames) in os.walk(instance_dir):
-                for _file in filenames:
-                    if _file.endswith(".yaml"):
-                        with open(os.path.join(dirpath, _file), 'r') as _file:
-                            define_data += _file.read()
         transitions = checkmate.tymata.visitor.call_visitor(define_data)
         self.blocks = []
         for data in transitions:
