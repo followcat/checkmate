@@ -85,6 +85,6 @@ backlog:
             >>> engine.add_blocks([blo])
             >>> assert blo in engine.blocks
             >>> exchanges, states = ([], [])
-            >>> result = engine.process(exchanges, states, blo)
+            >>> result = engine.process(blo, states, exchanges)
         "
 
