@@ -185,15 +185,6 @@ class ComponentMeta(type):
                             _data)
             except KeyError:
                 blocks = []
-            services = {}
-            service_classes = []
-            try:
-                communications = set(_instance['communications'])
-            except KeyError:
-                communications = set()
-            instance_attributes[_instance['name']].update({
-                'communications': communications})
-
             engine = \
                 checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             namespace['instance_engines'][_instance['name']] = engine
@@ -238,14 +229,17 @@ class Component(object):
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
             >>> c2 = app.components['C2']
-            >>> c2.communications
-            set()
             >>> c2.setup()
+            >>> len(c2.service_classes)
+            6
+            >>> len(c2.services)
+            9
             >>> sorted(c2.communications)
             ['', 'interactive']
         """
         self.services = {}
         self.service_classes = []
+        self.communications = set()
         for _b in self.engine.blocks:
             for _i in _b.incoming:
                 _ex = _i.factory()
