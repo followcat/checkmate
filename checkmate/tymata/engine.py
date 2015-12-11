@@ -6,6 +6,7 @@
 
 import os
 
+import checkmate.engine
 import checkmate.tymata.visitor
 import checkmate.tymata.transition
 
@@ -27,34 +28,22 @@ def get_definition_data(definitions):
     return definition_data
 
 
-class AutoMata(object):
+def get_blocks_from_data(exchange_module, state_module, define_data):
+    items = checkmate.tymata.visitor.call_visitor(define_data)
+    blocks = []
+    for _item in items:
+        new_block = checkmate.tymata.transition.make_transition(_item,
+                        [exchange_module], [state_module])
+        blocks.append(new_block)
+    return blocks
+
+
+class AutoMata(checkmate.engine.Engine):
     # This is Transition Engine
-    def __init__(self, exchange_module,
-                 state_module, class_file):
-        definitions = []
-        if class_file:
-            definitions.append(class_file)
-        define_data = get_definition_data(definitions)
-        transitions = checkmate.tymata.visitor.call_visitor(define_data)
-        self.blocks = []
-        for data in transitions:
-            new_block = checkmate.tymata.transition.make_transition(
-                data, [exchange_module], [state_module])
-            self.blocks.append(new_block)
-        self.services = {}
-        self.service_classes = []
-        self.communication_list = set()
-        for _b in self.blocks:
-            for _i in _b.incoming:
-                _ex = _i.factory()
-                if _i.code not in self.services:
-                    self.services[_i.code] = _ex
-                if _i.partition_class not in self.service_classes:
-                    self.service_classes.append(_i.partition_class)
-                self.communication_list.add(_ex.communication)
-            for _o in _b.outgoing:
-                _ex = _o.factory()
-                self.communication_list.add(_ex.communication)
+    def __init__(self, name=None, blocks=None):
+        super().__init__(name, blocks)
+        if self.name:
+            self.set_owner(name)
 
     def block_by_name(self, name):
         for _b in self.blocks:
@@ -80,12 +69,13 @@ class AutoMata(object):
                 return _b
         return None
 
-    def process(self, exchange, states, default, block=None):
+    def process(self, block, states, exchanges, default):
         if block is None:
-            _block = self.get_blocks_by_input(exchange, states)[0]
+            _block = self.get_blocks_by_input(exchanges, states)[0]
         else:
             _block = block
-        return _block, _block.process(states, exchange, default=default)
+        outgoing  = super().process(_block, states, exchanges)
+        return _block, outgoing
 
     def simulate(self, block, states, default):
         _incoming = block.generic_incoming(states)

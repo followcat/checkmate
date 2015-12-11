@@ -15,8 +15,7 @@ collected from application should be increased.
     ...      {'P': 'HIGH', 'C': 'AT2'}}
 
     >>> C2_cls.instance_engines['C4'] = checkmate.tymata.engine.AutoMata(
-    ...                C2_cls.exchange_module, C2_cls.state_module,
-    ...                C2_cls.component_definition)
+    ...                name='C4', blocks=C2_cls.instance_engines['C2'].blocks)
 
     >>> app = sample_app.application.TestData()
     >>> app.component_registry['Component_2']=['C2', 'C4']

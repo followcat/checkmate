@@ -1,0 +1,87 @@
+branch: default_engine
+description: "Define a default engine.
+
+    This branch is a sub-branch of generic_application, purpose to define a
+    default engine.
+
+    When a component has no configuration data, then no specific engine will
+    be created for it. But in some cases, the component may still need an
+    engine to process blocks, so a default engine will need to be created for
+    the component. The component's exchanges and states should be defined in
+    the format supported by the engine.
+
+    Currently, there is one specific engine named AutoMata defined, which is
+    taking too much responsibilities. The default engine however will be
+    lighter, and for the consistance, AutoMata should be simplified to take
+    the similar responsibilities.
+    "
+
+backlog:
+    - feature: Make AutoMata initialize with name and block list
+      description: "AutoMata should accept name and blocks to initialize.
+
+        Features now in AutoMata:
+            - define blocks from source datas
+            - collect attributes services, servic_class and communication_list
+            - map blocks
+            - simulate and process blocks
+
+        Blocks definition should move out from AutoMata, so __init__ function
+        will accept block list
+        "
+      example: "
+            >>> import checkmate.block
+            >>> import checkmate.tymata.engine
+            >>> blo = checkmate.block.Block()
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',
+            ...             blocks=[blo])
+            >>> assert blo in engine.blocks
+        "
+
+    - feature: Move extra attributes collection out of AutoMata
+      description: "Move services, service_classes and communication_list out.
+
+        Attributes like services, service_classes and communication_list
+        should be moved out from AutoMata, and should be handled according to
+        their purposes.
+            
+        Service_classes, services and Communication_list are supporting
+        runtime communication, and they should have no related about how
+        engine organizing. They should be generated in component during runtime
+        communcation setup.
+        "
+      example: "
+            >>> import checkmate.block
+            >>> import checkmate.tymata.engine
+            >>> blo = checkmate.block.Block()
+            >>> engine = checkmate.tymata.engine.AutoMata(name='Engine_1',
+            ...             blocks=[blo])
+            >>> assert (not hasattr(engine, 'services'))
+            >>> assert (not hasattr(engine, 'service_classes'))
+            >>> assert (not hasattr(engine, 'communication_list'))
+        "
+
+    - feature: Create engine module with default engine class
+      description: "Create default engine class Engine in engine.py.
+
+        The default Engine class should:
+            - initialize with name and block list
+            - be capable to extend block list
+            - process block
+
+        These features are implemented in AutoMata, so the new Engine class
+        can be inherited by AutoMata's.
+        "
+      example: "
+            >>> import checkmate.block
+            >>> import checkmate.engine
+            >>> engine = checkmate.engine.Engine(name='Default')
+            >>> engine.blocks
+            []
+            >>> blo = checkmate.block.Block()
+            >>> engine.add_blocks([blo])
+            >>> assert blo in engine.blocks
+            >>> exchanges, states = ([], [])
+            >>> result = engine.process(blo, states, exchanges)
+        "
+

@@ -160,6 +160,10 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
         try:
+            block_definitions = [namespace['component_definition']]
+        except KeyError:
+             block_definitions = []
+        try:
             instance_list = namespace['instances']
         except KeyError:
             instance_list = []
@@ -173,21 +177,17 @@ class ComponentMeta(type):
                 instance_attributes[_instance['name']].update(
                     _instance['attributes'])
 
-            engine = checkmate.tymata.engine.AutoMata(
-                namespace['exchange_module'], namespace['state_module'],
-                namespace['component_definition'])
-            engine.set_owner(_instance['name'])
             try:
-                for _communication in engine.communication_list:
-                    if (_communication not in namespace['communication_list']
-                            and 'launch_command' in namespace):
-                        # if 'launch_command' is set,
-                        # communication should be set as well
-                        raise KeyError(
-                            "Communication '%s' is not defined in application"
-                            % _communication)
-            except Exception as e:
-                raise e
+                _data = checkmate.tymata.engine.get_definition_data(
+                            block_definitions)
+                blocks = checkmate.tymata.engine.get_blocks_from_data(
+                            namespace['exchange_module'],
+                            namespace['state_module'],
+                            _data)
+            except KeyError:
+                blocks = []
+            engine = \
+                checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             namespace['instance_engines'][_instance['name']] = engine
 
         result = type.__new__(cls, name, bases, dict(namespace))
@@ -220,11 +220,45 @@ class Component(object):
         self.default_state_value = True
         self.expected_return_code = None
         self.engine = self.instance_engines[name]
-        self.service_classes = self.engine.service_classes
-        self.services = self.engine.services
-        self.communication_list = self.engine.communication_list
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+    
+    @checkmate.fix_issue(
+        "checkmate/issues/move_attributes_to_component_setup.rst")
+    def setup(self):
+        """
+            >>> import sample_app.application
+            >>> app = sample_app.application.TestData()
+            >>> c2 = app.components['C2']
+            >>> c2.setup()
+            >>> len(c2.service_classes)
+            6
+            >>> len(c2.services)
+            9
+            >>> sorted(c2.communications)
+            ['', 'interactive']
+        """
+        self.services = {}
+        self.service_classes = []
+        self.communications = set()
+        for _b in self.engine.blocks:
+            for _i in _b.incoming:
+                _ex = _i.factory()
+                if _i.code not in self.services:
+                    self.services[_i.code] = _ex
+                if _i.partition_class not in self.service_classes:
+                    self.service_classes.append(_i.partition_class)
+            for _io in _b.incoming + _b.outgoing:
+                if hasattr(_io, 'partition_class'):
+                    self.communications.add(_io.partition_class.communication)
+        for _communication in self.communications:
+            if (_communication not in self.communication_list
+                    and hasattr(self, 'launch_command')):
+                # if 'launch_command' is set,
+                # communication should be set as well
+                raise KeyError(
+                    "Communication '%s' is not defined in application"
+                    % _communication)
 
     def block_by_name(self, name):
         return self.engine.block_by_name(name)
@@ -286,7 +320,7 @@ class Component(object):
         self.default_state_value = default_state_value
         outgoing = []
         for block in self.engine.blocks:
-            if block.initializing:
+            if hasattr(block, 'initializing') and block.initializing:
                 outgoing.extend(self.simulate(block))
         if len(outgoing) > 0:
             return outgoing
@@ -359,9 +393,9 @@ class Component(object):
     def _do_process(self, exchange, block=None):
         """"""
         try:
-            _block, outgoing = self.engine.process(exchange, self.states,
-                                                 self.default_state_value,
-                                                 block)
+            _block, outgoing = self.engine.process(block, self.states,
+                                                   exchange,
+                                                   self.default_state_value)
         except IndexError:
             if (exchange[0].return_code and
                     self.expected_return_code is not None and
@@ -475,4 +509,3 @@ class Component(object):
                 else:
                     new_exchange.origin_destination(origin, _d)
                 yield new_exchange
-
