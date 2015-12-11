@@ -83,12 +83,6 @@ def get_definition_update(root_module, definition):
             checkmate._module.get_module(root_module, 'data_structure')
         definition_update['data_structure_module'] = data_structure_module
 
-    try:
-        exchange_definition = definition['exchange_definition']
-    except KeyError:
-        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
-        definition_update['exchange_definition'] = exchange_definition
-
     data_value = {}
     try:
         value_data = checkmate.tymata.engine.get_definition_data(
@@ -100,13 +94,22 @@ def get_definition_update(root_module, definition):
     except KeyError:
         pass
 
-    define_data = checkmate.tymata.engine.get_definition_data(
-                    exchange_definition)
-    if 'data_structure_definition' in definition:
-        define_data += checkmate.tymata.engine.get_definition_data(
-                            definition['data_structure_definition'])
     try:
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        exchange_definition = definition['exchange_definition']
+        define_data = checkmate.tymata.engine.get_definition_data(
+                            exchange_definition)
+    except KeyError:
+        define_data = ''
+
+    try:
+        data_structure_definition = definition['data_structure_definition']
+        define_data += checkmate.tymata.engine.get_definition_data(
+                            data_structure_definition)
+    except KeyError:
+        pass
+
+    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+    try:
         declarator = checkmate.partition_declarator.Declarator(
                         data_structure_module, exchange_module,
                         data_value=data_value)
@@ -174,8 +177,6 @@ class ComponentMeta(type):
                 instance_attributes[_instance['name']].update(
                     _instance['attributes'])
 
-            if 'transitions' in _instance:
-                block_definitions.append(_instance['transitions'])
             try:
                 _data = checkmate.tymata.engine.get_definition_data(
                             block_definitions)
@@ -475,7 +476,7 @@ class Component(object):
         """
         return self.validation_dict.check(items)
 
-    def exchange_destination(self, exchange):
+    def exchange_destination(self, exchange, origin=None):
             """
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
@@ -503,5 +504,8 @@ class Component(object):
                 new_exchange = \
                     exchange.partition_storage.partition_class(exchange)
                 new_exchange.carbon_copy(exchange)
-                new_exchange.origin_destination(self.name, _d)
+                if origin is None:
+                    new_exchange.origin_destination(self.name, _d)
+                else:
+                    new_exchange.origin_destination(origin, _d)
                 yield new_exchange

@@ -303,3 +303,4 @@ class Application(object):
             cls._matrix[current_index] = row
             cls._runs_found[current_index] = True
 
+

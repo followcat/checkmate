@@ -110,10 +110,21 @@ class Component(object):
         return output
 
     def simulate(self, exchanges):
+        output = None
         for ex in exchanges:
-            self.exchange_queue.put(ex)
-            self.logger.info("%s simulate exchange %s to %s" %
-                (self.context.name, ex.value, ex.destination))
+            if len(ex.origin):
+                block = self.context.get_blocks_by_output([ex])
+                output = self.context.simulate(block)
+                for _o in output:
+                    self.client.send(_o)
+                    self.logger.info("%s simulate block and output %s to %s" %
+                        (self.context.name, _o.value, _o.destination))
+            else:
+                self.exchange_queue.put(ex)
+                self.logger.info("%s simulate exchange %s to %s" %
+                    (self.context.name, ex.value, ex.destination))
+        if output is not None:
+            return output
         return exchanges
 
     def validate(self, block):
@@ -304,6 +315,7 @@ class ThreadedStub(ThreadedComponent, Stub):
 
     def simulate(self, exchanges):
         for ex in exchanges:
-            self.internal_queue.put(ex)
+            if not len(ex.origin):
+                self.internal_queue.put(ex)
         return super().simulate(exchanges)
 

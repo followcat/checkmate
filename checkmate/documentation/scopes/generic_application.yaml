@@ -10,6 +10,24 @@ description: "Simplify application/component definition.
     less exposed to failure from side effect.
     "
 backlog:
+    - feature: Exchange defined with definition configuration
+      description: "Remove unconfigured exchange define code.
+
+        Exchanges should be defined only based on definition configuration. No
+        default searching and parsing yaml files to define exchange if no
+        exchange definition configuration set. 
+        "
+      example: "
+            >>> import checkmate.application
+            >>> import sample_app.application
+            >>> d = {}
+            >>> d['__module__'] = 'sample_app.application'
+            >>> d['application_definition'] = {'component_classes': {}}
+            >>> app = checkmate.application.ApplicationMeta('GenericApp',
+            ...         (checkmate.application.Application,), d)
+            >>> assert app.exchanges == []
+        "
+
     - feature: Make code in ApplicationMeta and ComponentMeta similar
       description: "Application and component metaclasses share code.
 
@@ -22,19 +40,19 @@ backlog:
         initialization with common set of keys.
         "
       example: "
-            >>> import checkmate.component\n
-            >>> import checkmate.application\n
-            >>> import sample_app.application\n
-            >>> d = {}\n
-            >>> d['__module__'] = 'sample_app.application'\n
-            >>> app = checkmate.application.ApplicationMeta('GenericApp',\n
-            ...         (checkmate.application.Application,), d)\n
-            >>> d = {}\n
-            >>> d['__module__'] = 'sample_app.component'\n
-            >>> d['root_module'] = 'sample_app.application'\n
-            >>> d['component_registry'] = {}\n
-            >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
-            ...             (checkmate.component.Component,), d)\n
+            >>> import checkmate.component
+            >>> import checkmate.application
+            >>> import sample_app.application
+            >>> d = {}
+            >>> d['__module__'] = 'sample_app.application'
+            >>> app = checkmate.application.ApplicationMeta('GenericApp',
+            ...         (checkmate.application.Application,), d)
+            >>> d = {}
+            >>> d['__module__'] = 'sample_app.component'
+            >>> d['root_module'] = 'sample_app.application'
+            >>> d['component_registry'] = {}
+            >>> comp = checkmate.component.ComponentMeta('GenericComp',
+            ...             (checkmate.component.Component,), d)
         "
 
     - feature: Define a simple default engine for component
@@ -54,17 +72,18 @@ backlog:
         if the parsing is done in application or component metaclasses.
         "
       example: "
-            >>> import collections\n
-            >>> import checkmate.component\n
-            >>> d = collections.defaultdict(dict)\n
-            >>> d['__module__'] = 'sample_app.component'\n
-            >>> d['component_definition'] = yaml.load('\n
-            ...         exchange_definition: sample_app/exchanges.yaml\n
-            ...         test_data_definition: sample_app/test_data.yaml\n
-            ...         ')\n
-            >>> comp = checkmate.component.ComponentMeta('GenericComp',\n
-            ...             (checkmate.component.Component,), d)\n
-            >>> assert comp.exchanges\n
+            >>> import yaml
+            >>> import collections
+            >>> import checkmate.component
+            >>> d = collections.defaultdict(dict)
+            >>> d['__module__'] = 'sample_app.component'
+            >>> d['component_definition'] = yaml.load('''
+            ...         exchange_definition: sample_app/exchanges.yaml
+            ...         test_data_definition: sample_app/test_data.yaml
+            ...         ''')
+            >>> comp = checkmate.component.ComponentMeta('GenericComp',
+            ...             (checkmate.component.Component,), d)
+            >>> assert comp.exchanges
         "
 
     - feature: Definition of new components inside component
