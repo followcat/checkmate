@@ -30,10 +30,8 @@ def get_definition_data(definitions):
 class AutoMata(object):
     # This is Transition Engine
     def __init__(self, exchange_module,
-                 state_module, class_file, instance_dir=None):
+                 state_module, class_file):
         definitions = []
-        if instance_dir:
-            definitions.append(instance_dir)
         if class_file:
             definitions.append(class_file)
         define_data = get_definition_data(definitions)

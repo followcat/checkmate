@@ -169,12 +169,9 @@ class ComponentMeta(type):
                 instance_attributes[_instance['name']].update(
                     _instance['attributes'])
 
-            instance_dir = None
-            if 'transitions' in _instance:
-                instance_dir = _instance['transitions']
             engine = checkmate.tymata.engine.AutoMata(
                 namespace['exchange_module'], namespace['state_module'],
-                namespace['component_definition'], instance_dir)
+                namespace['component_definition'])
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:
