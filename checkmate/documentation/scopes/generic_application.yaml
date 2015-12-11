@@ -10,6 +10,24 @@ description: "Simplify application/component definition.
     less exposed to failure from side effect.
     "
 backlog:
+    - feature: Exchange defined with definition configuration
+      description: "Remove unconfigured exchange define code.
+
+        Exchanges should be defined only based on definition configuration. No
+        default searching and parsing yaml files to define exchange if no
+        exchange definition configuration set. 
+        "
+      example: "
+            >>> import checkmate.application\n
+            >>> import sample_app.application\n
+            >>> d = {}\n
+            >>> d['__module__'] = 'sample_app.application'\n
+            >>> d['application_definition'] = {'component_classes': {}}\n
+            >>> app = checkmate.application.ApplicationMeta('GenericApp',\n
+            ...         (checkmate.application.Application,), d)\n
+            >>> assert app.exchanges == []\n
+        "
+
     - feature: Make code in ApplicationMeta and ComponentMeta similar
       description: "Improve code reuse between application and component meta.
 
