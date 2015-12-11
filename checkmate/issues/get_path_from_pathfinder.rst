@@ -6,7 +6,6 @@
         >>> import sample_app.exchanges
         >>> import sample_app.runtime.test_procedure
         >>> _class = sample_app.application.TestData
-        >>> _class.reset()
         >>> box = checkmate.sandbox.Sandbox(_class)
         >>> app = box.application
         >>> ex1 = sample_app.exchanges.Action('AC')

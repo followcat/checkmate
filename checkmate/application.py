@@ -12,7 +12,6 @@ import numpy
 import checkmate.runs
 import checkmate._module
 import checkmate.component
-import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -31,13 +30,18 @@ class ApplicationMeta(type):
         3
         """
         root_module = namespace['__module__']
-        definition = namespace['application_definition']
+        try:
+            definition = namespace['application_definition']
+        except KeyError:
+            definition = {}
 
         definition_update = checkmate.component.get_definition_update(
                                 root_module, definition)
 
         for key in ('itp_definition', 'feature_definition_path'):
-            if key not in definition:
+            try:
+                definition_update[key] = definition[key]
+            except KeyError:
                 if key == 'feature_definition_path':
                     pass
                 else:
@@ -45,9 +49,13 @@ class ApplicationMeta(type):
                         os.sep.join(root_module.split('.')[0:-1])
 
         _component_registry = {}
-        _component_classes = definition['component_classes']
+        try:
+            _component_classes = definition['component_classes']
+        except KeyError:
+            _component_classes = {}
+
         for class_definition in _component_classes:
-            component_namespace = collections.defaultdict(dict)
+            component_namespace = {}
             component_namespace.update(definition_update)
             component_namespace.update(class_definition)
             component_namespace.update({
@@ -69,9 +77,7 @@ class ApplicationMeta(type):
 class Application(object):
     _matrix = numpy.matrix([])
     _matrix_runs = []
-    _runs_found = []
-    _unsafe_runs = []
-    _safe_runs = []
+    _runs_found = [False]
     component_classes = []
     communication_list = {}
     component_registry = {}
@@ -83,9 +89,7 @@ class Application(object):
     def reset(cls):
         cls._matrix = numpy.matrix([])
         cls._matrix_runs = []
-        cls._runs_found = []
-        cls._unsafe_runs = []
-        cls._safe_runs = []
+        cls._runs_found = [False]
         if hasattr(cls, cls._run_collection_attribute):
             delattr(cls, cls._run_collection_attribute)
         if hasattr(cls, cls._origin_exchanges_attribute):
@@ -280,25 +284,23 @@ class Application(object):
         # extend matrix
         if extra_length > 0:
             if cls._matrix.size == 0:
-                if current_run is not None:
-                    extra_length += 1
-                    if current_run not in cls._matrix_runs:
-                        cls._matrix_runs.append(current_run)
-                _temp = [[0]*(extra_length)]*(extra_length)
+                cls._matrix = \
+                    numpy.matrix([[0]*(extra_length+1)]*(extra_length+1))
             else:
                 _temp = cls._matrix.tolist()
                 for item in _temp:
                     item.extend([0]*extra_length)
                 _temp.extend([[0]*len(_temp[0])]*extra_length)
-            cls._matrix = numpy.matrix(_temp)
+                cls._matrix = numpy.matrix(_temp)
             cls._matrix_runs.extend(new_runs)
             cls._runs_found.extend([False]*extra_length)
         # update matrix row
         if current_run is not None:
             current_index = cls._matrix_runs.index(current_run)
-            row = cls._matrix[current_index].tolist()[0]
+            row = len(cls._matrix)*[0]
             for _run in next_runs:
                 row[cls._matrix_runs.index(_run)] = 1
             cls._matrix[current_index] = row
             cls._runs_found[current_index] = True
+
 

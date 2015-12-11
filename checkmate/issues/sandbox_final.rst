@@ -3,7 +3,6 @@ Setting the procedure.final from the sandbox does not work.
     >>> import checkmate.runtime._pyzmq
     >>> import checkmate.runtime._runtime
     >>> import checkmate.runtime.test_plan
-    >>> import checkmate.parser.yaml_visitor
     >>> import sample_app.application
     >>> r = checkmate.runtime._runtime.Runtime(sample_app.application.TestData, checkmate.runtime._pyzmq.Communication, threaded=True)
     >>> r.setup_environment(['C1'])

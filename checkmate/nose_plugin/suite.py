@@ -40,11 +40,12 @@ class TestCase(nose.case.Test):
                 result.addError(self, err)
             result.stopTest(self)
         else:
-            if isinstance(test.test, types.FunctionType):
-                setattr(test, 'proxyResult', result.result)
-                test()
-            else:
-                test(result)
+            if hasattr(test, 'test'):
+                if isinstance(test.test, types.FunctionType):
+                    setattr(test, 'proxyResult', result.result)
+                    test()
+                else:
+                    test(result)
 
 class FunctionTestCase(nose.case.FunctionTestCase):
     def __init__(self, test, config, **kwargs):
@@ -56,16 +57,11 @@ class FunctionTestCase(nose.case.FunctionTestCase):
         config_as_dict = self.config.todict()
         runtime = config_as_dict['runtime']
         if isinstance(self.test, types.FunctionType):
-            tests = []
-            _random = self.config.defined_config['random']
-            for _test in self.test(runtime.application, _random, False):
-                if _test in tests:
-                    runtime.execute(_test, transform=True)
-                    continue
-                tests.append(_test)
+            for _test in self.test(runtime.application,
+                            self.config.defined_config['random']):
                 _FunctionTestCase = FunctionTestCase(_test, config=self.config)
-                setattr(_FunctionTestCase, '__name__', str(self) + '(' + \
-                    str(_test.exchanges[0].value) +', )')
+                setattr(_FunctionTestCase, '__name__', 
+                    str(self) + '(' + str(_test.exchanges[0].value) +', )')
                 _FunctionTestCase(self.proxyResult)
         else:
             runtime.execute(self.test, transform=True)

@@ -54,7 +54,6 @@ class FullPython(checkmate.application.Application,
                                   {component.name}"
             instances:
               - name: C1
-                transitions: pytango/checkmate/component/component_1/C1
           - class: pytango/checkmate/component/component_2.yaml
             attributes:
               launch_command: "python ./pytango/component/component_2.py

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Doctest for checkmate.</description>
+  <description>user_app doctest</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -9,27 +9,17 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers class="vector">
-    <hudson.triggers.TimerTrigger>
-      <spec>*/12 * * * *
-</spec>
-    </hudson.triggers.TimerTrigger>
-  </triggers>
   <concurrentBuild>false</concurrentBuild>
   <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
   <builders>
     <hudson.tasks.Shell>
-      <command> cd $CHECKMATE_CI_HOME
-if [ -z "$CHECKMATE_CI_REV" ];
-    then (hg pull; hg up -C);
-fi
-hg id
-nosetests --with-doctest checkmate/ `find checkmate -name &quot;_[a-z]*.py&quot; -print`</command>
+      <command>cd $CHECKMATE_HOME
+nosetests --with-doctest user_app/ `find user_app -name &quot;_[a-z]*.py&quot; -print`</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.BuildTrigger>
-      <childProjects>sample_app-doctest, user_app-doctest</childProjects>
+      <childProjects>user_app_all</childProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>

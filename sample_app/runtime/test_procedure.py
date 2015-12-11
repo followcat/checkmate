@@ -38,7 +38,7 @@ class TestProcedureRun1Threaded(checkmate.runs.Run):
         application.start()
         c2 = application.components['C2']
         runs = checkmate.runtime.test_plan.get_runs_from_transition(
-                    application, c2.engine.blocks[0], itp_transition=True)
+                    application, c2.engine.blocks[0])
         super().__init__(runs[0].root, runs[0].nodes, 
                             states=c2.states, exchanges=runs[0].exchanges)
         self._collected_run = runs[0].collected_run
@@ -78,8 +78,7 @@ class TestProcedureRun2Threaded(checkmate.runs.Run):
         application = application_class()
         c2 = application.components['C2']
         run_pbac = checkmate.runtime.test_plan.get_runs_from_transition(
-                        application, c2.engine.blocks[0],
-                        itp_transition=True)[0]
+                        application, c2.engine.blocks[0])[0]
         box = checkmate.sandbox.Sandbox(application_class)
         box(run_pbac.exchanges)
         transition_rl_index = [_t for _t in c2.engine.blocks

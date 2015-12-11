@@ -10,18 +10,31 @@ import checkmate.tymata.visitor
 import checkmate.tymata.transition
 
 
-class AutoMata(object):
-    # This is Transition Engine
-    def __init__(self, exchange_module,
-                 state_module, class_file, instance_dir=None):
-        with open(class_file, 'r') as _file:
-            define_data = _file.read()
-        if instance_dir is not None:
-            for (dirpath, dirnames, filenames) in os.walk(instance_dir):
+def get_definition_data(definitions):
+    definition_data = ''
+    if type(definitions) != list:
+        definitions = [definitions]
+    for _d in definitions:
+        if os.path.isfile(_d):
+            with open(_d, 'r') as _file:
+                definition_data += _file.read()
+        elif os.path.isdir(_d):
+            for (dirpath, dirnames, filenames) in os.walk(_d):
                 for _file in filenames:
                     if _file.endswith(".yaml"):
                         with open(os.path.join(dirpath, _file), 'r') as _file:
-                            define_data += _file.read()
+                            definition_data += _file.read()
+    return definition_data
+
+
+class AutoMata(object):
+    # This is Transition Engine
+    def __init__(self, exchange_module,
+                 state_module, class_file):
+        definitions = []
+        if class_file:
+            definitions.append(class_file)
+        define_data = get_definition_data(definitions)
         transitions = checkmate.tymata.visitor.call_visitor(define_data)
         self.blocks = []
         for data in transitions:

@@ -14,24 +14,56 @@ import checkmate._validation
 import checkmate.exception
 import checkmate.interfaces
 import checkmate.tymata.engine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
-def get_definition_data(definitions):
-    definition_data = ''
-    if type(definitions) != list:
-        definitions = [definitions]
-    for _d in definitions:
-        if os.path.isfile(_d):
-            with open(_d, 'r') as _file:
-                definition_data += _file.read()
-        elif os.path.isdir(_d):
-            for filename in os.listdir(_d):
-                if filename.endswith(".yaml"):
-                    _fullname = os.path.join(_d, filename)
-                    with open(_fullname, 'r') as _file:
-                        definition_data += _file.read()
-    return definition_data
+def get_local_update(root_module, definition):
+    """"""
+    definition_update = {}
+    definition_update['class_states'] = []
+
+    try:
+        (package_name, file_name) =\
+            definition['component_definition'].split('/')[-2:]
+        name = file_name.split('.')[0].capitalize()
+        definition_update['name'] = name
+    except KeyError:
+        return definition_update
+
+    exchange_module = definition['exchange_module']
+    data_structure_module = definition['data_structure_module']
+
+    (package_name, file_name) =\
+         definition['component_definition'].split('/')[-2:]
+    name = file_name.split('.')[0].capitalize()
+    definition_update['name'] = name
+
+    component_module = \
+        checkmate._module.get_module(root_module,
+            name.lower(), package_name)
+    local_module = component_module.__name__
+    definition_update['__module__'] = local_module
+    definition_update['component_module'] = component_module
+
+    state_module = checkmate._module.get_module(local_module,
+                        name.lower() + '_states')
+    definition_update['state_module'] = state_module
+
+    define_data = checkmate.tymata.engine.get_definition_data(
+                    definition['component_definition'])
+    try:
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module, state_module)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+        definition_update['class_states'] = output['states']
+    except:
+        pass
+
+    return definition_update
+
 
 def get_definition_update(root_module, definition):
     """"""
@@ -51,9 +83,16 @@ def get_definition_update(root_module, definition):
             checkmate._module.get_module(root_module, 'data_structure')
         definition_update['data_structure_module'] = data_structure_module
 
+    try:
+        exchange_definition = definition['exchange_definition']
+    except KeyError:
+        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
+        definition_update['exchange_definition'] = exchange_definition
+
     data_value = {}
     try:
-        value_data = get_definition_data(definition['test_data_definition'])
+        value_data = checkmate.tymata.engine.get_definition_data(
+                        definition['test_data_definition'])
         value_source = \
             checkmate.parser.yaml_visitor.call_data_visitor(value_data)
         data_value.update(value_source)
@@ -63,13 +102,15 @@ def get_definition_update(root_module, definition):
 
     try:
         exchange_definition = definition['exchange_definition']
-        define_data = get_definition_data(exchange_definition)
+        define_data = checkmate.tymata.engine.get_definition_data(
+                            exchange_definition)
     except KeyError:
         define_data = ''
 
     try:
         data_structure_definition = definition['data_structure_definition']
-        define_data += get_definition_data(data_structure_definition)
+        define_data += checkmate.tymata.engine.get_definition_data(
+                            data_structure_definition)
     except KeyError:
         pass
 
@@ -81,10 +122,14 @@ def get_definition_update(root_module, definition):
         declarator.new_definitions(data_source)
         output = declarator.get_output()
 
-        definition_update['data_structure'] = output['data_structure']
-        definition_update['exchanges'] = output['exchanges']
+        exchanges = output['exchanges']
+        data_structure = output['data_structure']
+    except:
+        exchanges = {}
+        data_structure = {}
     finally:
-        pass
+        definition_update['exchanges'] = exchanges
+        definition_update['data_structure'] = data_structure
 
     return definition_update
 
@@ -100,47 +145,43 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
-        (package_name, file_name) = namespace['class'].split('/')[-2:]
-        name = file_name.split('.')[0].capitalize()
-        component_module = \
-            checkmate._module.get_module(namespace['root_module'],
-                name.lower(), package_name)
-        namespace['__module__'] = component_module.__name__
+        root_module = namespace['root_module']
+        # TODO: use 'definition' key in yaml
+        try:
+            namespace['component_definition'] = namespace['class']
+        except KeyError:
+            pass
+        definition_update = checkmate.component.get_local_update(
+                                root_module, namespace)
+
+        namespace.update(definition_update)
+        try:
+            name = namespace['name']
+        except KeyError:
+            pass
+
         _component_registry = namespace['component_registry']
         _component_registry[name] = []
-        for _instance in namespace['instances']:
-            _component_registry[name].append(_instance['name'])
-
-        exchange_module = namespace['exchange_module']
-        data_structure_module = namespace['data_structure_module']
-        state_module = checkmate._module.get_module(namespace['__module__'],
-                            name.lower() + '_states')
-        namespace['state_module'] = state_module
         instance_attributes = collections.defaultdict(dict)
-        for _instance in namespace['instances']:
-            if 'attributes' in _instance:
-                instance_attributes[_instance['name']] = \
-                    _instance['attributes']
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
+        try:
+            instance_list = namespace['instances']
+        except KeyError:
+            instance_list = []
+        for _instance in instance_list:
+            _component_registry[name].append(_instance['name'])
 
-        class_file = namespace['class']
-        namespace['component_definition'] = class_file
-        with open(class_file, 'r') as _file:
-            define_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        declarator = checkmate.partition_declarator.Declarator(
-            data_structure_module, exchange_module, state_module)
-        declarator.new_definitions(data_source)
-        output = declarator.get_output()
-        namespace['class_states'] = output['states']
-        for _instance in namespace['instances']:
-            instance_dir = None
-            if 'transitions' in _instance:
-                instance_dir = _instance['transitions']
+            if 'attributes' in namespace:
+                instance_attributes[_instance['name']] = \
+                    namespace['attributes']
+            if 'attributes' in _instance:
+                instance_attributes[_instance['name']].update(
+                    _instance['attributes'])
+
             engine = checkmate.tymata.engine.AutoMata(
-                exchange_module, state_module,
-                class_file, instance_dir)
+                namespace['exchange_module'], namespace['state_module'],
+                namespace['component_definition'])
             engine.set_owner(_instance['name'])
             try:
                 for _communication in engine.communication_list:
@@ -154,8 +195,12 @@ class ComponentMeta(type):
             except Exception as e:
                 raise e
             namespace['instance_engines'][_instance['name']] = engine
+
         result = type.__new__(cls, name, bases, dict(namespace))
-        setattr(component_module, name, result)
+        try:
+            setattr(namespace['component_module'], name, result)
+        except KeyError:
+            pass
         return result
 
 
@@ -403,7 +448,7 @@ class Component(object):
         """
         return self.validation_dict.check(items)
 
-    def exchange_destination(self, exchange):
+    def exchange_destination(self, exchange, origin=None):
             """
             >>> import sample_app.application
             >>> app = sample_app.application.TestData()
@@ -431,5 +476,9 @@ class Component(object):
                 new_exchange = \
                     exchange.partition_storage.partition_class(exchange)
                 new_exchange.carbon_copy(exchange)
-                new_exchange.origin_destination(self.name, _d)
+                if origin is None:
+                    new_exchange.origin_destination(self.name, _d)
+                else:
+                    new_exchange.origin_destination(origin, _d)
                 yield new_exchange
+
