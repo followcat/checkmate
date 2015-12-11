@@ -83,12 +83,6 @@ def get_definition_update(root_module, definition):
             checkmate._module.get_module(root_module, 'data_structure')
         definition_update['data_structure_module'] = data_structure_module
 
-    try:
-        exchange_definition = definition['exchange_definition']
-    except KeyError:
-        exchange_definition = os.sep.join(root_module.split('.')[0:-1])
-        definition_update['exchange_definition'] = exchange_definition
-
     data_value = {}
     try:
         value_data = checkmate.tymata.engine.get_definition_data(
