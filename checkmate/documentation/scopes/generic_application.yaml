@@ -18,14 +18,14 @@ backlog:
         exchange definition configuration set. 
         "
       example: "
-            >>> import checkmate.application\n
-            >>> import sample_app.application\n
-            >>> d = {}\n
-            >>> d['__module__'] = 'sample_app.application'\n
-            >>> d['application_definition'] = {'component_classes': {}}\n
-            >>> app = checkmate.application.ApplicationMeta('GenericApp',\n
-            ...         (checkmate.application.Application,), d)\n
-            >>> assert app.exchanges == []\n
+            >>> import checkmate.application
+            >>> import sample_app.application
+            >>> d = {}
+            >>> d['__module__'] = 'sample_app.application'
+            >>> d['application_definition'] = {'component_classes': {}}
+            >>> app = checkmate.application.ApplicationMeta('GenericApp',
+            ...         (checkmate.application.Application,), d)
+            >>> assert app.exchanges == []
         "
 
     - feature: Make code in ApplicationMeta and ComponentMeta similar
