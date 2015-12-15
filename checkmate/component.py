@@ -24,8 +24,7 @@ def get_local_update(root_module, definition):
     definition_update['class_states'] = []
 
     try:
-        (package_name, file_name) =\
-            definition['component_definition'].split('/')[-2:]
+        (package_name, file_name) = definition['definition'].split('/')[-2:]
         name = file_name.split('.')[0].capitalize()
         definition_update['name'] = name
     except KeyError:
@@ -33,11 +32,6 @@ def get_local_update(root_module, definition):
 
     exchange_module = definition['exchange_module']
     data_structure_module = definition['data_structure_module']
-
-    (package_name, file_name) =\
-         definition['component_definition'].split('/')[-2:]
-    name = file_name.split('.')[0].capitalize()
-    definition_update['name'] = name
 
     component_module = \
         checkmate._module.get_module(root_module,
@@ -51,7 +45,7 @@ def get_local_update(root_module, definition):
     definition_update['state_module'] = state_module
 
     define_data = checkmate.tymata.engine.get_definition_data(
-                    definition['component_definition'])
+                    definition['definition'])
     try:
         data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
         declarator = checkmate.partition_declarator.Declarator(
@@ -142,7 +136,7 @@ class ComponentMeta(type):
         root_module = namespace['root_module']
         # TODO: use 'definition' key in yaml
         try:
-            namespace['component_definition'] = namespace['class']
+            namespace['definition'] = namespace['class']
         except KeyError:
             pass
         definition_update = checkmate.component.get_local_update(
@@ -160,7 +154,7 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
         try:
-            block_definitions = [namespace['component_definition']]
+            block_definitions = [namespace['definition']]
         except KeyError:
              block_definitions = []
         try:
