@@ -87,7 +87,7 @@ backlog:
         "
 
     - feature: Definition of new components inside component
-      description: "Comoonent definition inside component.
+      description: "Component definition inside component.
 
         As the code of application and component metaclasses are more similar
         the existing application should be split in two:
@@ -95,5 +95,20 @@ backlog:
                 component. Each application is defining its own component.
                 This component is defining more components.
             - the actions that are application specific are kept there.
+        "
+      example: "
+            >>> import yaml
+            >>> import checkmate.component
+            >>> d = {}
+            >>> d['root_module'] = 'checkmate.component'
+            >>> d['component_definition'] = yaml.load('''
+            ...         - instances:
+            ...             - name: S
+            ... ''')
+            >>> comp = checkmate.component.ComponentMeta('GenericComp',
+            ...             (checkmate.component.Component,), d)
+            >>> gc = comp('GenericComp')
+            >>> assert isinstance(gc.components['S'],
+            ...             checkmate.component.Component)
         "
 
