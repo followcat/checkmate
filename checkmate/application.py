@@ -50,11 +50,15 @@ class ApplicationMeta(type):
 
         _component_registry = {}
         try:
-            _component_classes = definition['component_classes']
+            _component_definition = list(definition['component_definition'])
         except KeyError:
-            _component_classes = {}
+            _component_definition = []
+        try:
+            _component_definition.extend(definition['component_classes'])
+        except KeyError:
+            pass
 
-        for class_definition in _component_classes:
+        for class_definition in _component_definition:
             component_namespace = {}
             component_namespace.update(definition_update)
             component_namespace.update(class_definition)
@@ -68,7 +72,7 @@ class ApplicationMeta(type):
             class_definition['class_from_meta'] = _class
 
         namespace.update(definition_update)
-        namespace['component_classes'] = _component_classes
+        namespace['component_classes'] = _component_definition
         namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
