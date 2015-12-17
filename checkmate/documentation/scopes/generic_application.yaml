@@ -73,14 +73,14 @@ backlog:
         "
       example: "
             >>> import yaml
-            >>> import collections
             >>> import checkmate.component
-            >>> d = collections.defaultdict(dict)
-            >>> d['__module__'] = 'sample_app.component'
-            >>> d['component_definition'] = yaml.load('''
+            >>> d = {}
+            >>> d['root_module'] = 'checkmate.component'
+            >>> d['component_registry'] = {}
+            >>> d.update(yaml.load('''
             ...         exchange_definition: sample_app/exchanges.yaml
             ...         test_data_definition: sample_app/test_data.yaml
-            ...         ''')
+            ...         '''))
             >>> comp = checkmate.component.ComponentMeta('GenericComp',
             ...             (checkmate.component.Component,), d)
             >>> assert comp.exchanges
