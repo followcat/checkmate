@@ -96,20 +96,17 @@ def get_definition_update(root_module, definition):
     except KeyError:
         pass
 
+    _datas = []
     try:
-        exchange_definition = definition['exchange_definition']
-        define_data = checkmate.tymata.engine.get_definition_data(
-                            exchange_definition)
+        _datas.append(definition['exchange_definition'])
     except KeyError:
-        define_data = ''
-
+        pass
     try:
-        data_structure_definition = definition['data_structure_definition']
-        define_data += checkmate.tymata.engine.get_definition_data(
-                            data_structure_definition)
+        _datas.append(definition['data_structure_definition'])
     except KeyError:
         pass
 
+    define_data = checkmate.tymata.engine.get_definition_data(_datas)
     data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
     try:
         declarator = checkmate.partition_declarator.Declarator(
