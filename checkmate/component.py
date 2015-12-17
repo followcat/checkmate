@@ -139,10 +139,15 @@ class ComponentMeta(type):
             namespace['definition'] = namespace['class']
         except KeyError:
             pass
-        definition_update = checkmate.component.get_local_update(
+        definition_update = checkmate.component.get_definition_update(
                                 root_module, namespace)
 
         namespace.update(definition_update)
+
+        local_update = checkmate.component.get_local_update(
+                                root_module, namespace)
+
+        namespace.update(local_update)
         try:
             name = namespace['name']
         except KeyError:
