@@ -127,6 +127,28 @@ def get_definition_update(root_module, definition):
         definition_update['exchanges'] = exchanges
         definition_update['data_structure'] = data_structure
 
+    try:
+        _component_definition = definition['component_definition']
+    except KeyError:
+        _component_definition = []
+    try:
+        _component_definition.extend(definition['component_classes'])
+    except KeyError:
+        pass
+
+    for class_definition in _component_definition:
+        component_namespace = dict(definition_update)
+        component_namespace.update(class_definition)
+        component_namespace.update({
+            'root_module': root_module,
+            'component_registry': definition['component_registry'],
+            'communication_list': definition['communication_list']
+            })
+        _class = ComponentMeta('_filled_later',
+                    (Component,), component_namespace)
+        class_definition['class_from_meta'] = _class
+    definition_update['component_classes'] = _component_definition
+
     return definition_update
 
 

@@ -34,6 +34,9 @@ class ApplicationMeta(type):
             definition = namespace['application_definition']
         except KeyError:
             definition = {}
+        _component_registry = {}
+        definition['component_registry'] = _component_registry
+        definition['communication_list'] = namespace['communication_list']
 
         definition_update = checkmate.component.get_definition_update(
                                 root_module, definition)
@@ -48,31 +51,7 @@ class ApplicationMeta(type):
                     definition_update[key] =\
                         os.sep.join(root_module.split('.')[0:-1])
 
-        _component_registry = {}
-        try:
-            _component_definition = list(definition['component_definition'])
-        except KeyError:
-            _component_definition = []
-        try:
-            _component_definition.extend(definition['component_classes'])
-        except KeyError:
-            pass
-
-        for class_definition in _component_definition:
-            component_namespace = {}
-            component_namespace.update(definition_update)
-            component_namespace.update(class_definition)
-            component_namespace.update({
-                'root_module': root_module,
-                'component_registry': _component_registry,
-                'communication_list': namespace['communication_list']
-                })
-            _class = checkmate.component.ComponentMeta('_filled_later',
-                        (checkmate.component.Component,), component_namespace)
-            class_definition['class_from_meta'] = _class
-
         namespace.update(definition_update)
-        namespace['component_classes'] = _component_definition
         namespace['component_registry'] = _component_registry
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
