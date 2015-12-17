@@ -128,6 +128,18 @@ def get_definition_update(root_module, definition):
         definition_update['data_structure'] = data_structure
 
     try:
+        component_registry = definition['component_registry']
+    except KeyError:
+        component_registry = {}
+    definition_update['component_registry'] = component_registry
+
+    try:
+        communication_list = definition['communication_list']
+    except KeyError:
+        communication_list = {}
+    definition_update['communication_list'] = communication_list
+
+    try:
         _component_definition = definition['component_definition']
     except KeyError:
         _component_definition = []
@@ -139,11 +151,7 @@ def get_definition_update(root_module, definition):
     for class_definition in _component_definition:
         component_namespace = dict(definition_update)
         component_namespace.update(class_definition)
-        component_namespace.update({
-            'root_module': root_module,
-            'component_registry': definition['component_registry'],
-            'communication_list': definition['communication_list']
-            })
+        component_namespace.update({'root_module': root_module})
         _class = ComponentMeta('_filled_later',
                     (Component,), component_namespace)
         class_definition['class_from_meta'] = _class
