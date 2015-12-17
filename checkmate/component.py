@@ -250,6 +250,13 @@ class Component(object):
         self.engine = self.instance_engines[name]
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+        self.components = collections.OrderedDict()
+        for _class_definition in self.component_classes:
+            _class = _class_definition['class_from_meta']
+            for component in _class_definition['instances']:
+                _name = component['name']
+                self.components[_name] = \
+                    _class(_name, self.component_registry)
     
     @checkmate.fix_issue(
         "checkmate/issues/move_attributes_to_component_setup.rst")
