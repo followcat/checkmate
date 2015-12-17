@@ -56,6 +56,14 @@ def get_local_update(root_module, definition):
     except:
         pass
 
+    try:
+        blocks = checkmate.tymata.engine.get_blocks_from_data(
+                    exchange_module, state_module, define_data)
+    except:
+        blocks = []
+    finally:
+        definition_update['component_blocks'] = blocks
+
     return definition_update
 
 
@@ -159,9 +167,9 @@ class ComponentMeta(type):
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
         try:
-            block_definitions = [namespace['definition']]
+            blocks = namespace['component_blocks']
         except KeyError:
-             block_definitions = []
+            blocks = []
         try:
             instance_list = namespace['instances']
         except KeyError:
@@ -176,15 +184,6 @@ class ComponentMeta(type):
                 instance_attributes[_instance['name']].update(
                     _instance['attributes'])
 
-            try:
-                _data = checkmate.tymata.engine.get_definition_data(
-                            block_definitions)
-                blocks = checkmate.tymata.engine.get_blocks_from_data(
-                            namespace['exchange_module'],
-                            namespace['state_module'],
-                            _data)
-            except KeyError:
-                blocks = []
             engine = \
                 checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             namespace['instance_engines'][_instance['name']] = engine
