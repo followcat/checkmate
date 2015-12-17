@@ -170,8 +170,8 @@ class ComponentMeta(type):
             _component_registry[name].append(_instance['name'])
 
             if 'attributes' in namespace:
-                instance_attributes[_instance['name']] = \
-                    namespace['attributes']
+                instance_attributes[_instance['name']].update(
+                    namespace['attributes'])
             if 'attributes' in _instance:
                 instance_attributes[_instance['name']].update(
                     _instance['attributes'])
