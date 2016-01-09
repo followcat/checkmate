@@ -73,20 +73,19 @@ def update_header(content, header):
     # This code is part of the checkmate project.
     # Copyright (C) 2012-2...
     """
+    d = datetime.date.today()
+    d_year = str(d.year)
     if not content.startswith('#'):
-        f.seek(0, 0)
-        content = header + content
-        write_content(input_file, content)
+        content = header.replace("2013", d_year) + content
     else:
-        d = datetime.date.today()
         match = re.search(r".*Copyright\D+(\d[0-9-, ]+\d)\D", content)
         if match is not None:
             years = match.group(1).strip()
-            if not str(d.year) in years:
+            if not d_year in years:
                 if len(years) == 4:
-                    new_years = years + '-' + str(d.year)
+                    new_years = years + '-' + d_year
                 else:
-                    new_years = years[:4] + '-' + str(d.year)
+                    new_years = years[:4] + '-' + d_year
                 content = content.replace(years,new_years)
     return content
 
