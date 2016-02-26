@@ -33,9 +33,10 @@ Should not get Runs when simulate has no outgoing.
         >>> d = {
         ...     'exchange_module': exchange_module,
         ...     'data_structure_module': data_structure_module,
-        ...     '__module__': component_module.__name__,
-        ...     'component_definition': class_file,
+        ...     'root_module': sample_app.application.__name__,
+        ...     'class': class_file,
         ...     'instances': [{'name': 'DUMMY'}],
+        ...     'component_registry': app.component_registry,
         ...     'communication_list': communication_list.keys()}
         >>> _file = open(class_file, 'w')
         >>> _file.close()

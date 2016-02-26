@@ -14,6 +14,34 @@ import checkmate.partition_declarator
 import checkmate.parser.feature_visitor
 
 
+@checkmate.fix_issue('checkmate/issues/collected_run_in_itp_run.rst')
+def get_runs_from_transition(application, transition, itp_transition=False):
+    runs = []
+    exchanges = []
+    _class = type(application)
+    box = checkmate.sandbox.Sandbox(_class, application, [transition])
+    _incoming = transition.generic_incoming(box.application.state_list())
+    origin = ''
+    destination = []
+    for _c in box.application.components.values():
+        if _c.get_blocks_by_output(_incoming) is not None:
+            origin = _c.name
+        if len(_c.get_blocks_by_input(_incoming)) > 0:
+            if _c.name not in destination:
+                destination.append(_c.name)
+    for _exchange in _incoming: 
+        _exchange.origin_destination(origin, destination)
+        exchanges.append(_exchange)
+    assert box(exchanges)
+    _run = box.blocks
+    initial = checkmate.sandbox.Sandbox(_class, application, [transition])
+    if itp_transition:
+        _run.itp_final = transition.final
+        _run._collected_box = initial
+    runs.append(_run)
+    return runs
+
+
 def get_runs_from_test(data, application):
     """
         >>> import checkmate.runtime.test_plan
@@ -35,7 +63,7 @@ def get_runs_from_test(data, application):
     for array_items in data:
         transition = checkmate.tymata.transition.make_transition(
                         array_items, [exchange_module], state_modules)
-        gen_runs = checkmate.runs.get_runs_from_transition(application,
+        gen_runs = get_runs_from_transition(application,
                         transition, itp_transition=True)
         runs.append(gen_runs[0])
     return runs
@@ -43,7 +71,6 @@ def get_runs_from_test(data, application):
 def TestProcedureInitialGenerator(application_class, transition_list=None):
     """
         >>> import time
-        >>> import checkmate.runs
         >>> import checkmate.runtime._pyzmq
         >>> import checkmate.runtime._runtime
         >>> import checkmate.runtime.test_plan
@@ -57,7 +84,7 @@ def TestProcedureInitialGenerator(application_class, transition_list=None):
         >>> c2 = r.runtime_components['C2']
         >>> c3 = r.runtime_components['C3']
         >>> transition = c2.context.engine.blocks[0]
-        >>> previous_run = checkmate.runs.get_runs_from_transition(
+        >>> previous_run = get_runs_from_transition(
         ...                     r.application, transition)[0]
         >>> inc = transition.incoming[0]
         >>> exchange = inc.factory(**inc.resolve())

@@ -4,6 +4,7 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import os
 import collections
 
 import zope.interface
@@ -13,7 +14,147 @@ import checkmate._validation
 import checkmate.exception
 import checkmate.interfaces
 import checkmate.tymata.engine
+import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
+
+
+def get_local_update(root_module, definition):
+    """"""
+    definition_update = {}
+    definition_update['class_states'] = []
+
+    try:
+        (package_name, file_name) = definition['definition'].split('/')[-2:]
+        name = file_name.split('.')[0].capitalize()
+        definition_update['name'] = name
+    except KeyError:
+        return definition_update
+
+    exchange_module = definition['exchange_module']
+    data_structure_module = definition['data_structure_module']
+
+    component_module = \
+        checkmate._module.get_module(root_module,
+            name.lower(), package_name)
+    local_module = component_module.__name__
+    definition_update['__module__'] = local_module
+    definition_update['component_module'] = component_module
+
+    state_module = checkmate._module.get_module(local_module,
+                        name.lower() + '_states')
+    definition_update['state_module'] = state_module
+
+    define_data = checkmate.tymata.engine.get_definition_data(
+                    definition['definition'])
+    try:
+        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module, state_module)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+        definition_update['class_states'] = output['states']
+    except:
+        pass
+
+    try:
+        blocks = checkmate.tymata.engine.get_blocks_from_data(
+                    exchange_module, state_module, define_data)
+    except:
+        blocks = []
+    finally:
+        definition_update['component_blocks'] = blocks
+
+    return definition_update
+
+
+def get_definition_update(root_module, definition):
+    """"""
+    definition_update = {}
+
+    try:
+        exchange_module = definition['exchange_module']
+    except KeyError:
+        exchange_module = \
+            checkmate._module.get_module(root_module, 'exchanges')
+        definition_update['exchange_module'] = exchange_module
+
+    try:
+        data_structure_module = definition['data_structure_module']
+    except KeyError:
+        data_structure_module = \
+            checkmate._module.get_module(root_module, 'data_structure')
+        definition_update['data_structure_module'] = data_structure_module
+
+    data_value = {}
+    try:
+        value_data = checkmate.tymata.engine.get_definition_data(
+                        definition['test_data_definition'])
+        value_source = \
+            checkmate.parser.yaml_visitor.call_data_visitor(value_data)
+        data_value.update(value_source)
+        definition_update['data_value'] = data_value
+    except KeyError:
+        pass
+
+    _datas = []
+    try:
+        _datas.append(definition['exchange_definition'])
+    except KeyError:
+        pass
+    try:
+        _datas.append(definition['data_structure_definition'])
+    except KeyError:
+        pass
+
+    define_data = checkmate.tymata.engine.get_definition_data(_datas)
+    data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
+    try:
+        declarator = checkmate.partition_declarator.Declarator(
+                        data_structure_module, exchange_module,
+                        data_value=data_value)
+        declarator.new_definitions(data_source)
+        output = declarator.get_output()
+
+        exchanges = output['exchanges']
+        data_structure = output['data_structure']
+    except:
+        exchanges = {}
+        data_structure = {}
+    finally:
+        definition_update['exchanges'] = exchanges
+        definition_update['data_structure'] = data_structure
+
+    try:
+        component_registry = definition['component_registry']
+    except KeyError:
+        component_registry = {}
+    definition_update['component_registry'] = component_registry
+
+    try:
+        communication_list = definition['communication_list']
+    except KeyError:
+        communication_list = {}
+    definition_update['communication_list'] = communication_list
+
+    try:
+        _component_definition = definition['component_definition']
+    except KeyError:
+        _component_definition = []
+    try:
+        _component_definition.extend(definition['component_classes'])
+    except KeyError:
+        pass
+
+    for class_definition in _component_definition:
+        component_namespace = dict(definition_update)
+        component_namespace.update(class_definition)
+        component_namespace.update({'root_module': root_module})
+        _class = ComponentMeta('_filled_later',
+                    (Component,), component_namespace)
+        class_definition['class_from_meta'] = _class
+    definition_update['component_classes'] = _component_definition
+
+    return definition_update
 
 
 class ComponentMeta(type):
@@ -27,46 +168,58 @@ class ComponentMeta(type):
         >>> c1.state_module #doctest: +ELLIPSIS
         <module 'sample_app.component.component_1_states' from ...
         """
-        exchange_module = namespace['exchange_module']
-        data_structure_module = namespace['data_structure_module']
-        state_module = checkmate._module.get_module(namespace['__module__'],
-                            name.lower() + '_states')
-        namespace['state_module'] = state_module
+        root_module = namespace['root_module']
+        # TODO: use 'definition' key in yaml
+        try:
+            namespace['definition'] = namespace['class']
+        except KeyError:
+            pass
+        definition_update = checkmate.component.get_definition_update(
+                                root_module, namespace)
+
+        namespace.update(definition_update)
+
+        local_update = checkmate.component.get_local_update(
+                                root_module, namespace)
+
+        namespace.update(local_update)
+        try:
+            name = namespace['name']
+        except KeyError:
+            pass
+
+        _component_registry = namespace['component_registry']
+        _component_registry[name] = []
         instance_attributes = collections.defaultdict(dict)
-        for _instance in namespace['instances']:
-            if 'attributes' in _instance:
-                instance_attributes[_instance['name']] = \
-                    _instance['attributes']
         namespace['instance_attributes'] = instance_attributes
         namespace['instance_engines'] = collections.defaultdict(dict)
+        try:
+            blocks = namespace['component_blocks']
+        except KeyError:
+            blocks = []
+        try:
+            instance_list = namespace['instances']
+        except KeyError:
+            instance_list = []
+        for _instance in instance_list:
+            _component_registry[name].append(_instance['name'])
 
-        class_file = namespace['component_definition']
-        with open(class_file, 'r') as _file:
-            define_data = _file.read()
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        declarator = checkmate.partition_declarator.Declarator(
-            data_structure_module, exchange_module, state_module)
-        declarator.new_definitions(data_source)
-        output = declarator.get_output()
-        namespace['class_states'] = output['states']
-        for _instance in namespace['instances']:
-            engine = checkmate.tymata.engine.AutoMata(
-                exchange_module, state_module,
-                class_file)
-            engine.set_owner(_instance['name'])
-            try:
-                for _communication in engine.communication_list:
-                    if (_communication not in namespace['communication_list']
-                            and 'launch_command' in namespace):
-                        # if 'launch_command' is set,
-                        # communication should be set as well
-                        raise KeyError(
-                            "Communication '%s' is not defined in application"
-                            % _communication)
-            except Exception as e:
-                raise e
+            if 'attributes' in namespace:
+                instance_attributes[_instance['name']].update(
+                    namespace['attributes'])
+            if 'attributes' in _instance:
+                instance_attributes[_instance['name']].update(
+                    _instance['attributes'])
+
+            engine = \
+                checkmate.tymata.engine.AutoMata(_instance['name'], blocks)
             namespace['instance_engines'][_instance['name']] = engine
+
         result = type.__new__(cls, name, bases, dict(namespace))
+        try:
+            setattr(namespace['component_module'], name, result)
+        except KeyError:
+            pass
         return result
 
 
@@ -92,11 +245,52 @@ class Component(object):
         self.default_state_value = True
         self.expected_return_code = None
         self.engine = self.instance_engines[name]
-        self.service_classes = self.engine.service_classes
-        self.services = self.engine.services
-        self.communication_list = self.engine.communication_list
         for _k, _v in self.instance_attributes[name].items():
             setattr(self, _k, _v)
+        self.components = collections.OrderedDict()
+        for _class_definition in self.component_classes:
+            _class = _class_definition['class_from_meta']
+            for component in _class_definition['instances']:
+                _name = component['name']
+                self.components[_name] = \
+                    _class(_name, self.component_registry)
+    
+    @checkmate.fix_issue(
+        "checkmate/issues/move_attributes_to_component_setup.rst")
+    def setup(self):
+        """
+            >>> import sample_app.application
+            >>> app = sample_app.application.TestData()
+            >>> c2 = app.components['C2']
+            >>> c2.setup()
+            >>> len(c2.service_classes)
+            6
+            >>> len(c2.services)
+            9
+            >>> sorted(c2.communications)
+            ['', 'interactive']
+        """
+        self.services = {}
+        self.service_classes = []
+        self.communications = set()
+        for _b in self.engine.blocks:
+            for _i in _b.incoming:
+                _ex = _i.factory()
+                if _i.code not in self.services:
+                    self.services[_i.code] = _ex
+                if _i.partition_class not in self.service_classes:
+                    self.service_classes.append(_i.partition_class)
+            for _io in _b.incoming + _b.outgoing:
+                if hasattr(_io, 'partition_class'):
+                    self.communications.add(_io.partition_class.communication)
+        for _communication in self.communications:
+            if (_communication not in self.communication_list
+                    and hasattr(self, 'launch_command')):
+                # if 'launch_command' is set,
+                # communication should be set as well
+                raise KeyError(
+                    "Communication '%s' is not defined in application"
+                    % _communication)
 
     def block_by_name(self, name):
         return self.engine.block_by_name(name)
@@ -158,7 +352,7 @@ class Component(object):
         self.default_state_value = default_state_value
         outgoing = []
         for block in self.engine.blocks:
-            if block.initializing:
+            if hasattr(block, 'initializing') and block.initializing:
                 outgoing.extend(self.simulate(block))
         if len(outgoing) > 0:
             return outgoing
@@ -231,9 +425,9 @@ class Component(object):
     def _do_process(self, exchange, block=None):
         """"""
         try:
-            _block, outgoing = self.engine.process(exchange, self.states,
-                                                 self.default_state_value,
-                                                 block)
+            _block, outgoing = self.engine.process(block, self.states,
+                                                   exchange,
+                                                   self.default_state_value)
         except IndexError:
             if (exchange[0].return_code and
                     self.expected_return_code is not None and

@@ -55,15 +55,19 @@ def get_module(package_name, module_name, alternative_package=None):
         _new_fullname = alternative_package + '.' + module_name
     _name = package_name.replace(_fullname, _new_fullname)
 
-    if _name in sys.modules:
-        module = sys.modules[_name]
-    else:
+    try: 
+        module = importlib.import_module(_name)
+    except ImportError:
         module = imp.new_module(_name)
         module.__name__ = _name
         module.__file__ = _file.replace(_fullname.replace('.', os.sep),
                             _new_fullname.replace('.', os.sep))
         sys.modules[_name] = module
-        setattr(importlib.import_module(
-                    package_name.replace(_fullname, alternative_package),
-                    package_name.replace(_fullname, '')), module_name, module)
+        setattr(
+            importlib.import_module(
+                package_name.replace(_fullname, alternative_package),
+                package_name.replace(_fullname, '')), 
+            module_name,
+            module)
     return module
+

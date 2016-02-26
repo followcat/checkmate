@@ -8,7 +8,6 @@ import collections
 
 import checkmate._storage
 import checkmate._exec_tools
-import checkmate.parser.yaml_visitor
 
 
 def make_partition(module,

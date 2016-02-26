@@ -4,11 +4,11 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
-import checkmate.runs
 import checkmate._visual
 import checkmate.pathfinder
 import checkmate.runtime._pyzmq
 import checkmate.runtime._runtime
+import checkmate.runtime.test_plan
 
 import sample_app.application
 
@@ -52,7 +52,7 @@ def run_transition(name):
             break
     else:
         return None
-    r = checkmate.runs.get_runs_from_transition(app, t)
+    r = checkmate.runtime.test_plan.get_runs_from_transition(app, t)
     if r[0].compare_initial(app):
         runtime.execute(r[0])
     else:

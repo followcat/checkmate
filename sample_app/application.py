@@ -15,27 +15,27 @@ class TestData(checkmate.application.Application,
     """"""
     __test__ = False
 
-    exchange_definition = 'sample_app/exchanges.yaml'
-    test_data_definition = 'sample_app/test_data.yaml'
-
-    component_classes = yaml.load(
+    application_definition = yaml.load(
         """
-        - class: sample_app/component/component_3.yaml
-          attributes: {}
-          instances:
-            - name: C3
-        - class: sample_app/component/component_1.yaml
-          attributes: {}
-          instances:
-            - name: C1
-        - class: sample_app/component/component_2.yaml
-          attributes: {}
-          instances:
-            - name: C2
-              attributes:
-                request:
-                  C: AT1
-                  P: NORM
+        exchange_definition: sample_app/exchanges.yaml
+        test_data_definition: sample_app/test_data.yaml
+        component_classes:
+            - class: sample_app/component/component_3.yaml
+              attributes: {}
+              instances:
+                - name: C3
+            - class: sample_app/component/component_1.yaml
+              attributes: {}
+              instances:
+                - name: C1
+            - class: sample_app/component/component_2.yaml
+              attributes: {}
+              instances:
+                - name: C2
+                  attributes:
+                    request:
+                        C: AT1
+                        P: NORM
         """)
 
     communication_list = {'': (checkmate.runtime._pyzmq.Communication, 0.002)}

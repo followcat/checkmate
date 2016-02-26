@@ -30,6 +30,7 @@ class Device(checkmate.runtime._threading.Thread):
         >>> c1 = a.components['C1']
         >>> c2 = a.components['C2']
         >>> c3 = a.components['C3']
+        >>> c1.setup();c2.setup();c3.setup()
         >>> connector = checkmate.runtime._pyzmq.Connector(c1, c)
         >>> connector.initialize()
         >>> connector.device.socket_dealer_in.TYPE == zmq.DEALER

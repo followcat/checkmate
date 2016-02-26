@@ -5,7 +5,7 @@ collected from application should be increased.
     >>> import checkmate.tymata.engine
     >>> C2_cls = sample_app.component.component_2.Component_2
     >>> classes = sample_app.application.TestData.component_classes
-    >>> C2 = [c for c in classes if c['class'] == C2_cls][0]
+    >>> C2 = [c for c in classes if c['class_from_meta'] == C2_cls][0]
     >>> len(C2['instances'])
     1
     >>> C2['instances'].append({'name': 'C4',
@@ -15,8 +15,7 @@ collected from application should be increased.
     ...      {'P': 'HIGH', 'C': 'AT2'}}
 
     >>> C2_cls.instance_engines['C4'] = checkmate.tymata.engine.AutoMata(
-    ...                C2_cls.exchange_module, C2_cls.state_module,
-    ...                C2_cls.component_definition)
+    ...                name='C4', blocks=C2_cls.instance_engines['C2'].blocks)
 
     >>> app = sample_app.application.TestData()
     >>> app.component_registry['Component_2']=['C2', 'C4']

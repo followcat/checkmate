@@ -12,7 +12,6 @@ import numpy
 import checkmate.runs
 import checkmate._module
 import checkmate.component
-import checkmate.parser.yaml_visitor
 import checkmate.partition_declarator
 
 
@@ -25,99 +24,32 @@ class ApplicationMeta(type):
         <module 'sample_app.exchanges' from ...
         >>> a.data_structure_module #doctest: +ELLIPSIS
         <module 'sample_app.data_structure' from ...
-        >>> a.exchange_definition
+        >>> a.application_definition['exchange_definition']
         'sample_app/exchanges.yaml'
         >>> len(a.data_structure) #doctest: +ELLIPSIS
         3
         """
-        exchange_module = \
-            checkmate._module.get_module(namespace['__module__'], 'exchanges')
-        namespace['exchange_module'] = exchange_module
-
-        data_structure_module = \
-            checkmate._module.get_module(namespace['__module__'],
-                'data_structure')
-        namespace['data_structure_module'] = data_structure_module
-
-        if 'exchange_definition' not in namespace:
-            namespace['exchange_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1])
-        if 'itp_definition' not in namespace:
-            namespace['itp_definition'] = \
-                os.sep.join(namespace['__module__'].split('.')[0:-1])
-        def get_definition_data(definitions):
-            definition_data = ''
-            if type(definitions) != list:
-                definitions = [definitions]
-            for _d in definitions:
-                if os.path.isfile(_d):
-                    with open(_d, 'r') as _file:
-                        definition_data += _file.read()
-                elif os.path.isdir(_d):
-                    for filename in os.listdir(_d):
-                        if filename.endswith(".yaml"):
-                            _fullname = os.path.join(_d, filename)
-                            with open(_fullname, 'r') as _file:
-                                definition_data += _file.read()
-            return definition_data
-        define_data = get_definition_data(namespace['exchange_definition'])
-        if 'data_structure_definition' in namespace:
-            define_data += \
-                get_definition_data(namespace['data_structure_definition'])
-        data_value = {}
+        root_module = namespace['__module__']
         try:
-            value_data = get_definition_data(namespace['test_data_definition'])
-            value_source = \
-                checkmate.parser.yaml_visitor.call_data_visitor(value_data)
-            for code, structure in value_source.items():
-                data_value.update({code: structure})
-            namespace['data_value'] = data_value
+            definition = namespace['application_definition']
         except KeyError:
-            pass
-        data_source = checkmate.parser.yaml_visitor.call_visitor(define_data)
-        try:
-            declarator = checkmate.partition_declarator.Declarator(
-                            data_structure_module, exchange_module,
-                            data_value=data_value)
-            declarator.new_definitions(data_source)
-            output = declarator.get_output()
+            definition = {}
+        definition['communication_list'] = namespace['communication_list']
 
-            namespace['data_structure'] = output['data_structure']
-            namespace['exchanges'] = output['exchanges']
-        finally:
-            pass
+        definition_update = checkmate.component.get_definition_update(
+                                root_module, definition)
 
-        _component_classes = namespace['component_classes']
-        for index, _definition in enumerate(_component_classes):
-            _tmp_dict = collections.defaultdict(dict)
-            _tmp_dict.update(_definition)
-            _component_classes[index] = _tmp_dict
-        _component_registry = {}
-        for class_definition in _component_classes:
-            class_dict = class_definition['attributes']
-            _tmp_list = class_definition['class'].split('/')
-            class_name = _tmp_list[-1].split('.')[0].capitalize()
-            alternative_package = _tmp_list[-2]
-            component_module = \
-                checkmate._module.get_module(namespace['__module__'],
-                    class_name.lower(), alternative_package)
-            _component_registry[class_name] = []
-            for _instance in class_definition['instances']:
-                _component_registry[class_name].append(_instance['name'])
-            d = {'exchange_module': exchange_module,
-                 'data_structure_module': data_structure_module,
-                 'component_definition': class_definition['class'],
-                 '__module__': component_module.__name__,
-                 'communication_list': namespace['communication_list'].keys(),
-                 'instances': class_definition['instances']
-                }
-            d.update(class_dict)
-            _class = checkmate.component.ComponentMeta(class_name,
-                        (checkmate.component.Component,), d)
-            setattr(component_module, class_name, _class)
-            class_definition['class'] = _class
+        for key in ('itp_definition', 'feature_definition_path'):
+            try:
+                definition_update[key] = definition[key]
+            except KeyError:
+                if key == 'feature_definition_path':
+                    pass
+                else:
+                    definition_update[key] =\
+                        os.sep.join(root_module.split('.')[0:-1])
 
-        namespace['component_registry'] = _component_registry
+        namespace.update(definition_update)
         result = type.__new__(cls, name, bases, dict(namespace))
         return result
 
@@ -209,6 +141,8 @@ class Application(object):
             pass
 
 
+    @checkmate.report_issue("checkmate/issues/no_data_application_sut.rst",
+        failed=2)
     def __init__(self):
         """
         >>> import sample_app.application
@@ -224,7 +158,7 @@ class Application(object):
         self.matrix = None
         self.runs_found = None
         for _class_definition in self.component_classes:
-            _class = _class_definition['class']
+            _class = _class_definition['class_from_meta']
             for component in _class_definition['instances']:
                 _name = component['name']
                 self.components[_name] = \
@@ -280,12 +214,6 @@ class Application(object):
         for _component in list(self.components.values()):
             copy_states.extend(_component.copy_states())
         return copy_states
-
-    def validated_incoming_list(self):
-        incoming_list = []
-        for _component in list(self.components.values()):
-            incoming_list += _component.get_all_validated_incoming()
-        return incoming_list
 
     def visual_dump_states(self):
         state_dict = {}

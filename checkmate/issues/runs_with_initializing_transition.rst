@@ -54,10 +54,6 @@ other runs
         ...         item_in, [sample_app.exchanges],
         ...         [sample_app.component.component_1_states])
         >>> state1.instance_engines['C1'].blocks.append(t_in)
-        >>> state1.instance_engines['C1'].service_classes.append(
-        ...     sample_app.exchanges.ForthAction)
-        >>> state2.instance_engines['C2'].service_classes.append(
-        ...     sample_app.exchanges.InitAction)
         >>> r = checkmate.runtime._runtime.Runtime(
         ...         sample_app.application.TestData,
         ...         checkmate.runtime._pyzmq.Communication,
@@ -101,8 +97,6 @@ other runs
         >>> r.stop_test()
 
     Revert changes for further use in doctest:
-        >>> state1.instance_engines['C1'].service_classes.remove(
-        ...     sample_app.exchanges.ForthAction)
         >>> state1.instance_engines['C1'].blocks.remove(t_in)
         >>> state2.instance_engines['C2'].blocks.remove(t_out)
         >>> application_class.reset()
