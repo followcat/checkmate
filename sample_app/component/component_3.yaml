@@ -1,0 +1,39 @@
+---
+title: "State identification"
+data:
+  - Definition and accessibility: 'Acknowledge'
+    Value partitions:
+    - [S-ACK-01, Acknowledge1(), False, 'False valid value']
+    - [S-ACK-02, Acknowledge2(), True,  'True valid value']
+
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: '[Input/Final state/Output]'
+        initial:
+          - Acknowledge:        Acknowledge1
+        incoming:
+          - Reaction:           RE()
+        final:
+          - Acknowledge:        toggle()
+
+  - Transitions:
+      - name: '[Input/Final state/Output]'
+        initial:
+          - Acknowledge:        Acknowledge2
+        incoming:
+          - Reaction:           RL()
+        final:
+          - Acknowledge:        toggle()
+        outgoing:
+          - ThirdReaction:      DR()
+
+  - Transitions:
+      - name: 'C3 pause process'
+        initial:
+          - Acknowledge:        Acknowledge1
+        incoming:
+          - Pause:              PA()
+        final:
+          - Acknowledge:        Acknowledge1

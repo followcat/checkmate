@@ -1,0 +1,19 @@
+---
+title: 'Data structure'
+data:
+  - Definition: 'TESTActionRequest'
+
+---
+title: 'Exchange identification'
+data:
+  - Definition and accessibility: 'TESTAction(T:TESTActionRequest)'
+    Value partitions:
+    # [Partition,     State,  Valid value,    Comment]
+    - [X-ACTION-01,   TC(),   'TC',           Comment AC action]
+    - [X-ACTION-02,   TP(R),  'TP',           Comment AP action]
+    - [X-ACTION-03,   TP(R),  'TP',           Comment PP action]
+
+  - Definition and accessibility: 'TESTReaction'
+    Value partitions:
+    # [Partition,     State,  Valid value,    Comment]
+    - [X-REACTION-01, TE(),   'TE',           Comment]

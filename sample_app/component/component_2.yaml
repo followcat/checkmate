@@ -1,0 +1,66 @@
+---
+title: "State identification"
+data:
+  - @from_attribute(R=request) 'RequestState(R:ActionRequest)'
+
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: 'C2 callback on AC button'
+        incoming:
+          - ExchangeButton:     PBAC()
+        outgoing:
+          - Action:             AC() 
+
+      - name: 'C2 process ER'
+        incoming:
+          - ActionCode:         ER()
+        returned:
+          - Action:             AC()
+        outgoing:
+          - ValidateOutput:     VOER()
+
+      - name: 'C2 process ARE'
+        initial:
+          - RequestState:       R
+        incoming:
+          - AnotherReaction:    ARE()
+        outgoing:
+          - Action:             AP(R)
+
+      - name: 'C2 callback on AC button'
+        incoming:
+          - ExchangeButton:     PBRL()
+        outgoing:
+          - Reaction:           RL()
+
+      - name: 'C2 process DR'
+        incoming:
+          - ThirdReaction:      DR()
+        outgoing:
+          - ValidateOutput:     VODR()
+
+      - name: 'C2 callback on AC button'
+        incoming:
+          - ExchangeButton:     PBPP()
+        outgoing:
+          - Action:             PP(R)
+
+  - Transitions:
+      - name: 'C2 pause process'
+        incoming:
+          - Pause:              PA()
+        outgoing:
+          - ValidateOutput:     VOPA()
+
+      - name: 'C2 third action'
+        incoming:
+          - ThirdAction:        DA()
+        outgoing:
+          - ValidateOutput:     VODA()
+
+  - Transitions:
+      - name: 'C2 return code OK'
+        incoming:
+          - ActionCode:         OK()

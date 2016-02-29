@@ -1,0 +1,51 @@
+---
+title: "State identification"
+data:
+  - Definition and accessibility: 'State'
+    Value partitions:
+    - [S-STATE-01, State1(), True, 'State true value']
+    - [S-STATE-02, State2(), False, 'State false value']
+
+  - Definition and accessibility: 'AnotherState(R:ActionRequest=None)'
+    Value partitions:
+    - [S-ANOST-01, AnotherState1(), None, 'AnotherState first value']
+
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: 'Toggle state tran01'
+        initial: 
+          - State:            State1
+        incoming:
+          - Action:           AC()
+        final:
+          - State:            State2
+        outgoing:
+          - Reaction:         RE()
+          - AnotherReaction:  ARE()
+
+  - Transitions:
+      - name: 'Append element ok tran01'
+        initial: 
+          - AnotherState:     AnotherState1()
+        incoming:
+          - Action:           AP(R)
+        final:
+          - AnotherState:     append(R)
+        outgoing:
+          - ThirdAction:      DA()
+
+  - Transitions:
+      - name: 'Append element ok tran02'
+        initial: 
+          - State:            State2
+          - AnotherState:     AnotherState1(R)
+        incoming:
+          - Action:           PP()
+        final:
+          - State:            State1
+          - AnotherState:     pop(R)
+        outgoing:
+          - Pause:            PA()
+

@@ -1,0 +1,97 @@
+---
+title: "Data structure"
+data:
+  - Definition: 'Channel'
+    Value partitions:
+    - [X-CHANN-01, AT1(), 'AT1', Comment AT1 action]
+    - [X-CHANN-02, AT2(), 'AT2', Comment AT2 action]
+
+  - Definition: 'Priority'
+    Value partitions:
+    - [X-PRIOR-01, NORM(), 'NORM', Comment NORM action]
+    - [X-PRIOR-02, HIGH(), 'HIGH', Comment HIGH action]
+
+  - Definition: 'ActionRequest(C:Channel, P:Priority)'
+
+---
+title: "Exchange identification"
+data:
+  - Definition and accessibility: 'ActionCode'
+    Attributes:
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-ACT-CODE-01, OK(), True, OK action code]
+    - [X-ACT-CODE-02, ER(), False, Error action code]
+
+  - Definition and accessibility: 'Action(R:ActionRequest)->ActionCode'
+    Attributes:
+      class_destination:
+      - Component_1
+    Value partitions:
+    - [X-ACTION-01, AC(), 'AC', Comment AC action]
+    - [X-ACTION-02, AP(R), 'AP', Comment AP action]
+    - [X-ACTION-03, PP(R), 'PP', Comment PP action]
+
+  - Definition and accessibility: 'Reaction'
+    Attributes:
+      class_destination:
+      - Component_3
+    Value partitions:
+    - [X-REACTION-01, RE(), 'RE', Comment]
+    - [X-REACTION-02, RL(), 'RL', Comment]
+
+  - Definition and accessibility: 'AnotherReaction'
+    Attributes:
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-ANOREACT-01, ARE(), 'ARE', Comment]
+
+  - Definition and accessibility: 'ThirdReaction'
+    Attributes:
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-THRDREACT-01, DR(), 'DR', Comment]
+
+  - Definition and accessibility: 'Pause'
+    Attributes:
+      broadcast: True
+      channel: pause
+      class_destination:
+      - Component_2
+      - Component_3
+    Value partitions:
+    - [X-PAUSE-01, PA(), 'PA', Comment]
+
+  - Definition and accessibility: 'ThirdAction'
+    Type of data: "Description"
+    Exchange: [component 1,component 2,third action]
+    Attributes:
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-THRDACT-01, AL(), 'AL', Third action first valid value]
+    - [X-THRDACT-02, DA(), 'DA', Third action second valid value]
+
+  - Definition and accessibility: 'ExchangeButton'
+    Attributes:
+      communication: interactive
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-EXBUTTON-01, PBAC(), 'PBAC', Press Button AC]
+    - [X-EXBUTTON-02, PBRL(), 'PBRL', Press Button RL]
+    - [X-EXBUTTON-03, PBPP(), 'PBPP', Press Button PP]
+
+  - Definition and accessibility: 'ValidateOutput'
+    Attributes:
+      communication: interactive
+      class_destination: []
+    Value partitions:
+    - [X-VLOUTPUT-01, VODA(), 'VODA', Validate Output DA]
+    - [X-VLOUTPUT-02, VODR(), 'VODR', Validate Output DR]
+    - [X-VLOUTPUT-03, VOPA(), 'VOPA', Validate Output PA]
+    - [X-VLOUTPUT-04, VOER(), 'VOER', Validate Output ER]
+

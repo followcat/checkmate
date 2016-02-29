@@ -1,0 +1,22 @@
+---
+title: "Exchange identification"
+data:
+  - Definition and accessibility: 'ExchangeButton'
+    Attributes:
+      communication: pytango
+      class_destination:
+      - Component_2
+    Value partitions:
+    - [X-EXBUTTON-01, PBAC(), 'PBAC', 'Press Button AC']
+    - [X-EXBUTTON-02, PBRL(), 'PBRL', 'Press Button RL']
+    - [X-EXBUTTON-03, PBPP(), 'PBPP', 'Press Button PP']
+
+  - Definition and accessibility: 'ValidateOutput'
+    Attributes:
+      communication: pytango
+      class_destination: []
+    Value partitions:
+    - [X-VLOUTPUT-01, VODA(), 'VODA', 'Validate Output DA']
+    - [X-VLOUTPUT-02, VODR(), 'VODR', 'Validate Output DR']
+    - [X-VLOUTPUT-03, VOPA(), 'VOPA', 'Validate Output PA']
+

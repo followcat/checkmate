@@ -1,0 +1,46 @@
+---
+title: "State machine"
+data:
+  - Transitions:
+      - name: '[press pbac]'
+        incoming:
+          - ExchangeButton:     PBAC()
+        outgoing:
+          - Action:             AC()
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - AnotherReaction:    ARE()
+        outgoing:
+          - Action:             AP(R)
+
+      - name: '[press pbrl]'
+        incoming:
+          - ExchangeButton:     PBRL()
+        outgoing:
+          - Reaction:           RL()
+
+      - name: '[Input/Final state/Output]'
+        incoming:
+          - ThirdReaction:      DR()
+        outgoing:
+          - ValidateOutput:     VODR()
+
+      - name: '[press pbpp]'
+        incoming:
+          - ExchangeButton:     PBPP()
+        outgoing:
+          - Action:             PP(R)
+
+  - Transitions:
+      - name: 'C2 pause process'
+        incoming:
+          - Pause:              PA()
+        outgoing:
+          - ValidateOutput:     VOPA()
+
+      - name: 'C2 third action'
+        incoming:
+          - ThirdAction:        DA()
+        outgoing:
+          - ValidateOutput:     VODA()

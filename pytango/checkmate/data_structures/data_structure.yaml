@@ -1,0 +1,18 @@
+---
+title: "Data structure"
+data:
+  - Definition: 'Channel'
+    Value partitions:
+    # [Partition,     State,      Valid value,    Comment]
+    - [X-CHANN-01,   AT1(),       'AT1',           Comment AT1 action]
+    - [X-CHANN-02,   AT2(),       'AT2',           Comment AT2 action]
+
+  - Definition: 'Priority'
+    Value partitions:
+    # [Partition,     State,      Valid value,    Comment]
+    - [X-PRIOR-01,   NORM(),       'NORM',           Comment NORM action]
+    - [X-PRIOR-02,   HIGH(),       'HIGH',           Comment HIGH action]
+
+  - Definition: 'ActionRequest(C:Channel, P:Priority)'
+
+

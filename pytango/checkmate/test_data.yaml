@@ -1,0 +1,9 @@
+ActionRequest:
+  R1:
+    C: AT1
+    P: NORM
+
+  R2:
+    C: AT2
+    P: HIGH
+
