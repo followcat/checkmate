@@ -10,7 +10,8 @@ import threading
 
 import zmq
 
-import checkmate.runtime._threading
+import util._threading
+
 import checkmate.runtime._zmq_wrapper
 import checkmate.runtime.communication
 
@@ -19,7 +20,7 @@ class Message():
     broadcast = False
             
 
-class Device(checkmate.runtime._threading.Thread):
+class Device(util._threading.Thread):
     """
         >>> import zmq
         >>> import sample_app.application
@@ -158,7 +159,7 @@ class Connector(checkmate.runtime.communication.Connector):
     device_class = Device
 
 
-class Router(checkmate.runtime._threading.Thread):
+class Router(util._threading.Thread):
     """"""
     def __init__(self, name=None):
         """"""

@@ -10,7 +10,7 @@ import os.path
 import doctest
 import importlib
 
-import checkmate._issue
+import util._issue
 
 
 __all__ = ['check_backlog', 'check_feature']
@@ -26,7 +26,7 @@ def test_scope_definition():
 
 def check_backlog(filename):
     scope = Scope(filename=filename)
-    runner = checkmate._issue.Runner(verbose=False)
+    runner = util._issue.Runner(verbose=False)
     for feature in scope.backlog:
         try:
             failures = feature['failures']
@@ -58,7 +58,7 @@ def check_feature(filename, feature_name, verbose=True):
     scope = Scope(filename=filename)
     for feature in scope.backlog:
         if feature['feature'] == feature_name:
-            runner = checkmate._issue.Runner(verbose=verbose)
+            runner = util._issue.Runner(verbose=verbose)
             try:
                 failures = feature['failures']
             except KeyError:
