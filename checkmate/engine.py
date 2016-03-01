@@ -4,10 +4,12 @@
 # This program is free software under the terms of the GNU GPL, either
 # version 3 of the License, or (at your option) any later version.
 
+import core.engine
+
 import checkmate.block
 
 
-class Engine(object):
+class Engine(core.engine.Engine):
     """"""
     def __init__(self, name=None, blocks=None):
         if blocks:
