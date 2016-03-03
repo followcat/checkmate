@@ -14,14 +14,13 @@ import multiprocessing
 import zope.interface
 import zope.component
 
-import util._threading
-
 import checkmate.logger
 import checkmate.component
 import checkmate.interfaces
 import checkmate.runtime.client
 import checkmate.timeout_manager
 import checkmate.runtime.launcher
+import checkmate.runtime._threading
 import checkmate.runtime.interfaces
 
 
@@ -144,7 +143,7 @@ class Stub(Component):
     """"""
 
 
-class ThreadedComponent(Component, util._threading.Thread):
+class ThreadedComponent(Component, checkmate.runtime._threading.Thread):
     """"""
     using_internal_client = False
     reading_internal_client = False
@@ -155,7 +154,7 @@ class ThreadedComponent(Component, util._threading.Thread):
     def __init__(self, component):
         #Need to call both ancestors
         Component.__init__(self, component)
-        util._threading.Thread.__init__(self,
+        checkmate.runtime._threading.Thread.__init__(self,
             name=component.name)
 
         self.client = checkmate.runtime.client.Client(self.context,
@@ -181,11 +180,11 @@ class ThreadedComponent(Component, util._threading.Thread):
 
     def start(self):
         Component.start(self)
-        util._threading.Thread.start(self)
+        checkmate.runtime._threading.Thread.start(self)
 
     def stop(self):
         Component.stop(self)
-        util._threading.Thread.stop(self)
+        checkmate.runtime._threading.Thread.stop(self)
 
     def run(self):
         while True:
