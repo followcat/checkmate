@@ -9,8 +9,6 @@ import collections
 
 import zope.interface
 
-import core.component
-
 import checkmate._module
 import checkmate._validation
 import checkmate.exception
@@ -226,7 +224,7 @@ class ComponentMeta(type):
 
 
 @zope.interface.implementer(checkmate.interfaces.IComponent)
-class Component(core.component.Component):
+class Component(object):
     def __init__(self, name, component_registry=None):
         """
         >>> import sample_app.application

@@ -9,8 +9,6 @@ import collections
 
 import numpy
 
-import core.application
-
 import checkmate.runs
 import checkmate._module
 import checkmate.component
@@ -56,7 +54,7 @@ class ApplicationMeta(type):
         return result
 
 
-class Application(core.application.Application):
+class Application(object):
     _matrix = numpy.matrix([])
     _matrix_runs = []
     _runs_found = [False]

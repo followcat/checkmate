@@ -8,13 +8,11 @@ import queue
 import logging
 import multiprocessing
 
-import core.communication
-
 import checkmate.timeout_manager
 import checkmate.runtime._threading
 
 
-class Encoder(core.communication.Encoder):
+class Encoder(object):
     """"""
     def __init__(self, component):
         self.component = component
@@ -118,7 +116,7 @@ class ConnectorProcess(Connector, checkmate.runtime._threading.Process):
         checkmate.runtime._threading.Process.stop(self)
 
 
-class Communication(core.communication.Communication):
+class Communication(object):
     """"""
     connector_class = Connector
     def __init__(self, component=None):
