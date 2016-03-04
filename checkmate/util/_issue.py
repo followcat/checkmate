@@ -66,10 +66,10 @@ def report_issue(filename, failed=1):
         ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(False)\\nFalse\")
         ... 
-        >>> @util._issue.report_issue(filename)
+        >>> @checkmate.util._issue.report_issue(filename)
         ... def func():
         ...     pass
-        >>> _r = util._issue.Runner(verbose=False)
+        >>> _r = checkmate.util._issue.Runner(verbose=False)
         >>> test = doctest.DocTestParser().get_doctest(func.__doc__,
         ...             locals(), func.__name__, None, None)
         >>> _r.run(test) # doctest: +ELLIPSIS
@@ -80,7 +80,7 @@ def report_issue(filename, failed=1):
         ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(True)\\nFalse\")
         ... 
-        >>> @util._issue.report_issue(filename)
+        >>> @checkmate.util._issue.report_issue(filename)
         ... def func():
         ...     pass
         ... 
@@ -94,7 +94,7 @@ def fix_issue(filename):
     """
         >>> import os
         >>> import doctest
-        >>> import util._issue
+        >>> import checkmate.util._issue
         >>> filename = 'dt1.rst'
 
     Hardcoded successful doctest:
@@ -102,7 +102,7 @@ def fix_issue(filename):
         ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(False)\\nFalse\")
         ... 
-        >>> @util._issue.fix_issue(filename)
+        >>> @checkmate.util._issue.fix_issue(filename)
         ... def func():
         ...     pass
         ... 
@@ -113,10 +113,10 @@ def fix_issue(filename):
         ...             filename]), 'w') as f:
         ...     n = f.write(\">>> print(True)\\nFalse\")
         ... 
-        >>> @util._issue.fix_issue(filename)
+        >>> @checkmate.util._issue.fix_issue(filename)
         ... def func():
         ...     pass
-        >>> _r = util._issue.Runner(verbose=False)
+        >>> _r = checkmate.util._issue.Runner(verbose=False)
         >>> test = doctest.DocTestParser().get_doctest(func.__doc__,
         ...             locals(), func.__name__, None, None)
         >>> _r.run(test) # doctest: +ELLIPSIS
