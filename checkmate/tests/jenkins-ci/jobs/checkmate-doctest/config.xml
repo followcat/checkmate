@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Doctest for checkmate base.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.TimerTrigger>
+      <spec>*/12 * * * *
+</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>${JENKINS_COMMON_WORKSPACE}</customWorkspace>
+  <builders>
+    <hudson.tasks.Shell>
+      <command> cd $CHECKMATE_CI_HOME
+if [ -z "$CHECKMATE_CI_REV" ];
+    then (git pull);
+fi
+git log -n1|grep commit|cut -c 8-16
+nosetests --with-doctest checkmate/core/ checkmate/util/ `find checkmate/util -name &quot;_[a-z]*.py&quot;`</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
