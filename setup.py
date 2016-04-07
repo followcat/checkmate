@@ -9,5 +9,5 @@ setup(
     url="http://www.willendare.com",
     license="GPLv3+",
     package_dir = {'checkmate': 'checkmate'},
-    # packages = ['checkmate.core', 'checkmate.util'],
+    packages = ['checkmate', 'checkmate.core', 'checkmate.util'],
     )
